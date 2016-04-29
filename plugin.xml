@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<e107Plugin name="Vstore" lan="" version="1.0" date="2014-05-29" compatibility="2.0" installRequired="true" >
+	<author name="e107 Inc" url="http://e107.org" />
+	<summary lan="">Simple Virtual Store for e107</summary>
+	<description lan="">Shopping cart system for e107 v2.</description>
+	<keywords>
+		<word>ecommerce</word>
+		<word>shopping</word>
+	</keywords>
+	<category>content</category>
+	<copyright>GPL</copyright>
+	<adminLinks>
+		<link url="admin_config.php" description="" icon="" iconSmall="" primary="true" >LAN_CONFIGURE</link>
+	</adminLinks>
+	<siteLinks>
+		<link url="{e_PLUGIN}vstore/vstore.php" sef='index' perm="admin" >LAN_PLUGIN_VSTORE_TITLE</link>
+		<link url="#"  description="Shopping Cart" perm="everyone" >LAN_PLUGIN_VSTORE_CARTICON</link>
+	</siteLinks>
+	<pluginPrefs>
+		<pref name='currency'>USD</pref>
+		<pref name='shipping'>0</pref>
+	</pluginPrefs>
+</e107Plugin>

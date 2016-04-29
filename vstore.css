@@ -1,0 +1,12 @@
+
+.ratings                                    { color: #D17581; padding-left: 10px; padding-right: 10px; }
+
+.vstore-product-list .thumbnail             { height:490px }
+.vstore-product-list .item-description      { height:100px;  }
+.vstore-product-list .item-price            { font-size: 1.3em; padding-top: 2px; display: block; }
+
+.vstore-product-view .item-price h3         { margin-top:5px; }
+.vstore-product-view p                      { margin-bottom:20px; }
+
+#vstore-cart-icon                           { }
+#vstore-cart-icon.active                    { color: white }
