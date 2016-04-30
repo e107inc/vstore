@@ -646,7 +646,7 @@ class vstore_cat_ui extends e_admin_ui
 		protected $pid				= 'cat_id';
 		protected $perPage			= 10; 
 		protected $batchDelete		= true;
-	//	protected $batchCopy		= true;		
+		protected $batchCopy		= true;
 	//	protected $sortField		= 'somefield_order';
 	//	protected $orderStep		= 10;
 	//	protected $tabs			= array('Tabl 1','Tab 2'); // Use 'tab'=>0  OR 'tab'=>1 in the $fields below to enable. 
@@ -670,8 +670,48 @@ class vstore_cat_ui extends e_admin_ui
 		);		
 		
 		protected $fieldpref = array('cat_name', 'cat_sef', 'cat_class');
-		
-	
+
+
+
+		public function beforeCreate($new_data,$old_data)
+		{
+			if(!empty($new_data['cat_name']) && isset($new_data['cat_sef']) && empty($new_data['cat_sef']))
+			{
+				$new_data['cat_sef'] = eHelper::title2sef($new_data['cat_name'], 'dashl');
+			}
+
+			return $new_data;
+		}
+
+		public function afterCreate($new_data, $old_data, $id)
+		{
+			// do something
+		}
+
+		public function beforeUpdate($new_data, $old_data, $id)
+		{
+			if(!empty($new_data['cat_name']) && isset($new_data['cat_sef']) && empty($new_data['cat_sef']))
+			{
+				$new_data['cat_sef'] = eHelper::title2sef($new_data['cat_name'], 'dashl');
+			}
+
+			return $new_data;
+		}
+
+		public function afterUpdate($new_data, $old_data, $id)
+		{
+
+		}
+
+		public function onCreateError($new_data, $old_data)
+		{
+			// do something
+		}
+
+		public function onUpdateError($new_data, $old_data, $id)
+		{
+			// do something
+		}
 	/*	
 		// optional
 		public function init()
@@ -723,21 +763,21 @@ class vstore_items_ui extends e_admin_ui
 		  'item_preview'       =>   array( 'title' => LAN_PREVIEW, 'type'=>'method', 'data'=>false, 'width'=>'5%', 'forced'=>1),
 		   'item_id' 			=>   array ( 'title' => LAN_ID, 			'data' => 'int', 	'width' => '5%', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 		  'item_code' 			=>   array ( 'title' => 'Code', 			'type' => 'text', 	'data' => 'str', 'width' => '2%', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'center', 'thclass' => 'center',  ),
-		  'item_name'			=>   array ( 'title' => LAN_TITLE, 			'type' => 'text', 	'data' => 'str', 'width' => 'auto', 'inline' => true, 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+		  'item_name'			=>   array ( 'title' => LAN_TITLE, 			'type' => 'text', 	'data' => 'str', 'width' => 'auto', 'inline' => true, 'help' => '', 'readParms' => '', 'writeParms' => array('size'=>'xxlarge'), 'class' => 'left', 'thclass' => 'left',  ),
 		  'item_desc' 			=>   array ( 'title' => 'Description', 		'type' => 'textarea', 	'data' => 'str', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => 'maxlength=250', 'class' => 'center', 'thclass' => 'center',  ),
 		  'item_cat' 			=>   array ( 'title' => 'Category', 		'type' => 'dropdown', 'data' => 'int', 'width' => 'auto', 'filter'=>true, 'batch'=>true, 'inline' => true, 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
-		  'item_pic' 			=>   array ( 'title' => 'Images', 			'type' => 'images', 'data' => 'array', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => 'video=1', 'class' => 'center', 'thclass' => 'center',  ),
+		  'item_pic' 			=>   array ( 'title' => 'Images/Videos', 			'type' => 'images', 'data' => 'array', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => 'video=1', 'class' => 'center', 'thclass' => 'center',  ),
 	 	  'item_files' 			=>   array ( 'title' => 'Files', 			'type' => 'files', 'tab'=>3, 'data' => 'array', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => 'video=1', 'class' => 'center', 'thclass' => 'center',  ),
 		  'item_price' 			=>   array ( 'title' => 'Price', 			'type' => 'text', 'data' => 'str', 'width' => 'auto', 'inline'=>true, 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'right', 'thclass' => 'right',  ),
-		  'item_shipping' 		=>   array ( 'title' => 'Shipping', 		'type' => 'method', 'data' => 'str', 'width' => 'auto',  'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'center', 'thclass' => 'center',  ),
+		  'item_shipping' 		=>   array ( 'title' => 'Shipping', 		'type' => 'text', 'data' => 'str', 'width' => 'auto',  'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'center', 'thclass' => 'center',  ),
 		  'item_details' 		=>   array ( 'title' => 'Details', 			'type' => 'bbarea', 'tab'=>1, 'data' => 'str', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'center', 'thclass' => 'center',  ),
 		  'item_reviews' 		=>   array ( 'title' => 'Reviews', 			'type' => 'textarea', 'tab'=>2, 'data' => 'str', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'center', 'thclass' => 'center',  ),
 		  'item_related' 		=>   array ( 'title' => 'Related', 			'type' => 'method', 'tab'=>2, 'data' => 'array', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => 'video=1', 'class' => 'center', 'thclass' => 'center',  ),
 	 
 		  'item_order' 			=>   array ( 'title' => LAN_ORDER, 			'type' => 'hidden', 'data' => 'int', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 		  'item_inventory' 		=>   array ( 'title' => 'Inventory', 		'type' => 'number', 'data' => 'int', 'width' => 'auto', 'inline'=>true, 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'right', 'thclass' => 'right',  ),
-		  'item_link' 			=>   array ( 'title' => 'External Link', 	'type' => 'text', 'data' => 'str', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'center', 'thclass' => 'center',  ),
-		  'item_download' 		=>   array ( 'title' => 'Download', 		'type' => 'number', 'data' => 'int', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'center', 'thclass' => 'center',  ),
+		  'item_link' 			=>   array ( 'title' => 'External Link', 	'type' => 'text', 'tab'=>3, 'data' => 'str', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'center', 'thclass' => 'center',  ),
+		  'item_download' 		=>   array ( 'title' => 'Download File', 	'type' => 'number', 'tab'=>3, 'data' => 'int', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'center', 'thclass' => 'center',  ),
 			
 		  'options' 			=>   array ( 'title' => 'Options', 			'type' => null, 'data' => null, 'width' => '5%', 'thclass' => 'right last', 'class' => 'right last', 'forced' => '1',  ),
 		);		
@@ -749,7 +789,10 @@ class vstore_items_ui extends e_admin_ui
 		// optional
 		public function init()
 		{
-			
+			if($this->getAction() != 'list')
+			{
+				$this->fields['item_preview']['type'] = null;
+			}
 		//	print_a($_POST);
 			
 			$data = e107::getDb()->retrieve('SELECT cat_id,cat_name FROM #vstore_cat', true);
@@ -765,6 +808,39 @@ class vstore_items_ui extends e_admin_ui
 			
 			
 		}
+
+
+		public function beforeCreate($new_data,$old_data)
+		{
+			return $new_data;
+		}
+
+		public function afterCreate($new_data, $old_data, $id)
+		{
+			// do something
+		}
+
+		public function beforeUpdate($new_data, $old_data, $id)
+		{
+			return $new_data;
+		}
+
+		public function afterUpdate($new_data, $old_data, $id)
+		{
+
+		}
+
+		public function onCreateError($new_data, $old_data)
+		{
+			// do something
+		}
+
+		public function onUpdateError($new_data, $old_data, $id)
+		{
+			// do something
+		}
+
+
 	/*	
 		
 		public function customPage()
@@ -792,19 +868,20 @@ class vstore_items_form_ui extends e_admin_form_ui
 			$img = $this->getController()->getListModel()->get('item_pic');
 
 			if($media = e107::unserialize($img))
-		{
-			foreach($media as $v)
 			{
-				if(!$tp->isVideo($v['path']))
+				foreach($media as $v)
 				{
-					return $tp->toImage($v['path'],array('w'=>80,'h'=>80));
+					if(!$tp->isVideo($v['path']))
+					{
+						return $tp->toImage($v['path'],array('w'=>80,'h'=>80));
+					}
 				}
 			}
-		}
 
 
 		}
-		return 'i';
+
+		return false;
 
 
 	}
