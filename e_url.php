@@ -39,6 +39,13 @@ class vstore_url // plugin-folder + '_url'
 			'sef'			=>  'vstore/cart/add/{item_id}',
 		);
 
+		$config['index'] = array(
+			'regex'			=> '^vstore\/?([\?].*)?\/?$',
+			'sef'			=> 'vstore/',
+			'redirect'		=> '{e_PLUGIN}vstore/vstore.php$1',
+
+		);
+
 
 		$config['category'] = array(
 			'regex'			=> '^vstore/([^\/]*)/?$',
@@ -53,12 +60,7 @@ class vstore_url // plugin-folder + '_url'
 
 		);
 		
-		$config['index'] = array(
-			'regex'			=> '^vstore/?',
-			'sef'			=> 'vstore/',
-			'redirect'		=> '{e_PLUGIN}vstore/vstore.php',
 
-		);
 		
 		return $config;
 	}

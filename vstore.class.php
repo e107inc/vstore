@@ -26,15 +26,17 @@ class vstore_plugin_shortcodes extends e_shortcode
 	protected $symbols = array();
 	protected $curSymbol = null;
 	protected $currency = null;
+	protected $displayCurrency = false;
 	
 	public function __construct()
 	{
 	 	$this->vpref = e107::pref('vstore');	
 				
 		$this->symbols = array('USD'=>'$','EUR'=>'€', 'CAN'=>'$');
-		
-		$this->curSymbol = vartrue($this->symbols[$this->vpref['currency']],'$'); 
-		$this->currency = $this->vpref['currency'];
+		$currency = !empty($this->vpref['currency']) ? $this->vpref['currency'] : 'USD';
+
+		$this->curSymbol = vartrue($this->symbols[$currency],'$');
+		$this->currency = ($this->displayCurrency === true) ? $currency : '';
 		
 	}	
 	
@@ -418,29 +420,46 @@ class vstore_plugin_shortcodes extends e_shortcode
 class vstore
 {
 	
-	protected 	$cartId = null;
+	protected 	$cartId             = null;
 	protected 	$sc;
-	protected 	$perPage = 6;
-	protected 	$categories = array(); // all categories;
-	protected 	$item = array(); // current item.
-	protected   $captionBase = "Vstore";
-	protected   $get = array();
-	protected   $post = array();
+	protected 	$perPage            = 9;
+	protected   $from               = 0;
+	protected 	$categories         = array(); // all categories;
+	protected 	$item               = array(); // current item.
+	protected   $captionBase        = "Vstore";
+	protected   $get                = array();
+	protected   $post               = array();
+	protected   $categoriesTotal    = 0;
 	
 	public function __construct()
 	{
 		$this->cartId = $this->getCartId();		
 		$this->sc = new vstore_plugin_shortcodes();	
-		$this->from = vartrue($_GET['frm'],0);	
-		
-		if(!$data = e107::getDb()->retrieve('SELECT * FROM #vstore_cat ORDER BY cat_order LIMIT 9', true))
+
+		$this->get = $_GET;
+		$this->post = $_POST;
+
+	}
+
+	function init()
+	{
+		// print_a($this->get);
+
+		$this->from = vartrue($this->get['frm'],0);
+
+		$query = 'SELECT SQL_CALC_FOUND_ROWS * FROM #vstore_cat ORDER BY cat_order LIMIT '.$this->from.",".$this->perPage;
+		if(!$data = e107::getDb()->retrieve($query, true))
 		{
 			e107::getMessage()->addInfo("No categories available");
 			return null;
 		}
 
+
+		$this->categoriesTotal = e107::getDb()->foundRows();
+
+
 		$categorySEF = array();
-		
+
 		foreach($data as $row)
 		{
 			$id = $row['cat_id'];
@@ -449,20 +468,15 @@ class vstore
 			$categorySEF[$sef] = $id;
 		}
 
-		$this->get = $_GET;
-		$this->post = $_POST;
-
 		if(!empty($this->get['catsef']))
 		{
 			$sef = $this->get['catsef'];
 			$this->get['cat'] = vartrue($categorySEF[$sef],0);
 		}
-		
-	}
 
-	function init()
-	{
-		// print_a($this->get);
+
+
+
 		
 		$ns = e107::getRender();
 		
@@ -668,13 +682,13 @@ class vstore
 			</div>
 		';
 
-/*
+$np = true;
 
 		if($np === true)
 		{
 			$nextprev = array(
 					'tmpl'			=>'bootstrap',
-					'total'			=> $count,
+					'total'			=> $this->categoriesTotal,
 					'amount'		=> intval($this->perPage),
 					'current'		=> $this->from,
 					'url'			=> e107::url('vstore','base')."?frm=[FROM]"
@@ -687,7 +701,7 @@ class vstore
 			$text .= $tp->parseTemplate("{NEXTPREV: ".$nextprev_parms."}",true);
 		}
 
-*/
+
 
 		return $text;
 		
@@ -698,13 +712,13 @@ class vstore
 	public function productList($category=1,$np=false,$templateID = 'list')
 	{
 		
-		if(!$data = e107::getDb()->retrieve('SELECT * FROM #vstore_items WHERE item_cat = '.intval($category).' ORDER BY item_order LIMIT '.$this->from.','.$this->perPage, true))
+		if(!$data = e107::getDb()->retrieve('SELECT SQL_CALC_FOUND_ROWS * FROM #vstore_items WHERE item_cat = '.intval($category).' ORDER BY item_order LIMIT '.$this->from.','.$this->perPage, true))
 		{
 			e107::getMessage()->addInfo("No products available in this category");
 			return null;
 		}
 		
-		$count = e107::getDb()->gen('SELECT * FROM #vstore_items WHERE item_cat = '.intval($category));
+		$count = e107::getDb()->foundRows();
 		
 		$tp = e107::getParser();
 

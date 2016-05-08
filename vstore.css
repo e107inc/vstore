@@ -10,3 +10,5 @@
 
 #vstore-cart-icon                           { }
 #vstore-cart-icon.active                    { color: white }
+
+.vstore-category-list  > .col-md-4:nth-child(3n+1) {  clear:both; }

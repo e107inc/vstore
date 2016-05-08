@@ -16,8 +16,9 @@
     {
         function __construct()
         {
-            require_once(e_PLUGIN.'vstore/vstore.class.php');
-			$vst = new vstore;
+          //  require_once(e_PLUGIN.'vstore/vstore.class.php');
+
+            $vst = e107::getSingleton('vstore',e_PLUGIN.'vstore/vstore.class.php');
 
 			$data = $vst->getCartData();
 
