@@ -476,23 +476,44 @@ class vstore
 
 
 
+		$this->process();
+		
 
 		
-		$ns = e107::getRender();
+
+
+
 		
+	}
+
+
+	private function process()
+	{
 		if(varset($this->post['cartQty']))
 		{
 			$this->updateCart('modify', $this->post['cartQty']);
 		}
-				
+
 		if(varset($this->post['cartRemove']))
 		{
 			$this->updateCart('remove', $this->post['cartRemove']);
-		}	
+		}
+
+		if(!empty($this->get['add']))
+		{
+			$this->addToCart($this->get['add']);
+		}
+
+	}
+
+
+	public function render()
+	{
+
+		$ns = e107::getRender();
 
 		if($this->get['add'])
 		{
-			$this->addToCart($this->get['add']);
 			$bread = $this->breadcrumb();
 			$text = $this->cartView();
 			$ns->tablerender($this->captionBase, $bread.$text, 'vstore-view-cart');
@@ -500,7 +521,7 @@ class vstore
 		}
 
 
-		
+
 		if(vartrue($this->get['mode']) == 'cart')
 		{
 			// print_a($this->post);
@@ -509,11 +530,11 @@ class vstore
 			$ns->tablerender($this->captionBase, $bread.$text, 'vstore-view-cart');
 			return null;
 		}
-			
-		
 
-		
-		
+
+
+
+
 		if($this->get['item'])
 		{
 			$text = $this->productView($this->get['item']);
@@ -521,26 +542,31 @@ class vstore
 			$ns->tablerender($this->captionBase, $bread.$text, 'vstore-product-view');
 			return null;
 		}
-		
-		
-		
+
+
+
 		if($this->get['cat'])
 		{
 			$text = $this->productList($this->get['cat'], true);
 			$bread = $this->breadcrumb();
 			$ns->tablerender($this->captionBase, $bread.$text, 'vstore-product-list');
 		}
-		else 
+		else
 		{
-			
-			$text = $this->categoryList(0, true);	
+
+			$text = $this->categoryList(0, true);
 			$bread = $this->breadcrumb();
 			$ns->tablerender($this->captionBase, $bread.$text, 'vstore-category-list');
 		}
-	
-		
+
+
+
 	}
-	
+
+
+
+
+
 	private function breadcrumb()
 	{
 		$frm = e107::getForm();
