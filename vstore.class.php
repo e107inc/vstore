@@ -516,7 +516,16 @@ class vstore
 		{
 			$bread = $this->breadcrumb();
 			$text = $this->cartView();
-			$ns->tablerender($this->captionBase, $bread.$text, 'vstore-view-cart');
+			$ns->tablerender($this->captionBase, $bread.$text, 'vstore-cart-view');
+			return null;
+		}
+
+		if(vartrue($this->get['mode']) == 'checkout')
+		{
+			// print_a($this->post);
+			$bread = $this->breadcrumb();
+			$text = $this->checkoutView();
+			$ns->tablerender($this->captionBase, $bread.$text, 'vstore-cart-list');
 			return null;
 		}
 
@@ -527,7 +536,7 @@ class vstore
 			// print_a($this->post);
 			$bread = $this->breadcrumb();
 			$text = $this->cartView();
-			$ns->tablerender($this->captionBase, $bread.$text, 'vstore-view-cart');
+			$ns->tablerender($this->captionBase, $bread.$text, 'vstore-cart-list');
 			return null;
 		}
 
@@ -594,6 +603,15 @@ class vstore
 		{
 			$array[] = array('url'=> null, 'text'=> "Shopping Cart");
 		}
+
+		if($this->get['mode'] == 'checkout')
+		{
+			$array[] = array('url'=> e107::url('vstore','cart'), 'text'=> "Shopping Cart");
+			$array[] = array('url'=> null, 'text'=> "Checkout");
+
+		}
+
+
 		
 		if(ADMIN)
 		{
@@ -604,6 +622,17 @@ class vstore
 		return $frm->breadcrumb($array);	
 		
 	}
+
+
+	private function checkoutView()
+	{
+		return "checkout goes here";
+
+
+	}
+
+
+
 	
 	public function setPerPage($num)
 	{
@@ -888,8 +917,9 @@ $np = true;
 		$sql = e107::getDb();
 		
 		// Item Exists. 
-		if($rec = $sql->gen('SELECT cart_id FROM #vstore_cart WHERE cart_session = "'.$this->cartId.'" AND cart_item = '.intval($id).' LIMIT 1'))
+		if($rec = $sql->retrieve('SELECT cart_id FROM #vstore_cart WHERE cart_session = "'.$this->cartId.'" AND cart_item = '.intval($id).' LIMIT 1'))
 		{
+
 			if($sql->update('vstore_cart', 'cart_qty = cart_qty +1 WHERE cart_id = '.$rec))
 			{
 				return true;
@@ -962,7 +992,7 @@ $np = true;
 		                        <td>
 		                        <div class="media">
 		                        	<div class="media-left">
-		                            <a class="media-object" href="{ITEM_URL}">{ITEM_PIC}</a>
+		                            <a href="{ITEM_URL}">{ITEM_PIC: class=media-object}</a>
 		                           </div>
 		                             <div class="media-body">
 		                                <h4 class="media-heading"><a href="{ITEM_URL}">{ITEM_NAME}</a></h4>
@@ -972,7 +1002,7 @@ $np = true;
 		                        </div></td>
 		                         <td class="col-sm-1 col-md-1 text-center">{CART_REMOVEBUTTON}</td>
 		                        <td class="col-sm-1 col-md-1 text-center">{CART_QTY=edit} </td>
-		                        <td class="col-sm-1 col-md-1 text-right"><strong>{CART_PRICE}</strong></td>
+		                        <td class="col-sm-1 col-md-1 text-right">{CART_PRICE}</td>
 		                        <td class="col-sm-1 col-md-1 text-right"><strong>{CART_TOTAL}</strong></td>
 
 		                    </tr>
