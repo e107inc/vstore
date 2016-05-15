@@ -17,6 +17,11 @@ $( ".cart-qty" ).keyup(function() {
 
 ','jquery');
 
+require_once('vendor/autoload.php');
+
+
+use Omnipay\Omnipay;
+
 
 class vstore_plugin_shortcodes extends e_shortcode
 {
@@ -430,7 +435,16 @@ class vstore
 	protected   $get                = array();
 	protected   $post               = array();
 	protected   $categoriesTotal    = 0;
-	
+	protected   $action             = array();
+	protected   $pref               = array();
+
+	protected   $gateways           = array(
+		'paypal'  => array('title'=>'Paypal', 'icon'=>'fa-paypal'),
+		'amazon'  => array('title'=> 'Amazon', 'icon'=>'fa-amazon')
+	);
+
+
+
 	public function __construct()
 	{
 		$this->cartId = $this->getCartId();		
@@ -439,7 +453,39 @@ class vstore
 		$this->get = $_GET;
 		$this->post = $_POST;
 
+		$pref = e107::pref('vstore');
+
+		$active = array();
+
+		foreach($this->gateways as $k=>$icon)
+		{
+			$key = $k."_active";
+			if(!empty($pref[$key]))
+			{
+				$active[$k] = $this->getGatewayIcon($k);
+			}
+
+		}
+
+		foreach($pref as $k=>$v)
+		{
+			list($gateway,$key) = explode("_", $k,2);
+
+			if(isset($active[$gateway]))
+			{
+				if($key == 'active') continue;
+				$this->pref[$gateway][$key] = $v;
+
+			}
+
+		}
+
+		$this->active = $active;
 	}
+
+
+
+
 
 	function init()
 	{
@@ -489,6 +535,12 @@ class vstore
 
 	private function process()
 	{
+
+		if(!empty($this->post['gateway']))
+		{
+			$this->renderGateway($this->post['gateway']);
+		}
+
 		if(varset($this->post['cartQty']))
 		{
 			$this->updateCart('modify', $this->post['cartQty']);
@@ -503,6 +555,8 @@ class vstore
 		{
 			$this->addToCart($this->get['add']);
 		}
+
+
 
 	}
 
@@ -586,9 +640,7 @@ class vstore
 		
 		if($this->get['cat'] || $this->get['item'])
 		{
-		//	$array[] = array('url'=> '/vstore', 'text'=>'Categories');	
 			$id = ($this->get['item']) ? $this->item['item_cat'] : intval($this->get['cat']);
-		//	$url = ($this->get['item']) ?'/vstore/?cat='.$this->categories[$id]['cat_id'] : null;
 			$url = ($this->get['item']) ? e107::url('vstore','category', $this->categories[$id]) : null;
 			$array[] = array('url'=> $url, 'text'=>$this->categories[$id]['cat_name']);	
 		}
@@ -624,14 +676,152 @@ class vstore
 	}
 
 
+	private function getActiveGateways()
+	{
+
+
+		return $this->active;
+
+	}
+
+
+
 	private function checkoutView()
 	{
-		return "checkout goes here";
+		$active = $this->getActiveGateways();
+
+		if(!empty($active))
+		{
+			$text = e107::getForm()->open('gateway-select','post');
+			$text .= "<div class='vstore-gateway-list row'>";
+
+			foreach($active as $gateway => $icon)
+			{
+
+					$text .= "
+						<div class='col-md-4'>
+						<button class='btn btn-default btn-block' name='gateway' type='submit' value='".$gateway."'>".$icon."
+						<h4>".$this->gateways[$gateway]['title']."</h4>
+						</button>
+
+						</div>";
+
+
+			}
+
+			$text .= "</div>";
+			$text .= e107::getForm()->close();
+
+			return $text;
+		}
+
+		return "No Payment Options Set";
 
 
 	}
 
 
+	//  // help http://stackoverflow.com/questions/20756067/omnipay-paypal-integration-with-laravel-4
+	// https://www.youtube.com/watch?v=EvfFN0-aBmI
+	private function renderGateway($type)
+	{
+		if(empty($type))
+		{
+			e107::getMessage()->addError("Invalid Payment Type");
+			return false;
+		}
+
+
+		if($type == 'amazon')
+		{
+			$gateway = Omnipay::create('AmazonPayments');
+			$defaults = $gateway->getDefaultParameters();
+
+		//	e107::getDebug()->log($this->pref['paypal']);
+
+			// print_a($defaults);
+
+			e107::getDebug()->log($defaults);
+
+		}
+
+
+
+
+		if($type == 'paypal')
+		{
+			$gateway = Omnipay::create('PayPal_Express');
+			$gateway->setTestMode(true);
+			$gateway->setUsername($this->pref['paypal']['username']);
+			$gateway->setPassword($this->pref['paypal']['password']);
+			$gateway->setSignature($this->pref['paypal']['signature']);
+
+			/*
+				$init = array(
+					'username'=> $this->pref['paypal']['username'],
+					'password'  => $this->pref['paypal']['password'],
+					'testMode'  =>true,
+					'signature' => $this->pref['paypal']['signature']
+
+				);
+
+				$gateway->initialize($init);
+
+	*/
+
+
+			$defaults = $gateway->getDefaultParameters();
+
+		//	e107::getDebug()->log($this->pref['paypal']);
+
+			print_a($defaults);
+
+			e107::getDebug()->log($defaults);
+
+			return;
+
+			$response = $gateway->purchase(
+                    array(
+                        'cancelUrl' => e107::url('vstore', 'cancel', null, array('mode'=>'full')),
+                        'returnUrl' => e107::url('vstore', 'return', null, array('mode'=>'full')),
+                        'amount' => '25.00',
+                        'currency' => 'USD'
+                    )
+            );
+
+
+
+			/*if ($response->isSuccessful()) {
+
+			    // Payment was successful
+			    print_a($response);
+
+			} else*/
+			if ($response->isRedirect()) {
+
+			    // Redirect to offsite payment gateway
+			    $response->redirect();
+
+			}
+			else
+			{
+			    // payment failed: display message to customer
+			    $message = $response->getMessage();
+			    e107::getMessage()->addError($message);
+			}
+
+		}
+
+
+	}
+
+
+	private function getGatewayIcon($type)
+	{
+		$text = !empty($this->gateways[$type]) ? $this->gateways[$type]['icon'] : '';
+		return e107::getParser()->toGlyph($text, array('size'=>'5x'));
+
+	}
 
 	
 	public function setPerPage($num)

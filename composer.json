@@ -1,6 +1,7 @@
 {
     "require": {
         "omnipay/paypal": "2.5.0",
-        "lemonstand/omnipay-amazon": "2.0.x-dev"
+        "lemonstand/omnipay-amazon": "2.0.x-dev",
+        "alfaproject/omnipay-skrill": "2.0.x-dev"
     }
 }

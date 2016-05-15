@@ -18,19 +18,37 @@ class vstore_url // plugin-folder + '_url'
 	{
 		$config = array();
 
+		$config['cancel'] = array(
+
+			'regex'			=> '^vstore/checkout/cancel/?$',
+			'redirect'		=> '{e_PLUGIN}vstore/vstore.php?mode=cancel',
+			'sef'			=>  'vstore/checkout/cancel/',
+		);
+
+
+		$config['return'] = array(
+
+			'regex'			=> '^vstore/checkout/return/?$',
+			'redirect'		=> '{e_PLUGIN}vstore/vstore.php?mode=return',
+			'sef'			=>  'vstore/checkout/return/',
+		);
+
+
 		$config['checkout'] = array(
 
 			'regex'			=> '^vstore/checkout/?$',
 			'redirect'		=> '{e_PLUGIN}vstore/vstore.php?mode=checkout',
 			'sef'			=>  'vstore/checkout/',
 		);
-	
+
+
 		$config['cart'] = array(
 			
 			'regex'			=> '^vstore/cart/?$',
 			'redirect'		=> '{e_PLUGIN}vstore/vstore.php?mode=cart',
 			'sef'			=>  'vstore/cart/',
 		);
+
 
 		$config['addtocart'] = array(
 

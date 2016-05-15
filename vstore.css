@@ -5,6 +5,8 @@
 .vstore-product-list .item-description      { height:100px;  }
 .vstore-product-list .item-price            { font-size: 1.3em; padding-top: 2px; display: block; }
 
+.vstore-gateway-list .btn                   { padding-top:30px; padding-bottom:20px }
+
 .vstore-product-view .item-price h3         { margin-top:5px; }
 .vstore-product-view p                      { margin-bottom:20px; }
 

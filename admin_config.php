@@ -70,13 +70,15 @@ class vstore_admin extends e_admin_dispatcher
 		'main/list'			=> array('caption'=> "Customers", 'perm' => 'P'),
 			
 	
-		'main/prefs' 		=> array('caption'=> LAN_PREFS, 'perm' => 'P'),	
+		'main/prefs' 		=> array('caption'=> LAN_PREFS, 'perm' => 'P'),
+
+		'cart/prefs'		=> array('caption'=> "Payment Gateways", 'perm' => 'P'),
 
 		// 'main/custom'		=> array('caption'=> 'Custom Page', 'perm' => 'P')
 	);
 
 	protected $adminMenuAliases = array(
-		'main/edit'	=> 'main/list'				
+		'products/edit'	=> 'products/list'
 	);	
 	
 	protected $menuTitle = 'Vstore';
@@ -134,13 +136,14 @@ class vstore_customer_ui extends e_admin_ui
 		
 		protected $fieldpref = array('cust_datestamp', 'cust_title');
 		
-		
+	//	protected $preftabs = array('Basic', 'Paypal');
 		
 	
 		protected $prefs = array(	
 			'currency'		=> array('title'=> 'Currency', 'type'=>'dropdown', 'data' => 'string','help'=>'Select a currency'),
 			'shipping'		=> array('title'=> 'Calculate Shipping', 'type'=>'boolean', 'data' => 'int','help'=>'Including shipping calculation at checkout.'),
-			'howtoorder'	=> array('title'=>'How to order', 'type'=>'bbarea', 'help'=>'Enter how-to-order info.')
+			'howtoorder'	=> array('title'=>'How to order', 'type'=>'bbarea', 'help'=>'Enter how-to-order info.'),
+
 		); 
 
 	
@@ -407,16 +410,39 @@ class vstore_cart_ui extends e_admin_ui
 		);		
 		
 		protected $fieldpref = array();
-		
-	
-	/*	
+
+
+		protected $preftabs = array('Paypal', 'Amazon', 'Skrill');
+
+
+		protected $prefs = array(
+			'paypal_active'         => array('title'=>"Paypal Payments", 'type'=>'boolean', 'tab'=>0, 'data'=>'int', 'help'=>''),
+			'paypal_username'       => array('title'=>"Paypal Username", 'type'=>'text', 'tab'=>0, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
+			'paypal_password'       => array('title'=>"Paypal Password", 'type'=>'text', 'tab'=>0, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
+			'paypal_signature'      => array('title'=>"Paypal Signature", 'type'=>'text', 'tab'=>0, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
+
+			'amazon_active'         => array('title'=>"Amazon Payments", 'type'=>'boolean', 'tab'=>1, 'data'=>'int', 'help'=>''),
+			'amazon_merchant_id'    => array('title'=>"Amazon Merchant ID", 'type'=>'text', 'tab'=>1, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
+			'amazon_secret_key'     => array('title'=>"Amazon Secret Key", 'type'=>'text', 'tab'=>1, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
+			'amazon_region'         => array('title'=>"Amazon Region", 'type'=>'dropdown', 'tab'=>1, 'data'=>'str', 'writeParms'=>array('optArray'=>array('us'=>'USA','de'=>"Germany",'uk'=>"United Kingdom",'jp'=>"Japan")), 'help'=>''),
+
+			'skrill_active'         => array('title'=>"Skrill Payments", 'type'=>'boolean', 'tab'=>2, 'data'=>'int', 'help'=>''),
+			'skrill_email'          => array('title'=>"Skrill Email", 'type'=>'text', 'tab'=>2, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
+		);
+
+/*
+ * merchant_id 	Default : null
+Access Key 	access_key 	Default : null
+Secret Key 	secret_key 	Default : null
+Region 	region
+ */
 		// optional
 		public function init()
 		{
 			
 		}
 	
-		
+	/*
 		public function customPage()
 		{
 			$ns = e107::getRender();
@@ -764,7 +790,7 @@ class vstore_items_ui extends e_admin_ui
 		   'item_id' 			=>   array ( 'title' => LAN_ID, 			'data' => 'int', 	'width' => '5%', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 		  'item_code' 			=>   array ( 'title' => 'Code', 			'type' => 'text', 'inline'=>true,	'data' => 'str', 'width' => '2%', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'center', 'thclass' => 'center',  ),
 		  'item_name'			=>   array ( 'title' => LAN_TITLE, 			'type' => 'text', 	'data' => 'str', 'width' => 'auto', 'inline' => true, 'help' => '', 'readParms' => '', 'writeParms' => array('size'=>'xxlarge'), 'class' => 'left', 'thclass' => 'left',  ),
-		  'item_desc' 			=>   array ( 'title' => 'Description', 		'type' => 'textarea', 	'data' => 'str', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => 'maxlength=250', 'class' => 'center', 'thclass' => 'center',  ),
+		  'item_desc' 			=>   array ( 'title' => 'Description', 		'type' => 'textarea', 	'data' => 'str', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => array('size'=>'xxlarge','maxlength'=>250), 'class' => 'center', 'thclass' => 'center',  ),
 		  'item_cat' 			=>   array ( 'title' => 'Category', 		'type' => 'dropdown', 'data' => 'int', 'width' => 'auto', 'filter'=>true, 'batch'=>true, 'inline' => true, 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 		  'item_pic' 			=>   array ( 'title' => 'Images/Videos', 			'type' => 'images', 'data' => 'array', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => 'video=1', 'class' => 'center', 'thclass' => 'center',  ),
 	 	  'item_files' 			=>   array ( 'title' => 'Files', 			'type' => 'files', 'tab'=>3, 'data' => 'array', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => 'video=1', 'class' => 'center', 'thclass' => 'center',  ),
