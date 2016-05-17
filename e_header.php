@@ -18,6 +18,11 @@
         {
           //  require_once(e_PLUGIN.'vstore/vstore.class.php');
 
+            if(e_ADMIN_AREA === true)
+            {
+                  return false;
+            }
+
             $vst = e107::getSingleton('vstore',e_PLUGIN.'vstore/vstore.class.php');
 
 			$data = $vst->getCartData();

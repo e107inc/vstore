@@ -469,13 +469,16 @@ class vstore
 
 		foreach($pref as $k=>$v)
 		{
-			list($gateway,$key) = explode("_", $k,2);
-
-			if(isset($active[$gateway]))
+			if(strpos($k,"_")!==false)
 			{
-				if($key == 'active') continue;
-				$this->pref[$gateway][$key] = $v;
+				list($gateway,$key) = explode("_", $k,2);
 
+				if(isset($active[$gateway]))
+				{
+					if($key == 'active') continue;
+					$this->pref[$gateway][$key] = $v;
+
+				}
 			}
 
 		}
