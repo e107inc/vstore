@@ -45,7 +45,8 @@ CREATE TABLE vstore_cart (
 
 
 CREATE TABLE vstore_cat (
-  `cat_id` int(11) NOT NULL AUTO_INCREMENT,
+  `cat_id` int(5) NOT NULL AUTO_INCREMENT,
+  `cat_parent` int(5) NOT NULL DEFAULT '0',
   `cat_name` varchar(250) DEFAULT NULL,
   `cat_description` varchar(250) DEFAULT NULL,
   `cat_sef` varchar(127) DEFAULT NULL,

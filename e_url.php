@@ -64,6 +64,12 @@ class vstore_url // plugin-folder + '_url'
 
 		);
 
+		$config['subcategory'] = array(
+			'regex'			=> '^vstore/([^\/]*)/([^\/]*)/?$',
+			'redirect'		=> '{e_PLUGIN}vstore/vstore.php?catsef=$2',
+			'sef'			=> 'vstore/{cat_sef}/{subcat_sef}'
+		);
+
 
 		$config['category'] = array(
 			'regex'			=> '^vstore/([^\/]*)/?$',

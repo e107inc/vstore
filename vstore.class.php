@@ -32,6 +32,7 @@ class vstore_plugin_shortcodes extends e_shortcode
 	protected $curSymbol = null;
 	protected $currency = null;
 	protected $displayCurrency = false;
+	protected $categories = array();
 	
 	public function __construct()
 	{
@@ -43,7 +44,12 @@ class vstore_plugin_shortcodes extends e_shortcode
 		$this->curSymbol = vartrue($this->symbols[$currency],'$');
 		$this->currency = ($this->displayCurrency === true) ? $currency : '';
 		
-	}	
+	}
+
+	function setCategories($data)
+	{
+		$this->categories = $data;
+	}
 	
 	
 	function sc_item_id($parm=null)
@@ -227,7 +233,29 @@ class vstore_plugin_shortcodes extends e_shortcode
 	
 	function sc_cat_url($parm=null)
 	{
-		return e107::url('vstore','category', $this->var);
+
+		$urlData    = $this->var;
+		$route      = 'category';
+
+		if($this->var['cat_parent'] != 0 )
+		{
+			$urlData['subcat_name'] = $this->var['cat_name'];
+			$urlData['subcat_sef']  = $this->var['cat_sef'];
+			$urlData['subcat_id']   = $this->var['cat_id'];
+
+			$pid    = $this->var['cat_parent'];
+			$parent = $this->categories[$pid];
+
+			$urlData['cat_name']    = $parent['cat_name'];
+			$urlData['cat_id']      = $parent['cat_id'];
+			$urlData['cat_sef']     = $parent['cat_sef'];
+
+			$route = 'subcategory';
+		}
+
+		e107::getDebug()->log($urlData);
+
+		return e107::url('vstore',$route, $urlData);
 	}
 	
 		
@@ -472,6 +500,7 @@ class vstore
 			$this->categories[$id] = $row;
 			$sef = vartrue($row['cat_sef'],'--undefined--');
 			$this->categorySEF[$sef] = $id;
+
 		}
 
 
@@ -610,9 +639,18 @@ class vstore
 
 		if($this->get['cat'])
 		{
+			$subCategoryText = $this->categoryList($this->get['cat'],false);
+			{
+			    $subCategoryText .= "<hr />";
+
+			}
+
+
 			$text = $this->productList($this->get['cat'], true);
 			$bread = $this->breadcrumb();
-			$ns->tablerender($this->captionBase, $bread.$text, 'vstore-product-list');
+			$ns->tablerender($this->captionBase, $bread. $subCategoryText.$text, 'vstore-product-list');
+
+
 		}
 		else
 		{
@@ -884,19 +922,12 @@ class vstore
 	public function categoryList($parent=0,$np=false)
 	{
 		
-		
-	//	if(!$data = e107::getDb()->retrieve('SELECT * FROM #vstore_cat ORDER BY cat_order LIMIT 9', true))
-	//	{
-	//		e107::getMessage()->addInfo("No categories available");
-		//	return;
-	//	}
 		$this->from = vartrue($this->get['frm'],0);
 
-		$query = 'SELECT * FROM #vstore_cat ORDER BY cat_order LIMIT '.$this->from.",".$this->perPage;
+		$query = 'SELECT * FROM #vstore_cat WHERE cat_parent = '.$parent.' ORDER BY cat_order LIMIT '.$this->from.",".$this->perPage;
 		if(!$data = e107::getDb()->retrieve($query, true))
 		{
-			e107::getMessage()->addInfo("No categories available");
-			return null;
+			return false;
 		}
 
 		
@@ -922,7 +953,7 @@ class vstore
                            </div>
                     </div>';
 					
-	
+		$this->sc->setCategories($this->categories);
 		
 		foreach($data as $row)
 		{
@@ -936,7 +967,6 @@ class vstore
 			</div>
 		';
 
-$np = true;
 
 		if($np === true)
 		{
