@@ -430,6 +430,7 @@ class vstore
 	protected 	$perPage            = 9;
 	protected   $from               = 0;
 	protected 	$categories         = array(); // all categories;
+	protected   $categorySEF        = array();
 	protected 	$item               = array(); // current item.
 	protected   $captionBase        = "Vstore";
 	protected   $get                = array();
@@ -454,6 +455,28 @@ class vstore
 		$this->post = $_POST;
 
 		$pref = e107::pref('vstore');
+
+
+		// get all category data.
+		$query = 'SELECT * FROM #vstore_cat ';
+		if(!$data = e107::getDb()->retrieve($query, true))
+		{
+
+		}
+
+		$this->categoriesTotal = count($data);
+
+		foreach($data as $row)
+		{
+			$id = $row['cat_id'];
+			$this->categories[$id] = $row;
+			$sef = vartrue($row['cat_sef'],'--undefined--');
+			$this->categorySEF[$sef] = $id;
+		}
+
+
+
+
 
 		$active = array();
 
@@ -493,37 +516,11 @@ class vstore
 	function init()
 	{
 		// print_a($this->get);
-
-		$this->from = vartrue($this->get['frm'],0);
-
-		$query = 'SELECT SQL_CALC_FOUND_ROWS * FROM #vstore_cat ORDER BY cat_order LIMIT '.$this->from.",".$this->perPage;
-		if(!$data = e107::getDb()->retrieve($query, true))
-		{
-			e107::getMessage()->addInfo("No categories available");
-			return null;
-		}
-
-
-		$this->categoriesTotal = e107::getDb()->foundRows();
-
-
-		$categorySEF = array();
-
-		foreach($data as $row)
-		{
-			$id = $row['cat_id'];
-			$this->categories[$id] = $row;
-			$sef = vartrue($row['cat_sef'],'--undefined--');
-			$categorySEF[$sef] = $id;
-		}
-
 		if(!empty($this->get['catsef']))
 		{
 			$sef = $this->get['catsef'];
-			$this->get['cat'] = vartrue($categorySEF[$sef],0);
+			$this->get['cat'] = vartrue($this->categorySEF[$sef],0);
 		}
-
-
 
 		$this->process();
 		
@@ -893,8 +890,17 @@ class vstore
 	//		e107::getMessage()->addInfo("No categories available");
 		//	return;
 	//	}
+		$this->from = vartrue($this->get['frm'],0);
+
+		$query = 'SELECT * FROM #vstore_cat ORDER BY cat_order LIMIT '.$this->from.",".$this->perPage;
+		if(!$data = e107::getDb()->retrieve($query, true))
+		{
+			e107::getMessage()->addInfo("No categories available");
+			return null;
+		}
+
 		
-		$data = $this->categories;
+	//	$data = $this->categories;
 		
 		$tp = e107::getParser();
 
@@ -962,8 +968,8 @@ $np = true;
 		
 		if(!$data = e107::getDb()->retrieve('SELECT SQL_CALC_FOUND_ROWS * FROM #vstore_items WHERE item_cat = '.intval($category).' ORDER BY item_order LIMIT '.$this->from.','.$this->perPage, true))
 		{
-			e107::getMessage()->addInfo("No products available in this category");
-			return null;
+
+			return e107::getMessage()->addInfo("No products available in this category")->render();
 		}
 		
 		$count = e107::getDb()->foundRows();
