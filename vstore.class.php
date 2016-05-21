@@ -466,6 +466,7 @@ class vstore
 	protected   $categoriesTotal    = 0;
 	protected   $action             = array();
 	protected   $pref               = array();
+	protected   $parentData         = array();
 
 	protected   $gateways           = array(
 		'paypal'  => array('title'=>'Paypal', 'icon'=>'fa-paypal'),
@@ -639,10 +640,9 @@ class vstore
 
 		if($this->get['cat'])
 		{
-			$subCategoryText = $this->categoryList($this->get['cat'],false);
+			if($subCategoryText = $this->categoryList($this->get['cat'],false))
 			{
 			    $subCategoryText .= "<hr />";
-
 			}
 
 
@@ -678,6 +678,16 @@ class vstore
 		
 		if($this->get['cat'] || $this->get['item'])
 		{
+			$c = $this->get['cat'];
+			$cp = $this->categories[$c]['cat_parent'] ;
+
+			if(!empty($cp))
+			{
+				$pid = $this->categories[$cp]['cat_id'];
+				$url = e107::url('vstore','category', $this->categories[$pid]);
+				$array[] = array('url'=> $url, 'text'=>$this->categories[$pid]['cat_name']);
+			}
+
 			$id = ($this->get['item']) ? $this->item['item_cat'] : intval($this->get['cat']);
 			$url = ($this->get['item']) ? e107::url('vstore','category', $this->categories[$id]) : null;
 			$array[] = array('url'=> $url, 'text'=>$this->categories[$id]['cat_name']);	
@@ -930,7 +940,7 @@ class vstore
 			return false;
 		}
 
-		
+
 	//	$data = $this->categories;
 		
 		$tp = e107::getParser();
@@ -995,7 +1005,9 @@ class vstore
 	
 	public function productList($category=1,$np=false,$templateID = 'list')
 	{
-		
+
+
+
 		if(!$data = e107::getDb()->retrieve('SELECT SQL_CALC_FOUND_ROWS * FROM #vstore_items WHERE item_cat = '.intval($category).' ORDER BY item_order LIMIT '.$this->from.','.$this->perPage, true))
 		{
 
