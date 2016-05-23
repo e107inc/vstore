@@ -493,8 +493,8 @@ class vstore
 
 		}
 
-		$this->categoriesTotal = count($data);
 
+		$count = 0;
 		foreach($data as $row)
 		{
 			$id = $row['cat_id'];
@@ -502,8 +502,13 @@ class vstore
 			$sef = vartrue($row['cat_sef'],'--undefined--');
 			$this->categorySEF[$sef] = $id;
 
+			if(empty($row['cat_parent']))
+			{
+				$count++;
+			}
 		}
 
+		$this->categoriesTotal = $count;
 
 
 
