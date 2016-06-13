@@ -705,7 +705,17 @@ class vstore_cat_ui extends e_admin_ui
 			{
 				$new_data['cat_sef'] = eHelper::title2sef($new_data['cat_name'], 'dashl');
 			}
+			else 
+			{
+				$new_data['cat_sef'] = eHelper::secureSef($new_data['cat_sef']);
+			}			
+			$sef = e107::getParser()->toDB($new_data['cat_sef']);
 
+			if(e107::getDb()->count('vstore_cat', '(*)', "cat_sef='{$sef}'"))
+			{
+				e107::getMessage()->addError('Your SEF URL already exists');
+				return false;
+			}
 			return $new_data;
 		}
 
@@ -719,6 +729,13 @@ class vstore_cat_ui extends e_admin_ui
 			if(!empty($new_data['cat_name']) && isset($new_data['cat_sef']) && empty($new_data['cat_sef']))
 			{
 				$new_data['cat_sef'] = eHelper::title2sef($new_data['cat_name'], 'dashl');
+			}
+			
+			$sef = e107::getParser()->toDB($new_data['cat_sef']);
+			if(e107::getDb()->count('vstore_cat', '(*)', "cat_sef='{$sef}' AND cat_id!=".intval($id)))
+			{
+				e107::getMessage()->addError('Your SEF URL already exists');
+				return false;
 			}
 
 			return $new_data;
