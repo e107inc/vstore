@@ -9,6 +9,11 @@ if (!getperms('P'))
 	exit;
 }
 
+e107::css('inline',"
+
+	img.level-1 { margin:0 5px 0 15px; }
+
+");
 
 
 class vstore_admin extends e_admin_dispatcher
@@ -673,26 +678,35 @@ class vstore_cat_ui extends e_admin_ui
 		protected $perPage			= 10; 
 		protected $batchDelete		= true;
 		protected $batchCopy		= true;
+
+		protected $sortField		= 'cat_order';
+		protected $sortParent       = 'cat_parent';
+		protected $orderStep		= 100;
 	//	protected $sortField		= 'somefield_order';
 	//	protected $orderStep		= 10;
 	//	protected $tabs			= array('Tabl 1','Tab 2'); // Use 'tab'=>0  OR 'tab'=>1 in the $fields below to enable. 
 		
 	//	protected $listQry      	= "SELECT * FROM #tableName WHERE field != '' "; // Example Custom Query. LEFT JOINS allowed. Should be without any Order or Limit.
 	
-		protected $listOrder		= 'cat_id DESC';
+		protected $listQry          = "SELECT a. *, CASE WHEN a.cat_parent = 0 THEN a.cat_order ELSE b.cat_order + (( a.cat_order)/1000) END AS Sort FROM `#vstore_cat` AS a LEFT JOIN `#vstore_cat` AS b ON a.cat_parent = b.cat_id ";
+		protected $listOrder		= 'Sort,cat_order ';
+
+
+
+	//	protected $listOrder		= 'cat_id DESC';
 	
 		protected $fields 		= array (  
 			'checkboxes' 		=>   array ( 'title' => '', 'type' => null, 'data' => null, 'width' => '5%', 'thclass' => 'center', 'forced' => '1', 'class' => 'center', 'toggle' => 'e-multiselect',  ),
 		  	'cat_id' 			=>   array ( 'title' => LAN_ID, 'data' => 'int', 'width' => '5%', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
-		  	'cat_name' 			=>   array ( 'title' => LAN_TITLE, 'type' => 'text', 'data' => 'str', 'width' => 'auto', 'inline' => true, 'help' => '', 'readParms' => '', 'writeParms' => array('size'=>'xxlarge'), 'class' => 'left', 'thclass' => 'left',  ),
+		  	'cat_name' 			=>   array ( 'title' => LAN_TITLE, 'type' => 'method', 'data' => 'str', 'width' => 'auto', 'inline' => true, 'help' => '', 'readParms' => '', 'writeParms' => array('size'=>'xxlarge'), 'class' => 'left', 'thclass' => 'left',  ),
 		    'cat_description' 	=>   array ( 'title' => LAN_DESCRIPTION, 'type' => 'textarea', 'data' => 'str', 'width' => '40%', 'help' => '', 'readParms' => '', 'writeParms' => array('maxlength' => 220, 'size'=>'xxlarge'), 'class' => 'left', 'thclass' => 'left',  ),
 		  	'cat_sef' 			=>   array ( 'title' => LAN_SEFURL, 'type' => 'text', 'data' => 'str', 'width' => 'auto', 'inline' => true, 'help' => '', 'readParms' => '', 'writeParms' => array('size'=>'xxlarge','sef'=>'cat_name'), 'class' => 'left', 'thclass' => 'left',  ),
-			'cat_parent'        =>  array('title'=>"Parent", 'type'=>'dropdown', 'data'=>'int', 'width'=>'auto'),
+			'cat_parent'        =>  array('title'=>"Parent", 'type'=>'dropdown', 'data'=>'int', 'inline'=>true,  'width'=>'auto'),
 		  	'cat_image' 		=>   array ( 'title' => LAN_IMAGE, 'type' => 'image', 'data' => 'str', 'width' => '40%', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),	
 		 	'cat_info' 			=>   array ( 'title' => "Details", 'type' => 'bbarea', 'data' => 'str', 'width' => '40%', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 		  	'cat_class' 		=>   array ( 'title' => LAN_USERCLASS, 'type' => 'userclass', 'data' => 'str', 'width' => 'auto', 'batch' => true, 'filter' => true, 'inline' => true, 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
-		  	'cat_order' 		=>   array ( 'title' => LAN_ORDER, 'type' => 'hidden', 'data' => 'int', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
-		  	'options' 			=>   array ( 'title' => 'Options', 'type' => null, 'data' => null, 'width' => '10%', 'thclass' => 'center last', 'class' => 'center last', 'forced' => '1',  ),
+		  	'cat_order' 		=>   array ( 'title' => LAN_ORDER, 'type' => 'text', 'data' => 'int', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+		  	'options' 			=>   array ( 'title' => 'Options', 'type' => null, 'data' => null, 'width' => '10%', 'thclass' => 'center last', 'class' => 'center last', 'forced' => '1', 'sort'=>1  ),
 		);		
 		
 		protected $fieldpref = array('cat_name', 'cat_sef', 'cat_class');
@@ -739,9 +753,50 @@ class vstore_cat_ui extends e_admin_ui
 			// do something
 		}
 
+
+				// Correct bad ordering based on parent/child relationship.
+		private function checkOrder()
+		{
+			$sql = e107::getDb();
+		//	$sql2 = e107::getDb('sql3');
+			$count = $sql->select('vstore_cat', 'cat_id', 'cat_order = 0');
+
+			if($count > 1)
+			{
+				$data = $sql->retrieve("SELECT cat_id,cat_name,cat_parent,cat_order FROM `#vstore_cat` ORDER BY COALESCE(NULLIF(cat_parent,0), cat_id), cat_parent > 0, cat_order ",true);
+
+				$c = 0;
+				$parent = 1;
+				foreach($data as $row)
+				{
+
+
+					if(empty($row['cat_parent']))
+					{
+
+						$c = $parent * 100;
+						//$c = ($c + 50) / 100 * 100;
+						$parent++;
+					}
+					else
+					{
+						$c = $c+1;
+					}
+					
+					$sql->update('vstore_cat', 'cat_order = '.intval($c).' WHERE cat_id = '.intval($row['cat_id']).' LIMIT 1');
+				}
+
+
+			}
+
+
+		}
+
 		// optional
 		public function init()
 		{
+			$this->checkOrder();
+
 			$data = e107::getDb()->retrieve('vstore_cat','cat_id,cat_name', "cat_parent = 0", true);
 
 			$this->fields['cat_parent']['writeParms']['optArray'] = array(0=>'(Root)');
@@ -770,7 +825,48 @@ class vstore_cat_ui extends e_admin_ui
 
 class vstore_cat_form_ui extends e_admin_form_ui
 {
+		function cat_name($curVal,$mode,$parm)
+		{
 
+			$frm = e107::getForm();
+
+			if($mode == 'read')
+			{
+				return $curVal;
+			}
+
+			if($mode == 'write')
+			{
+				return $frm->text('forum_name',$curVal,255,'size=xxlarge');
+			}
+
+			if($mode == 'filter')
+			{
+				return false;
+			}
+			if($mode == 'batch')
+			{
+				return false;
+			}
+
+			if($mode == 'inline')
+			{
+				$parent 	= $this->getController()->getListModel()->get('cat_parent');
+
+				$ret = array('inlineType'=>'text');
+
+				if(empty($parent))
+				{
+
+				}
+				else
+				{
+					$ret['inlineParms'] = array('pre'=>'<img src="'.e_IMAGE_ABS.'generic/branchbottom.gif" class="level-1 icon" alt="" />');
+				}
+
+				return $ret;
+			}
+		}
 }		
 		
 
