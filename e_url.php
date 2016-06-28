@@ -28,8 +28,8 @@ class vstore_url // plugin-folder + '_url'
 
 		$config['return'] = array(
 
-			'regex'			=> '^vstore/checkout/return/?$',
-			'redirect'		=> '{e_PLUGIN}vstore/vstore.php?mode=return',
+			'regex'			=> '^vstore/checkout/return/?(.*)$',
+			'redirect'		=> '{e_PLUGIN}vstore/vstore.php?mode=return&$1',
 			'sef'			=>  'vstore/checkout/return/',
 		);
 

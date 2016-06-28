@@ -784,86 +784,77 @@ class vstore
 			return false;
 		}
 
-
-		if($type == 'amazon')
+		switch($type)
 		{
-			$gateway = Omnipay::create('AmazonPayments');
-			$defaults = $gateway->getDefaultParameters();
+			case "amazon":
+				$gateway = Omnipay::create('AmazonPayments');
+				$defaults = $gateway->getParameters();
+				e107::getDebug()->log($defaults);
+				break;
 
-		//	e107::getDebug()->log($this->pref['paypal']);
+			case "paypal":
+				$gateway = Omnipay::create('PayPal_Express');
+				$gateway->setTestMode(true);
+				$gateway->setUsername($this->pref['paypal']['username']);
+				$gateway->setPassword($this->pref['paypal']['password']);
+				$gateway->setSignature($this->pref['paypal']['signature']);
+				break;
 
-			// print_a($defaults);
+			default:
+				return false;
+		}
+/*
+		$cardInput = array(
+                'firstName' => $info['first_name_bill'],
+                'lastName' => $info['last_name_bill'],
+                'billingAddress1' => $info['street_address_1_bill'],
+                'billingAddress2' => $info['street_address_2_bill'],
+                'billingPhone' => $info['phone_bill'],
+                'billingCity' => $info['city_bill'],
+                'billingState' => $info['state_bill'],
+                'billingPostCode' => $info['zip_bill'],
+                'shippingAddress1' => $info['street_address_1_ship'],
+                'shippingAddress2' => $info['street_address_2_ship'],
+                'shippingPhone' => $info['phone_ship'],
+                'shippingCity' => $info['city_ship'],
+                'shippingState' => $info['state_ship'],
+                'shippingPostCode' => $info['zip_ship'],
+            );*/
 
-			e107::getDebug()->log($defaults);
+        $cardInput = null;
 
+	//	$data = $this->getCheckoutData();
+
+
+
+		$response = $gateway->purchase(
+                   array(
+                       'cancelUrl'              => e107::url('vstore', 'cancel', null, array('mode'=>'full')),
+                       'returnUrl'              => e107::url('vstore', 'return', null, array('mode'=>'full')),
+                       'amount'                 => '46.00',
+                       'currency'               => 'USD',
+                       'description'            => 'Stuff',
+                       'card'                   => $cardInput,
+                       'transactionReference'   => $this->getCheckoutData('id')
+            )
+        )->send();
+
+       // Process response
+		if ($response->isSuccessful())
+		{
+		    print_a($response);
+		}
+		elseif ($response->isRedirect())
+		{
+		    $response->redirect();
+		}
+		else
+		{
+		    $message = $response->getMessage();
+			e107::getMessage()->addError($message);
 		}
 
 
-
-
-		if($type == 'paypal')
-		{
-			$gateway = Omnipay::create('PayPal_Express');
-			$gateway->setTestMode(true);
-			$gateway->setUsername($this->pref['paypal']['username']);
-			$gateway->setPassword($this->pref['paypal']['password']);
-			$gateway->setSignature($this->pref['paypal']['signature']);
-
-			/*
-				$init = array(
-					'username'=> $this->pref['paypal']['username'],
-					'password'  => $this->pref['paypal']['password'],
-					'testMode'  =>true,
-					'signature' => $this->pref['paypal']['signature']
-
-				);
-
-				$gateway->initialize($init);
-
-	*/
-
-
-			$defaults = $gateway->getDefaultParameters();
-
-		//	e107::getDebug()->log($this->pref['paypal']);
-
-			print_a($defaults);
-
-			e107::getDebug()->log($defaults);
-
-			return;
-
-			$response = $gateway->purchase(
-                    array(
-                        'cancelUrl' => e107::url('vstore', 'cancel', null, array('mode'=>'full')),
-                        'returnUrl' => e107::url('vstore', 'return', null, array('mode'=>'full')),
-                        'amount' => '25.00',
-                        'currency' => 'USD'
-                    )
-            );
-
-
-
-			/*if ($response->isSuccessful()) {
-
-			    // Payment was successful
-			    print_a($response);
-
-			} else*/
-			if ($response->isRedirect()) {
-
-			    // Redirect to offsite payment gateway
-			    $response->redirect();
-
-			}
-			else
-			{
-			    // payment failed: display message to customer
-			    $message = $response->getMessage();
-			    e107::getMessage()->addError($message);
-			}
-
-		}
 
 
 	}
@@ -1260,8 +1251,11 @@ class vstore
 			
 			$subTotal 		= 0;
 			$shippingTotal 	= 0;
+			$checkoutData = array();
 		//	$grandTotal		= 0;
-						
+
+			$checkoutData['id'] = $this->getCartId();
+
 			foreach($data as $row)
 			{
 			
@@ -1270,6 +1264,7 @@ class vstore
 				
 				
 				$this->sc->setVars($row);
+				$checkoutData['items'][] = $row;
 				$text .= $tp->parseTemplate($template, true, $this->sc);	
 			}
 			
@@ -1277,6 +1272,8 @@ class vstore
 			$totals = array('cart_subTotal' => $subTotal, 'cart_shippingTotal'=>$shippingTotal, 'cart_grandTotal'=>$grandTotal);
 
 			$this->sc->setVars($totals);
+
+			$checkoutData['totals'] = $totals;
 
 			
 			$footer = '     
@@ -1324,15 +1321,30 @@ class vstore
 		
 		$text .= $frm->close();
 
+		$this->setCheckoutData($checkoutData);
+
 		return $text;
 	//	$ns->tablerender("Shopping Cart",$text,'vstore-view-cart');
 		
-		return null;
+
 	}
 	
+
+
+	private function setCheckoutData($data)
+	{
+		$_SESSION['vstore_checkout'] = $data;
+	}
 	
-	
-	
+	private function getCheckoutData($id=null)
+	{
+		if(!empty($id))
+		{
+			return $_SESSION['vstore_checkout'][$id];
+		}
+
+		return $_SESSION['vstore_checkout'];
+	}
 	
 	
 	
