@@ -670,7 +670,7 @@ class vstore_cat_ui extends e_admin_ui
 		protected $pluginName		= 'vstore';
 		protected $table			= 'vstore_cat';
 		protected $pid				= 'cat_id';
-		protected $perPage			= 10; 
+		protected $perPage			= 0; 
 		protected $batchDelete		= true;
 		protected $batchCopy		= true;
 		protected $sortField		= 'cat_order';
