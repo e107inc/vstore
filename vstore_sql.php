@@ -53,7 +53,7 @@ CREATE TABLE vstore_cat (
   `cat_image` varchar(250) DEFAULT NULL,
   `cat_info` text,
   `cat_class` varchar(12) NOT NULL DEFAULT '',
-  `cat_order` tinyint(3) NOT NULL DEFAULT '0',
+  `cat_order` int(3) NOT NULL DEFAULT '0',
   PRIMARY KEY (`cat_id`)
 ) ENGINE=MyISAM;
 

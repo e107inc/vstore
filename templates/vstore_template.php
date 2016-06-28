@@ -47,7 +47,7 @@ $VSTORE_TEMPLATE['menu']['item'] =  '
 			{SETIMAGE: w=320&h=250&crop=1}
 			<div class="vstore-product-list col-sm-12 col-lg-12 col-md-12">
 	                        <div class="thumbnail">
-                            <a href="{ITEM_URL}"><img src="{ITEM_PIC}" alt=""></a>
+                            <a href="{ITEM_URL}">{ITEM_PIC}</a>
                             <div class="caption">
                                 <h4><a href="{ITEM_URL}">{ITEM_NAME}</a></h4>
                                 <p class="item-description">{ITEM_DESCRIPTION}</p>
