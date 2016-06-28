@@ -56,7 +56,7 @@ $VSTORE_TEMPLATE['menu']['item'] =  '
 									<p class="lead">{ITEM_PRICE}</p>
 								</div>
 								<div class="col-xs-12 col-sm-6 col-md-6 col-lg-6">
-									<a class="btn btn-success btn-block" href="{ITEM_ADDTOCART=url}">{ITEM_ADDTOCART=label}</a>
+									{ITEM_ADDTOCART}
 								</div>
 							</div>
                             </div>
