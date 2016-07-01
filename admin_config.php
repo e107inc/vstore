@@ -65,15 +65,18 @@ class vstore_admin extends e_admin_dispatcher
 		'products/create'		=> array('caption'=> "Add Product", 'perm' => 'P'),
 	//	'cart/create'		=> array('caption'=> LAN_CREATE, 'perm' => 'P'),
 
+		'other/0'           => array('divider'=>true),
+
 		'cat/list'			=> array('caption'=> LAN_CATEGORIES, 'perm' => 'P'),
 		'cat/create'		=> array('caption'=> LAN_CREATE_CATEGORY, 'perm' => 'P'),
 
-	
+		'other/1'           => array('divider'=>true),
 
 		'cart/list'			=> array('caption'=> "Sales", 'perm' => 'P'),
 		
 		'main/list'			=> array('caption'=> "Customers", 'perm' => 'P'),
-			
+
+		'other/2'           => array('divider'=>true),
 	
 		'main/prefs' 		=> array('caption'=> LAN_PREFS, 'perm' => 'P'),
 
@@ -141,13 +144,15 @@ class vstore_customer_ui extends e_admin_ui
 		
 		protected $fieldpref = array('cust_datestamp', 'cust_title');
 		
-	//	protected $preftabs = array('Basic', 'Paypal');
+		protected $preftabs = array(LAN_GENERAL, "Admin Area");
 		
 	
 		protected $prefs = array(	
-			'currency'		=> array('title'=> 'Currency', 'type'=>'dropdown', 'data' => 'string','help'=>'Select a currency'),
-			'shipping'		=> array('title'=> 'Calculate Shipping', 'type'=>'boolean', 'data' => 'int','help'=>'Including shipping calculation at checkout.'),
-			'howtoorder'	=> array('title'=>'How to order', 'type'=>'bbarea', 'help'=>'Enter how-to-order info.'),
+			'currency'		            => array('title'=> 'Currency', 'type'=>'dropdown', 'data' => 'string','help'=>'Select a currency'),
+			'shipping'		            => array('title'=> 'Calculate Shipping', 'type'=>'boolean', 'data' => 'int','help'=>'Including shipping calculation at checkout.'),
+			'howtoorder'	            => array('title'=>'How to order', 'type'=>'bbarea', 'help'=>'Enter how-to-order info.'),
+			'admin_items_perpage'	    => array('title'=>'Products per page', 'tab'=>1, 'type'=>'number', 'help'=>''),
+			'admin_categories_perpage'	=> array('title'=>'Categories per page', 'tab'=>1, 'type'=>'number', 'help'=>''),
 
 		); 
 
@@ -156,7 +161,7 @@ class vstore_customer_ui extends e_admin_ui
 		// optional
 		public function init()
 		{
-			$this->prefs['currency']['writeParms'] = array('USD'=>'US Dollars', 'EUR'=>'Euros', 'CAN'=>'Canadian Dollars');	
+			$this->prefs['currency']['writeParms'] = array('USD'=>'US Dollars', 'EUR'=>'Euros', 'CAN'=>'Canadian Dollars');
 		}
 	
 	/*		
@@ -795,6 +800,8 @@ class vstore_cat_ui extends e_admin_ui
 		// optional
 		public function init()
 		{
+			$this->perPage = e107::pref('vstore','admin_categories_perpage',10);
+
 			$this->checkOrder();
 
 			$data = e107::getDb()->retrieve('vstore_cat','cat_id,cat_name', "cat_parent = 0", true);
@@ -924,6 +931,10 @@ class vstore_items_ui extends e_admin_ui
 			{
 				$this->fields['item_preview']['type'] = null;
 			}
+
+			$this->perPage = e107::pref('vstore','admin_items_perpage',10);
+
+
 		//	print_a($_POST);
 			
 			$data = e107::getDb()->retrieve('SELECT cat_id,cat_name FROM #vstore_cat', true);

@@ -19,5 +19,7 @@
 	<pluginPrefs>
 		<pref name='currency'>USD</pref>
 		<pref name='shipping'>0</pref>
+		<pref name='admin_items_perpage'>10</pref>
+		<pref name='admin_categories_perpage'>10</pref>
 	</pluginPrefs>
 </e107Plugin>
