@@ -831,7 +831,7 @@ class vstore
                    array(
                        'cancelUrl'              => e107::url('vstore', 'cancel', null, array('mode'=>'full')),
                        'returnUrl'              => e107::url('vstore', 'return', null, array('mode'=>'full')),
-                       'amount'                 => '46.00',
+                       'amount'                 => 46.00,
                        'currency'               => 'USD',
                        'description'            => 'Stuff',
                        'card'                   => $cardInput,
