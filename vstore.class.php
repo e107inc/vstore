@@ -253,7 +253,7 @@ class vstore_plugin_shortcodes extends e_shortcode
 			$route = 'subcategory';
 		}
 
-		e107::getDebug()->log($urlData);
+		//e107::getDebug()->log($urlData);
 
 		return e107::url('vstore',$route, $urlData);
 	}
@@ -467,6 +467,7 @@ class vstore
 	protected   $action             = array();
 	protected   $pref               = array();
 	protected   $parentData         = array();
+	protected   $currency           = 'USD';
 
 	protected   $gateways           = array(
 		'paypal'  => array('title'=>'Paypal', 'icon'=>'fa-paypal'),
@@ -485,6 +486,12 @@ class vstore
 
 		$pref = e107::pref('vstore');
 
+		if(!empty($this->pref['currency']))
+		{
+			$this->currency = $this->pref['currency'];
+		}
+
+		e107::getDebug()->log("CartID:".$this->cartId);
 
 		// get all category data.
 		$query = 'SELECT * FROM #vstore_cat ';
@@ -561,20 +568,29 @@ class vstore
 		
 
 		
-
-
-
-		
 	}
 
 
 	private function process()
 	{
 
+		if(!empty($this->get['reset']))
+		{
+			$this->resetCart();
+		}
+
+
 		if(!empty($this->post['gateway']))
 		{
-			$this->renderGateway($this->post['gateway']);
+			$this->setGatewayType($this->post['gateway']);
+			return $this->processGateway('init');
 		}
+
+		if($this->get['mode'] == 'return')
+		{
+			return $this->processGateway('return');
+		}
+
 
 		if(varset($this->post['cartQty']))
 		{
@@ -606,6 +622,16 @@ class vstore
 			$bread = $this->breadcrumb();
 			$text = $this->cartView();
 			$ns->tablerender($this->captionBase, $bread.$text, 'vstore-cart-view');
+			return null;
+		}
+
+
+		if(vartrue($this->get['mode']) == 'return')
+		{
+			// print_a($this->post);
+			$bread = $this->breadcrumb();
+			$text = $this->checkoutComplete();
+			$ns->tablerender($this->captionBase, $bread.$text, 'vstore-cart-complete');
 			return null;
 		}
 
@@ -739,6 +765,13 @@ class vstore
 
 
 
+	private function checkoutComplete()
+	{
+		return e107::getMessage()->render();
+	}
+
+
+
 	private function checkoutView()
 	{
 		$active = $this->getActiveGateways();
@@ -776,8 +809,11 @@ class vstore
 
 	//  // help http://stackoverflow.com/questions/20756067/omnipay-paypal-integration-with-laravel-4
 	// https://www.youtube.com/watch?v=EvfFN0-aBmI
-	private function renderGateway($type)
+	private function processGateway($mode = 'init')
 	{
+
+		$type = $this->getGatewayType();
+
 		if(empty($type))
 		{
 			e107::getMessage()->addError("Invalid Payment Type");
@@ -823,26 +859,70 @@ class vstore
 
         $cardInput = null;
 
-	//	$data = $this->getCheckoutData();
+		$data = $this->getCheckoutData();
 
+	//	print_a($data);
 
+	//	return;
 
-		$response = $gateway->purchase(
+		if(empty($data['items']))
+		{
+			e107::getMessage()->addError("Shopping Cart Empty");
+			return false;
+		}
+		else
+		{
+			$items = array();
+
+			foreach($data['items'] as $var)
+			{
+				$items[] = array('name' => $var['item_code'], 'price' => $var['item_price'], 'description' => $var['item_name'], 'quantity' => $var['cart_qty']);
+			}
+
+		}
+
+		$method = ($mode == 'init') ? 'purchase' : 'completePurchase';
+
+		try
+		{
+			$response = $gateway->$method(
                    array(
                        'cancelUrl'              => e107::url('vstore', 'cancel', null, array('mode'=>'full')),
                        'returnUrl'              => e107::url('vstore', 'return', null, array('mode'=>'full')),
-                       'amount'                 => 46.00,
-                       'currency'               => 'USD',
-                       'description'            => 'Stuff',
-                       'card'                   => $cardInput,
-                       'transactionReference'   => $this->getCheckoutData('id')
-            )
-        )->send();
+                       'amount'                 => $data['totals']['cart_grandTotal'],
+                       'currency'               => $data['totals']['currency'],
+					    'items'                 => $items,
+					    'transactionId'         => $this->getCheckoutData('id'),
+					    'clientIp'              => USERIP
+					    //    'card'                   => $cardInput,
+                    //   'transactionReference'   =>
+                   )
+			)->send();
+
+		}
+		catch (Exception $e)
+		{
+		   $message = $e->getMessage();
+		    e107::getMessage()->addError($message);
+		    return false;
+		}
+
+
 
        // Process response
 		if ($response->isSuccessful())
 		{
-		    print_a($response);
+			$this->resetCart();
+			$transData = $response->getData();
+			$transID =  $response->getTransactionReference();
+
+			$message = $response->getMessage();
+
+			e107::getMessage()->addSuccess($message);
+
+			$this->saveTransaction($transID,$transData,$data);
+
+
 		}
 		elseif ($response->isRedirect())
 		{
@@ -860,12 +940,60 @@ class vstore
 	}
 
 
-	private function getGatewayIcon($type)
+	private function saveTransaction($id, $transData, $cartData)
+	{
+
+		print_a($transData);
+		print_a($cartData);
+
+		 $insert =  array(
+		    'trans_id'          => 0,
+		    'trans_session'     => $cartData['id'],
+		    'trans_e107_user'   => USERID,
+		    'trans_gateway'     => $this->getGatewayType(),
+		    'trans_status'      => 'complete',
+		    'trans_date'        => time(),
+		    'trans_transid'     => $id,
+		    'trans_amount'      => $cartData['totals']['cart_grandTotal'],
+		    'trans_shipping'    => '0.00',
+		    'trans_rawdata'     => json_encode($transData,JSON_PRETTY_PRINT)
+
+		  );
+
+		$mes = e107::getMessage();
+
+		if( e107::getDb()->insert('vstore_trans',$insert) !== false)
+		{
+			$mes->addSuccess("Payment Transaction Saved");
+		}
+		else
+		{
+			$mes->addError("Unable to save transaction");
+		}
+
+
+	}
+
+
+	private function getGatewayIcon($type='')
 	{
 		$text = !empty($this->gateways[$type]) ? $this->gateways[$type]['icon'] : '';
 		return e107::getParser()->toGlyph($text, array('size'=>'5x'));
 
 	}
+
+
+	private function getGatewayType()
+	{
+		return $_SESSION['vstore']['gateway']['type'];
+	}
+
+
+	private function setGatewayType($type='')
+	{
+		 $_SESSION['vstore']['gateway']['type'] = $type;
+	}
+
 
 	
 	public function setPerPage($num)
@@ -897,30 +1025,30 @@ class vstore
 	}
 
 
-	protected function getCartId($destroy=false)
+	protected function resetCart()
 	{
-		if($destroy === true)
-		{
-   			setcookie("cartId", false);
-			return null;
-		}
+		$_COOKIE["cartId"] = false;
+		cookie("cartId", null, time()-3600);
+		e107::getDebug()->log("Destroying CartID");
+		return null;
+	}
 
 
-		if(isset($_COOKIE["cartId"]))
+
+	protected function getCartId()
+	{
+		if(!empty($_COOKIE["cartId"]))
 		{
 			return $_COOKIE["cartId"];
 		}
 		else // There is no cookie set. We will set the cookie and return the value of the users session ID
 		{
+			e107::getDebug()->log("Renewing CartID");
+			$value = md5(session_id().time());
 
-			if(!$_SESSION)
-			{
-				session_start();
-			}
+			cookie("cartId", $value,  time() + ((3600 * 24) * 2));
 
- 			setcookie("cartId", session_id(), time() + ((3600 * 24) * 2));
-			
-			return session_id();
+			return $value;
 		}
 	}
 
@@ -1331,19 +1459,21 @@ class vstore
 	
 
 
-	private function setCheckoutData($data)
+	private function setCheckoutData($data=array())
 	{
-		$_SESSION['vstore_checkout'] = $data;
+		$_SESSION['vstore']['checkout'] = $data;
+		$_SESSION['vstore']['checkout']['currency'] = $this->currency;
 	}
-	
+
+
 	private function getCheckoutData($id=null)
 	{
 		if(!empty($id))
 		{
-			return $_SESSION['vstore_checkout'][$id];
+			return $_SESSION['vstore']['checkout'][$id];
 		}
 
-		return $_SESSION['vstore_checkout'];
+		return $_SESSION['vstore']['checkout'];
 	}
 	
 	

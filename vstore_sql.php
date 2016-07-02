@@ -44,6 +44,22 @@ CREATE TABLE vstore_cart (
 ) ENGINE=MyISAM;
 
 
+
+CREATE TABLE vstore_trans (
+  `trans_id` int(11) NOT NULL AUTO_INCREMENT,
+  `trans_session` varchar(250) DEFAULT NULL,
+  `trans_e107_user` int(6) DEFAULT NULL,
+  `trans_gateway` varchar(50) DEFAULT NULL,
+  `trans_status` varchar(250) DEFAULT NULL,
+  `trans_date` int(10) DEFAULT NULL,
+  `trans_transid` varchar(250) DEFAULT NULL,
+  `trans_amount` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `trans_shipping` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `trans_rawdata` text NOT NULL,
+  PRIMARY KEY (`trans_id`)
+) ENGINE=MyISAM;
+
+
 CREATE TABLE vstore_cat (
   `cat_id` int(5) NOT NULL AUTO_INCREMENT,
   `cat_parent` int(5) NOT NULL DEFAULT '0',

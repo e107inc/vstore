@@ -28,7 +28,7 @@ class vstore_url // plugin-folder + '_url'
 
 		$config['return'] = array(
 
-			'regex'			=> '^vstore/checkout/return/?(.*)$',
+			'regex'			=> '^vstore/checkout/return/?\??(.*)$',
 			'redirect'		=> '{e_PLUGIN}vstore/vstore.php?mode=return&$1',
 			'sef'			=>  'vstore/checkout/return/',
 		);
@@ -42,12 +42,7 @@ class vstore_url // plugin-folder + '_url'
 		);
 
 
-		$config['cart'] = array(
-			
-			'regex'			=> '^vstore/cart/?$',
-			'redirect'		=> '{e_PLUGIN}vstore/vstore.php?mode=cart',
-			'sef'			=>  'vstore/cart/',
-		);
+
 
 
 		$config['addtocart'] = array(
@@ -55,6 +50,13 @@ class vstore_url // plugin-folder + '_url'
 			'regex'			=> '^vstore/cart/add/([\d]*)$',
 			'redirect'		=> '{e_PLUGIN}vstore/vstore.php?mode=cart&add=$1',
 			'sef'			=>  'vstore/cart/add/{item_id}',
+		);
+
+		$config['cart'] = array(
+
+			'regex'			=> '^vstore/cart/?\??(.*)$',
+			'redirect'		=> '{e_PLUGIN}vstore/vstore.php?mode=cart&$1',
+			'sef'			=>  'vstore/cart/',
 		);
 
 		$config['index'] = array(

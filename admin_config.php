@@ -29,10 +29,10 @@ class vstore_admin extends e_admin_dispatcher
 		),
 		
 
-		'cart'	=> array(
-			'controller' 	=> 'vstore_cart_ui',
+		'trans'	=> array(
+			'controller' 	=> 'vstore_trans_ui',
 			'path' 			=> null,
-			'ui' 			=> 'vstore_cart_form_ui',
+			'ui' 			=> 'vstore_trans_form_ui',
 			'uipath' 		=> null
 		),
 		
@@ -72,7 +72,7 @@ class vstore_admin extends e_admin_dispatcher
 
 		'other/1'           => array('divider'=>true),
 
-		'cart/list'			=> array('caption'=> "Sales", 'perm' => 'P'),
+		'trans/list'		=> array('caption'=> "Sales", 'perm' => 'P'),
 		
 		'main/list'			=> array('caption'=> "Customers", 'perm' => 'P'),
 
@@ -80,13 +80,14 @@ class vstore_admin extends e_admin_dispatcher
 	
 		'main/prefs' 		=> array('caption'=> LAN_PREFS, 'perm' => 'P'),
 
-		'cart/prefs'		=> array('caption'=> "Payment Gateways", 'perm' => 'P'),
+		'trans/prefs'		=> array('caption'=> "Payment Gateways", 'perm' => 'P'),
 
 		// 'main/custom'		=> array('caption'=> 'Custom Page', 'perm' => 'P')
 	);
 
 	protected $adminMenuAliases = array(
-		'products/edit'	=> 'products/list'
+		'products/edit'	=> 'products/list',
+		'trans/edit'	=> 'trans/list'
 	);	
 	
 	protected $menuTitle = 'Vstore';
@@ -384,6 +385,195 @@ class vstore_customer_form_ui extends e_admin_form_ui
 }		
 		
 
+
+
+class vstore_trans_ui extends e_admin_ui
+{
+
+		protected $pluginTitle		= 'Vstore';
+		protected $pluginName		= 'vstore';
+	//	protected $eventName		= 'test-vstore_trans'; // remove comment to enable event triggers in admin.
+		protected $table			= 'vstore_trans';
+		protected $pid				= 'trans_id';
+		protected $perPage			= 10;
+		protected $batchDelete		= true;
+	//	protected $batchCopy		= true;
+	//	protected $sortField		= 'somefield_order';
+	//	protected $orderStep		= 10;
+	//	protected $tabs				= array('Tabl 1','Tab 2'); // Use 'tab'=>0  OR 'tab'=>1 in the $fields below to enable.
+
+	//	protected $listQry      	= "SELECT * FROM `#tableName` WHERE field != '' "; // Example Custom Query. LEFT JOINS allowed. Should be without any Order or Limit.
+
+		protected $listOrder		= 'trans_id DESC';
+
+		protected $fields 		= array (
+		 'checkboxes' =>   array ( 'title' => '', 'type' => null, 'data' => null, 'width' => '5%', 'thclass' => 'center', 'forced' => '1', 'class' => 'center', 'toggle' => 'e-multiselect',  ),
+		  'trans_id' =>   array ( 'title' => LAN_ID, 'data' => 'int', 'width' => '5%', 'help' => '', 'readonly'=>true, 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+		  'trans_session' =>   array ( 'title' => 'Session', 'type' => 'text', 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+		  'trans_e107_user' =>   array ( 'title' => LAN_AUTHOR, 'type' => 'method', 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+		  'trans_gateway' =>   array ( 'title' => 'Gateway', 'type' => 'text', 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+		  'trans_status' =>   array ( 'title' => 'Status', 'type' => 'text', 'data' => 'str',  'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+		  'trans_date' =>   array ( 'title' => LAN_DATESTAMP, 'type' => 'datestamp', 'data' => 'str',  'readonly'=>true, 'width' => 'auto', 'filter' => true, 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+		  'trans_transid' =>   array ( 'title' => 'Transid', 'type' => 'text', 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+		  'trans_amount' =>   array ( 'title' => 'Amount', 'type' => 'number', 'data' => 'int', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+		  'trans_shipping' =>   array ( 'title' => 'Shipping', 'type' => 'number', 'data' => 'int', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+		  'trans_rawdata' =>   array ( 'title' => 'Rawdata', 'type' => 'method', 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+		  'options' =>   array ( 'title' => LAN_OPTIONS, 'type' => null, 'data' => null, 'width' => '10%', 'thclass' => 'center last', 'class' => 'center last', 'forced' => '1',  ),
+		);
+
+		protected $fieldpref = array('trans_id','trans_date','trans_transid','trans_amount','trans_status','trans_gateway');
+
+
+		protected $preftabs = array('Paypal', 'Amazon', 'Skrill');
+
+
+		protected $prefs = array(
+			'paypal_active'         => array('title'=>"Paypal Payments", 'type'=>'boolean', 'tab'=>0, 'data'=>'int', 'help'=>''),
+			'paypal_username'       => array('title'=>"Paypal Username", 'type'=>'text', 'tab'=>0, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
+			'paypal_password'       => array('title'=>"Paypal Password", 'type'=>'text', 'tab'=>0, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
+			'paypal_signature'      => array('title'=>"Paypal Signature", 'type'=>'text', 'tab'=>0, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
+
+			'amazon_active'         => array('title'=>"Amazon Payments", 'type'=>'boolean', 'tab'=>1, 'data'=>'int', 'help'=>''),
+			'amazon_merchant_id'    => array('title'=>"Amazon Merchant ID", 'type'=>'text', 'tab'=>1, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
+			'amazon_secret_key'     => array('title'=>"Amazon Secret Key", 'type'=>'text', 'tab'=>1, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
+			'amazon_region'         => array('title'=>"Amazon Region", 'type'=>'dropdown', 'tab'=>1, 'data'=>'str', 'writeParms'=>array('optArray'=>array('us'=>'USA','de'=>"Germany",'uk'=>"United Kingdom",'jp'=>"Japan")), 'help'=>''),
+
+			'skrill_active'         => array('title'=>"Skrill Payments", 'type'=>'boolean', 'tab'=>2, 'data'=>'int', 'help'=>''),
+			'skrill_email'          => array('title'=>"Skrill Email", 'type'=>'text', 'tab'=>2, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
+		);
+
+
+
+		public function init()
+		{
+			// Set drop-down values (if any).
+
+		}
+
+
+		// ------- Customize Create --------
+
+		public function beforeCreate($new_data,$old_data)
+		{
+			return $new_data;
+		}
+
+		public function afterCreate($new_data, $old_data, $id)
+		{
+			// do something
+		}
+
+		public function onCreateError($new_data, $old_data)
+		{
+			// do something
+		}
+
+
+		// ------- Customize Update --------
+
+		public function beforeUpdate($new_data, $old_data, $id)
+		{
+			return $new_data;
+		}
+
+		public function afterUpdate($new_data, $old_data, $id)
+		{
+			// do something
+		}
+
+		public function onUpdateError($new_data, $old_data, $id)
+		{
+			// do something
+		}
+
+
+	/*
+		// optional - a custom page.
+		public function customPage()
+		{
+			$text = 'Hello World!';
+			return $text;
+
+		}
+	*/
+
+}
+
+
+
+class vstore_trans_form_ui extends e_admin_form_ui
+{
+
+
+	// Custom Method/Function
+	function trans_e107_user($curVal,$mode)
+	{
+		$frm = e107::getForm();
+
+		switch($mode)
+		{
+			case 'read': // List Page
+				return $curVal;
+			break;
+
+			case 'write': // Edit Page
+				return $frm->text('trans_e107_user',$curVal, 255, 'size=large');
+			break;
+
+			case 'filter':
+			case 'batch':
+				return  array();
+			break;
+		}
+	}
+
+
+	// Custom Method/Function
+	function trans_rawdata($curVal,$mode)
+	{
+
+		switch($mode)
+		{
+			case 'read': // List Page
+			case 'write': // Edit Page
+
+				if(!empty($curVal))
+				{
+					$data = json_decode($curVal);
+					$text = "<table class='table table-bordered table-striped table-condensed'>
+					<colgroup>
+						<col style='width:50%' />
+						<col />
+					</colgroup>
+					";
+					foreach($data as $k=>$v)
+					{
+						$text .= "<tr><td>".$k."</td><td>".$v."</td></tr>";
+					}
+
+					$text .= "</table>";
+					return $text;
+				}
+
+				return null;
+			break;
+
+			case 'filter':
+			case 'batch':
+				return  array();
+			break;
+		}
+	}
+
+}
+
+
+
+
+
+
+
+
 				
 class vstore_cart_ui extends e_admin_ui
 {
@@ -422,23 +612,6 @@ class vstore_cart_ui extends e_admin_ui
 		protected $fieldpref = array();
 
 
-		protected $preftabs = array('Paypal', 'Amazon', 'Skrill');
-
-
-		protected $prefs = array(
-			'paypal_active'         => array('title'=>"Paypal Payments", 'type'=>'boolean', 'tab'=>0, 'data'=>'int', 'help'=>''),
-			'paypal_username'       => array('title'=>"Paypal Username", 'type'=>'text', 'tab'=>0, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
-			'paypal_password'       => array('title'=>"Paypal Password", 'type'=>'text', 'tab'=>0, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
-			'paypal_signature'      => array('title'=>"Paypal Signature", 'type'=>'text', 'tab'=>0, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
-
-			'amazon_active'         => array('title'=>"Amazon Payments", 'type'=>'boolean', 'tab'=>1, 'data'=>'int', 'help'=>''),
-			'amazon_merchant_id'    => array('title'=>"Amazon Merchant ID", 'type'=>'text', 'tab'=>1, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
-			'amazon_secret_key'     => array('title'=>"Amazon Secret Key", 'type'=>'text', 'tab'=>1, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
-			'amazon_region'         => array('title'=>"Amazon Region", 'type'=>'dropdown', 'tab'=>1, 'data'=>'str', 'writeParms'=>array('optArray'=>array('us'=>'USA','de'=>"Germany",'uk'=>"United Kingdom",'jp'=>"Japan")), 'help'=>''),
-
-			'skrill_active'         => array('title'=>"Skrill Payments", 'type'=>'boolean', 'tab'=>2, 'data'=>'int', 'help'=>''),
-			'skrill_email'          => array('title'=>"Skrill Email", 'type'=>'text', 'tab'=>2, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
-		);
 
 /*
  * merchant_id 	Default : null
