@@ -14,7 +14,7 @@
 	</adminLinks>
 	<siteLinks>
 		<link url="{e_PLUGIN}vstore/vstore.php" sef='index' perm="admin" >LAN_PLUGIN_VSTORE_NAME</link>
-		<link url="#"  description="Shopping Cart" perm="everyone" >LAN_PLUGIN_VSTORE_CARTICON</link>
+		<link url="#"  description="Shopping Cart" perm="everyone" function="vstore::storeCart" >LAN_PLUGIN_VSTORE_CARTICON</link>
 	</siteLinks>
 	<pluginPrefs>
 		<pref name='currency'>USD</pref>

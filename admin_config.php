@@ -23,14 +23,14 @@ class vstore_admin extends e_admin_dispatcher
 	protected $modes = array(	
 	
 		'main'	=> array(
-			'controller' 	=> 'vstore_customer_ui',
+			'controller' 	=> 'vstore_cart_ui',
 			'path' 			=> null,
-			'ui' 			=> 'vstore_customer_form_ui',
+			'ui' 			=> 'vstore_cart_form_ui',
 			'uipath' 		=> null
 		),
 		
 
-		'trans'	=> array(
+		'orders'	=> array(
 			'controller' 	=> 'vstore_order_ui',
 			'path' 			=> null,
 			'ui' 			=> 'vstore_order_form_ui',
@@ -62,7 +62,7 @@ class vstore_admin extends e_admin_dispatcher
 	
 	//	'main/create'		=> array('caption'=> LAN_CREATE, 'perm' => 'P'),
 
-	'products/list'			=> array('caption'=> "Products", 'perm' => 'P'),
+		'products/list'			=> array('caption'=> "Products", 'perm' => 'P'),
 		'products/create'		=> array('caption'=> "Add Product", 'perm' => 'P'),
 	//	'cart/create'		=> array('caption'=> LAN_CREATE, 'perm' => 'P'),
 
@@ -73,22 +73,22 @@ class vstore_admin extends e_admin_dispatcher
 
 		'other/1'           => array('divider'=>true),
 
-		'trans/list'		=> array('caption'=> "Sales", 'perm' => 'P'),
+		'orders/list'		=> array('caption'=> "Sales", 'perm' => 'P'),
 		
-		'main/list'			=> array('caption'=> "Customers", 'perm' => 'P'),
+	//	'main/list'			=> array('caption'=> "Customers", 'perm' => 'P'),
 
 		'other/2'           => array('divider'=>true),
 	
 		'main/prefs' 		=> array('caption'=> LAN_PREFS, 'perm' => 'P'),
 
-		'trans/prefs'		=> array('caption'=> "Payment Gateways", 'perm' => 'P'),
+		'orders/prefs'		=> array('caption'=> "Payment Gateways", 'perm' => 'P'),
 
 		// 'main/custom'		=> array('caption'=> 'Custom Page', 'perm' => 'P')
 	);
 
 	protected $adminMenuAliases = array(
 		'products/edit'	=> 'products/list',
-		'trans/edit'	=> 'trans/list'
+		'orders/edit'	=> 'orders/list'
 	);	
 	
 	protected $menuTitle = 'Vstore';
@@ -146,25 +146,7 @@ class vstore_customer_ui extends e_admin_ui
 		
 		protected $fieldpref = array('cust_datestamp', 'cust_title');
 		
-		protected $preftabs = array(LAN_GENERAL, "Admin Area");
-		
-	
-		protected $prefs = array(	
-			'currency'		            => array('title'=> 'Currency', 'type'=>'dropdown', 'data' => 'string','help'=>'Select a currency'),
-			'shipping'		            => array('title'=> 'Calculate Shipping', 'type'=>'boolean', 'data' => 'int','help'=>'Including shipping calculation at checkout.'),
-			'howtoorder'	            => array('title'=>'How to order', 'type'=>'bbarea', 'help'=>'Enter how-to-order info.'),
-			'admin_items_perpage'	    => array('title'=>'Products per page', 'tab'=>1, 'type'=>'number', 'help'=>''),
-			'admin_categories_perpage'	=> array('title'=>'Categories per page', 'tab'=>1, 'type'=>'number', 'help'=>''),
 
-		); 
-
-	
-	
-		// optional
-		public function init()
-		{
-			$this->prefs['currency']['writeParms'] = array('USD'=>'US Dollars', 'EUR'=>'Euros', 'CAN'=>'Canadian Dollars');
-		}
 	
 	/*		
 		public function customPage()
@@ -397,13 +379,13 @@ class vstore_order_ui extends e_admin_ui
 		protected $table			= 'vstore_orders';
 		protected $pid				= 'order_id';
 		protected $perPage			= 10;
-		protected $batchDelete		= true;
+		protected $batchDelete		= false;
 	//	protected $batchCopy		= true;
 	//	protected $sortField		= 'somefield_order';
 	//	protected $orderStep		= 10;
-	//	protected $tabs				= array('Tabl 1','Tab 2'); // Use 'tab'=>0  OR 'tab'=>1 in the $fields below to enable.
+		protected $tabs				= array(LAN_GENERAL,'Details'); // Use 'tab'=>0  OR 'tab'=>1 in the $fields below to enable.
 
-		protected $listQry      	= "SELECT o.*, SUM(c.cart_qty) as items FROM `#vstore_orders` AS o LEFT JOIN `#vstore_cart` AS  c ON o.order_session = c.cart_session  "; // Example Custom Query. LEFT JOINS allowed. Should be without any Order or Limit.
+	//	protected $listQry      	= "SELECT o.*, SUM(c.cart_qty) as items FROM `#vstore_orders` AS o LEFT JOIN `#vstore_cart` AS  c ON o.order_session = c.cart_session  "; // Example Custom Query. LEFT JOINS allowed. Should be without any Order or Limit.
 
 		protected $listOrder		= 'order_id DESC';
 
@@ -412,23 +394,23 @@ class vstore_order_ui extends e_admin_ui
 		protected $fields 		= array (
 		 'checkboxes'           =>   array ( 'title' => '', 'type' => null, 'data' => null, 'width' => '5%', 'thclass' => 'center', 'forced' => '1', 'class' => 'center', 'toggle' => 'e-multiselect',  ),
 		  'order_id'            =>   array ( 'title' => LAN_ID, 'data' => 'int', 'width' => '5%', 'help' => '', 'readonly'=>true, 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
-		  'order_status'          => array('title'=>'Status', 'type'=>'dropdown', 'data'=>'str', 'inline'=>true, 'filter'=>true, 'width'=>'5%'),
-		  'order_session'       =>   array ( 'title' => 'Session', 'type' => 'text', 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
-		  'order_ship_to'      =>  array('title'=>'Ship to', 'type'=>'method', 'data'=>false, 'width'=>'20%'),
-		 'items'     =>   array ( 'title' => "Items", 'type' => 'method', 'data' => false, 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'right', 'thclass' => 'right',  ),
-
-		 'order_e107_user'     =>   array ( 'title' => LAN_AUTHOR, 'type' => 'method', 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
-		  'order_pay_gateway'       =>   array ( 'title' => 'Gateway', 'type' => 'text', 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
-		  'order_pay_status'        =>   array ( 'title' => 'Pay Status', 'type' => 'text',  'data' => 'str',  'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+		  'order_status'          => array('title'=>'Status', 'type'=>'dropdown', 'data'=>'str', 'inline'=>true, 'filter'=>true, 'batch'=>true,'width'=>'5%'),
 		  'order_date'          =>   array ( 'title' => LAN_DATESTAMP, 'type' => 'datestamp', 'data' => 'str',  'readonly'=>true, 'width' => 'auto', 'filter' => true, 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
-		  'order_pay_transid'       =>   array ( 'title' => 'Transid', 'type' => 'text', 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+
+		  'order_session'       =>   array ( 'title' => 'Session', 'type' => 'text', 'tab'=>1, 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+		  'order_ship_to'      =>  array('title'=>'Ship to', 'type'=>'method', 'data'=>false, 'width'=>'20%'),
+		  'order_items'     =>   array ( 'title' => "Items", 'type' => 'method', 'data' => false, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'right', 'thclass' => 'right',  ),
+		 'order_e107_user'     =>   array ( 'title' => LAN_AUTHOR, 'type' => 'method', 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+		 'order_pay_gateway'       =>   array ( 'title' => 'Gateway', 'type' => 'text', 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+		 'order_pay_status'        =>   array ( 'title' => 'Pay Status', 'type' => 'text',  'data' => 'str',  'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+		 'order_pay_transid'       =>   array ( 'title' => 'TransID', 'type' => 'text', 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 		  'order_pay_amount' =>   array ( 'title' => 'Total', 'type' => 'method', 'data' => 'int', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 		  'order_pay_shipping' =>   array ( 'title' => 'Shipping', 'type' => 'number', 'data' => 'int', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
-		  'order_pay_rawdata' =>   array ( 'title' => 'Rawdata', 'type' => 'method', 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+		  'order_pay_rawdata' =>   array ( 'title' => 'Rawdata', 'type' => 'method', 'tab'=>1, 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 		  'options' =>   array ( 'title' => LAN_OPTIONS, 'type' => null, 'data' => null, 'width' => '10%', 'thclass' => 'center last', 'class' => 'center last', 'forced' => '1',  ),
 		);
 
-		protected $fieldpref = array('order_id','order_ship_to', 'order_status', 'order_date', 'items', 'order_pay_transid','order_pay_amount','order_pay_status');
+		protected $fieldpref = array('order_id','order_ship_to', 'order_status', 'order_date', 'order_items', 'order_pay_transid','order_pay_amount','order_pay_status');
 
 
 		protected $preftabs = array('Paypal', 'Amazon', 'Skrill');
@@ -535,29 +517,57 @@ class vstore_order_form_ui extends e_admin_form_ui
 		}
 	}
 
-	function items($curVal,$mode)
+	function order_items($curVal,$mode)
 	{
-		$frm = e107::getForm();
 
 		switch($mode)
 		{
 			case 'read': // List Page
-				return $curVal;
+				if(!empty($curVal))
+				{
+					$val = json_decode($curVal, true);
+					$total = 0;
+					foreach($val as $row)
+					{
+						$total = $total + intval($row['quantity']);
+					}
+					return $total;
+				}
 			break;
 
 			case 'write': // Edit Page
-				$session = $this->getController()->getModel()->get('order_session');
+				if(empty($curVal))
+				{
+					return 'n/a';
+				}
 
-			//	$data = e107::getDb()->retrieve('vstore_cart', "cart_session = '".$session."' ", true);
 
-				$data = array('TODO','TODO1', 'TODO2'); //TODO
 
-				$text = "<table class='table table-striped table-bordered' style='margin:0;width:70%'>";
+				$data = json_decode($curVal, true);
 
-				foreach( $data as $row)
+			//	return print_a($data,true);
+
+				$text = "<table class='table table-striped table-bordered' style='margin:0;width:70%'>
+				<thead>
+				<tr>
+					<th>Name</th>
+					<th>Description</th>
+					<th class='text-right'>Qty.</th>
+
+					<th class='text-right'>Price</th>
+				</tr>
+				</thead>";
+
+				foreach($data as $row)
 				{
 
-					$text .= "<tr><td>Example Items here (TODO)</td></tr>";
+					$text .= "
+					<tr>
+						<td>".$row['name']."</td>
+						<td>".$row['description']."</td>
+						<td class='text-right'>".$row['quantity']."</td>
+						<td class='text-right'>".$row['price']."</td>
+					</tr>";
 				}
 
 				$text .= "</table>";
@@ -593,7 +603,7 @@ class vstore_order_form_ui extends e_admin_form_ui
 
 
 
-				return $fname." ".$lname."<br />".$address."<br />".$city.", ".$state."  ".$zip."<br />".$country;
+				return $fname." ".$lname."<br />".$address."<br />".$city.", ".$state."  ".$zip."<br />".$this->getCountry($country);
 
 			break;
 
@@ -642,7 +652,7 @@ class vstore_order_form_ui extends e_admin_form_ui
 
 				if(!empty($curVal))
 				{
-					$data = json_decode($curVal);
+					$data = json_decode($curVal, true);
 					$text = "<table class='table table-bordered table-striped table-condensed'>
 					<colgroup>
 						<col style='width:50%' />
@@ -723,9 +733,24 @@ Secret Key 	secret_key 	Default : null
 Region 	region
  */
 		// optional
+		protected $preftabs = array(LAN_GENERAL, "Admin Area");
+
+
+		protected $prefs = array(
+			'currency'		            => array('title'=> 'Currency', 'type'=>'dropdown', 'data' => 'string','help'=>'Select a currency'),
+			'shipping'		            => array('title'=> 'Calculate Shipping', 'type'=>'boolean', 'data' => 'int','help'=>'Including shipping calculation at checkout.'),
+			'howtoorder'	            => array('title'=>'How to order', 'type'=>'bbarea', 'help'=>'Enter how-to-order info.'),
+			'admin_items_perpage'	    => array('title'=>'Products per page', 'tab'=>1, 'type'=>'number', 'help'=>''),
+			'admin_categories_perpage'	=> array('title'=>'Categories per page', 'tab'=>1, 'type'=>'number', 'help'=>''),
+
+		);
+
+
+
+		// optional
 		public function init()
 		{
-			
+			$this->prefs['currency']['writeParms'] = array('USD'=>'US Dollars', 'EUR'=>'Euros', 'CAN'=>'Canadian Dollars');
 		}
 	
 	/*

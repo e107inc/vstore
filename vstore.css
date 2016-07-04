@@ -13,6 +13,8 @@
 
 #vstore-cart-icon                           { }
 #vstore-cart-icon.active                    { color: white }
+#vstore-cart-dropdown                       { width:100%; min-width:280px; padding:10px;}
+
 
 .vstore-category-list  > .col-md-4:nth-child(3n+1) {  clear:both; }
 .vstore-category-list .thumbnail .caption   { min-height:80px }

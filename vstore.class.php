@@ -486,15 +486,16 @@ class vstore
 
 	protected static $shippingFields = array(
 		 'firstname',
-		    'lastname',
-		    'email',
-		    'phone',
-		    'company',
-			'address',
-			'city',
-			'state',
-			'zip',
-			'country',
+		 'lastname',
+		 'email',
+		 'phone',
+		 'company',
+		 'address',
+		 'city',
+		 'state',
+		 'zip',
+		 'country',
+		 'notes'
 	);
 
 
@@ -733,9 +734,15 @@ class vstore
 			    						'.$frm->text('phone', $this->post['phone'], 15, array('placeholder'=>'Phone number', 'required'=>1)).'
 			    					</div>
 			    				</div>
+			    		</div>
+			    		<div class="row">
+			    		    <div class="col-md-12">
+								<div class="form-group">
+				                <label for="notes">Order Notes</label>
+				                    '.$frm->textarea('notes', $this->post['notes'], 4, null, array('placeholder'=>'Special notes for delivery.', 'required'=>0)).'
+				                </div>
 			    			</div>
-
-
+						</div>
 			    		';
 
 
@@ -941,15 +948,15 @@ class vstore
 			$text .= $this->renderForm();
 
 
-			$text .= "<hr /><h3>Select mode of payment to continue</h3><div class='vstore-gateway-list row'>";
+			$text .= "<hr /><h3>Select payment method to continue</h3><div class='vstore-gateway-list row'>";
 
 			foreach($active as $gateway => $icon)
 			{
 
 					$text .= "
 						<div class='col-md-4'>
-						<button class='btn btn-default btn-block' name='gateway' type='submit' value='".$gateway."'>".$icon."
-						<h4>".$this->gateways[$gateway]['title']."</h4>
+						<button class='btn btn-default btn-block btn-".$gateway."' name='gateway' type='submit' value='".$gateway."'>".$icon."
+						<h4>".$this->getGatewayTitle($gateway)."</h4>
 						</button>
 
 						</div>";
@@ -1088,7 +1095,7 @@ class vstore
 
 			e107::getMessage()->addSuccess($message);
 
-			$this->saveTransaction($transID,$transData,$data);
+			$this->saveTransaction($transID, $transData, $items);
 
 
 		}
@@ -1108,13 +1115,13 @@ class vstore
 	}
 
 
-	private function saveTransaction($id, $transData, $cartData)
+	private function saveTransaction($id, $transData, $items)
 	{
 
-	//	print_a($transData);
-	//	print_a($cartData);
+        $shippingData = $this->getShippingData();
+		$cartData  = $this->getCheckoutData();
 
-		 $insert =  array(
+		$insert =  array(
 		    'order_id'            => 0,
 		    'order_date'          => time(),
 		    'order_session'       => $cartData['id'],
@@ -1123,12 +1130,12 @@ class vstore
 			'order_status'        => 'N' // New
 		 );
 
-		 $shippingData = $this->getShippingData();
+		 $insert['order_items'] = json_encode($items, JSON_PRETTY_PRINT);
 
-		 foreach($shippingData as $fld=>$val)
-		 {
-		    $insert[$fld]    = $val;
-		 }
+		foreach($shippingData as $fld=>$val)
+		{
+			$insert[$fld]    = $val;
+		}
 
 		$insert['order_pay_gateway']    = $this->getGatewayType();
 		$insert['order_pay_status']     = 'complete';

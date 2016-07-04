@@ -25,6 +25,7 @@ CREATE TABLE vstore_orders (
   `order_e107_user` int(6) DEFAULT NULL,
   `order_cust_id` int(6) DEFAULT NULL,
   `order_status` varchar(1) DEFAULT NULL,
+  `order_items` text NOT NULL,
   `order_ship_firstname` varchar(100) DEFAULT NULL,
   `order_ship_lastname` varchar(100) DEFAULT NULL,
   `order_ship_email` varchar(100) DEFAULT NULL,

@@ -32,7 +32,12 @@ class vstore_sitelink // include plugin-folder in the name.
 		$links[] = array(
 			'name'			=> "Vstore Categories",
 			'function'		=> "storeCategories"
-		);	
+		);
+
+			$links[] = array(
+			'name'			=> "Vstore Shopping Cart",
+			'function'		=> "storeCart"
+		);
 		
 		
 		return $links;
@@ -66,5 +71,63 @@ class vstore_sitelink // include plugin-folder in the name.
 		return $sublinks;
 	    
 	}
+
+
+
+	function storeCart() // http://bootsnipp.com/snippets/33gmp
+	{
+
+		$vst = e107::getSingleton('vstore',e_PLUGIN.'vstore/vstore.class.php');
+
+		$data = $vst->getCartData();
+		$frm = e107::getForm();
+		$tp = e107::getParser();
+
+
+		//TODO Move into class.
+
+e107::getDebug()->log($data);
+		$text = '<div id="vstore-cart-dropdown" class="dropdown-menu">
+                    <div class="form-group">
+                            <ul class="media-list list-unstyled">';
+
+		$total = 0;
+
+		foreach($data as $item)
+		{
+			$images = e107::unserialize($item['item_pic']);
+			$img = $tp->toImage($images[0]['path'],array('w'=>60));
+
+		//	$text .= '<li>'.$img.$item['item_name'].'</li>';
+			$subtotal = ($item['item_price'] * $item['cart_qty']);
+
+			$text .= '<li class="media">
+					<span class="media-object pull-left">'.$img.'</span>
+					<div class="media-body"><b>'.$item['item_name'].'</b><br />
+						<small class="text-muted smalltext">Qty: '.$item['cart_qty'].'</small><br />
+						'.number_format($subtotal,2).'
+					</div>
+					</li>';
+
+			$total = $total + $subtotal;
+
+		}
+
+
+
+           $text .= '
+
+						<li class="media text-right"><h4>Total: '.number_format($total,2).'</h4></li>
+                            </ul>
+
+                    </div>
+
+                     <div><a class="btn btn-block btn-primary" href="'.e107::url('vstore','cart').'">Checkout</a></div>
+				</div>			';
+
+		return $text;
+
+	}
+
 	
 }
