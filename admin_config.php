@@ -403,9 +403,11 @@ class vstore_order_ui extends e_admin_ui
 	//	protected $orderStep		= 10;
 	//	protected $tabs				= array('Tabl 1','Tab 2'); // Use 'tab'=>0  OR 'tab'=>1 in the $fields below to enable.
 
-	//	protected $listQry      	= "SELECT * FROM `#tableName` WHERE field != '' "; // Example Custom Query. LEFT JOINS allowed. Should be without any Order or Limit.
+		protected $listQry      	= "SELECT o.*, SUM(c.cart_qty) as items FROM `#vstore_orders` AS o LEFT JOIN `#vstore_cart` AS  c ON o.order_session = c.cart_session  "; // Example Custom Query. LEFT JOINS allowed. Should be without any Order or Limit.
 
 		protected $listOrder		= 'order_id DESC';
+
+
 
 		protected $fields 		= array (
 		 'checkboxes'           =>   array ( 'title' => '', 'type' => null, 'data' => null, 'width' => '5%', 'thclass' => 'center', 'forced' => '1', 'class' => 'center', 'toggle' => 'e-multiselect',  ),
@@ -413,6 +415,7 @@ class vstore_order_ui extends e_admin_ui
 		  'order_status'          => array('title'=>'Status', 'type'=>'dropdown', 'data'=>'str', 'inline'=>true, 'filter'=>true, 'width'=>'5%'),
 		  'order_session'       =>   array ( 'title' => 'Session', 'type' => 'text', 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 		  'order_ship_to'      =>  array('title'=>'Ship to', 'type'=>'method', 'data'=>false, 'width'=>'20%'),
+		 'items'     =>   array ( 'title' => "Items", 'type' => 'method', 'data' => false, 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'right', 'thclass' => 'right',  ),
 
 		 'order_e107_user'     =>   array ( 'title' => LAN_AUTHOR, 'type' => 'method', 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 		  'order_pay_gateway'       =>   array ( 'title' => 'Gateway', 'type' => 'text', 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
@@ -425,7 +428,7 @@ class vstore_order_ui extends e_admin_ui
 		  'options' =>   array ( 'title' => LAN_OPTIONS, 'type' => null, 'data' => null, 'width' => '10%', 'thclass' => 'center last', 'class' => 'center last', 'forced' => '1',  ),
 		);
 
-		protected $fieldpref = array('order_id','order_ship_to', 'order_status', 'order_date','order_pay_transid','order_pay_amount','order_pay_status');
+		protected $fieldpref = array('order_id','order_ship_to', 'order_status', 'order_date', 'items', 'order_pay_transid','order_pay_amount','order_pay_status');
 
 
 		protected $preftabs = array('Paypal', 'Amazon', 'Skrill');
@@ -523,6 +526,43 @@ class vstore_order_form_ui extends e_admin_form_ui
 
 			case 'write': // Edit Page
 				return $frm->text('order_e107_user',$curVal, 255, 'size=large');
+			break;
+
+			case 'filter':
+			case 'batch':
+				return  array();
+			break;
+		}
+	}
+
+	function items($curVal,$mode)
+	{
+		$frm = e107::getForm();
+
+		switch($mode)
+		{
+			case 'read': // List Page
+				return $curVal;
+			break;
+
+			case 'write': // Edit Page
+				$session = $this->getController()->getModel()->get('order_session');
+
+			//	$data = e107::getDb()->retrieve('vstore_cart', "cart_session = '".$session."' ", true);
+
+				$data = array('TODO','TODO1', 'TODO2'); //TODO
+
+				$text = "<table class='table table-striped table-bordered' style='margin:0;width:70%'>";
+
+				foreach( $data as $row)
+				{
+
+					$text .= "<tr><td>Example Items here (TODO)</td></tr>";
+				}
+
+				$text .= "</table>";
+
+				return $text;
 			break;
 
 			case 'filter':
