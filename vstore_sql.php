@@ -1,30 +1,3 @@
-CREATE TABLE vstore_customer (
-  `cust_id` int(11) NOT NULL AUTO_INCREMENT,
-  `cust_userid` int(11) NOT NULL,
-  `cust_datestamp` int(13) NOT NULL,
-  `cust_prename` varchar(5) NOT NULL,
-  `cust_firstname` varchar(50) NOT NULL,
-  `cust_lastname` varchar(50) NOT NULL,
-  `cust_company` varchar(50) NOT NULL,
-  `cust_title` varchar(50) NOT NULL,
-  `cust_address` text NOT NULL,
-  `cust_city` varchar(100) NOT NULL,
-  `cust_state` varchar(50) NOT NULL,
-  `cust_postcode` varchar(10) NOT NULL,
-  `cust_country` varchar(2) NOT NULL,
-  `cust_email` varchar(50) NOT NULL,
-  `cust_email2` varchar(50) NOT NULL,
-  `cust_phone_day` varchar(20) NOT NULL,
-  `cust_phone_night` varchar(20) NOT NULL,
-  `cust_comments` text NOT NULL,
-  `cust_website` varchar(100) NOT NULL,
-  `cust_ip` varchar(50) NOT NULL,
-  `cust_assigned_to` int(3) NOT NULL,
-  `cust_interested` int(1) NOT NULL,
-  `cust_notes` text NOT NULL,
-  `cust_refcode` varchar(10) NOT NULL,
-  PRIMARY KEY (`cust_id`)
-) TYPE=MyISAM;
 
 
 CREATE TABLE vstore_cart (
@@ -45,18 +18,31 @@ CREATE TABLE vstore_cart (
 
 
 
-CREATE TABLE vstore_trans (
-  `trans_id` int(11) NOT NULL AUTO_INCREMENT,
-  `trans_session` varchar(250) DEFAULT NULL,
-  `trans_e107_user` int(6) DEFAULT NULL,
-  `trans_gateway` varchar(50) DEFAULT NULL,
-  `trans_status` varchar(250) DEFAULT NULL,
-  `trans_date` int(10) DEFAULT NULL,
-  `trans_transid` varchar(250) DEFAULT NULL,
-  `trans_amount` decimal(10,2) NOT NULL DEFAULT '0.00',
-  `trans_shipping` decimal(10,2) NOT NULL DEFAULT '0.00',
-  `trans_rawdata` text NOT NULL,
-  PRIMARY KEY (`trans_id`)
+CREATE TABLE vstore_orders (
+  `order_id` int(11) NOT NULL AUTO_INCREMENT,
+  `order_date` int(10) DEFAULT NULL,
+  `order_session` varchar(250) DEFAULT NULL,
+  `order_e107_user` int(6) DEFAULT NULL,
+  `order_cust_id` int(6) DEFAULT NULL,
+  `order_status` varchar(1) DEFAULT NULL,
+  `order_ship_firstname` varchar(100) DEFAULT NULL,
+  `order_ship_lastname` varchar(100) DEFAULT NULL,
+  `order_ship_email` varchar(100) DEFAULT NULL,
+  `order_ship_phone` varchar(100) DEFAULT NULL,
+  `order_ship_company` varchar(100) DEFAULT NULL,
+  `order_ship_address` varchar(255) DEFAULT NULL,
+  `order_ship_city` varchar(100) DEFAULT NULL,
+  `order_ship_state` varchar(100) DEFAULT NULL,
+  `order_ship_zip` varchar(20) DEFAULT NULL,
+  `order_ship_country` varchar(100) DEFAULT NULL,
+  `order_ship_notes` varchar(255) DEFAULT NULL,
+  `order_pay_gateway` varchar(50) DEFAULT NULL,
+  `order_pay_status` varchar(250) DEFAULT NULL,
+  `order_pay_transid` varchar(250) DEFAULT NULL,
+  `order_pay_amount` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `order_pay_shipping` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `order_pay_rawdata` text NOT NULL,
+  PRIMARY KEY (`order_id`)
 ) ENGINE=MyISAM;
 
 

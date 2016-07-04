@@ -15,6 +15,7 @@ e107::css('inline',"
 
 ");
 
+require_once('vstore.class.php');
 
 class vstore_admin extends e_admin_dispatcher
 {
@@ -30,9 +31,9 @@ class vstore_admin extends e_admin_dispatcher
 		
 
 		'trans'	=> array(
-			'controller' 	=> 'vstore_trans_ui',
+			'controller' 	=> 'vstore_order_ui',
 			'path' 			=> null,
-			'ui' 			=> 'vstore_trans_form_ui',
+			'ui' 			=> 'vstore_order_form_ui',
 			'uipath' 		=> null
 		),
 		
@@ -387,14 +388,14 @@ class vstore_customer_form_ui extends e_admin_form_ui
 
 
 
-class vstore_trans_ui extends e_admin_ui
+class vstore_order_ui extends e_admin_ui
 {
 
 		protected $pluginTitle		= 'Vstore';
 		protected $pluginName		= 'vstore';
 	//	protected $eventName		= 'test-vstore_trans'; // remove comment to enable event triggers in admin.
-		protected $table			= 'vstore_trans';
-		protected $pid				= 'trans_id';
+		protected $table			= 'vstore_orders';
+		protected $pid				= 'order_id';
 		protected $perPage			= 10;
 		protected $batchDelete		= true;
 	//	protected $batchCopy		= true;
@@ -404,24 +405,27 @@ class vstore_trans_ui extends e_admin_ui
 
 	//	protected $listQry      	= "SELECT * FROM `#tableName` WHERE field != '' "; // Example Custom Query. LEFT JOINS allowed. Should be without any Order or Limit.
 
-		protected $listOrder		= 'trans_id DESC';
+		protected $listOrder		= 'order_id DESC';
 
 		protected $fields 		= array (
-		 'checkboxes' =>   array ( 'title' => '', 'type' => null, 'data' => null, 'width' => '5%', 'thclass' => 'center', 'forced' => '1', 'class' => 'center', 'toggle' => 'e-multiselect',  ),
-		  'trans_id' =>   array ( 'title' => LAN_ID, 'data' => 'int', 'width' => '5%', 'help' => '', 'readonly'=>true, 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
-		  'trans_session' =>   array ( 'title' => 'Session', 'type' => 'text', 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
-		  'trans_e107_user' =>   array ( 'title' => LAN_AUTHOR, 'type' => 'method', 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
-		  'trans_gateway' =>   array ( 'title' => 'Gateway', 'type' => 'text', 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
-		  'trans_status' =>   array ( 'title' => 'Status', 'type' => 'text', 'data' => 'str',  'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
-		  'trans_date' =>   array ( 'title' => LAN_DATESTAMP, 'type' => 'datestamp', 'data' => 'str',  'readonly'=>true, 'width' => 'auto', 'filter' => true, 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
-		  'trans_transid' =>   array ( 'title' => 'Transid', 'type' => 'text', 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
-		  'trans_amount' =>   array ( 'title' => 'Amount', 'type' => 'number', 'data' => 'int', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
-		  'trans_shipping' =>   array ( 'title' => 'Shipping', 'type' => 'number', 'data' => 'int', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
-		  'trans_rawdata' =>   array ( 'title' => 'Rawdata', 'type' => 'method', 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+		 'checkboxes'           =>   array ( 'title' => '', 'type' => null, 'data' => null, 'width' => '5%', 'thclass' => 'center', 'forced' => '1', 'class' => 'center', 'toggle' => 'e-multiselect',  ),
+		  'order_id'            =>   array ( 'title' => LAN_ID, 'data' => 'int', 'width' => '5%', 'help' => '', 'readonly'=>true, 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+		  'order_status'          => array('title'=>'Status', 'type'=>'dropdown', 'data'=>'str', 'inline'=>true, 'filter'=>true, 'width'=>'5%'),
+		  'order_session'       =>   array ( 'title' => 'Session', 'type' => 'text', 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+		  'order_ship_to'      =>  array('title'=>'Ship to', 'type'=>'method', 'data'=>false, 'width'=>'20%'),
+
+		 'order_e107_user'     =>   array ( 'title' => LAN_AUTHOR, 'type' => 'method', 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+		  'order_pay_gateway'       =>   array ( 'title' => 'Gateway', 'type' => 'text', 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+		  'order_pay_status'        =>   array ( 'title' => 'Pay Status', 'type' => 'text',  'data' => 'str',  'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+		  'order_date'          =>   array ( 'title' => LAN_DATESTAMP, 'type' => 'datestamp', 'data' => 'str',  'readonly'=>true, 'width' => 'auto', 'filter' => true, 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+		  'order_pay_transid'       =>   array ( 'title' => 'Transid', 'type' => 'text', 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+		  'order_pay_amount' =>   array ( 'title' => 'Total', 'type' => 'method', 'data' => 'int', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+		  'order_pay_shipping' =>   array ( 'title' => 'Shipping', 'type' => 'number', 'data' => 'int', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+		  'order_pay_rawdata' =>   array ( 'title' => 'Rawdata', 'type' => 'method', 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 		  'options' =>   array ( 'title' => LAN_OPTIONS, 'type' => null, 'data' => null, 'width' => '10%', 'thclass' => 'center last', 'class' => 'center last', 'forced' => '1',  ),
 		);
 
-		protected $fieldpref = array('trans_id','trans_date','trans_transid','trans_amount','trans_status','trans_gateway');
+		protected $fieldpref = array('order_id','order_ship_to', 'order_status', 'order_date','order_pay_transid','order_pay_amount','order_pay_status');
 
 
 		protected $preftabs = array('Paypal', 'Amazon', 'Skrill');
@@ -446,6 +450,7 @@ class vstore_trans_ui extends e_admin_ui
 
 		public function init()
 		{
+			$this->fields['order_status']['writeParms']['optArray'] = vstore::getStatus();
 			// Set drop-down values (if any).
 
 		}
@@ -501,12 +506,12 @@ class vstore_trans_ui extends e_admin_ui
 
 
 
-class vstore_trans_form_ui extends e_admin_form_ui
+class vstore_order_form_ui extends e_admin_form_ui
 {
 
 
 	// Custom Method/Function
-	function trans_e107_user($curVal,$mode)
+	function order_e107_user($curVal,$mode)
 	{
 		$frm = e107::getForm();
 
@@ -517,7 +522,7 @@ class vstore_trans_form_ui extends e_admin_form_ui
 			break;
 
 			case 'write': // Edit Page
-				return $frm->text('trans_e107_user',$curVal, 255, 'size=large');
+				return $frm->text('order_e107_user',$curVal, 255, 'size=large');
 			break;
 
 			case 'filter':
@@ -528,8 +533,66 @@ class vstore_trans_form_ui extends e_admin_form_ui
 	}
 
 
+	function order_ship_to($curVal,$mode)
+	{
+
+
+		switch($mode)
+		{
+
+			case 'read': // List Page
+			case 'write': // Edit Page
+
+				$fname = $this->getController()->getModel()->get('order_ship_firstname');
+				$lname = $this->getController()->getModel()->get('order_ship_lastname');
+				$address = $this->getController()->getModel()->get('order_ship_address');
+				$city = $this->getController()->getModel()->get('order_ship_city');
+				$state = $this->getController()->getModel()->get('order_ship_state');
+				$zip = $this->getController()->getModel()->get('order_ship_zip');
+				$country = $this->getController()->getModel()->get('order_ship_country');
+
+
+
+				return $fname." ".$lname."<br />".$address."<br />".$city.", ".$state."  ".$zip."<br />".$country;
+
+			break;
+
+
+
+		}
+
+
+	}
+
+
+
+	function order_pay_amount($curVal,$mode)
+	{
+
+
+		switch($mode)
+		{
+
+			case 'read': // List Page
+			case 'write': // Edit Page
+
+				$via = $this->getController()->getModel()->get('order_pay_gateway');
+
+			break;
+
+
+			case 'filter':
+			case 'batch':
+				return  array();
+			break;
+		}
+
+		return $curVal."<br /><span class='label label-primary'>".vstore::getGatewayTitle($via)."</span>";
+	}
+
+
 	// Custom Method/Function
-	function trans_rawdata($curVal,$mode)
+	function order_pay_rawdata($curVal,$mode)
 	{
 
 		switch($mode)

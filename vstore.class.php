@@ -469,9 +469,32 @@ class vstore
 	protected   $parentData         = array();
 	protected   $currency           = 'USD';
 
-	protected   $gateways           = array(
+	protected   static $gateways    = array(
 		'paypal'  => array('title'=>'Paypal', 'icon'=>'fa-paypal'),
 		'amazon'  => array('title'=> 'Amazon', 'icon'=>'fa-amazon')
+	);
+
+	protected static $status = array(
+		'N' => 'New',
+		'P' => 'Processing',
+		'H' => 'On Hold',
+		'C' => 'Completed',
+		'X' => 'Cancelled',
+		'R' => 'Refunded'
+	);
+
+
+	protected static $shippingFields = array(
+		 'firstname',
+		    'lastname',
+		    'email',
+		    'phone',
+		    'company',
+			'address',
+			'city',
+			'state',
+			'zip',
+			'country',
 	);
 
 
@@ -522,7 +545,7 @@ class vstore
 
 		$active = array();
 
-		foreach($this->gateways as $k=>$icon)
+		foreach(self::$gateways as $k=>$icon)
 		{
 			$key = $k."_active";
 			if(!empty($pref[$key]))
@@ -567,7 +590,23 @@ class vstore
 		$this->process();
 		
 
-		
+	}
+
+	public static function getStatus($key=null)
+	{
+		if(!empty($key))
+		{
+			return self::$status[$key];
+		}
+
+		return self::$status;
+
+	}
+
+
+	public static function getShippingFields()
+	{
+		return self::$shippingFields;
 	}
 
 
@@ -583,6 +622,12 @@ class vstore
 		if(!empty($this->post['gateway']))
 		{
 			$this->setGatewayType($this->post['gateway']);
+
+			if(!empty($this->post['firstname']))
+			{
+				$this->setShippingData($this->post);    // TODO Validate data before proceeding.
+			}
+
 			return $this->processGateway('init');
 		}
 
@@ -612,6 +657,118 @@ class vstore
 	}
 
 
+	private function renderForm()
+	{
+
+		$frm = e107::getForm();
+
+		$text = '<h3>Shipping Details</h3>
+			    			<div class="row">
+			    				<div class="col-xs-6 col-sm-6 col-md-6">
+			    					<div class="form-group">
+			    					 <label for="firstname">First Name</label>
+			    					'.$frm->text('firstname', $this->post['firstname'], 100, array('placeholder'=>'First Name', 'required'=>1)).'
+
+			    					</div>
+			    				</div>
+			    				<div class="col-xs-6 col-sm-6 col-md-6">
+			    					<div class="form-group">
+			    					<label for="lastname">Last Name</label>
+			    						'.$frm->text('lastname', $this->post['lastname'], 100, array('placeholder'=>'Last Name', 'required'=>1)).'
+			    					</div>
+			    				</div>
+			    			</div>
+
+			    			<div class="form-group">
+			    			<label for="company">Company</label>
+			    				'.$frm->text('company', $this->post['company'], 200, array('placeholder'=>'Company')).'
+			    			</div>
+
+			    			<div class="form-group">
+			    			<label for="address">Address</label>
+			    				'.$frm->text('address', $this->post['address'], 200, array('placeholder'=>'Address', 'required'=>1)).'
+			    			</div>
+
+			    			<div class="row">
+			    				<div class="col-xs-6 col-sm-6 col-md-6">
+			    					<div class="form-group">
+			    					<label for="city">Town/City</label>
+			    						'.$frm->text('city', $this->post['city'], 100, array('placeholder'=>'Town/City', 'required'=>1)).'
+			    					</div>
+			    				</div>
+			    				<div class="col-xs-6 col-sm-6 col-md-6">
+			    					<div class="form-group">
+			    					<label for="state">State/Region</label>
+			    						'.$frm->text('state', $this->post['state'], 100, array('placeholder'=>'State/Region', 'required'=>1)).'
+			    					</div>
+			    				</div>
+			    			</div>
+
+
+							<div class="row">
+			    				<div class="col-xs-6 col-sm-6 col-md-6">
+			    					<div class="form-group">
+			    					<label for="zip">Zip/Postcode</label>
+			    						'.$frm->text('zip', $this->post['zip'], 15, array('placeholder'=>'Zip/Postcode', 'required'=>1)).'
+			    					</div>
+			    				</div>
+			    				<div class="col-xs-6 col-sm-6 col-md-6">
+			    					<div class="form-group">
+			    					<label for="country">Country</label>
+			    						'.$frm->country('country', $this->post['country'], array('placeholder'=>'Select Country...', 'required'=>1)).'
+			    					</div>
+			    				</div>
+			    			</div>
+
+						<div class="row">
+			    				<div class="col-xs-6 col-sm-6 col-md-6">
+			    					<div class="form-group">
+			    					<label for="email">Email address</label>
+			    						'.$frm->email('email', $this->post['email'], 100, array('placeholder'=>'Email address', 'required'=>1)).'
+			    					</div>
+			    				</div>
+			    				<div class="col-xs-6 col-sm-6 col-md-6">
+			    					<div class="form-group">
+			    					<label for="phone">Phone number</label>
+			    						'.$frm->text('phone', $this->post['phone'], 15, array('placeholder'=>'Phone number', 'required'=>1)).'
+			    					</div>
+			    				</div>
+			    			</div>
+
+
+			    		';
+
+
+		if(!USER)
+		{
+			$text .= '<div class="row">
+			    				<div class="col-xs-6 col-sm-6 col-md-6">
+			    					<div class="form-group">
+			    						<input type="password" name="password" id="password" class="form-control input-sm" placeholder="Password">
+			    					</div>
+			    				</div>
+			    				<div class="col-xs-6 col-sm-6 col-md-6">
+			    					<div class="form-group">
+			    						<input type="password" name="password_confirmation" id="password_confirmation" class="form-control input-sm" placeholder="Confirm Password">
+			    					</div>
+			    				</div>
+			    			</div>';
+
+
+		}
+
+
+
+		return $text;
+
+
+
+	}
+
+
+
+
+
 	public function render()
 	{
 
@@ -631,6 +788,7 @@ class vstore
 			// print_a($this->post);
 			$bread = $this->breadcrumb();
 			$text = $this->checkoutComplete();
+
 			$ns->tablerender($this->captionBase, $bread.$text, 'vstore-cart-complete');
 			return null;
 		}
@@ -778,8 +936,12 @@ class vstore
 
 		if(!empty($active))
 		{
-			$text = e107::getForm()->open('gateway-select','post');
-			$text .= "<div class='vstore-gateway-list row'>";
+			$text = e107::getForm()->open('gateway-select','post', null, array('class'=>'form'));
+
+			$text .= $this->renderForm();
+
+
+			$text .= "<hr /><h3>Select mode of payment to continue</h3><div class='vstore-gateway-list row'>";
 
 			foreach($active as $gateway => $icon)
 			{
@@ -839,7 +1001,11 @@ class vstore
 			default:
 				return false;
 		}
+
+
+		$info = array('first_name_bill'=>"bill", 'last_name_bill'=>'Jones', 'street_address_1_bill'=>'123 High St.','phone_bill'=>'555-555-5555');
 /*
+
 		$cardInput = array(
                 'firstName' => $info['first_name_bill'],
                 'lastName' => $info['last_name_bill'],
@@ -849,6 +1015,7 @@ class vstore
                 'billingCity' => $info['city_bill'],
                 'billingState' => $info['state_bill'],
                 'billingPostCode' => $info['zip_bill'],
+                'billingCountry' => 'US',
                 'shippingAddress1' => $info['street_address_1_ship'],
                 'shippingAddress2' => $info['street_address_2_ship'],
                 'shippingPhone' => $info['phone_ship'],
@@ -857,7 +1024,7 @@ class vstore
                 'shippingPostCode' => $info['zip_ship'],
             );*/
 
-        $cardInput = null;
+      $cardInput = null;
 
 		$data = $this->getCheckoutData();
 
@@ -890,11 +1057,12 @@ class vstore
                        'cancelUrl'              => e107::url('vstore', 'cancel', null, array('mode'=>'full')),
                        'returnUrl'              => e107::url('vstore', 'return', null, array('mode'=>'full')),
                        'amount'                 => $data['totals']['cart_grandTotal'],
+                       'shippingAmount'         => $data['totals']['cart_shippingTotal'],
                        'currency'               => $data['totals']['currency'],
 					    'items'                 => $items,
 					    'transactionId'         => $this->getCheckoutData('id'),
-					    'clientIp'              => USERIP
-					    //    'card'                   => $cardInput,
+					    'clientIp'              => USERIP,
+                   //     'card'                  => new CreditCard($cardInput),
                     //   'transactionReference'   =>
                    )
 			)->send();
@@ -943,32 +1111,45 @@ class vstore
 	private function saveTransaction($id, $transData, $cartData)
 	{
 
-		print_a($transData);
-		print_a($cartData);
+	//	print_a($transData);
+	//	print_a($cartData);
 
 		 $insert =  array(
-		    'trans_id'          => 0,
-		    'trans_session'     => $cartData['id'],
-		    'trans_e107_user'   => USERID,
-		    'trans_gateway'     => $this->getGatewayType(),
-		    'trans_status'      => 'complete',
-		    'trans_date'        => time(),
-		    'trans_transid'     => $id,
-		    'trans_amount'      => $cartData['totals']['cart_grandTotal'],
-		    'trans_shipping'    => '0.00',
-		    'trans_rawdata'     => json_encode($transData,JSON_PRETTY_PRINT)
+		    'order_id'            => 0,
+		    'order_date'          => time(),
+		    'order_session'       => $cartData['id'],
+		    'order_e107_user'     => USERID,
+		    'order_cust_id'       => '',
+			'order_status'        => 'N' // New
+		 );
 
-		  );
+		 $shippingData = $this->getShippingData();
+
+		 foreach($shippingData as $fld=>$val)
+		 {
+		    $insert[$fld]    = $val;
+		 }
+
+		$insert['order_pay_gateway']    = $this->getGatewayType();
+		$insert['order_pay_status']     = 'complete';
+		$insert['order_pay_transid']    = $id;
+		$insert['order_pay_amount']     = $cartData['totals']['cart_grandTotal'];
+		$insert['order_pay_shipping']   = $cartData['totals']['cart_shippingTotal'];
+		$insert['order_pay_rawdata']    = json_encode($transData,JSON_PRETTY_PRINT);
 
 		$mes = e107::getMessage();
 
-		if( e107::getDb()->insert('vstore_trans',$insert) !== false)
+		e107::getDebug()->log($insert);
+
+		if( e107::getDb()->insert('vstore_orders',$insert) !== false)
 		{
-			$mes->addSuccess("Payment Transaction Saved");
+			$mes->addSuccess("Your order #".$id." is complete");
 		}
 		else
 		{
 			$mes->addError("Unable to save transaction");
+
+
 		}
 
 
@@ -977,8 +1158,15 @@ class vstore
 
 	private function getGatewayIcon($type='')
 	{
-		$text = !empty($this->gateways[$type]) ? $this->gateways[$type]['icon'] : '';
+		$text = !empty(self::$gateways[$type]) ? self::$gateways[$type]['icon'] : '';
 		return e107::getParser()->toGlyph($text, array('size'=>'5x'));
+
+	}
+
+
+	public static function getGatewayTitle($key)
+	{
+		return self::$gateways[$key]['title'];
 
 	}
 
@@ -1463,6 +1651,24 @@ class vstore
 	{
 		$_SESSION['vstore']['checkout'] = $data;
 		$_SESSION['vstore']['checkout']['currency'] = $this->currency;
+	}
+
+	private function setShippingData($data=array())
+	{
+
+		$fields = self::getShippingFields();
+
+		foreach($fields as $fld)
+		{
+			$_SESSION['vstore']['shipping']['order_ship_'.$fld] = $data[$fld];
+		}
+
+
+	}
+
+	private function getShippingData($data=array())
+	{
+		return $_SESSION['vstore']['shipping'];
 	}
 
 
