@@ -737,11 +737,12 @@ Region 	region
 
 
 		protected $prefs = array(
+			'caption'                   => array('title'=> 'Store Caption', 'tab'=>0, 'type'=>'text', 'help'=>''),
 			'currency'		            => array('title'=> 'Currency', 'type'=>'dropdown', 'data' => 'string','help'=>'Select a currency'),
 			'shipping'		            => array('title'=> 'Calculate Shipping', 'type'=>'boolean', 'data' => 'int','help'=>'Including shipping calculation at checkout.'),
-			'howtoorder'	            => array('title'=>'How to order', 'type'=>'bbarea', 'help'=>'Enter how-to-order info.'),
-			'admin_items_perpage'	    => array('title'=>'Products per page', 'tab'=>1, 'type'=>'number', 'help'=>''),
-			'admin_categories_perpage'	=> array('title'=>'Categories per page', 'tab'=>1, 'type'=>'number', 'help'=>''),
+			'howtoorder'	            => array('title'=> 'How to order', 'type'=>'bbarea', 'help'=>'Enter how-to-order info.'),
+			'admin_items_perpage'	    => array('title'=> 'Products per page', 'tab'=>1, 'type'=>'number', 'help'=>''),
+			'admin_categories_perpage'	=> array('title'=> 'Categories per page', 'tab'=>1, 'type'=>'number', 'help'=>''),
 
 		);
 

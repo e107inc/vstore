@@ -510,11 +510,18 @@ class vstore
 
 		$pref = e107::pref('vstore');
 
-		if(!empty($this->pref['currency']))
+		if(!empty($pref['currency']))
 		{
-			$this->currency = $this->pref['currency'];
+			$this->currency = $pref['currency'];
 		}
 
+		if(!empty($pref['caption']))
+		{
+			$this->captionBase = $pref['caption'];
+		}
+
+
+		e107::getDebug()->log($this->pref);
 		e107::getDebug()->log("CartID:".$this->cartId);
 
 		// get all category data.
