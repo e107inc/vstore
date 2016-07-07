@@ -593,15 +593,13 @@ class vstore_order_form_ui extends e_admin_form_ui
 			case 'read': // List Page
 			case 'write': // Edit Page
 
-				$fname = $this->getController()->getModel()->get('order_ship_firstname');
-				$lname = $this->getController()->getModel()->get('order_ship_lastname');
-				$address = $this->getController()->getModel()->get('order_ship_address');
-				$city = $this->getController()->getModel()->get('order_ship_city');
-				$state = $this->getController()->getModel()->get('order_ship_state');
-				$zip = $this->getController()->getModel()->get('order_ship_zip');
-				$country = $this->getController()->getModel()->get('order_ship_country');
-
-
+				$fname      = $this->getController()->getFieldVar('order_ship_firstname');
+				$lname      = $this->getController()->getFieldVar('order_ship_lastname');
+				$address    = $this->getController()->getFieldVar('order_ship_address');
+				$city       = $this->getController()->getFieldVar('order_ship_city');
+				$state      = $this->getController()->getFieldVar('order_ship_state');
+				$zip        = $this->getController()->getFieldVar('order_ship_zip');
+				$country    = $this->getController()->getFieldVar('order_ship_country');
 
 				return $fname." ".$lname."<br />".$address."<br />".$city.", ".$state."  ".$zip."<br />".$this->getCountry($country);
 
@@ -626,7 +624,7 @@ class vstore_order_form_ui extends e_admin_form_ui
 			case 'read': // List Page
 			case 'write': // Edit Page
 
-				$via = $this->getController()->getModel()->get('order_pay_gateway');
+				$via = $this->getController()->getFieldVar('order_pay_gateway');
 
 			break;
 
@@ -1146,7 +1144,7 @@ class vstore_cat_form_ui extends e_admin_form_ui
 
 			if($mode == 'write')
 			{
-				return $frm->text('forum_name',$curVal,255,'size=xxlarge');
+				return $frm->text('cat_name',$curVal,255,'size=xxlarge');
 			}
 
 			if($mode == 'filter')
@@ -1309,7 +1307,7 @@ class vstore_items_form_ui extends e_admin_form_ui
 
 		if($mode == 'read')
 		{
-			$img = $this->getController()->getListModel()->get('item_pic');
+			$img = $this->getController()->getFieldVar('item_pic');
 
 			if($media = e107::unserialize($img))
 			{
