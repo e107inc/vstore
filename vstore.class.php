@@ -1006,7 +1006,12 @@ class vstore
 
 			case "paypal":
 				$gateway = Omnipay::create('PayPal_Express');
-				$gateway->setTestMode(true);
+
+				if(!deftrue('VSTORE_LIVE', false))
+				{
+					$gateway->setTestMode(true);
+				}
+
 				$gateway->setUsername($this->pref['paypal']['username']);
 				$gateway->setPassword($this->pref['paypal']['password']);
 				$gateway->setSignature($this->pref['paypal']['signature']);
@@ -1017,7 +1022,7 @@ class vstore
 		}
 
 
-		$info = array('first_name_bill'=>"bill", 'last_name_bill'=>'Jones', 'street_address_1_bill'=>'123 High St.','phone_bill'=>'555-555-5555');
+
 /*
 
 		$cardInput = array(
@@ -1073,9 +1078,9 @@ class vstore
                        'amount'                 => $data['totals']['cart_grandTotal'],
                        'shippingAmount'         => $data['totals']['cart_shippingTotal'],
                        'currency'               => $data['totals']['currency'],
-					    'items'                 => $items,
-					    'transactionId'         => $this->getCheckoutData('id'),
-					    'clientIp'              => USERIP,
+					   'items'                  => $items,
+					   'transactionId'          => $this->getCheckoutData('id'),
+					   'clientIp'               => USERIP,
                    //     'card'                  => new CreditCard($cardInput),
                     //   'transactionReference'   =>
                    )
@@ -1084,7 +1089,7 @@ class vstore
 		}
 		catch (Exception $e)
 		{
-		   $message = $e->getMessage();
+		    $message = $e->getMessage();
 		    e107::getMessage()->addError($message);
 		    return false;
 		}
