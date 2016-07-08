@@ -22,4 +22,8 @@
 		<pref name='admin_items_perpage'>10</pref>
 		<pref name='admin_categories_perpage'>10</pref>
 	</pluginPrefs>
+	<mediaCategories>
+		<category type="file"  perm="nobody">For Purchase</category>
+		<category type="image" perm="nobody">Vstore Images</category>
+	</mediaCategories>
 </e107Plugin>

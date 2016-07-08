@@ -77,7 +77,7 @@ CREATE TABLE vstore_items (
   `item_order` tinyint(3) DEFAULT NULL,
   `item_inventory` int(6) DEFAULT NULL,
   `item_link` varchar(255) DEFAULT NULL,
-  `item_download` int(4) DEFAULT NULL,
+  `item_download` varchar(255) DEFAULT NULL,
   `item_related` text NOT NULL,
   PRIMARY KEY (`item_id`)
 ) ENGINE=MyISAM;
