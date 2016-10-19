@@ -3,7 +3,7 @@
 $VSTORE_TEMPLATE = array();
 
 // List View.
-$VSTORE_TEMPLATE['list']['start']   = '<div class="row">';
+$VSTORE_TEMPLATE['list']['start']   = '<div class="row"><div class="col-md-12">{CAT_INFO}</div>';
 $VSTORE_TEMPLATE['list']['item']    =  '
 										{SETIMAGE: w=320&h=320&crop=1}
 										<div class="vstore-product-list col-sm-4 col-lg-4 col-md-4">
@@ -71,10 +71,23 @@ $VSTORE_TEMPLATE['menu']['end'] =  '';
 $VSTORE_TEMPLATE['item']['main']        = '{SETIMAGE: w=600&h=600}
 											<div class="vstore-product-view row">
 												<div class="col-md-6">
-													{ITEM_PIC: item=0&class=thumbnail img-responsive}
+													<div class="vstore-zoom thumbnail">
+														{ITEM_PIC: item=0&link=1}
+													</div>
+													<div class="row thumbnails">
+													{ITEM_PIC: w=200&h=200&crop=1&item=0&link=1&class=thumbnail img-responsive}
+													{ITEM_PIC: w=200&h=200&crop=1&item=1&link=1&class=thumbnail img-responsive}
+													{ITEM_PIC: w=200&h=200&crop=1&item=2&link=1&class=thumbnail img-responsive}
+													{ITEM_PIC: w=200&h=200&crop=1&item=3&link=1&class=thumbnail img-responsive}
+													{ITEM_PIC: w=200&h=200&crop=1&item=4&link=1&class=thumbnail img-responsive}
+													{ITEM_PIC: w=200&h=200&crop=1&item=5&link=1&class=thumbnail img-responsive}
+													{ITEM_PIC: w=200&h=200&crop=1&item=6&link=1&class=thumbnail img-responsive}
+													{ITEM_PIC: w=200&h=200&crop=1&item=7&link=1&class=thumbnail img-responsive}
+
+													</div>
 										        </div>
 										        <div class="col-md-6">
-										            <h2>{ITEM_NAME}</h2>
+										            <h3>{ITEM_NAME}</h3>
 
 													<p>{ITEM_DESCRIPTION}</p>
 										            <p>
@@ -83,7 +96,7 @@ $VSTORE_TEMPLATE['item']['main']        = '{SETIMAGE: w=600&h=600}
 										            <small class="text-muted">Price may change due to exchange rate.</small>
 										            </p>
 										            <div class="row">
-										                <div class="col-md-6 item-price"><h3>Price: {ITEM_PRICE}</h3></div>
+										                <div class="col-md-6 item-price"><h3>{ITEM_PRICE}</h3></div>
 										                <div class="col-md-6">{ITEM_ADDTOCART}</div>
 										            </div>
 												</div>
@@ -102,11 +115,23 @@ $VSTORE_TEMPLATE['item']['videos'] = '
 $VSTORE_TEMPLATE['item']['files']       = '{ITEM_FILES}';
 $VSTORE_TEMPLATE['item']['reviews']     = '{ITEM_REVIEWS}';
 $VSTORE_TEMPLATE['item']['related']     = '{ITEM_RELATED}';
-$VSTORE_TEMPLATE['item']['howto']       = '{CAT_INFO}';
+$VSTORE_TEMPLATE['item']['howto']       = '{PREF_HOWTOORDER}';
 
 $VSTORE_WRAPPER['item']['ITEM_DETAILS'] = "<p>{---}</p>";
 $VSTORE_WRAPPER['item']['ITEM_FILES']   = "<p>{---}</p>";
 $VSTORE_WRAPPER['item']['ITEM_REVIEWS'] = "<p>{---}</p>";
 $VSTORE_WRAPPER['item']['ITEM_RELATED'] = "<p>{---}</p>";
-$VSTORE_WRAPPER['item']['CAT_INFO']     = "<p>{---}</p>";
+$VSTORE_WRAPPER['item']['PREF_HOWTOORDER']     = "<p>{---}</p>";
 $VSTORE_WRAPPER['item']['ITEM_VIDEO']   = "<div class='col-md-6'><p>{---}</p></div>";
+
+
+
+$VSTORE_WRAPPER['item']['ITEM_PIC: w=200&h=200&crop=1&item=0&link=1&class=thumbnail img-responsive'] = "<div class='col-xs-3'><p>{---}</p></div>";
+$VSTORE_WRAPPER['item']['ITEM_PIC: w=200&h=200&crop=1&item=1&link=1&class=thumbnail img-responsive'] = "<div class='col-xs-3'><p>{---}</p></div>";
+$VSTORE_WRAPPER['item']['ITEM_PIC: w=200&h=200&crop=1&item=2&link=1&class=thumbnail img-responsive'] = "<div class='col-xs-3'><p>{---}</p></div>";
+$VSTORE_WRAPPER['item']['ITEM_PIC: w=200&h=200&crop=1&item=3&link=1&class=thumbnail img-responsive'] = "<div class='col-xs-3'><p>{---}</p></div>";
+$VSTORE_WRAPPER['item']['ITEM_PIC: w=200&h=200&crop=1&item=4&link=1&class=thumbnail img-responsive'] = "<div class='col-xs-3'><p>{---}</p></div>";
+$VSTORE_WRAPPER['item']['ITEM_PIC: w=200&h=200&crop=1&item=5&link=1&class=thumbnail img-responsive'] = "<div class='col-xs-3'><p>{---}</p></div>";
+$VSTORE_WRAPPER['item']['ITEM_PIC: w=200&h=200&crop=1&item=6&link=1&class=thumbnail img-responsive'] = "<div class='col-xs-3'><p>{---}</p></div>";
+$VSTORE_WRAPPER['item']['ITEM_PIC: w=200&h=200&crop=1&item=7&link=1&class=thumbnail img-responsive'] = "<div class='col-xs-3'><p>{---}</p></div>";
+

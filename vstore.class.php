@@ -33,6 +33,7 @@ class vstore_plugin_shortcodes extends e_shortcode
 	protected $currency = null;
 	protected $displayCurrency = false;
 	protected $categories = array();
+	public $captionOutOfStock = 'Out of Stock';
 	
 	public function __construct()
 	{
@@ -175,9 +176,23 @@ class vstore_plugin_shortcodes extends e_shortcode
 				$images[] = $i['path'];
 			}
 		}
-		
+
 		$path = vartrue($images[$index]);
-		return e107::getParser()->toImage($path,$parm);
+		$pre = "";
+		$post = "";
+
+
+		if(!empty($parm['link']))
+		{
+			$parm['scale']= '3x';
+			$link = $tp->thumbUrl($path, $parm);
+			unset($parm['scale'],$parm['link']);
+			$pre = "<a href='".$link."' data-standard='".$tp->thumbUrl($path, $parm)."'>";
+			$post = "</a>";
+
+		}
+
+		return $pre. e107::getParser()->toImage($path,$parm) . $post;
 	}
 	
 	function sc_item_video($parm=0)
@@ -322,7 +337,7 @@ class vstore_plugin_shortcodes extends e_shortcode
 
 		if(empty($this->var['item_inventory']))
 		{
-			return "<a href='#' class='".$classo."'>Out of Stock</a>";
+			return "<a href='#' class='btn-out-of-stock ".$classo."'>".$this->captionOutOfStock."</a>";
 		}
 
 	
@@ -432,7 +447,7 @@ class vstore_plugin_shortcodes extends e_shortcode
 	{
 		if(empty($this->var['item_inventory']))
 		{
-			return "<span class='label label-warning'>Out Of Stock</span>";
+			return "<span class='label label-danger'>".$this->captionOutOfStock."</span>";
 		}
 
 		return "<span class='label label-success'>In Stock</span>";
@@ -461,6 +476,8 @@ class vstore
 	protected   $categorySEF        = array();
 	protected 	$item               = array(); // current item.
 	protected   $captionBase        = "Vstore";
+	protected   $captionCategories  = "Product Brands";
+	protected   $captionOutOfStock  = "Out of Stock";
 	protected   $get                = array();
 	protected   $post               = array();
 	protected   $categoriesTotal    = 0;
@@ -503,7 +520,8 @@ class vstore
 	public function __construct()
 	{
 		$this->cartId = $this->getCartId();		
-		$this->sc = new vstore_plugin_shortcodes();	
+		$this->sc = new vstore_plugin_shortcodes();
+
 
 		$this->get = $_GET;
 		$this->post = $_POST;
@@ -515,9 +533,23 @@ class vstore
 			$this->currency = $pref['currency'];
 		}
 
-		if(!empty($pref['caption']))
+		if(!empty($pref['caption']) && !empty($pref['caption'][e_LANGUAGE]))
 		{
-			$this->captionBase = $pref['caption'];
+			$this->captionBase = $pref['caption'][e_LANGUAGE];
+		}
+
+
+
+		if(!empty($pref['caption_categories']) && !empty($pref['caption_categories'][e_LANGUAGE]))
+		{
+			$this->captionCategories = $pref['caption_categories'][e_LANGUAGE];
+			//e107::getDebug()->log("caption: ".$this->captionCategories);
+		}
+
+		if(!empty($pref['caption_outofstock']) && !empty($pref['caption_outofstock'][e_LANGUAGE]))
+		{
+			$this->captionOutOfStock = $pref['caption_outofstock'][e_LANGUAGE];
+			$this->sc->captionOutOfStock = $this->captionOutOfStock;
 		}
 
 
@@ -875,9 +907,11 @@ class vstore
 	{
 		$frm = e107::getForm();
 
+
+
 		$array = array();
 		
-		$array[] = array('url'=> e107::url('vstore','index'), 'text'=>'Product Brands');
+		$array[] = array('url'=> e107::url('vstore','index'), 'text'=>$this->captionCategories);
 		
 		if($this->get['cat'] || $this->get['item'])
 		{
@@ -1276,6 +1310,7 @@ class vstore
 		
 		$tp = e107::getParser();
 
+
 		$text = '
 			<div class="row">
 		       ';
@@ -1346,10 +1381,14 @@ class vstore
 		}
 		
 		$count = e107::getDb()->foundRows();
+
+		$categoryRow = $this->categories[$category];
 		
 		$tp = e107::getParser();
-
+		$this->sc->setVars($categoryRow);
 		$template = e107::getTemplate('vstore','vstore', $templateID);
+
+	//	e107::getDebug()->log($this->sc);
 
 		$text = $tp->parseTemplate($template['start'], true, $this->sc);
 		

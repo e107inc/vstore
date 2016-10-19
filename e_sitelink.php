@@ -87,11 +87,25 @@ class vstore_sitelink // include plugin-folder in the name.
 		//TODO Move into class.
 
 e107::getDebug()->log($data);
-		$text = '<div id="vstore-cart-dropdown" class="dropdown-menu">
+		$text = '<div id="vstore-cart-dropdown" class="dropdown-menu">';
+
+		if(empty($data))
+		{
+			$text .= '<div id="vstore-cart-dropdown-empty" class="alert alert-info">Your cart is empty.';
+			$text .= ' <a class="alert-link" href="'.e107::url('vstore','index').'">Start Shopping</a>';
+			$text .= '	</div></div>';
+
+			return $text;
+		}
+
+
+		$text .= '
                     <div class="form-group">
                             <ul class="media-list list-unstyled">';
 
 		$total = 0;
+
+
 
 		foreach($data as $item)
 		{
