@@ -1096,7 +1096,7 @@ class vstore
 
 			foreach($data['items'] as $var)
 			{
-				$items[] = array('name' => $var['item_code'], 'price' => $var['item_price'], 'description' => $var['item_name'], 'quantity' => $var['cart_qty']);
+				$items[] = array('id'=>$var['item_id'], 'name' => $var['item_code'], 'price' => $var['item_price'], 'description' => $var['item_name'], 'quantity' => $var['cart_qty']);
 			}
 
 		}
@@ -1139,6 +1139,8 @@ class vstore
 
 			$message = $response->getMessage();
 
+
+
 			e107::getMessage()->addSuccess($message);
 
 			$this->saveTransaction($transID, $transData, $items);
@@ -1163,6 +1165,12 @@ class vstore
 
 	private function saveTransaction($id, $transData, $items)
 	{
+
+		if(intval($transData['L_ERRORCODE0']) == 11607) // Duplicate REquest.
+		{
+			return false;
+		}
+
 
         $shippingData = $this->getShippingData();
 		$cartData  = $this->getCheckoutData();
@@ -1197,6 +1205,9 @@ class vstore
 		if( e107::getDb()->insert('vstore_orders',$insert) !== false)
 		{
 			$mes->addSuccess("Your order #".$id." is complete");
+
+			$this->updateInventory($insert['order_items']);
+
 		}
 		else
 		{
@@ -1205,6 +1216,29 @@ class vstore
 
 		}
 
+
+	}
+
+
+	private function updateInventory($json)
+	{
+		$sql = e107::getDb();
+		$arr = json_decode($json,true);
+
+		foreach($arr as $row)
+		{
+			if(!empty($row['quantity']) && !empty($row['id']) && !empty($row['name']))
+			{
+				if($sql->update('vstore_items','item_inventory = item_inventory - '.intval($row['quantity']).' WHERE item_id='.intval($row['id']).' AND item_code="'.$row['name'].'" LIMIT 1'))
+				{
+					e107::getMessage()->addDebug("Reduced inventory of ".$row['name']." by ".$row['quantity']);
+				}
+				else
+				{
+					e107::getMessage()->addDebug("Was UNABLE to reduce inventory of ".$row['name']." (".$row['id'].") by ".$row['quantity']);
+				}
+			}
+		}
 
 	}
 

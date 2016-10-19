@@ -1216,7 +1216,7 @@ class vstore_items_ui extends e_admin_ui
 		  'item_related' 		=>   array ( 'title' => 'Related', 			'type' => 'method', 'tab'=>2, 'data' => 'array', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => 'video=1', 'class' => 'center', 'thclass' => 'center',  ),
 	 
 		  'item_order' 			=>   array ( 'title' => LAN_ORDER, 			'type' => 'hidden', 'data' => 'int', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
-		  'item_inventory' 		=>   array ( 'title' => 'Inventory', 		'type' => 'number', 'data' => 'int', 'width' => 'auto', 'inline'=>true, 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'right', 'thclass' => 'right',  ),
+		  'item_inventory' 		=>   array ( 'title' => 'Inventory', 		'type' => 'method', 'data' => 'int', 'width' => 'auto', 'inline'=>true, 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'right', 'thclass' => 'right',  ),
 		  'item_link' 			=>   array ( 'title' => 'External Link', 	'type' => 'text', 'tab'=>3, 'data' => 'str', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'center', 'thclass' => 'center',  ),
 		  'item_download' 		=>   array ( 'title' => 'Download File', 	'type' => 'file', 'tab'=>3, 'data' => 'int', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => 'media=vstore_file', 'class' => 'center', 'thclass' => 'center',  ),
 			
@@ -1349,6 +1349,45 @@ class vstore_items_form_ui extends e_admin_form_ui
 			case 'filter':
 			case 'batch':
 				return  null;
+			break;
+		}
+	}
+
+
+		// Custom Method/Function
+	function item_inventory($curVal,$mode)
+	{
+		$frm = e107::getForm();
+
+		switch($mode)
+		{
+			case 'read': // List Page
+				return $curVal;
+			break;
+
+			case 'write': // Edit Page
+				return $frm->number('item_cat',$curVal);
+			break;
+
+			case 'filter':
+			case 'batch':
+				return  null;
+			break;
+
+			case 'inline':
+				$class = '';
+
+				if($curVal < 1)
+				{
+					$class = 'text-danger';
+				}
+				elseif($curVal < 3)
+				{
+					$class = 'text-warning';
+				}
+
+
+				return array('inlineType'=>'text', 'inlineData'=>$curVal, 'inlineParms'=>array( 'class'=>$class));
 			break;
 		}
 	}
