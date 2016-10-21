@@ -13,6 +13,7 @@
 .vstore-product-view .item-price h3         { margin-top:5px; }
 .vstore-product-view p                      { margin-bottom:20px; }
 .vstore-product-view .btn-out-of-stock      { display: none}
+.vstore-product-view .thumbnails a:focus    { outline:1px solid silver }
 
 #vstore-cart-icon                           { }
 #vstore-cart-icon.active                    { color: white }
