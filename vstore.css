@@ -1,6 +1,8 @@
 
 .ratings                                    { color: #D17581; padding-left: 10px; padding-right: 10px; }
 
+.adminlist .item-inventory                  { font-weight: bold; }
+
 .vstore-product-list .thumbnail             { height:490px }
 .vstore-product-list .item-description      { height:110px; overflow:hidden; text-align:left; margin-bottom:15px }
 .vstore-product-list .item-price            { font-size: 1.3em; padding-top: 2px; display: block; white-space:nowrap }
@@ -20,13 +22,4 @@
 .vstore-category-list  > .col-md-4:nth-child(3n+1) {  clear:both; }
 .vstore-category-list .thumbnail .caption   { min-height:80px }
 
-.vstore-zoom::after {
-    content: '';
-    display: block;
-    width: 33px;
-    height: 33px;
-    position: absolute;
-    top: 0;
-    right: 0;
-    background: url(https://raw.github.com/jackmoore/zoom/master/icon.png);
-}
+.vstore-zoom::after                         { content: ''; display: block; width: 33px; height: 33px; position: absolute; top: 0; right: 0; background: url(https://raw.github.com/jackmoore/zoom/master/icon.png); }
