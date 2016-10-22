@@ -75,10 +75,14 @@ var e107 = e107 || {'settings': {}, 'behaviors': {}};
 					$links.attr('href', newSrcSet);
 					$links.attr('data-standard', newSrc);
 
+					// Use Zoom's container as context for detach/attach.
+					var context = $('.vstore-zoom').parent();
+
 					// Need to re-init Zoom, so we detach its behaviors first.
-					e107.detachBehaviors();
+					e107.detachBehaviors(context);
+
 					// Then attach behaviors again.
-					e107.attachBehaviors();
+					e107.attachBehaviors(context);
 
 					return false;
 				});
