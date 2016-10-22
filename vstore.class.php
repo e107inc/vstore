@@ -2,20 +2,8 @@
 
 
 e107::css('vstore','vstore.css');
+e107::js('vstore','js/vstore.js');
 
-e107::js('footer-inline', '
-
-$( ".cart-qty" ).keyup(function() {
-	
-//	alert( "Handler for .change() called." );
-
-	$("#cart-qty-submit").show(0);
-	$("#cart-checkout").hide(0);
-	
-});
-
-
-','jquery');
 
 require_once('vendor/autoload.php');
 
