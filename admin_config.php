@@ -1231,6 +1231,7 @@ class vstore_items_ui extends e_admin_ui
 		protected $fieldpref = array('item_code', 'item_name', 'item_sef', 'item_cat', 'item_price', 'item_inventory');
 				
 		protected $categories = array();
+		protected $categoriesTree = array();
 	
 		// optional
 		public function init()
@@ -1245,15 +1246,21 @@ class vstore_items_ui extends e_admin_ui
 
 		//	print_a($_POST);
 			
-			$data = e107::getDb()->retrieve('SELECT cat_id,cat_name FROM #vstore_cat', true);
-			
+			$data = e107::getDb()->retrieve('SELECT cat_id,cat_name,cat_parent FROM #vstore_cat ORDER BY cat_order', true);
+			$parent = array();
+
 			foreach($data as $k=>$v)
 			{
 				$id = $v['cat_id'];
-				$this->categories[$id] = $v['cat_name'];	
+				$parent[$id] = $v['cat_name'];
+				$pid = $v['cat_parent'];
+				$name = $parent[$pid];
+				$this->categories[$id] = $v['cat_name'];
+				$this->categoriesTree[$name][$id] = $v['cat_name'];
 			}
-			
-			$this->fields['item_cat']['writeParms'] = $this->categories;
+
+
+			$this->fields['item_cat']['writeParms'] = ($this->getAction() == 'list') ? $this->categories : $this->categoriesTree;
 		//	print_a($this->categories);
 			
 			
