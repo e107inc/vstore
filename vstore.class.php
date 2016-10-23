@@ -39,7 +39,7 @@ class vstore_plugin_shortcodes extends e_shortcode
 	{
 	 	$this->vpref = e107::pref('vstore');	
 				
-		$this->symbols = array('USD'=>'$','EUR'=>'€', 'CAN'=>'$');
+		$this->symbols = array('USD'=>'$','EUR'=>'€','CAN'=>'$','GBP'=>'£');
 		$currency = !empty($this->vpref['currency']) ? $this->vpref['currency'] : 'USD';
 
 		$this->curSymbol = vartrue($this->symbols[$currency],'$');
@@ -1111,7 +1111,7 @@ class vstore
                        'returnUrl'              => e107::url('vstore', 'return', null, array('mode'=>'full')),
                        'amount'                 => $data['totals']['cart_grandTotal'],
                        'shippingAmount'         => $data['totals']['cart_shippingTotal'],
-                       'currency'               => $data['totals']['currency'],
+                       'currency'               => $data['currency'],
 					   'items'                  => $items,
 					   'transactionId'          => $this->getCheckoutData('id'),
 					   'clientIp'               => USERIP,
