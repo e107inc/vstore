@@ -4,7 +4,37 @@ var e107 = e107 || {'settings': {}, 'behaviors': {}};
 {
 	'use strict';
 
+	/**
+	 * Zoom object.
+	 */
+	e107.ImageZoom = null;
+
+	/**
+	 * Namespace for vstore related settings.
+	 */
 	e107.settings.vstore = e107.settings.vstore || {};
+
+	/**
+	 * Default settings for Zoom.
+	 */
+	e107.settings.vstore.ImageZoom = e107.settings.vstore.ImageZoom || {
+		url: false,
+		on: 'mouseover',
+		duration: 120,
+		target: false,
+		touch: true,
+		magnify: 1,
+		callback: function ()
+		{
+			// TODO colorbox support?
+		},
+		onZoomIn: function ()
+		{
+		},
+		onZoomOut: function ()
+		{
+		}
+	};
 
 	/**
 	 * @type {{attach: e107.behaviors.vstoreImageZoom.attach}}
@@ -14,38 +44,13 @@ var e107 = e107 || {'settings': {}, 'behaviors': {}};
 		{
 			$(context).find('.vstore-zoom').once('vstore-image-zoom').each(function ()
 			{
-				e107.settings.vstore.ImageZoom = $(this);
+				var $this = $(this);
 
 				if(typeof $.fn.zoom !== 'undefined')
 				{
-					e107.settings.vstore.ImageZoom.zoom({
-						url: false,
-						on: 'mouseover',
-						duration: 120,
-						target: false,
-						touch: true,
-						magnify: 1,
-						callback: function ()
-						{
-							// TODO colorbox support?
-						},
-						onZoomIn: function ()
-						{
-						},
-						onZoomOut: function ()
-						{
-						}
-					});
-				}
-			});
-		},
-		detach: function (context, settings)
-		{
-			$(context).find('.vstore-zoom').removeOnce('vstore-image-zoom').each(function ()
-			{
-				if(typeof $.fn.zoom !== 'undefined')
-				{
-					e107.settings.vstore.ImageZoom.trigger('zoom.destroy');
+					e107.ImageZoom = $this;
+					e107.settings.vstore.ImageZoom.url = $this.find('img:first').attr('src');
+					e107.ImageZoom.zoom(e107.settings.vstore.ImageZoom);
 				}
 			});
 		}
@@ -75,14 +80,12 @@ var e107 = e107 || {'settings': {}, 'behaviors': {}};
 					$links.attr('href', newSrcSet);
 					$links.attr('data-standard', newSrc);
 
-					// Use Zoom's container as context for detach/attach.
-					var container = $('.vstore-zoom').parent();
-
-					// Need to re-init Zoom, so we detach its behaviors first.
-					e107.detachBehaviors(container);
-
-					// Then attach behaviors again.
-					e107.attachBehaviors(container);
+					// Change URL in Zoom settings.
+					e107.settings.vstore.ImageZoom.url = newSrcSet;
+					// Destroy Zoom object.
+					e107.ImageZoom.trigger('zoom.destroy');
+					// Re-init Zoom with new settings.
+					e107.ImageZoom.zoom(e107.settings.vstore.ImageZoom);
 
 					return false;
 				});
