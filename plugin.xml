@@ -10,7 +10,7 @@
 	<category>content</category>
 	<copyright>GPL</copyright>
 	<adminLinks>
-		<link url="admin_config.php" description="" icon="" iconSmall="" primary="true" >LAN_CONFIGURE</link>
+		<link url="admin_config.php" description="" icon="images/vstore_32.png" iconSmall="images/vstore_16.png" icon128="images/vstore_128.png" primary="true" >LAN_CONFIGURE</link>
 	</adminLinks>
 	<siteLinks>
 		<link url="{e_PLUGIN}vstore/vstore.php" sef='index' perm="admin" >LAN_PLUGIN_VSTORE_NAME</link>
@@ -23,7 +23,8 @@
 		<pref name='admin_categories_perpage'>10</pref>
 	</pluginPrefs>
 	<mediaCategories>
-		<category type="file"  perm="nobody">For Purchase</category>
+		<category type="file"  perm="nobody">Vstore Digital Purchase</category>
+		<category type="file"  perm="nobody">Vstore Attachments</category>
 		<category type="image" perm="nobody">Vstore Images</category>
 	</mediaCategories>
 </e107Plugin>
