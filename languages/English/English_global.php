@@ -9,3 +9,5 @@
 	 */
 
 define("LAN_PLUGIN_VSTORE_NAME", "Shop");
+define("LAN_PLUGIN_VSTORE_SUMMARY", "Simple Virtual Store for e107");
+define("LAN_PLUGIN_VSTORE_DESCRIPTION", "Shopping cart system for e107 v2.");
