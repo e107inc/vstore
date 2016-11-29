@@ -1378,7 +1378,7 @@ class vstore_items_form_ui extends e_admin_form_ui
 			break;
 
 			case 'write': // Edit Page
-				return $frm->number('item_cat',$curVal);
+				return $frm->number('item_inventory',$curVal);
 			break;
 
 			case 'filter':
