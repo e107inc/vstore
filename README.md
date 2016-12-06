@@ -3,15 +3,15 @@
 [![Join the chat at https://gitter.im/e107inc/vstore](https://badges.gitter.im/e107inc/vstore.svg)](https://gitter.im/e107inc/vstore?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 A simple shopping cart solution for e107 v2.x Bootstrap CMS. 
 
-A work-in-progress. 
+## Features
+* Paypal (CreditCard) payments
+* "Check Out" menu with shopping cart items
 
 ## TODO
-* Integrate OmniPay class for checkout, starting with Paypal and then adding Amazon and others. 
-* A a "Check Out" menu with shopping cart items
-* Product Menu configuration options. (category and caption)
+* Add more payment gateways. 
 * Graphs/Charts of sales for the admin area. 
 * Localization (LANS)
-* Plugin Icon
+* Customer email template
 
 ## Contributing
 Pull-requests are very welcome. 
