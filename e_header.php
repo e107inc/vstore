@@ -12,29 +12,29 @@
  {
 
 
+
     class vstore_cart_icon
     {
         function __construct()
         {
           //  require_once(e_PLUGIN.'vstore/vstore.class.php');
 
-            if(e_ADMIN_AREA === true)
+            if(e_ADMIN_AREA !== true)
             {
-                  return false;
+
+                $vst = e107::getSingleton('vstore',e_PLUGIN.'vstore/vstore.class.php');
+
+                $data = $vst->getCartData();
+
+                $count = count($data);
+
+                $style = empty($count) ? '' : "class='active'";
+
             }
-
-            $vst = e107::getSingleton('vstore',e_PLUGIN.'vstore/vstore.class.php');
-
-			$data = $vst->getCartData();
-
-			$count = count($data);
-
-	        $style = empty($count) ? '' : "class='active'";
 
 			$text = "<span id='vstore-cart-icon' ".$style.">".e107::getParser()->toGlyph('fa-shopping-cart')."<span class='badge'>".$count."</span></span>";
 
 		    define('LAN_PLUGIN_VSTORE_CARTICON', $text);
-
 
         }
 
