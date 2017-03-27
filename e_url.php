@@ -14,7 +14,10 @@ if (!defined('e107_INIT')) { exit; }
 
 class vstore_url // plugin-folder + '_url' 
 {
-	function config() 
+
+	public $alias = 'vstore';
+
+	function config($pofile=null)
 	{
 		$config = array();
 
@@ -27,7 +30,6 @@ class vstore_url // plugin-folder + '_url'
 
 
 		$config['return'] = array(
-
 			'regex'			=> '^vstore/checkout/return/?\??(.*)$',
 			'redirect'		=> '{e_PLUGIN}vstore/vstore.php?mode=return&$1',
 			'sef'			=>  'vstore/checkout/return/',
@@ -42,25 +44,19 @@ class vstore_url // plugin-folder + '_url'
 		);
 
 
-
-
-
 		$config['addtocart'] = array(
-
 			'regex'			=> '^vstore/cart/add/([\d]*)$',
 			'redirect'		=> '{e_PLUGIN}vstore/vstore.php?mode=cart&add=$1',
 			'sef'			=>  'vstore/cart/add/{item_id}',
 		);
 
 		$config['cart'] = array(
-
 			'regex'			=> '^vstore/cart/?\??(.*)$',
 			'redirect'		=> '{e_PLUGIN}vstore/vstore.php?mode=cart&$1',
 			'sef'			=>  'vstore/cart/',
 		);
 
 		$config['index'] = array(
-			'alias'         => 'vstore',
 			'regex'			=> '^{alias}\/?([\?].*)?\/?$',
 			'sef'			=> '{alias}/',
 			'redirect'		=> '{e_PLUGIN}vstore/vstore.php$1',
@@ -68,7 +64,6 @@ class vstore_url // plugin-folder + '_url'
 		);
 
 		$config['subcategory'] = array(
-			'alias'         => 'vstore',
 			'regex'			=> '^{alias}/([^\/]*)/([^\/]*)/?$',
 			'redirect'		=> '{e_PLUGIN}vstore/vstore.php?catsef=$2',
 			'sef'			=> '{alias}/{cat_sef}/{subcat_sef}'
@@ -76,14 +71,12 @@ class vstore_url // plugin-folder + '_url'
 
 
 		$config['category'] = array(
-			'alias'         => 'vstore',
 			'regex'			=> '^{alias}/([^\/]*)/?$',
 			'redirect'		=> '{e_PLUGIN}vstore/vstore.php?catsef=$1',
 			'sef'			=> '{alias}/{cat_sef}'
 		);
 
 		$config['product'] = array(
-			'alias'         => 'vstore',
 			'regex'			=> '^{alias}/([^\/]*)/([\d]*)/(.*)',
 			'sef'			=> '{alias}/{cat_sef}/{item_id}/{item_sef}',
 			'redirect'		=> '{e_PLUGIN}vstore/vstore.php?item=$2',
