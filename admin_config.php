@@ -994,24 +994,16 @@ class vstore_cat_ui extends e_admin_ui
 
 		protected $sortField		= 'cat_order';
 		protected $sortParent       = 'cat_parent';
-		protected $orderStep		= 100;
-	//	protected $sortField		= 'somefield_order';
-	//	protected $orderStep		= 10;
+		protected $treePrefix       = 'cat_name';
+
+
 	//	protected $tabs			= array('Tabl 1','Tab 2'); // Use 'tab'=>0  OR 'tab'=>1 in the $fields below to enable. 
-		
-	//	protected $listQry      	= "SELECT * FROM #tableName WHERE field != '' "; // Example Custom Query. LEFT JOINS allowed. Should be without any Order or Limit.
-	
-		protected $listQry          = "SELECT a. *, CASE WHEN a.cat_parent = 0 THEN a.cat_order ELSE b.cat_order + (( a.cat_order)/1000) END AS Sort FROM `#vstore_cat` AS a LEFT JOIN `#vstore_cat` AS b ON a.cat_parent = b.cat_id ";
-		protected $listOrder		= 'Sort,cat_order ';
 
-
-
-	//	protected $listOrder		= 'cat_id DESC';
 	
 		protected $fields 		= array (  
 			'checkboxes' 		=>   array ( 'title' => '', 'type' => null, 'data' => null, 'width' => '5%', 'thclass' => 'center', 'forced' => '1', 'class' => 'center', 'toggle' => 'e-multiselect',  ),
-		  	'cat_id' 			=>   array ( 'title' => LAN_ID, 'data' => 'int', 'width' => '5%', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
-		  	'cat_name' 			=>   array ( 'title' => LAN_TITLE, 'type' => 'method', 'data' => 'str', 'width' => 'auto', 'inline' => true, 'help' => '', 'readParms' => '', 'writeParms' => array('size'=>'xxlarge'), 'class' => 'left', 'thclass' => 'left',  ),
+		  	'cat_id' 			=>   array ( 'title' => LAN_ID, 'data' => 'int', 'width' => '5%', 'help' => '', 'readParms' => 'url=category&target=dialog', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+		  	'cat_name' 			=>   array ( 'title' => LAN_TITLE, 'type' => 'text', 'data' => 'str', 'width' => 'auto', 'inline' => true, 'help' => '', 'readParms' => '', 'writeParms' => array('size'=>'xxlarge'), 'class' => 'left', 'thclass' => 'left',  ),
 		    'cat_description' 	=>   array ( 'title' => LAN_DESCRIPTION, 'type' => 'textarea', 'data' => 'str', 'width' => '40%', 'help' => '', 'readParms' => '', 'writeParms' => array('maxlength' => 220, 'size'=>'xxlarge'), 'class' => 'left', 'thclass' => 'left',  ),
 		  	'cat_sef' 			=>   array ( 'title' => LAN_SEFURL, 'type' => 'text', 'data' => 'str', 'width' => 'auto', 'inline' => true, 'help' => '', 'readParms' => '', 'writeParms' => array('size'=>'xxlarge','sef'=>'cat_name'), 'class' => 'left', 'thclass' => 'left',  ),
 			'cat_parent'        =>  array('title'=>"Parent", 'type'=>'dropdown', 'data'=>'int', 'inline'=>true,  'width'=>'auto'),
@@ -1022,7 +1014,7 @@ class vstore_cat_ui extends e_admin_ui
 		  	'options' 			=>   array ( 'title' => 'Options', 'type' => null, 'data' => null, 'width' => '10%', 'thclass' => 'center last', 'class' => 'center last', 'forced' => '1', 'sort'=>1  ),
 		);		
 		
-		protected $fieldpref = array('cat_name', 'cat_sef', 'cat_class');
+		protected $fieldpref = array('cat_id', 'cat_name', 'cat_sef', 'cat_class');
 
 
 
@@ -1039,6 +1031,7 @@ class vstore_cat_ui extends e_admin_ui
 		public function afterCreate($new_data, $old_data, $id)
 		{
 			// do something
+
 		}
 
 		public function beforeUpdate($new_data, $old_data, $id)
@@ -1087,8 +1080,7 @@ class vstore_cat_ui extends e_admin_ui
 					if(empty($row['cat_parent']))
 					{
 
-						$c = $parent * 100;
-						//$c = ($c + 50) / 100 * 100;
+						$c = $parent * 10;
 						$parent++;
 					}
 					else
@@ -1110,9 +1102,9 @@ class vstore_cat_ui extends e_admin_ui
 		{
 			$this->perPage = e107::pref('vstore','admin_categories_perpage',10);
 
-			$this->checkOrder();
+		//	$this->checkOrder();
 
-			$data = e107::getDb()->retrieve('vstore_cat','cat_id,cat_name', "cat_parent = 0", true);
+			/*$data = e107::getDb()->retrieve('vstore_cat','cat_id,cat_name', "cat_parent = 0", true);
 
 			$this->fields['cat_parent']['writeParms']['optArray'] = array(0=>'(Root)');
 
@@ -1120,10 +1112,41 @@ class vstore_cat_ui extends e_admin_ui
 			{
 				$key = $v['cat_id'];
 				$this->fields['cat_parent']['writeParms']['optArray'][$key] = $v['cat_name'];
-			}
+			}*/
+
+			$this->setVstoreCategoryTree();
 
 		}
-	
+
+
+
+	private function setVstoreCategoryTree()
+	{
+
+
+		$sql = e107::getDb();
+		$qry = $this->getParentChildQry(true);
+		$sql->gen($qry);
+
+		$this->fields['cat_parent']['writeParms']['optArray'] = array(0=>'(Root)');
+
+		while($row = $sql->fetch())
+		{
+			$num = $row['_depth'] - 1;
+			$id = $row['cat_id'];
+			$this->fields['cat_parent']['writeParms']['optArray'][$id] = str_repeat("&nbsp;&nbsp;",$num).$row['cat_name'];
+		}
+
+		if($this->getAction() === 'edit') // make sure parent is not the same as ID.
+		{
+			$r = $this->getId();
+			unset($this->fields['cat_parent']['writeParms']['optArray'][$r]);
+		}
+
+	}
+
+
+
 	/*
 		public function customPage()
 		{
@@ -1139,7 +1162,7 @@ class vstore_cat_ui extends e_admin_ui
 
 
 class vstore_cat_form_ui extends e_admin_form_ui
-{
+{/*
 		function cat_name($curVal,$mode,$parm)
 		{
 
@@ -1181,7 +1204,7 @@ class vstore_cat_form_ui extends e_admin_form_ui
 
 				return $ret;
 			}
-		}
+		}*/
 }		
 		
 
@@ -1207,7 +1230,7 @@ class vstore_items_ui extends e_admin_ui
 		protected $fields 		= array (  
 		  'checkboxes' 			=>   array ( 'title' => '', 'type' => null, 'data' => null, 	'width' => '5%', 'thclass' => 'center', 'forced' => '1', 'class' => 'center', 'toggle' => 'e-multiselect',  ),
 		  'item_preview'       =>   array( 'title' => LAN_PREVIEW, 'type'=>'method', 'data'=>false, 'width'=>'5%', 'forced'=>1),
-		   'item_id' 			=>   array ( 'title' => LAN_ID, 			'data' => 'int', 	'width' => '5%', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+		   'item_id' 			=>   array ( 'title' => LAN_ID, 			'type'=>'text', 'data' => 'int', 	'width' => '5%', 'help' => '', 'readParms'=>'link=sef&target=blank', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 		  'item_code' 			=>   array ( 'title' => 'Code', 			'type' => 'text', 'inline'=>true,	'data' => 'str', 'width' => '2%', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'center', 'thclass' => 'center',  ),
 		  'item_name'			=>   array ( 'title' => LAN_TITLE, 			'type' => 'text', 	'data' => 'str', 'width' => 'auto', 'inline' => true, 'help' => '', 'readParms' => '', 'writeParms' => array('size'=>'xxlarge'), 'class' => 'left', 'thclass' => 'left',  ),
 		  'item_desc' 			=>   array ( 'title' => 'Description', 		'type' => 'textarea', 	'data' => 'str', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => array('size'=>'xxlarge','maxlength'=>250), 'class' => 'center', 'thclass' => 'center',  ),
