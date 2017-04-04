@@ -93,6 +93,16 @@ class vstore_admin extends e_admin_dispatcher
 	);	
 	
 	protected $menuTitle = 'Vstore';
+
+		function init()
+		{
+			if(deftrue('e_DEBUG'))
+			{
+				$this->adminMenu['products/grid'] = array('caption'=> "Products (Grid)", 'perm' => 'P');
+			}
+
+			parent::init();
+		}
 }
 
 
@@ -419,7 +429,8 @@ class vstore_order_ui extends e_admin_ui
 
 		protected $prefs = array(
 			'paypal_active'         => array('title'=>"Paypal Payments", 'type'=>'boolean', 'tab'=>0, 'data'=>'int', 'help'=>''),
-			'paypal_username'       => array('title'=>"Paypal Username", 'type'=>'text', 'tab'=>0, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
+			'paypal_testmode'         => array('title'=>"Paypal Testmode", 'type'=>'boolean', 'tab'=>0, 'data'=>'int', 'writeParms'=>array(),'help'=>'Use Paypal Sandbox'),
+			'paypal_username'       => array('title'=>"Paypal Username", 'type'=>'text', 'tab'=>0, 'data'=>'str', 'writeParms'=>array('size'=>'xxlarge'), 'help'=>''),
 			'paypal_password'       => array('title'=>"Paypal Password", 'type'=>'text', 'tab'=>0, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
 			'paypal_signature'      => array('title'=>"Paypal Signature", 'type'=>'text', 'tab'=>0, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
 
@@ -1221,11 +1232,13 @@ class vstore_items_ui extends e_admin_ui
 		protected $batchCopy		= true;		
 		protected $sortField		= 'item_order';
 	//	protected $orderStep		= 10;
-		protected $tabs			= array('Basic','Details', 'Reviews', 'Files'); // Use 'tab'=>0  OR 'tab'=>1 in the $fields below to enable. 
+		protected $tabs			    = array('Basic','Details', 'Reviews', 'Files'); // Use 'tab'=>0  OR 'tab'=>1 in the $fields below to enable.
 		
 	//	protected $listQry      	= "SELECT * FROM #tableName WHERE field != '' "; // Example Custom Query. LEFT JOINS allowed. Should be without any Order or Limit.
 	
 		protected $listOrder		= 'item_id DESC';
+
+		protected $grid             = array('title'=>'item_name', 'image'=>'item_preview', 'body'=>'', 'height'=>'300px', 'class'=>'col-md-2');
 	
 		protected $fields 		= array (  
 		  'checkboxes' 			=>   array ( 'title' => '', 'type' => null, 'data' => null, 	'width' => '5%', 'thclass' => 'center', 'forced' => '1', 'class' => 'center', 'toggle' => 'e-multiselect',  ),
@@ -1259,7 +1272,7 @@ class vstore_items_ui extends e_admin_ui
 		// optional
 		public function init()
 		{
-			if($this->getAction() != 'list')
+			if($this->getAction() != 'list' && $this->getAction() != 'grid')
 			{
 				$this->fields['item_preview']['type'] = null;
 			}
@@ -1339,9 +1352,12 @@ class vstore_items_ui extends e_admin_ui
 class vstore_items_form_ui extends e_admin_form_ui
 {
 
-	function item_preview($curVal, $mode)
+	function item_preview($curVal, $mode, $parm)
 	{
 		$tp = e107::getParser();
+
+
+	//return print_a($parm, true);
 
 		if($mode == 'read')
 		{
@@ -1353,7 +1369,7 @@ class vstore_items_form_ui extends e_admin_form_ui
 				{
 					if(!$tp->isVideo($v['path']))
 					{
-						return $tp->toImage($v['path'],array('w'=>80,'h'=>80));
+						return $tp->toImage($v['path'], array('w'=>400,'h'=>400, 'crop'=>1));
 					}
 				}
 			}

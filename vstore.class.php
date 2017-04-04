@@ -1029,7 +1029,8 @@ class vstore
 			case "paypal":
 				$gateway = Omnipay::create('PayPal_Express');
 
-				if(!deftrue('VSTORE_LIVE', false))
+
+				if(!empty($this->pref['paypal']['testmode']))
 				{
 					$gateway->setTestMode(true);
 				}
