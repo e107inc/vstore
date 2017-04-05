@@ -13,6 +13,9 @@ A simple shopping cart solution for e107 v2.x Bootstrap CMS.
 * Localization (LANS)
 * Customer email template
 
+## Requirements
+* The very latest version of e107 v2.x available on Github. 
+
 ## Contributing
 Pull-requests are very welcome. 
 Please note that localization (language files/LANS) should occur only after the plugin is fully functional and tested. 
