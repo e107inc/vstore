@@ -1238,7 +1238,7 @@ class vstore_items_ui extends e_admin_ui
 	
 		protected $listOrder		= 'item_id DESC';
 
-		protected $grid             = array('title'=>'item_name', 'image'=>'item_preview', 'body'=>'', 'height'=>'300px', 'class'=>'col-md-2');
+		protected $grid             = array('title'=>'item_name', 'image'=>'item_preview', 'body'=>'',  'class'=>'col-md-2', 'perPage'=>12);
 	
 		protected $fields 		= array (  
 		  'checkboxes' 			=>   array ( 'title' => '', 'type' => null, 'data' => null, 	'width' => '5%', 'thclass' => 'center', 'forced' => '1', 'class' => 'center', 'toggle' => 'e-multiselect',  ),
@@ -1359,6 +1359,10 @@ class vstore_items_form_ui extends e_admin_form_ui
 
 	//return print_a($parm, true);
 
+		//var_dump($parm);
+
+		$size = $this->getController()->getAction() === 'grid' ? 400: 80;
+
 		if($mode == 'read')
 		{
 			$img = $this->getController()->getFieldVar('item_pic');
@@ -1369,7 +1373,7 @@ class vstore_items_form_ui extends e_admin_form_ui
 				{
 					if(!$tp->isVideo($v['path']))
 					{
-						return $tp->toImage($v['path'], array('w'=>400,'h'=>400, 'crop'=>1));
+						return $tp->toImage($v['path'], array('w'=>$size,'h'=>$size, 'crop'=>1));
 					}
 				}
 			}
