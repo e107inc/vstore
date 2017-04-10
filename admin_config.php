@@ -431,12 +431,12 @@ class vstore_order_ui extends e_admin_ui
 
 
 		protected $prefs = array(
-			'paypal_active'         => array('title'=> LAN_VSTORE_ADMIN_043, 'type'=>'boolean', 'tab'=>0, 'data'=>'int', 'help'=>''),
+			'paypal_active'         => array('title'=>LAN_VSTORE_ADMIN_043, 'type'=>'boolean', 'tab'=>0, 'data'=>'int', 'help'=>''),
 			'paypal_testmode'       => array('title'=>"Paypal Testmode", 'type'=>'boolean', 'tab'=>0, 'data'=>'int', 'writeParms'=>array(),'help'=>'Use Paypal Sandbox'),
-			'paypal_username'       => array('title'=> LAN_VSTORE_ADMIN_044, 'type'=>'text', 'tab'=>0, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
-			'paypal_password'       => array('title'=> LAN_VSTORE_ADMIN_045, 'type'=>'text', 'tab'=>0, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
-			'paypal_signature'      => array('title'=> LAN_VSTORE_ADMIN_046, 'type'=>'text', 'tab'=>0, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
-
+			'paypal_username'       => array('title'=>LAN_VSTORE_ADMIN_044, 'type'=>'text', 'tab'=>0, 'data'=>'str', 'writeParms'=>array('size'=>'xxlarge'), 'help'=>''),
+			'paypal_password'       => array('title'=>LAN_VSTORE_ADMIN_045, 'type'=>'text', 'tab'=>0, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
+			'paypal_signature'      => array('title'=>LAN_VSTORE_ADMIN_046, 'type'=>'text', 'tab'=>0, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
+			
 			'amazon_active'         => array('title'=> LAN_VSTORE_ADMIN_047, 'type'=>'boolean', 'tab'=>1, 'data'=>'int', 'help'=>''),
 			'amazon_merchant_id'    => array('title'=>"Amazon Merchant ID", 'type'=>'text', 'tab'=>1, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
 			'amazon_secret_key'     => array('title'=>"Amazon Secret Key", 'type'=>'text', 'tab'=>1, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
@@ -1018,12 +1018,12 @@ class vstore_cat_ui extends e_admin_ui
 			'checkboxes' 		=>   array ( 'title' => '', 'type' => null, 'data' => null, 'width' => '5%', 'thclass' => 'center', 'forced' => '1', 'class' => 'center', 'toggle' => 'e-multiselect',  ),
 		  	'cat_id' 			=>   array ( 'title' => LAN_ID, 'data' => 'int', 'width' => '5%', 'help' => '', 'readParms' => 'url=category&target=dialog', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 		  	'cat_name' 			=>   array ( 'title' => LAN_TITLE, 'type' => 'text', 'data' => 'str', 'width' => 'auto', 'inline' => true, 'help' => '', 'readParms' => '', 'writeParms' => array('size'=>'xxlarge'), 'class' => 'left', 'thclass' => 'left',  ),
-		       'cat_description' 	=>   array ( 'title' => LAN_DESCRIPTION, 'type' => 'textarea', 'data' => 'str', 'width' => '40%', 'help' => '', 'readParms' => '', 'writeParms' => array('maxlength' => 220, 'size'=>'xxlarge'), 'class' => 'left', 'thclass' => 'left',  ),
+		        'cat_description' 	=>   array ( 'title' => LAN_DESCRIPTION, 'type' => 'textarea', 'data' => 'str', 'width' => '40%', 'help' => '', 'readParms' => '', 'writeParms' => array('maxlength' => 220, 'size'=>'xxlarge'), 'class' => 'left', 'thclass' => 'left',  ),
 		  	'cat_sef' 			=>   array ( 'title' => LAN_SEFURL, 'type' => 'text', 'data' => 'str', 'width' => 'auto', 'batch'=>true, 'inline' => true, 'help' => '', 'readParms' => '', 'writeParms' => array('size'=>'xxlarge','sef'=>'cat_name'), 'class' => 'left', 'thclass' => 'left',  ),
-			'cat_parent'        =>  array('title'=> LAN_VSTORE_ADMIN_08, 'type'=>'dropdown', 'data'=>'int', 'inline'=>true,  'width'=>'auto'),
-			'cat_image' 		=>   array ( 'title' => LAN_IMAGE, 'type' => 'image', 'data' => 'str', 'width' => '40%', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),	
+			'cat_parent'            =>  array('title'=> LAN_VSTORE_ADMIN_08, 'type'=>'dropdown', 'data'=>'int', 'inline'=>true,  'width'=>'auto'),
+		  	'cat_image' 		=>   array ( 'title' => LAN_IMAGE, 'type' => 'image', 'data' => 'str', 'width' => '40%', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),	
 		 	'cat_info' 			=>   array ( 'title' => LAN_VSTORE_048, 'type' => 'bbarea', 'data' => 'str', 'width' => '40%', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
-		  	'cat_class' 		=>   array ( 'title' => LAN_USERCLASS, 'type' => 'userclass', 'data' => 'str', 'width' => 'auto', 'batch' => true, 'filter' => true, 'inline' => true, 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+			'cat_class' 		=>   array ( 'title' => LAN_USERCLASS, 'type' => 'userclass', 'data' => 'str', 'width' => 'auto', 'batch' => true, 'filter' => true, 'inline' => true, 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 		  	'cat_order' 		=>   array ( 'title' => LAN_ORDER, 'type' => 'text', 'data' => 'int', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 		  	'options' 			=>   array ( 'title' => LAN_OPTIONS, 'type' => null, 'data' => null, 'width' => '10%', 'thclass' => 'center last', 'class' => 'center last', 'forced' => '1', 'sort'=>1  ),
 		);		
