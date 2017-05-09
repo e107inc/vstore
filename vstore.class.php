@@ -360,6 +360,11 @@ class vstore_plugin_shortcodes extends e_shortcode
 	
 	function sc_item_url($parm=null)
 	{
+		if(!empty($this->var['item_link']))
+		{
+			return $this->var['item_link'];
+		}
+	
 		return e107::url('vstore','product', $this->var);
 	}
 	
