@@ -57,7 +57,8 @@ class vstore_sitelink // include plugin-folder in the name.
 		{
 			$sublinks[] = array(
 				'link_name'			=> $tp->toHtml($row['cat_name'],'','TITLE'),
-				'link_url'			=> e107::url('vstore','cat',$row), // '{e_PLUGIN}vstore/vstore.php?item='.$row['item_id'], // 1e107::getUrl()->sc('faqs/list/all', array('category' => $row['faq_info_id'])),
+				'link_url'			=> e107::url('vstore','category',$row),
+				//'link_url'			=> e107::url('vstore','cat',$row), // '{e_PLUGIN}vstore/vstore.php?item='.$row['item_id'], // 1e107::getUrl()->sc('faqs/list/all', array('category' => $row['faq_info_id'])),
 				'link_description'	=> '',
 				'link_button'		=> '',
 				'link_category'		=> '',
