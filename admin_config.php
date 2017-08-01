@@ -1261,7 +1261,7 @@ class vstore_items_ui extends e_admin_ui
 		  'item_link' 			=>   array ( 'title' => 'External Link', 	'type' => 'text', 'tab'=>3, 'data' => 'str', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'center', 'thclass' => 'center',  ),
 		  'item_download' 		=>   array ( 'title' => 'Download File', 	'type' => 'file', 'tab'=>3, 'data' => 'int', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => 'media=vstore_file', 'class' => 'center', 'thclass' => 'center',  ),
 			
-		  'options' 			=>   array ( 'title' => 'Options', 			'type' => null, 'data' => null, 'width' => '5%', 'thclass' => 'right last', 'class' => 'right last', 'forced' => '1',  ),
+		  'options' 			=>   array ( 'title' => LAN_OPTIONS, 		'type' => null, 'data' => null, 'width' => '5%', 'thclass' => 'right last', 'class' => 'right last', 'forced' => '1',  ),
 		);		
 		
 		protected $fieldpref = array('item_code', 'item_name', 'item_sef', 'item_cat', 'item_price', 'item_inventory');
