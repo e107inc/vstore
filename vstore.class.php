@@ -1424,7 +1424,8 @@ class vstore
 		{
 			$id = $row['item_cat'];
 			$row['cat_id'] = $row['item_cat'];
-			$row['cat_sef'] = $this->categories[$id]['cat_sef'];
+			$row['cat_sef'] = $this->categories[$row['cat_id']]['cat_sef'];
+			//$row['cat_sef'] = $this->categories[$id]['cat_sef'];
 			$row['item_sef'] = eHelper::title2sef($row['item_name'],'dashl');
 			
 			$this->sc->setVars($row);
