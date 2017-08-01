@@ -82,4 +82,12 @@ CREATE TABLE vstore_items (
   PRIMARY KEY (`item_id`)
 ) ENGINE=MyISAM;
 
-
+CREATE TABLE vstore_items_vars (
+ `item_var_id` int(10) NOT NULL AUTO_INCREMENT,
+ `item_var_name` varchar(255) NOT NULL DEFAULT '',
+ `item_var_info` varchar(255) NOT NULL DEFAULT '',
+ `item_var_attributes` text,
+ `item_var_compulsory` int(2) NOT NULL DEFAULT '0',
+ `item_var_userclass` int(4) NOT NULL,
+ PRIMARY KEY (`option_id`)
+) ENGINE=MyISAM;
