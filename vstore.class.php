@@ -45,7 +45,7 @@ class vstore_plugin_shortcodes extends e_shortcode
 	{
 		return $this->var['item_id'];	
 	}
-	
+
 	function sc_item_code($parm=null)
 	{
 		return $this->var['item_code'];	
@@ -485,8 +485,9 @@ class vstore
 	protected   $currency           = 'USD';
 
 	protected   static $gateways    = array(
-		'paypal'  => array('title'=>'Paypal', 'icon'=>'fa-paypal'),
-		'amazon'  => array('title'=> 'Amazon', 'icon'=>'fa-amazon')
+		'paypal'        => array('title'=>'Paypal', 'icon'=>'fa-paypal'),
+		'paypal_rest'  => array('title'=>'Paypal', 'icon'=>'fa-paypal'),
+		'amazon'        => array('title'=> 'Amazon', 'icon'=>'fa-amazon')
 	);
 
 	protected static $status = array(
@@ -589,25 +590,23 @@ class vstore
 			if(!empty($pref[$key]))
 			{
 				$active[$k] = $this->getGatewayIcon($k);
-			}
 
-		}
-
-		foreach($pref as $k=>$v)
-		{
-			if(strpos($k,"_")!==false)
-			{
-				list($gateway,$key) = explode("_", $k,2);
-
-				if(isset($active[$gateway]))
+				foreach($pref as $key=>$v) // get gateway prefs.
 				{
-					if($key == 'active') continue;
-					$this->pref[$gateway][$key] = $v;
-
+					if(strpos($key,$k) === 0)
+					{
+						$this->pref[$k][$key] = $v;
+					}
 				}
 			}
 
 		}
+
+		if(getperms('0'))
+		{
+			e107::getDebug()->log($this->pref);
+		}
+
 
 		$this->active = $active;
 	}
@@ -1048,6 +1047,19 @@ class vstore
 				$gateway->setUsername($this->pref['paypal']['username']);
 				$gateway->setPassword($this->pref['paypal']['password']);
 				$gateway->setSignature($this->pref['paypal']['signature']);
+				break;
+
+			case "paypal_rest":
+				$gateway = Omnipay::create('PayPal_Rest');
+
+				if(!empty($this->pref['paypal_rest']['testmode']))
+				{
+					$gateway->setTestMode(true);
+				}
+
+				$gateway->setClientId($this->pref['paypal_rest']['clientId']);
+				$gateway->setSecret($this->pref['paypal_rest']['secret']);
+			//	$gateway->setSignature($this->pref['paypal']['signature']);
 				break;
 
 			default:
