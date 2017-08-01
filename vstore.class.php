@@ -832,6 +832,8 @@ class vstore
 			$bread = $this->breadcrumb();
 			$text = $this->checkoutComplete();
 
+			//TODO Check for digital download purchase and render download button.
+
 			$ns->tablerender($this->captionBase, $bread.$text, 'vstore-cart-complete');
 			return null;
 		}
@@ -1107,7 +1109,7 @@ class vstore
 
 			foreach($data['items'] as $var)
 			{
-				$items[] = array('id'=>$var['item_id'], 'name' => $var['item_code'], 'price' => $var['item_price'], 'description' => $var['item_name'], 'quantity' => $var['cart_qty']);
+				$items[] = array('id'=>$var['item_id'], 'name' => $var['item_code'], 'price' => $var['item_price'], 'description' => $var['item_name'], 'quantity' => $var['cart_qty'], 'file'=>$var['item_download']);
 			}
 
 		}
