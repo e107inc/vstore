@@ -15,8 +15,12 @@ $VSTORE_TEMPLATE['list']['item']    =  '
 								                                <p class="item-description clearfix">{ITEM_DESCRIPTION: limit=150}
 								                               </p>
 								                                <div class="row">
-								                                    <div class="col-md-5"><a class="item-price" href="{ITEM_URL}">{ITEM_PRICE}</a></div>
-								                                    <div class="col-md-7 text-right">{ITEM_ADDTOCART: class=btn btn-sm btn-success&class0=btn btn-sm btn-default disabled}</div>
+								                                 <!--   <div class="col-md-5"><a class="item-price" href="{ITEM_URL}">{ITEM_PRICE}</a></div>
+								                                    <div class="col-md-7 text-left">{ITEM_ADDTOCART: class=btn btn-sm btn-success&class0=btn btn-sm btn-default disabled}</div>-->
+																	
+																	<div class="col-md-5"><a class="item-price" href="{ITEM_URL}">{ITEM_PRICE}</a><br />
+								                                    {ITEM_ADDTOCART: class=btn btn-sm btn-success&class0=btn btn-sm btn-default disabled}</div>
+																	
 								                                </div>
 
 							                            </div>
@@ -53,10 +57,10 @@ $VSTORE_TEMPLATE['menu']['item'] =  '
                                 <p class="item-description">{ITEM_DESCRIPTION}</p>
                                 <div class="row">
 								<div class="col-xs-12 col-sm-6 col-md-6 col-lg-6">
-									<p class="lead">{ITEM_PRICE}</p>
+									<p class="lead">{ITEM_PRICE}<!--</p>
 								</div>
-								<div class="col-xs-12 col-sm-6 col-md-6 col-lg-6">
-									{ITEM_ADDTOCART}
+								<div class="col-xs-12 col-sm-6 col-md-6 col-lg-6">-->
+									{ITEM_ADDTOCART}</p>
 								</div>
 							</div>
                             </div>
@@ -91,9 +95,9 @@ $VSTORE_TEMPLATE['item']['main']        = '{SETIMAGE: w=600&h=600}
 
 													<p>{ITEM_DESCRIPTION}</p>
 										            <p>
-										            Product Code: {ITEM_CODE}<br />
-										            Availability: {ITEM_AVAILABILITY}<br /><br />
-										            <small class="text-muted">Price may change due to exchange rate.</small>
+										            '.LAN_VSTORE_011.': {ITEM_CODE}<br />
+										            '.LAN_VSTORE_012.': {ITEM_AVAILABILITY}<br /><br />
+										            <small class="text-muted">'.LAN_VSTORE_010.'</small>
 										            </p>
 										            <div class="row">
 										                <div class="col-md-6 item-price"><h3>{ITEM_PRICE}</h3></div>

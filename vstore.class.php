@@ -4,6 +4,7 @@
 e107::css('vstore','vstore.css');
 e107::js('vstore','js/vstore.js');
 
+e107::lan('vstore',false, true);
 
 require_once('vendor/autoload.php');
 
@@ -21,13 +22,13 @@ class vstore_plugin_shortcodes extends e_shortcode
 	protected $currency = null;
 	protected $displayCurrency = false;
 	protected $categories = array();
-	public $captionOutOfStock = 'Out of Stock';
+	public $captionOutOfStock = LAN_VSTORE_002;
 	
 	public function __construct()
 	{
 	 	$this->vpref = e107::pref('vstore');	
 				
-		$this->symbols = array('USD'=>'$','EUR'=>'€','CAN'=>'$','GBP'=>'£');
+		$this->symbols = array('USD'=>'$&nbsp;','EUR'=>'€&nbsp;','CAN'=>'$&nbsp;','GBP'=>'£&nbsp;','HUF'=>'Ft&nbsp;');
 		$currency = !empty($this->vpref['currency']) ? $this->vpref['currency'] : 'USD';
 
 		$this->curSymbol = vartrue($this->symbols[$currency],'$');
@@ -200,11 +201,7 @@ class vstore_plugin_shortcodes extends e_shortcode
 		$path = vartrue($videos[$index]);
 		return e107::getParser()->toVideo($path);	
 		
-	}
-	
-
-	
-	
+	}	
 	
 	
 // Categories	
@@ -335,7 +332,7 @@ class vstore_plugin_shortcodes extends e_shortcode
 
 	
 		$url = ($this->var['item_price'] == '0.00' || empty($this->var['item_inventory'])) ? $this->sc_item_url() :e107::url('vstore', 'addtocart', $this->var);
-		$label =  ($this->var['item_price'] == '0.00' || empty($this->var['item_inventory'])) ? LAN_READ_MORE : 'Add to cart';
+		$label =  ($this->var['item_price'] == '0.00' || empty($this->var['item_inventory'])) ? LAN_READ_MORE : LAN_VSTORE_003;
 /*
 		if($parm == 'url')
 		{
@@ -357,10 +354,10 @@ class vstore_plugin_shortcodes extends e_shortcode
 	{
 		if($this->var['item_inventory'] > 0)
 		{
-			return '<span class="text-success"><strong>In Stock</strong></span>';
+		return '<span class="text-success"><strong>'.LAN_VSTORE_004.'</strong></span>';
 		}	
 
-		return '<span class="text-danger"><strong>Out of Stock</strong></span>';
+		return '<span class="text-danger"><strong>'.LAN_VSTORE_002.'</strong></span>';
 	}
 	
 	function sc_item_url($parm=null)
@@ -400,7 +397,7 @@ class vstore_plugin_shortcodes extends e_shortcode
 	
 	function sc_cart_removebutton($parm=null)
 	{
-		return '<button type="submit" name="cartRemove['.$this->var['cart_id'].']" class="btn btn-default" title="Remove">
+		return '<button type="submit" name="cartRemove['.$this->var['cart_id'].']" class="btn btn-default" title="'.LAN_DELETE.'">
 			<span class="glyphicon glyphicon-trash"></span></button>';
 		
 	}
@@ -418,9 +415,9 @@ class vstore_plugin_shortcodes extends e_shortcode
 	function sc_cart_checkout_button()
 	{
 		$text = '<a href="'.e107::url('vstore','checkout').'" id="cart-checkout"  class="btn btn-success">
-		                            Checkout <span class="glyphicon glyphicon-play"></span>
+		                           '.LAN_VSTORE_006.' <span class="glyphicon glyphicon-play"></span>
 		                        </a>
-		                        <button id="cart-qty-submit" style="display:none" type="submit" class="btn btn-warning">Re-Calculate</button>
+		                        <button id="cart-qty-submit" style="display:none" type="submit" class="btn btn-warning">'.LAN_VSTORE_014.'</button>
 
 		';
 
@@ -437,7 +434,7 @@ class vstore_plugin_shortcodes extends e_shortcode
 		
 		return '
 		<a href="'.$link.'" class="btn btn-default">
-			<span class="glyphicon glyphicon-shopping-cart"></span> Continue Shopping
+			<span class="glyphicon glyphicon-shopping-cart"></span> '.LAN_VSTORE_008.'
 		</a>';
 	}
 
@@ -448,7 +445,7 @@ class vstore_plugin_shortcodes extends e_shortcode
 			return "<span class='label label-danger'>".$this->captionOutOfStock."</span>";
 		}
 
-		return "<span class='label label-success'>In Stock</span>";
+		return "<span class='label label-success'>".LAN_VSTORE_004."</span>";
 	}
 	
 	
@@ -474,8 +471,8 @@ class vstore
 	protected   $categorySEF        = array();
 	protected 	$item               = array(); // current item.
 	protected   $captionBase        = "Vstore";
-	protected   $captionCategories  = "Product Brands";
-	protected   $captionOutOfStock  = "Out of Stock";
+	protected   $captionCategories  = LAN_VSTORE_001;
+	protected   $captionOutOfStock  = LAN_VSTORE_002;
 	protected   $get                = array();
 	protected   $post               = array();
 	protected   $categoriesTotal    = 0;
@@ -490,12 +487,12 @@ class vstore
 	);
 
 	protected static $status = array(
-		'N' => 'New',
-		'P' => 'Processing',
-		'H' => 'On Hold',
-		'C' => 'Completed',
-		'X' => 'Cancelled',
-		'R' => 'Refunded'
+		'N' => LAN_VSTORE_015,
+		'P' => LAN_VSTORE_016,
+		'H' => LAN_VSTORE_017,
+		'C' => LAN_VSTORE_018,
+		'X' => LAN_VSTORE_019,
+		'R' => LAN_VSTORE_020
 	);
 
 
@@ -700,44 +697,44 @@ class vstore
 
 		$frm = e107::getForm();
 
-		$text = '<h3>Shipping Details</h3>
+		$text = '<h3>'.LAN_VSTORE_021.'</h3>
 			    			<div class="row">
 			    				<div class="col-xs-6 col-sm-6 col-md-6">
 			    					<div class="form-group">
-			    					 <label for="firstname">First Name</label>
-			    					'.$frm->text('firstname', $this->post['firstname'], 100, array('placeholder'=>'First Name', 'required'=>1)).'
+			    					 <label for="firstname">'.LAN_VSTORE_022.'</label>
+			    					'.$frm->text('firstname', $this->post['firstname'], 100, array('placeholder'=>LAN_VSTORE_022, 'required'=>1)).'
 
 			    					</div>
 			    				</div>
 			    				<div class="col-xs-6 col-sm-6 col-md-6">
 			    					<div class="form-group">
-			    					<label for="lastname">Last Name</label>
-			    						'.$frm->text('lastname', $this->post['lastname'], 100, array('placeholder'=>'Last Name', 'required'=>1)).'
+			    					<label for="lastname">'.LAN_VSTORE_023.'</label>
+			    						'.$frm->text('lastname', $this->post['lastname'], 100, array('placeholder'=>LAN_VSTORE_023, 'required'=>1)).'
 			    					</div>
 			    				</div>
 			    			</div>
 
 			    			<div class="form-group">
-			    			<label for="company">Company</label>
-			    				'.$frm->text('company', $this->post['company'], 200, array('placeholder'=>'Company')).'
+			    			<label for="company">'.LAN_VSTORE_025.'</label>
+			    				'.$frm->text('company', $this->post['company'], 200, array('placeholder'=>LAN_VSTORE_025)).'
 			    			</div>
 
 			    			<div class="form-group">
-			    			<label for="address">Address</label>
-			    				'.$frm->text('address', $this->post['address'], 200, array('placeholder'=>'Address', 'required'=>1)).'
+			    			<label for="address">'.LAN_VSTORE_026.'</label>
+			    				'.$frm->text('address', $this->post['address'], 200, array('placeholder'=>LAN_VSTORE_026, 'required'=>1)).'
 			    			</div>
 
 			    			<div class="row">
 			    				<div class="col-xs-6 col-sm-6 col-md-6">
 			    					<div class="form-group">
-			    					<label for="city">Town/City</label>
-			    						'.$frm->text('city', $this->post['city'], 100, array('placeholder'=>'Town/City', 'required'=>1)).'
+			    					<label for="city">'.LAN_VSTORE_027.'</label>
+			    						'.$frm->text('city', $this->post['city'], 100, array('placeholder'=>LAN_VSTORE_027, 'required'=>1)).'
 			    					</div>
 			    				</div>
 			    				<div class="col-xs-6 col-sm-6 col-md-6">
 			    					<div class="form-group">
-			    					<label for="state">State/Region</label>
-			    						'.$frm->text('state', $this->post['state'], 100, array('placeholder'=>'State/Region', 'required'=>1)).'
+			    					<label for="state">'.LAN_VSTORE_028.'</label>
+			    						'.$frm->text('state', $this->post['state'], 100, array('placeholder'=>LAN_VSTORE_028, 'required'=>1)).'
 			    					</div>
 			    				</div>
 			    			</div>
@@ -746,14 +743,14 @@ class vstore
 							<div class="row">
 			    				<div class="col-xs-6 col-sm-6 col-md-6">
 			    					<div class="form-group">
-			    					<label for="zip">Zip/Postcode</label>
-			    						'.$frm->text('zip', $this->post['zip'], 15, array('placeholder'=>'Zip/Postcode', 'required'=>1)).'
+			    					<label for="zip">'.LAN_VSTORE_029.'</label>
+			    						'.$frm->text('zip', $this->post['zip'], 15, array('placeholder'=>LAN_VSTORE_029, 'required'=>1)).'
 			    					</div>
 			    				</div>
 			    				<div class="col-xs-6 col-sm-6 col-md-6">
 			    					<div class="form-group">
-			    					<label for="country">Country</label>
-			    						'.$frm->country('country', $this->post['country'], array('placeholder'=>'Select Country...', 'required'=>1)).'
+			    					<label for="country">'.LAN_VSTORE_030.'</label>
+			    						'.$frm->country('country', $this->post['country'], array('placeholder'=>LAN_VSTORE_031, 'required'=>1)).'
 			    					</div>
 			    				</div>
 			    			</div>
@@ -761,22 +758,22 @@ class vstore
 						<div class="row">
 			    				<div class="col-xs-6 col-sm-6 col-md-6">
 			    					<div class="form-group">
-			    					<label for="email">Email address</label>
-			    						'.$frm->email('email', $this->post['email'], 100, array('placeholder'=>'Email address', 'required'=>1)).'
+			    					<label for="email">'.LAN_EMAIL.'</label>
+			    						'.$frm->email('email', $this->post['email'], 100, array('placeholder'=>LAN_EMAIL, 'required'=>1)).'
 			    					</div>
 			    				</div>
 			    				<div class="col-xs-6 col-sm-6 col-md-6">
 			    					<div class="form-group">
-			    					<label for="phone">Phone number</label>
-			    						'.$frm->text('phone', $this->post['phone'], 15, array('placeholder'=>'Phone number', 'required'=>1)).'
+			    					<label for="phone">'.LAN_VSTORE_032.'</label>
+			    						'.$frm->text('phone', $this->post['phone'], 15, array('placeholder'=>LAN_VSTORE_032, 'required'=>1)).'
 			    					</div>
 			    				</div>
 			    		</div>
 			    		<div class="row">
 			    		    <div class="col-md-12">
 								<div class="form-group">
-				                <label for="notes">Order Notes</label>
-				                    '.$frm->textarea('notes', $this->post['notes'], 4, null, array('placeholder'=>'Special notes for delivery.', 'required'=>0)).'
+				                <label for="notes">'.LAN_VSTORE_033.'</label>
+				                    '.$frm->textarea('notes', $this->post['notes'], 4, null, array('placeholder'=>LAN_VSTORE_034, 'required'=>0)).'
 				                </div>
 			    			</div>
 						</div>
@@ -788,12 +785,12 @@ class vstore
 			$text .= '<div class="row">
 			    				<div class="col-xs-6 col-sm-6 col-md-6">
 			    					<div class="form-group">
-			    						<input type="password" name="password" id="password" class="form-control input-sm" placeholder="Password">
+			    						<input type="password" name="password" id="password" class="form-control input-sm" placeholder="'.LAN_PASSWORD.'">
 			    					</div>
 			    				</div>
 			    				<div class="col-xs-6 col-sm-6 col-md-6">
 			    					<div class="form-group">
-			    						<input type="password" name="password_confirmation" id="password_confirmation" class="form-control input-sm" placeholder="Confirm Password">
+			    						<input type="password" name="password_confirmation" id="password_confirmation" class="form-control input-sm" placeholder="'.LAN_VSTORE_024.'">
 			    					</div>
 			    				</div>
 			    			</div>';
@@ -936,13 +933,13 @@ class vstore
 
 		if($this->get['add'] || $this->get['mode'] == 'cart')
 		{
-			$array[] = array('url'=> null, 'text'=> "Shopping Cart");
+			$array[] = array('url'=> null, 'text'=> LAN_VSTORE_005);
 		}
 
 		if($this->get['mode'] == 'checkout')
 		{
-			$array[] = array('url'=> e107::url('vstore','cart'), 'text'=> "Shopping Cart");
-			$array[] = array('url'=> null, 'text'=> "Checkout");
+			$array[] = array('url'=> e107::url('vstore','cart'), 'text'=> LAN_VSTORE_005);
+			$array[] = array('url'=> null, 'text'=> LAN_VSTORE_006);
 
 		}
 
@@ -987,7 +984,7 @@ class vstore
 			$text .= $this->renderForm();
 
 
-			$text .= "<hr /><h3>Select payment method to continue</h3><div class='vstore-gateway-list row'>";
+			$text .= "<hr /><h3>".LAN_VSTORE_035."</h3><div class='vstore-gateway-list row'>";
 
 			foreach($active as $gateway => $icon)
 			{
@@ -1009,7 +1006,7 @@ class vstore
 			return $text;
 		}
 
-		return "No Payment Options Set";
+		return LAN_VSTORE_009;
 
 
 	}
@@ -1024,7 +1021,7 @@ class vstore
 
 		if(empty($type))
 		{
-			e107::getMessage()->addError("Invalid Payment Type");
+			e107::getMessage()->addError(LAN_VSTORE_036);
 			return false;
 		}
 
@@ -1086,7 +1083,7 @@ class vstore
 
 		if(empty($data['items']))
 		{
-			e107::getMessage()->addError("Shopping Cart Empty");
+			e107::getMessage()->addError(LAN_VSTORE_037);
 			return false;
 		}
 		else
@@ -1203,14 +1200,15 @@ class vstore
 
 		if( e107::getDb()->insert('vstore_orders',$insert) !== false)
 		{
-			$mes->addSuccess("Your order #".$id." is complete");
-
+		//	$mes->addSuccess("Your order #".$id." is complete");
+			$mes->addSuccess(e107::getParser()->lanVars(LAN_VSTORE_047, array('x'=>$id)));
+			
 			$this->updateInventory($insert['order_items']);
 
 		}
 		else
 		{
-			$mes->addError("Unable to save transaction");
+			$mes->addError(LAN_VSTORE_038);
 
 
 		}
@@ -1410,7 +1408,7 @@ class vstore
 		if(!$data = e107::getDb()->retrieve('SELECT SQL_CALC_FOUND_ROWS * FROM #vstore_items WHERE item_cat = '.intval($category).' ORDER BY item_order LIMIT '.$this->from.','.$this->perPage, true))
 		{
 
-			return e107::getMessage()->addInfo("No products available in this category")->render();
+			return e107::getMessage()->addInfo(LAN_VSTORE_013)->render();
 		}
 		
 		$count = e107::getDb()->foundRows();
@@ -1467,7 +1465,7 @@ class vstore
 	{
 		if(!$row = e107::getDb()->retrieve('SELECT * FROM #vstore_items WHERE item_id = '.intval($id).'  LIMIT 1',true))
 		{
-			e107::getMessage()->addInfo("No products available in this category");
+			e107::getMessage()->addInfo(LAN_VSTORE_013);
 			return null;
 		}
 		
@@ -1493,7 +1491,7 @@ class vstore
 
 		if(!empty($data['item_details']))
 		{
-			$tabData['details'] =  array('caption'=>'Details', 'text'=>$tmpl['item']['details']);
+			$tabData['details'] =  array('caption'=>LAN_VSTORE_048, 'text'=>$tmpl['item']['details']);
 		}
 
 		if($media = e107::unserialize($data['item_pic']))
@@ -1528,13 +1526,13 @@ class vstore
 			$tmp = e107::unserialize($data['item_files']);
 			if(!empty($tmp[0]['path']))
 			{
-				$tabData['files']		= array('caption'=>'Downloads', 'text'=> $tmpl['item']['files']);
+				$tabData['files']		= array('caption'=>LAN_DOWNLOADS, 'text'=> $tmpl['item']['files']);
 			}
 		}
 		
 		if(!empty($data['cat_info']))
 		{
-			$tabData['howto']		= array('caption'=>'How to Order', 'text'=> $tmpl['item']['howto']);
+			$tabData['howto']		= array('caption'=>LAN_VSTORE_039, 'text'=> $tmpl['item']['howto']);
 		}
 
 		if(!empty($tabData))
@@ -1600,7 +1598,7 @@ class vstore
 	{
 		if(!$data = $this->getCartData() )
 		{
-			return e107::getMessage()->addInfo("Your cart is empty.")->render();
+			return e107::getMessage()->addInfo(LAN_VSTORE_007)->render();
 
 
 		}
@@ -1618,11 +1616,11 @@ class vstore
 		            <table class="table table-hover">
 		                <thead>
 		                    <tr>
-		                        <th>Product</th>
+		                        <th>'.LAN_VSTORE_001.'</th>
 		                         <th> </th>
-		                        <th>Quantity</th>
-		                        <th class="text-right">Price</th>
-		                        <th class="text-right">Total</th>
+		                        <th>'.LAN_VSTORE_040.'</th>
+		                        <th class="text-right">'.LAN_VSTORE_041.'</th>
+		                        <th class="text-right">'.LAN_VSTORE_042.'</th>
 
 		                    </tr>
 		                </thead>
@@ -1640,8 +1638,8 @@ class vstore
 		                           </div>
 		                             <div class="media-body">
 		                                <h4 class="media-heading"><a href="{ITEM_URL}">{ITEM_NAME}</a></h4>
-		                                <h5 class="media-heading"> by <a href="#">Brand name</a></h5>
-		                                <span>Status: </span>{ITEM_STATUS}
+		                                <h5 class="media-heading"> '.LAN_VSTORE_046.' <a href="#">'.LAN_VSTORE_043.'</a></h5>
+		                                <span>'.LAN_VSTORE_049.': </span>{ITEM_STATUS}
 		                            </div>
 		                        </div></td>
 		                         <td class="col-sm-1 col-md-1 text-center">{CART_REMOVEBUTTON}</td>
@@ -1687,14 +1685,14 @@ class vstore
 		                   <tr>
 		                   <td>   </td>
 		                        <td colspan="2"><div class="text-right" ></div></td>
-		                        <td><h5>Subtotal</h5></td>
+		                        <td><h5>'.LAN_VSTORE_044.'</h5></td>
 		                        <td class="text-right"><h5><strong>{CART_SUBTOTAL}</strong></h5></td>
 
 		                    </tr>
 		                    <tr>
 
 								<td>   </td>
-		                        <td colspan="3" class="text-right"><h5>Estimated shipping</h5></td>
+		                        <td colspan="3" class="text-right"><h5>'.LAN_VSTORE_045.'</h5></td>
 		                        <td class="text-right"><h5><strong>{CART_SHIPPINGTOTAL}</strong></h5></td>
 
 
@@ -1703,7 +1701,7 @@ class vstore
 		                        <td>   </td>
 		                        <td>   </td>
 								 <td>   </td>
-		                        <td><h3>Total</h3></td>
+		                        <td><h3>'.LAN_VSTORE_042.'</h3></td>
 		                        <td class="text-right"><h3><strong>{CART_GRANDTOTAL}</strong></h3></td>
 
 
