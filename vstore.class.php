@@ -218,6 +218,11 @@ class vstore_plugin_shortcodes extends e_shortcode
 	{
 		return e107::getParser()->toHtml($this->var['cat_name'], true,'TITLE');	
 	}
+	
+	function sc_cat_sef($parm=null)
+	{
+		return e107::getParser()->toHtml($this->var['cat_sef'], true,'TITLE');	
+	}
 
 	function sc_cat_description($parm=null)
 	{
