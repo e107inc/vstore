@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "d297cc1bce99298f05b4633132503c00",
-    "content-hash": "952b5c14478ee41528605abcbf2ac646",
+    "hash": "983774141497e35769ffdfab9cfd535f",
+    "content-hash": "b72a29315fcf43fb4e1396cb265d2f66",
     "packages": [
         {
             "name": "guzzle/guzzle",
@@ -145,6 +145,61 @@
             "time": "2014-11-20 16:49:30"
         },
         {
+            "name": "lemonstand/omnipay-amazon",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/lemonstand/omnipay-amazon.git",
+                "reference": "da349347bff03069f531ec69f16d02d7317db3de"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/lemonstand/omnipay-amazon/zipball/da349347bff03069f531ec69f16d02d7317db3de",
+                "reference": "da349347bff03069f531ec69f16d02d7317db3de",
+                "shasum": ""
+            },
+            "require": {
+                "omnipay/common": "~2.0"
+            },
+            "require-dev": {
+                "omnipay/tests": "~2.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "2.0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Omnipay\\AmazonPayments\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Andres Perdomo",
+                    "email": "andy@lemonstand.com"
+                }
+            ],
+            "description": "Amazon payments driver for the Omnipay payment processing library",
+            "homepage": "https://github.com/lemonstand/omnipay-amazon",
+            "keywords": [
+                "amazon",
+                "amazon payments",
+                "gateway",
+                "merchant",
+                "omnipay",
+                "pay",
+                "payment",
+                "payments"
+            ],
+            "time": "2015-03-11 17:43:10"
+        },
+        {
             "name": "omnipay/common",
             "version": "2.5.2",
             "source": {
@@ -244,16 +299,16 @@
         },
         {
             "name": "omnipay/paypal",
-            "version": "2.5.0",
+            "version": "v2.6.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/thephpleague/omnipay-paypal.git",
-                "reference": "67efe5a927dec13fc7520e29bc44f15fd3a728e9"
+                "reference": "e06c8814deacc793715bb9fd3fcae5995b5d8d6b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/thephpleague/omnipay-paypal/zipball/67efe5a927dec13fc7520e29bc44f15fd3a728e9",
-                "reference": "67efe5a927dec13fc7520e29bc44f15fd3a728e9",
+                "url": "https://api.github.com/repos/thephpleague/omnipay-paypal/zipball/e06c8814deacc793715bb9fd3fcae5995b5d8d6b",
+                "reference": "e06c8814deacc793715bb9fd3fcae5995b5d8d6b",
                 "shasum": ""
             },
             "require": {
@@ -298,7 +353,7 @@
                 "paypal",
                 "purchase"
             ],
-            "time": "2015-11-11 21:48:00"
+            "time": "2016-12-22 12:35:25"
         },
         {
             "name": "symfony/event-dispatcher",
@@ -592,7 +647,9 @@
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {
+        "lemonstand/omnipay-amazon": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": [],

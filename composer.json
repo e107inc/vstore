@@ -1,5 +1,6 @@
 {
     "require": {
-        "omnipay/paypal": "2.5.0"
+        "omnipay/paypal": "~2.0",
+        "lemonstand/omnipay-amazon": "dev-master"
     }
 }
