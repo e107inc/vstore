@@ -460,7 +460,7 @@ class vstore_order_ui extends e_admin_ui
 
 			if(e_DEBUG !== true)
 			{
-				unset($this->preftabs[1],$this->preftabs[2]); // Disable Amazon and Skrill for Now until they work. // TODO //FIXME
+				unset($this->preftabs[2],$this->preftabs[3]); // Disable Amazon and Skrill for Now until they work. // TODO //FIXME
 			}
 		}
 
