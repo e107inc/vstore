@@ -595,12 +595,14 @@ class vstore
 				{
 					if(strpos($key,$k) === 0)
 					{
-						$this->pref[$k][$key] = $v;
+						$newkey = substr($key,(strlen($k)+1));
+						$this->pref[$k][$newkey] = $v;
 					}
 				}
 			}
 
 		}
+
 
 		if(getperms('0'))
 		{
@@ -1023,6 +1025,8 @@ class vstore
 
 		$type = $this->getGatewayType();
 
+		e107::getDebug()->log("Processing Gateway: ".$type);
+
 		if(empty($type))
 		{
 			e107::getMessage()->addError("Invalid Payment Type");
@@ -1061,6 +1065,10 @@ class vstore
 
 				$gateway->setClientId($this->pref['paypal_rest']['clientId']);
 				$gateway->setSecret($this->pref['paypal_rest']['secret']);
+
+			//	e107::getDebug()->log(print_a($this->pref['paypal_rest'],true));
+
+
 			//	$gateway->setSignature($this->pref['paypal']['signature']);
 				break;
 
@@ -1090,7 +1098,7 @@ class vstore
                 'shippingPostCode' => $info['zip_ship'],
             );*/
 
-      $cardInput = null;
+        $cardInput = null;
 
 		$data = $this->getCheckoutData();
 
@@ -1115,6 +1123,12 @@ class vstore
 		}
 
 		$method = ($mode == 'init') ? 'purchase' : 'completePurchase';
+
+		if($gateway->supportsAuthorize())
+		{
+			$method = 'authorize';
+		}
+
 
 		try
 		{
