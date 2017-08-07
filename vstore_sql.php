@@ -89,5 +89,5 @@ CREATE TABLE vstore_items_vars (
  `item_var_attributes` text,
  `item_var_compulsory` int(2) NOT NULL DEFAULT '0',
  `item_var_userclass` int(4) NOT NULL,
- PRIMARY KEY (`option_id`)
+ PRIMARY KEY (`item_var_id`)
 ) ENGINE=MyISAM;
