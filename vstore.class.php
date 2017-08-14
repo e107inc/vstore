@@ -1111,20 +1111,23 @@ class vstore
 				'transactionId'  => $this->getCheckoutData('id'),
 				'clientIp'       => USERIP,
 			);
+
+			$_SESSION['vstore']['_data'] = $_data;
 		}
 		// Mode 'return'.
 		else
 		{
 			$method = 'completePurchase';
 
-			if($gateway->supportsAuthorize() && $gateway->supportsCompleteAuthorize())
+			if ($gateway->supportsAuthorize() && $gateway->supportsCompleteAuthorize())
 			{
 				$method = 'completeAuthorize';
 			}
 
-			$_data = array(
-				'transactionReference' => $this->getCheckoutData('id'),
-			) + $this->get; // + PayerID, paymentId, token.
+			// Get stored data.
+			$_data = $_SESSION['vstore']['_data'];
+			// Add PayerID, paymentId, token, etc...
+			$_data = array_merge($_data, $this->get);
 		}
 
 		try
@@ -1138,7 +1141,19 @@ class vstore
 			return false;
 		}
 
-		if($mode == 'return' && $response->isSuccessful())
+		if($response->isRedirect())
+		{
+			// Get transaction ID from the Authorize response.
+			if ($transID = $response->getTransactionReference())
+			{
+				// Store transaction ID for later use.
+				$_SESSION['vstore']['_data']['transactionReference'] = $transID;
+			}
+
+			// Redirect to offsite payment gateway.
+			$response->redirect();
+		}
+		elseif($response->isSuccessful())
 		{
 			$transData = $response->getData();
 			$transID = $response->getTransactionReference();
@@ -1148,10 +1163,8 @@ class vstore
 
 			$this->saveTransaction($transID, $transData, $items);
 			$this->resetCart();
-		}
-		elseif($response->isRedirect())
-		{
-			$response->redirect();
+
+			unset($_SESSION['vstore']['_data']);
 		}
 		else
 		{
