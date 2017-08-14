@@ -1022,10 +1022,9 @@ class vstore
 	// https://www.youtube.com/watch?v=EvfFN0-aBmI
 	private function processGateway($mode = 'init')
 	{
-
 		$type = $this->getGatewayType();
 
-		e107::getDebug()->log("Processing Gateway: ".$type);
+		e107::getDebug()->log("Processing Gateway: " . $type);
 
 		if(empty($type))
 		{
@@ -1036,14 +1035,15 @@ class vstore
 		switch($type)
 		{
 			case "amazon":
+				/** @var \Omnipay\Common\AbstractGateway $gateway */
 				$gateway = Omnipay::create('AmazonPayments');
 				$defaults = $gateway->getParameters();
 				e107::getDebug()->log($defaults);
 				break;
 
 			case "paypal":
+				/** @var \Omnipay\PayPal\ExpressGateway $gateway */
 				$gateway = Omnipay::create('PayPal_Express');
-
 
 				if(!empty($this->pref['paypal']['testmode']))
 				{
@@ -1056,6 +1056,7 @@ class vstore
 				break;
 
 			case "paypal_rest":
+				/** @var \Omnipay\PayPal\RestGateway $gateway */
 				$gateway = Omnipay::create('PayPal_Rest');
 
 				if(!empty($this->pref['paypal_rest']['testmode']))
@@ -1065,46 +1066,14 @@ class vstore
 
 				$gateway->setClientId($this->pref['paypal_rest']['clientId']);
 				$gateway->setSecret($this->pref['paypal_rest']['secret']);
-
-			//	e107::getDebug()->log(print_a($this->pref['paypal_rest'],true));
-
-
-			//	$gateway->setSignature($this->pref['paypal']['signature']);
 				break;
 
 			default:
 				return false;
 		}
 
-
-
-/*
-
-		$cardInput = array(
-                'firstName' => $info['first_name_bill'],
-                'lastName' => $info['last_name_bill'],
-                'billingAddress1' => $info['street_address_1_bill'],
-                'billingAddress2' => $info['street_address_2_bill'],
-                'billingPhone' => $info['phone_bill'],
-                'billingCity' => $info['city_bill'],
-                'billingState' => $info['state_bill'],
-                'billingPostCode' => $info['zip_bill'],
-                'billingCountry' => 'US',
-                'shippingAddress1' => $info['street_address_1_ship'],
-                'shippingAddress2' => $info['street_address_2_ship'],
-                'shippingPhone' => $info['phone_ship'],
-                'shippingCity' => $info['city_ship'],
-                'shippingState' => $info['state_ship'],
-                'shippingPostCode' => $info['zip_ship'],
-            );*/
-
-        $cardInput = null;
-
+		$cardInput = null;
 		$data = $this->getCheckoutData();
-
-	//	print_a($data);
-
-	//	return;
 
 		if(empty($data['items']))
 		{
@@ -1117,76 +1086,91 @@ class vstore
 
 			foreach($data['items'] as $var)
 			{
-				$items[] = array('id'=>$var['item_id'], 'name' => $var['item_code'], 'price' => $var['item_price'], 'description' => $var['item_name'], 'quantity' => $var['cart_qty'], 'file'=>$var['item_download']);
+				$items[] = array(
+					'id'          => $var['item_id'],
+					'name'        => $var['item_code'],
+					'price'       => $var['item_price'],
+					'description' => $var['item_name'],
+					'quantity'    => $var['cart_qty'],
+					'file'        => $var['item_download'],
+				);
+			}
+		}
+
+		if($mode == 'init')
+		{
+			$method = $gateway->supportsAuthorize() ? 'authorize' : 'purchase';
+
+			$_data = array(
+				'cancelUrl'      => e107::url('vstore', 'cancel', null, array('mode' => 'full')),
+				'returnUrl'      => e107::url('vstore', 'return', null, array('mode' => 'full')),
+				'amount'         => $data['totals']['cart_grandTotal'],
+				'shippingAmount' => $data['totals']['cart_shippingTotal'],
+				'currency'       => $data['currency'],
+				'items'          => $items,
+				'transactionId'  => $this->getCheckoutData('id'),
+				'clientIp'       => USERIP,
+			);
+
+			$_SESSION['vstore']['_data'] = $_data;
+		}
+		// Mode 'return'.
+		else
+		{
+			$method = 'completePurchase';
+
+			if ($gateway->supportsAuthorize() && $gateway->supportsCompleteAuthorize())
+			{
+				$method = 'completeAuthorize';
 			}
 
+			// Get stored data.
+			$_data = $_SESSION['vstore']['_data'];
+			// Add PayerID, paymentId, token, etc...
+			$_data = array_merge($_data, $this->get);
 		}
-
-		$method = ($mode == 'init') ? 'purchase' : 'completePurchase';
-
-		if($gateway->supportsAuthorize())
-		{
-			$method = 'authorize';
-		}
-
 
 		try
 		{
-			$response = $gateway->$method(
-                   array(
-                       'cancelUrl'              => e107::url('vstore', 'cancel', null, array('mode'=>'full')),
-                       'returnUrl'              => e107::url('vstore', 'return', null, array('mode'=>'full')),
-                       'amount'                 => $data['totals']['cart_grandTotal'],
-                       'shippingAmount'         => $data['totals']['cart_shippingTotal'],
-                       'currency'               => $data['currency'],
-					   'items'                  => $items,
-					   'transactionId'          => $this->getCheckoutData('id'),
-					   'clientIp'               => USERIP,
-                   //     'card'                  => new CreditCard($cardInput),
-                    //   'transactionReference'   =>
-                   )
-			)->send();
-
-		}
-		catch (Exception $e)
+			/** @var \Omnipay\Common\Message\AbstractResponse $response */
+			$response = $gateway->$method($_data)->send();
+		} catch(Exception $e)
 		{
-		    $message = $e->getMessage();
-		    e107::getMessage()->addError($message);
-		    return false;
+			$message = $e->getMessage();
+			e107::getMessage()->addError($message);
+			return false;
 		}
 
-
-
-       // Process response
-		if ($response->isSuccessful())
+		if($response->isRedirect())
 		{
-			$this->resetCart();
+			// Get transaction ID from the Authorize response.
+			if ($transID = $response->getTransactionReference())
+			{
+				// Store transaction ID for later use.
+				$_SESSION['vstore']['_data']['transactionReference'] = $transID;
+			}
+
+			// Redirect to offsite payment gateway.
+			$response->redirect();
+		}
+		elseif($response->isSuccessful())
+		{
 			$transData = $response->getData();
-			$transID =  $response->getTransactionReference();
-
+			$transID = $response->getTransactionReference();
 			$message = $response->getMessage();
-
-
 
 			e107::getMessage()->addSuccess($message);
 
 			$this->saveTransaction($transID, $transData, $items);
+			$this->resetCart();
 
-
-		}
-		elseif ($response->isRedirect())
-		{
-		    $response->redirect();
+			unset($_SESSION['vstore']['_data']);
 		}
 		else
 		{
-		    $message = $response->getMessage();
+			$message = $response->getMessage();
 			e107::getMessage()->addError($message);
 		}
-
-
-
-
 	}
 
 
