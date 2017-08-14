@@ -390,7 +390,15 @@ class vstore_plugin_shortcodes extends e_shortcode
 	{
 		if($parm == 'edit')
 		{
-			 return '<input type="input" name="cartQty['.$this->var['cart_id'].']" class="form-control text-right cart-qty" id="cart-'.$this->var['cart_id'].'" value="'.intval($this->var['cart_qty']).'">';
+			$readonly = '';
+
+			if(!empty($this->var['item_download'])) // digital download so set to 1.
+			{
+				$this->var['cart_qty'] = 1;
+				$readonly = 'readonly';
+			}
+
+			return '<input type="input" '.$readonly.' name="cartQty['.$this->var['cart_id'].']" class="form-control text-right cart-qty" id="cart-'.$this->var['cart_id'].'" value="'.intval($this->var['cart_qty']).'">';
 		}
 		
 		
@@ -401,7 +409,7 @@ class vstore_plugin_shortcodes extends e_shortcode
 	function sc_cart_removebutton($parm=null)
 	{
 		return '<button type="submit" name="cartRemove['.$this->var['cart_id'].']" class="btn btn-default" title="Remove">
-			<span class="glyphicon glyphicon-trash"></span></button>';
+			<span class="fa fa-trash"></span></button>';
 		
 	}
 	
