@@ -89,6 +89,7 @@ class vstore_admin extends e_admin_dispatcher
 
 	protected $adminMenuAliases = array(
 		'products/edit'	=> 'products/list',
+		'products/grid' => 'products/list',
 		'orders/edit'	=> 'orders/list'
 	);	
 	
@@ -98,7 +99,7 @@ class vstore_admin extends e_admin_dispatcher
 		{
 			if(deftrue('e_DEBUG'))
 			{
-				$this->adminMenu['products/grid'] = array('caption'=> "Products (Grid)", 'perm' => 'P');
+		//		$this->adminMenu['products/grid'] = array('caption'=> "Products (Grid)", 'perm' => 'P');
 			}
 
 			parent::init();
