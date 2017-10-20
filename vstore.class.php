@@ -1463,12 +1463,12 @@ class vstore
 					'body'			=> $tp->parseTemplate($template,true,$sc)
 		);
 
-		$debug = e107::getEmail()->preview($eml);
-		e107::getDebug()->log($debug);
+	//	$debug = e107::getEmail()->preview($eml);
+	//	e107::getDebug()->log($debug);
 
 
 
-	//	e107::getEmail()->sendEmail($email, $name, $eml);
+		e107::getEmail()->sendEmail($email, $name, $eml);
 
 	}
 
