@@ -425,7 +425,7 @@ class vstore_order_ui extends e_admin_ui
 		protected $fieldpref = array('order_id','order_ship_to', 'order_status', 'order_date', 'order_items', 'order_pay_transid','order_pay_amount','order_pay_status');
 
 
-		protected $preftabs = array('Paypal Express', 'Paypal REST', 'Amazon', 'Skrill');
+		protected $preftabs = array('Paypal Express', 'Paypal REST', 'Amazon', 'Skrill', 'Bank Transfer');
 
 
 		protected $prefs = array(
@@ -441,6 +441,8 @@ class vstore_order_ui extends e_admin_ui
 			'paypal_rest_secret'    => array('title'=>"Paypal Secret", 'type'=>'text', 'tab'=>1, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
 		//	'paypal_signature'      => array('title'=>"Paypal Signature", 'type'=>'text', 'tab'=>0, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
 
+			'bank_transfer_active'    => array('title'=>"Bank Transfer", 'type'=>'boolean', 'tab'=>4, 'data'=>'int', 'help'=>''),
+			'bank_transfer_details'    => array('title'=>"Bank Transfer", 'type'=>'textarea', 'tab'=>4, 'data'=>'str', 'writeParms'=>array('placeholder'=>"Bank Account Details"), 'help'=>''),
 
 
 			'amazon_active'         => array('title'=>"Amazon Payments", 'type'=>'boolean', 'tab'=>2, 'data'=>'int', 'help'=>''),
@@ -756,19 +758,25 @@ Secret Key 	secret_key 	Default : null
 Region 	region
  */
 		// optional
-		protected $preftabs = array(LAN_GENERAL, "How to Order", "Admin Area");
+		protected $preftabs = array(LAN_GENERAL, "Emails", "How to Order", "Admin Area");
 
 
 		protected $prefs = array(
-			'caption'                   => array('title'=> 'Store Caption', 'tab'=>0, 'type'=>'text', 'help'=>'','writeParms'=>array('placeholder'=>'Vstore'),'multilan'=>true),
-			'caption_categories'          => array('title'=> 'Category Caption', 'tab'=>0, 'type'=>'text', 'writeParms'=>array('placeholder'=>'Product Brands'),'multilan'=>true),
-			'caption_outofstock'          => array('title'=> 'Out-of-Stock Caption', 'tab'=>0, 'type'=>'text', 'writeParms'=>array('placeholder'=>'Out of Stock'),'multilan'=>true),
+			'caption'                  => array('title'=> 'Store Caption', 'tab'=>0, 'type'=>'text', 'help'=>'','writeParms'=>array('placeholder'=>'Vstore'),'multilan'=>true),
+			'caption_categories'       => array('title'=> 'Category Caption', 'tab'=>0, 'type'=>'text', 'writeParms'=>array('placeholder'=>'Product Brands'),'multilan'=>true),
+			'caption_outofstock'       => array('title'=> 'Out-of-Stock Caption', 'tab'=>0, 'type'=>'text', 'writeParms'=>array('placeholder'=>'Out of Stock'),'multilan'=>true),
 
 			'currency'		            => array('title'=> 'Currency', 'type'=>'dropdown', 'data' => 'string','help'=>'Select a currency'),
 			'shipping'		            => array('title'=> 'Calculate Shipping', 'type'=>'boolean', 'data' => 'int','help'=>'Including shipping calculation at checkout.'),
-			'howtoorder'	            => array('title'=> 'How to order', 'tab'=>1,'type'=>'bbarea', 'help'=>'Enter how-to-order info.'),
-			'admin_items_perpage'	    => array('title'=> 'Products per page', 'tab'=>2, 'type'=>'number', 'help'=>''),
-			'admin_categories_perpage'	=> array('title'=> 'Categories per page', 'tab'=>2, 'type'=>'number', 'help'=>''),
+			'howtoorder'	            => array('title'=> 'How to order', 'tab'=>2,'type'=>'bbarea', 'help'=>'Enter how-to-order info.'),
+
+			'sender_name'               => array('title'=> 'Sender Name', 'tab'=>1, 'type'=>'text', 'writeParms'=>array('placeholder'=>'Sales Department'), 'help'=>'Leave blank to use system default','multilan'=>false),
+			'sender_email'              => array('title'=> LAN_EMAIL, 'tab'=>1, 'type'=>'text', 'writeParms'=>array('placeholder'=>'orders@mysite.com'), 'help'=>'Leave blank to use system default', 'multilan'=>false),
+			'merchant_info'              => array('title'=> "Merchant Name/Address", 'tab'=>1, 'type'=>'textarea', 'writeParms'=>array('placeholder'=>'My Store Inc. etc.'), 'help'=>'Will be displayed on customer email.', 'multilan'=>false),
+
+
+			'admin_items_perpage'	    => array('title'=> 'Products per page', 'tab'=>3, 'type'=>'number', 'help'=>''),
+			'admin_categories_perpage'	=> array('title'=> 'Categories per page', 'tab'=>3, 'type'=>'number', 'help'=>''),
 
 		);
 

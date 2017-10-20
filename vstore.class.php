@@ -22,6 +22,7 @@ class vstore_plugin_shortcodes extends e_shortcode
 	protected $displayCurrency = false;
 	protected $categories = array();
 	public $captionOutOfStock = 'Out of Stock';
+	protected $halt = false;
 	
 	public function __construct()
 	{
@@ -34,6 +35,137 @@ class vstore_plugin_shortcodes extends e_shortcode
 		$this->currency = ($this->displayCurrency === true) ? $currency : '';
 		
 	}
+
+
+	function sc_order_ship_firstname()
+	{
+		return $this->var['order_ship_firstname'];
+	}
+
+	function sc_order_ship_lastname()
+	{
+		return $this->var['order_ship_lastname'];
+	}
+
+	function sc_order_ship_country()
+	{
+		return e107::getForm()->getCountry($this->var['order_ship_country']);
+	}
+
+	function sc_order_date()
+	{
+		return e107::getParser()->toDate($this->var['order_date']);
+	}
+
+	function sc_order_ref()
+	{
+		return $this->var['order_ref'];
+	}
+
+	function sc_order_ship_address()
+	{
+		return $this->var['order_ship_address'];
+	}
+
+	function sc_order_ship_city()
+	{
+		return $this->var['order_ship_city'];
+	}
+
+	function sc_order_ship_state()
+	{
+		return $this->var['order_ship_state'];
+	}
+
+
+
+	function sc_order_ship_zip()
+	{
+		return $this->var['order_ship_zip'];
+	}
+
+	function sc_order_items()
+	{
+
+		$items = e107::unserialize($this->var['order_items']);
+
+		$text  = "<table class='table table-bordered'>
+					<colgroup>	
+			            <col style='width:50%' />
+			            <col  />
+			            <col  />
+			            <col  />
+				    </colgroup>
+				<tr>
+					<th>Description</th>
+					<th class='text-right'>Unit Price</th>
+					<th class='text-right'>Qty</th>
+					<th class='text-right'>Amount</th>
+				
+				</tr>";
+
+		foreach($items as $key=>$item)
+		{
+			$text .= "<tr>
+						<td>".$item['description']."</td>
+						<td class='text-right'>".$this->curSymbol.$item['price']."</td>
+						<td class='text-right'>".$item['quantity']."</td>
+						<td class='text-right'>".$this->curSymbol.($item['price'] * $item['quantity'])."</tdclass>
+					</tr>\n";
+		}
+
+		$text .= "<tr>
+					<td colspan='3' class='text-right'><b>Shipping</b></td>
+					<td class='text-right'>".$this->curSymbol.$this->var['order_pay_shipping']."</td>
+					</tr>";
+
+		$text .= "<tr>
+					<td colspan='3' class='text-right'><b>Total</b></td>
+					<td class='text-right'>".$this->curSymbol.$this->var['order_pay_amount']."</td>
+					</tr>";
+
+
+		$text .= "</table>";
+
+		return $text;
+
+
+	}
+
+	function sc_order_merchant_info()
+	{
+		$info = e107::pref('vstore', 'merchant_info');
+
+		if(empty($info))
+		{
+			return null;
+		}
+
+		return e107::getParser()->toHtml($info,true);
+
+	}
+
+	function sc_order_payment_instructions()
+	{
+		if($this->var['order_pay_gateway'] !== 'bank_transfer')
+		{
+			return null;
+		}
+	
+		$bankTransfer = e107::pref('vstore','bank_transfer_details');
+
+		return e107::getParser()->toHtml($bankTransfer,true);
+
+	}
+
+
+
+
+
+
+
+
+
 
 	function setCategories($data)
 	{
@@ -438,7 +570,7 @@ class vstore_plugin_shortcodes extends e_shortcode
 
 
 
-	function sc_cart_continueshop()
+	static function sc_cart_continueshop()
 	{
 		
 		$link = e107::url('vstore','index');
@@ -495,7 +627,8 @@ class vstore
 	protected   static $gateways    = array(
 		'paypal'        => array('title'=>'Paypal', 'icon'=>'fa-paypal'),
 		'paypal_rest'  => array('title'=>'Paypal', 'icon'=>'fa-paypal'),
-		'amazon'        => array('title'=> 'Amazon', 'icon'=>'fa-amazon')
+		'amazon'        => array('title'=> 'Amazon', 'icon'=>'fa-amazon'),
+		'bank_transfer' => array('title'=>'Bank Transfer', 'icon'=>'fa-bank'),
 	);
 
 	protected static $status = array(
@@ -819,8 +952,15 @@ class vstore
 	}
 
 
+	private function getMode()
+	{
+		return vartrue($this->get['mode']);
+	}
 
-
+	private function setMode($mode)
+	{
+		$this->get['mode'] = $mode;
+	}
 
 	public function render()
 	{
@@ -836,7 +976,7 @@ class vstore
 		}
 
 
-		if(vartrue($this->get['mode']) == 'return')
+		if($this->getMode() == 'return')
 		{
 			// print_a($this->post);
 			$bread = $this->breadcrumb();
@@ -848,7 +988,8 @@ class vstore
 			return null;
 		}
 
-		if(vartrue($this->get['mode']) == 'checkout')
+
+		if($this->getMode() == 'checkout')
 		{
 			// print_a($this->post);
 			$bread = $this->breadcrumb();
@@ -859,7 +1000,7 @@ class vstore
 
 
 
-		if(vartrue($this->get['mode']) == 'cart')
+		if($this->getMode() == 'cart')
 		{
 			// print_a($this->post);
 			$bread = $this->breadcrumb();
@@ -982,7 +1123,11 @@ class vstore
 
 	private function checkoutComplete()
 	{
-		return e107::getMessage()->render();
+		$text = e107::getMessage()->render('vstore');
+
+		$text .= "<div class='alert-block'>".vstore_plugin_shortcodes::sc_cart_continueshop()."</div>";
+
+		return $text;
 	}
 
 
@@ -1036,7 +1181,7 @@ class vstore
 
 		if(empty($type))
 		{
-			e107::getMessage()->addError("Invalid Payment Type");
+			e107::getMessage()->addError("Invalid Payment Type", 'vstore');
 			return false;
 		}
 
@@ -1076,6 +1221,17 @@ class vstore
 				$gateway->setSecret($this->pref['paypal_rest']['secret']);
 				break;
 
+			case "bank_transfer":
+
+				$mode = 'halt';
+				$this->setMode('return');
+
+				$message = e107::getParser()->toHtml($this->pref['bank_transfer']['details'],true);
+
+
+				break;
+
+
 			default:
 				return false;
 		}
@@ -1085,7 +1241,7 @@ class vstore
 
 		if(empty($data['items']))
 		{
-			e107::getMessage()->addError("Shopping Cart Empty");
+			e107::getMessage()->addError("Shopping Cart Empty",'vstore');
 			return false;
 		}
 		else
@@ -1105,7 +1261,22 @@ class vstore
 			}
 		}
 
-		if($mode == 'init')
+		if($mode === 'halt') // eg. bank-transfer.
+		{
+			$transID = null;
+			$transData = null;
+			$this->saveTransaction($transID, $transData, $items);
+		//	$this->resetCart();
+
+			if(!empty($message))
+			{
+				e107::getMessage()->addSuccess($message,'vstore');
+			}
+
+			unset($_SESSION['vstore']['_data']);
+			return null;
+		}
+		elseif($mode === 'init')
 		{
 			$method = $gateway->supportsAuthorize() ? 'authorize' : 'purchase';
 
@@ -1145,7 +1316,7 @@ class vstore
 		} catch(Exception $e)
 		{
 			$message = $e->getMessage();
-			e107::getMessage()->addError($message);
+			e107::getMessage()->addError($message,'vstore');
 			return false;
 		}
 
@@ -1167,7 +1338,7 @@ class vstore
 			$transID = $response->getTransactionReference();
 			$message = $response->getMessage();
 
-			e107::getMessage()->addSuccess($message);
+			e107::getMessage()->addSuccess($message,'vstore');
 
 			$this->saveTransaction($transID, $transData, $items);
 			$this->resetCart();
@@ -1177,8 +1348,20 @@ class vstore
 		else
 		{
 			$message = $response->getMessage();
-			e107::getMessage()->addError($message);
+			e107::getMessage()->addError($message,'vstore');
 		}
+	}
+
+
+	private function getOrderRef($id,$firstname,$lastname)
+	{
+		$text = substr($firstname,0,2);
+		$text .= substr($lastname,0,2);
+	//	$text .= date('Y');
+		$text .= e107::getParser()->leadingZeros($id,6);
+
+		return strtoupper($text);
+
 	}
 
 
@@ -1210,8 +1393,9 @@ class vstore
 			$insert[$fld]    = $val;
 		}
 
+
 		$insert['order_pay_gateway']    = $this->getGatewayType();
-		$insert['order_pay_status']     = 'complete';
+		$insert['order_pay_status']     = empty($transData) ? 'incomplete' : 'complete';
 		$insert['order_pay_transid']    = $id;
 		$insert['order_pay_amount']     = $cartData['totals']['cart_grandTotal'];
 		$insert['order_pay_shipping']   = $cartData['totals']['cart_shippingTotal'];
@@ -1219,24 +1403,75 @@ class vstore
 
 		$mes = e107::getMessage();
 
-		e107::getDebug()->log($insert);
+	//	e107::getDebug()->log($insert);
 
-		if( e107::getDb()->insert('vstore_orders',$insert) !== false)
+		$nid = e107::getDb()->insert('vstore_orders',$insert);
+		if( $nid !== false)
 		{
-			$mes->addSuccess("Your order #".$id." is complete");
-
+			$refId = $this->getOrderRef($nid,$insert['order_ship_firstname'],$insert['order_ship_lastname']);
+			$mes->addSuccess("Your order <b>#".$refId."</b> is complete",'vstore');
 			$this->updateInventory($insert['order_items']);
+			$this->emailCustomer('success', $refId, $insert);
 
 		}
 		else
 		{
 			$mes->addError("Unable to save transaction");
-
+			$this->emailCustomer('error', null, $insert);
 
 		}
 
 
 	}
+
+
+	/**
+	 * TODO - add a pref (multilan) containing the entire template which can be edited from within the admin area.
+	 * TODO - fallback to template in file if pref is empty.
+	 */
+	private function getEmailTemplate()
+	{
+		$template = e107::getTemplate('vstore', 'vstore_email', 'default');
+		return $template;
+	}
+
+
+
+
+	private function emailCustomer($templateKey, $ref, $insert=array())
+	{
+		$tp = e107::getParser();
+		$template = $this->getEmailTemplate();
+
+		$insert['order_ref'] = $ref;
+
+		$sc = new vstore_plugin_shortcodes;
+		$sc->setVars($insert);
+
+		$subject    = "Your Order #[x] at ".SITENAME; //todo add to template
+
+		$email      = $insert['order_ship_email'];
+		$name       = $insert['order_ship_firstname']." ".$insert['order_ship_lastname'];;
+
+		$eml = array(
+					'subject' 		=> $tp->lanVars($subject, array('x'=>$ref)),
+					'sender_email'	=> e107::pref('vstore','sender_email'),
+					'sender_name'	=> e107::pref('vstore','sender_name'),
+			//		'replyto'		=> $email,
+					'html'			=> true,
+					'template'		=> 'default',
+					'body'			=> $tp->parseTemplate($template,true,$sc)
+		);
+
+		$debug = e107::getEmail()->preview($eml);
+		e107::getDebug()->log($debug);
+
+
+
+	//	e107::getEmail()->sendEmail($email, $name, $eml);
+
+	}
+
 
 
 	private function updateInventory($json)
@@ -1430,7 +1665,7 @@ class vstore
 		if(!$data = e107::getDb()->retrieve('SELECT SQL_CALC_FOUND_ROWS * FROM #vstore_items WHERE item_cat = '.intval($category).' ORDER BY item_order LIMIT '.$this->from.','.$this->perPage, true))
 		{
 
-			return e107::getMessage()->addInfo("No products available in this category")->render();
+			return e107::getMessage()->addInfo("No products available in this category",'vstore')->render('vstore');
 		}
 		
 		$count = e107::getDb()->foundRows();
@@ -1487,7 +1722,7 @@ class vstore
 	{
 		if(!$row = e107::getDb()->retrieve('SELECT * FROM #vstore_items WHERE item_id = '.intval($id).'  LIMIT 1',true))
 		{
-			e107::getMessage()->addInfo("No products available in this category");
+			e107::getMessage()->addInfo("No products available in this category",'vstore');
 			return null;
 		}
 		
@@ -1620,7 +1855,7 @@ class vstore
 	{
 		if(!$data = $this->getCartData() )
 		{
-			return e107::getMessage()->addInfo("Your cart is empty.")->render();
+			return e107::getMessage()->addInfo("Your cart is empty.",'vstore')->render('vstore');
 
 
 		}
