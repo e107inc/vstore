@@ -28,9 +28,15 @@
 
                 $count = count($data);
 
-                $style = empty($count) ? '' : "class='active'";
+
 
             }
+            else
+            {
+                $count = 5;
+            }
+
+             $style = empty($count) ? '' : "class='active'";
 
 			$text = "<span id='vstore-cart-icon' ".$style.">".e107::getParser()->toGlyph('fa-shopping-cart')."<span class='badge'>".$count."</span></span>";
 
