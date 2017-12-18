@@ -28,7 +28,7 @@ class vstore_plugin_shortcodes extends e_shortcode
 	{
 	 	$this->vpref = e107::pref('vstore');	
 				
-		$this->symbols = array('USD'=>'$','EUR'=>'€','CAN'=>'$','GBP'=>'£');
+		$this->symbols = array('USD'=>'$','EUR'=>'€','CAN'=>'$','GBP'=>'£', "BTC"=> "<i class='fa fa-btc'></i>");
 		$currency = !empty($this->vpref['currency']) ? $this->vpref['currency'] : 'USD';
 
 		$this->curSymbol = vartrue($this->symbols[$currency],'$');
@@ -626,8 +626,9 @@ class vstore
 
 	protected   static $gateways    = array(
 		'paypal'        => array('title'=>'Paypal', 'icon'=>'fa-paypal'),
-		'paypal_rest'  => array('title'=>'Paypal', 'icon'=>'fa-paypal'),
+		'paypal_rest'   => array('title'=>'Paypal', 'icon'=>'fa-paypal'),
 		'amazon'        => array('title'=> 'Amazon', 'icon'=>'fa-amazon'),
+		'coinbase'      => array('title'=> 'Bitcoin', 'icon'=>'fa-btc'),
 		'bank_transfer' => array('title'=>'Bank Transfer', 'icon'=>'fa-bank'),
 	);
 
@@ -1192,6 +1193,20 @@ class vstore
 				$gateway = Omnipay::create('AmazonPayments');
 				$defaults = $gateway->getParameters();
 				e107::getDebug()->log($defaults);
+				break;
+
+			case "coinbase":
+
+				$gateway = Omnipay::create('Coinbase');
+
+			/*	if(!empty($this->pref['paypal']['testmode']))
+				{
+					$gateway->setTestMode(true);
+				}*/
+
+				$gateway->setAccountId($this->pref['coinbase']['account']);
+				$gateway->setSecret($this->pref['coinbase']['secret']);
+				$gateway->setApiKey($this->pref['coinbase']['api_key']);
 				break;
 
 			case "paypal":
