@@ -1664,7 +1664,7 @@ class vstore_items_vars_ui extends e_admin_ui
 		{
 			if(!empty($new_data['item_var_attributes']))
 			{
-				$new_data['item_var_attributes'] = array_unique($new_data['item_var_attributes']);
+				$new_data['item_var_attributes'] = $this->cleanItemVarAttributes($new_data['item_var_attributes']);
 			}
 			return $new_data;
 		}
@@ -1686,10 +1686,28 @@ class vstore_items_vars_ui extends e_admin_ui
 		{
 			if(!empty($new_data['item_var_attributes']))
 			{
-				$new_data['item_var_attributes'] = array_unique($new_data['item_var_attributes']);
+				$new_data['item_var_attributes'] = $this->cleanItemVarAttributes($new_data['item_var_attributes']);
 			}
 
 			return $new_data;
+		}
+
+		private function cleanItemVarAttributes($arr)
+		{
+			$ret = array();
+			foreach($arr as $k=>$v)
+			{
+				if(empty($v['name']))
+				{
+					continue;
+				}
+
+				$ret[$k] = $v;
+
+			}
+
+			return $ret;
+
 		}
 
 		public function afterUpdate($new_data, $old_data, $id)
