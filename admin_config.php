@@ -1293,6 +1293,10 @@ class vstore_items_ui extends e_admin_ui
 	 
 		  'item_order' 			=>   array ( 'title' => LAN_ORDER, 			'type' => 'hidden', 'data' => 'int', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 		  'item_inventory' 		=>   array ( 'title' => 'Inventory', 		'type' => 'method', 'data' => 'int', 'width' => 'auto', 'inline'=>true, 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'right item-inventory', 'thclass' => 'right',  ),
+		  'item_vars' 	        =>   array ( 'title' => 'Product Variations', 	'type' => 'comma', 'data' => 'str', 'width' => 'auto', 'inline'=>true, 'help' => '', 'readParms' => '', 'writeParms' => array(), 'class' => 'right item-inventory', 'thclass' => 'right',  ),
+
+
+
 		  'item_link' 			=>   array ( 'title' => 'External Link', 	'type' => 'text', 'tab'=>3, 'data' => 'str', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'center', 'thclass' => 'center',  ),
 		  'item_download' 		=>   array ( 'title' => 'Download File', 	'type' => 'file', 'tab'=>3, 'data' => 'str', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => 'media=vstore_file', 'class' => 'center', 'thclass' => 'center',  ),
 			
@@ -1314,8 +1318,16 @@ class vstore_items_ui extends e_admin_ui
 
 			$this->perPage = e107::pref('vstore','admin_items_perpage',10);
 
-
+			if($data = e107::getDb()->retrieve('SELECT item_var_id,item_var_name FROM #vstore_items_vars ORDER BY item_var_name', true))
+			{
+				foreach($data as $k=>$v)
+				{
+					$key = $v['item_var_id'];
+					$this->fields['item_vars']['writeParms'][$key] = $v['item_var_name'];
+				}
+			}
 		//	print_a($_POST);
+
 			
 			$data = e107::getDb()->retrieve('SELECT cat_id,cat_name,cat_parent FROM #vstore_cat ORDER BY cat_order', true);
 			$parent = array();
