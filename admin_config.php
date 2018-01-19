@@ -1037,6 +1037,7 @@ class vstore_cat_ui extends e_admin_ui
 		protected $perPage			= 10; 
 		protected $batchDelete		= true;
 		protected $batchCopy		= true;
+		protected $batchExport		= true;
 
 		protected $sortField		= 'cat_order';
 		protected $sortParent       = 'cat_parent';
