@@ -36,7 +36,7 @@ CREATE TABLE vstore_orders (
   `order_ship_state` varchar(100) DEFAULT NULL,
   `order_ship_zip` varchar(20) DEFAULT NULL,
   `order_ship_country` varchar(100) DEFAULT NULL,
-  `order_ship_notes` varchar(255) DEFAULT NULL,
+  `order_ship_notes` text NOT NULL,
   `order_pay_gateway` varchar(50) DEFAULT NULL,
   `order_pay_status` varchar(250) DEFAULT NULL,
   `order_pay_transid` varchar(250) DEFAULT NULL,
