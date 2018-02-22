@@ -679,6 +679,26 @@ class vstore
 			$this->captionBase = $pref['caption'][e_LANGUAGE];
 		}
 
+		if (vartrue($pref['add_field1_active'], false))
+		{
+			static::$shippingFields[] = 'add_field1';
+		}
+
+		if (vartrue($pref['add_field2_active'], false))
+		{
+			static::$shippingFields[] = 'add_field2';
+		}
+
+		if (vartrue($pref['add_field3_active'], false))
+		{
+			static::$shippingFields[] = 'add_field3';
+		}
+
+		if (vartrue($pref['add_field4_active'], false))
+		{
+			static::$shippingFields[] = 'add_field4';
+		}
+
 
 
 		if(!empty($pref['caption_categories']) && !empty($pref['caption_categories'][e_LANGUAGE]))
@@ -926,6 +946,64 @@ class vstore
 			    		';
 
 
+		/**
+		 * Additional checkout fields
+		 * Start
+		 */
+		$pref = e107::pref('vstore');
+		$addFieldActive = 0;
+		for ($i=1; $i<5; $i++) 
+		{
+			// Check if additional fields are enabled
+			if (vartrue($pref['add_field'.$i.'_active'], false))
+			{
+				$addFieldActive++;
+			}
+		}
+
+		if ($addFieldActive > 0)
+		{
+			// If any additional fields are enabled
+			// add active fields to form
+			$text .= '<br/><div class="row">';
+			for ($i=1; $i<5; $i++) 
+			{
+				if (vartrue($pref['add_field'.$i.'_active'], false))
+				{
+					if ($i >= 1 && $i <= 2)
+					{
+						// Textboxes
+						$field = $frm->text('add_field'.$i, $this->post['add_field'.$i], 100, array('placeholder'=>varset($pref['add_field'.$i.'_placeholder'], ''), 'required'=>vartrue($pref['add_field'.$i.'_required'], true)));
+					}
+					elseif ($i >= 3 && $i <= 4)
+					{
+						// Checkboxes
+						$field = '<div class="form-control-static">'.$frm->checkbox('add_field'.$i, 1, $this->post['add_field'.$i], array('required'=>vartrue($pref['add_field'.$i.'_required'], true)));
+						if (vartrue($pref['add_field'.$i.'_help']))
+						{
+							$field .= ' <span class="text-muted">&nbsp;'.$pref['add_field'.$i.'_help'].'</span>';
+						}
+						$field .= '</div>';
+					}
+
+					// Bootstrap wrapper for control
+					$text .= '
+						<div class="'.($addFieldActive == 1 ? 'col-md-12' : 'col-xs-6 col-sm-6 col-md-6').'">
+							<div class="form-group">
+								<label for="add_field'.$i.'">'.varset($pref['add_field'.$i.'_caption'], 'Additional field '.$i).'</label>
+								'.$field.'
+							</div>
+						</div>
+					';			
+				}
+			}
+			$text .= '</div>';
+		}
+		/**
+		 * Additional checkout fields
+		 * End
+		 */
+
 		if(!USER)
 		{
 			$text .= '<div class="row">
@@ -1163,6 +1241,25 @@ class vstore
 			$text .= "</div>";
 			$text .= e107::getForm()->close();
 
+			if (vartrue(e107::pref('vstore', 'admin_confirm_order')))
+			{
+				// If the user has to confirm the order
+				$text .= '
+				<script type="text/javascript">
+				$(function(){
+					$("#gateway-select").submit(function(e){
+						if(!confirm("By clicking on OK you confirm that you order the content of the shopping cart for the shown cost!"))
+						{
+							e.preventDefault();
+							return false;
+						}
+						return true;
+					});
+				});
+				</script>
+				';
+			}
+
 			return $text;
 		}
 
@@ -1281,7 +1378,7 @@ class vstore
 			$transID = null;
 			$transData = null;
 			$this->saveTransaction($transID, $transData, $items);
-		//	$this->resetCart();
+			$this->resetCart();
 
 			if(!empty($message))
 			{
@@ -1885,7 +1982,7 @@ class vstore
 		
 		    <div class="row">
 		        <div class="col-sm-12 col-md-12">
-		            <table class="table table-hover">
+		            <table class="table table-hover cart">
 		                <thead>
 		                    <tr>
 		                        <th>Product</th>
@@ -2016,12 +2113,37 @@ class vstore
 
 	private function setShippingData($data=array())
 	{
-
+		$pref = e107::pref('vstore');
 		$fields = self::getShippingFields();
-
+		$order_ship_add_fields = array();
 		foreach($fields as $fld)
 		{
-			$_SESSION['vstore']['shipping']['order_ship_'.$fld] = $data[$fld];
+			if (substr($fld, 0, strlen('add_field')) == 'add_field')
+			{
+				$fieldid = intval(substr($fld, strlen('add_field')));
+				$caption = strip_tags(varset($pref[$fld.'_caption'], 'Field '.$fieldid));
+				if ($fieldid <= 2)
+				{
+					$order_ship_add_fields[] = $caption . ': ' . $data[$fld];
+				}
+				else
+				{
+					$order_ship_add_fields[] = $caption . ': ' . ($data[$fld] ? 'Checked' : 'Unchecked');
+				}
+			}
+			else
+			{
+				$_SESSION['vstore']['shipping']['order_ship_'.$fld] = trim(strip_tags($data[$fld]));
+			}
+		}
+		if (varset($order_ship_add_fields))
+		{
+			//$_SESSION['vstore']['shipping']['order_ship_add_fields'] = implode("<br/>\n", $order_ship_add_fields);
+			if ($_SESSION['vstore']['shipping']['order_ship_notes'] != '')
+			{
+				$_SESSION['vstore']['shipping']['order_ship_notes'] .= "<br/>\n<br/>\n";
+			}
+			$_SESSION['vstore']['shipping']['order_ship_notes'] .= implode("<br/>\n", $order_ship_add_fields);
 		}
 
 

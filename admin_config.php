@@ -417,22 +417,23 @@ class vstore_order_ui extends e_admin_ui
 
 
 		protected $fields 		= array (
-		 'checkboxes'           =>   array ( 'title' => '', 'type' => null, 'data' => null, 'width' => '5%', 'thclass' => 'center', 'forced' => '1', 'class' => 'center', 'toggle' => 'e-multiselect',  ),
-		  'order_id'            =>   array ( 'title' => LAN_ID, 'data' => 'int', 'width' => '5%', 'help' => '', 'readonly'=>true, 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
-		  'order_status'          => array('title'=>'Status', 'type'=>'dropdown', 'data'=>'str', 'inline'=>true, 'filter'=>true, 'batch'=>true,'width'=>'5%'),
-		  'order_date'          =>   array ( 'title' => LAN_DATESTAMP, 'type' => 'datestamp', 'data' => 'str',  'readonly'=>true, 'width' => 'auto', 'filter' => true, 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+			'checkboxes'           	=> array ( 'title' => '', 'type' => null, 'data' => null, 'width' => '5%', 'thclass' => 'center', 'forced' => '1', 'class' => 'center', 'toggle' => 'e-multiselect',  ),
+			'order_id'            	=> array ( 'title' => LAN_ID, 'data' => 'int', 'width' => '5%', 'help' => '', 'readonly'=>true, 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+			'order_status'          => array ( 'title' => 'Status', 'type'=>'dropdown', 'data'=>'str', 'inline'=>true, 'filter'=>true, 'batch'=>true,'width'=>'5%'),
+			'order_date'          	=> array ( 'title' => LAN_DATESTAMP, 'type' => 'datestamp', 'data' => 'str',  'readonly'=>true, 'width' => 'auto', 'filter' => true, 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 
-		  'order_session'       =>   array ( 'title' => 'Session', 'type' => 'text', 'tab'=>1, 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
-		  'order_ship_to'      =>  array('title'=>'Ship to', 'type'=>'method', 'data'=>false, 'width'=>'20%'),
-		  'order_items'     =>   array ( 'title' => "Items", 'type' => 'method', 'data' => false, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'right', 'thclass' => 'right',  ),
-		 'order_e107_user'     =>   array ( 'title' => LAN_AUTHOR, 'type' => 'method', 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
-		 'order_pay_gateway'       =>   array ( 'title' => 'Gateway', 'type' => 'text', 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
-		 'order_pay_status'        =>   array ( 'title' => 'Pay Status', 'type' => 'text',  'data' => 'str',  'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
-		 'order_pay_transid'       =>   array ( 'title' => 'TransID', 'type' => 'text', 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
-		  'order_pay_amount' =>   array ( 'title' => 'Total', 'type' => 'method', 'data' => 'int', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
-		  'order_pay_shipping' =>   array ( 'title' => 'Shipping', 'type' => 'number', 'data' => 'int', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
-		  'order_pay_rawdata' =>   array ( 'title' => 'Rawdata', 'type' => 'method', 'tab'=>1, 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
-		  'options' =>   array ( 'title' => LAN_OPTIONS, 'type' => null, 'data' => null, 'width' => '10%', 'thclass' => 'center last', 'class' => 'center last', 'forced' => '1',  ),
+			'order_ship_to'      	=> array ( 'title' => 'Ship to', 'type'=>'method', 'data'=>false, 'width'=>'20%'),
+			'order_items'     		=> array ( 'title' => "Items", 'type' => 'method', 'data' => false, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'right', 'thclass' => 'right',  ),
+			'order_e107_user'     	=> array ( 'title' => LAN_AUTHOR, 'type' => 'method', 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+			'order_pay_gateway'     => array ( 'title' => 'Gateway', 'type' => 'text', 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+			'order_pay_status'      => array ( 'title' => 'Pay Status', 'type' => 'text',  'data' => 'str',  'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+			'order_pay_transid'     => array ( 'title' => 'TransID', 'type' => 'text', 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+			'order_pay_amount' 		=> array ( 'title' => 'Total', 'type' => 'method', 'data' => 'int', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+			'order_pay_shipping' 	=> array ( 'title' => 'Shipping', 'type' => 'number', 'data' => 'int', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+			'order_ship_notes'      => array ( 'title' => 'Notes', 'type'=>'method', 'tab'=>1, 'data'=>false, 'width'=>'20%'),
+			'order_session'       	=> array ( 'title' => 'Session', 'type' => 'text', 'tab'=>1, 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+			'order_pay_rawdata' 	=> array ( 'title' => 'Rawdata', 'type' => 'method', 'tab'=>1, 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+			'options' 				=> array ( 'title' => LAN_OPTIONS, 'type' => null, 'data' => null, 'width' => '10%', 'thclass' => 'center last', 'class' => 'center last', 'forced' => '1',  ),
 		);
 
 		protected $fieldpref = array('order_id','order_ship_to', 'order_status', 'order_date', 'order_items', 'order_pay_transid','order_pay_amount','order_pay_status');
@@ -454,10 +455,6 @@ class vstore_order_ui extends e_admin_ui
 			'paypal_rest_secret'    => array('title'=>"Paypal Secret", 'type'=>'text', 'tab'=>1, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
 		//	'paypal_signature'      => array('title'=>"Paypal Signature", 'type'=>'text', 'tab'=>0, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
 
-			'bank_transfer_active'    => array('title'=>"Bank Transfer", 'type'=>'boolean', 'tab'=>4, 'data'=>'int', 'help'=>''),
-			'bank_transfer_details'    => array('title'=>"Bank Transfer", 'type'=>'textarea', 'tab'=>4, 'data'=>'str', 'writeParms'=>array('placeholder'=>"Bank Account Details"), 'help'=>''),
-
-
 			'coinbase_active'     => array('title'=>"Coinbase Payments", 'type'=>'boolean', 'tab'=>2, 'data'=>'int', 'help'=>''),
 			'coinbase_account'    => array('title'=>"Coinbase Account ID", 'type'=>'text', 'tab'=>2, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
 			'coinbase_api_key'    => array('title'=>"Coinbase API key", 'type'=>'text', 'tab'=>2, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
@@ -470,6 +467,10 @@ class vstore_order_ui extends e_admin_ui
 
 			'skrill_active'         => array('title'=>"Skrill Payments", 'type'=>'boolean', 'tab'=>4, 'data'=>'int', 'help'=>''),
 			'skrill_email'          => array('title'=>"Skrill Email", 'type'=>'text', 'tab'=>4, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
+
+			'bank_transfer_active'    => array('title'=>"Bank Transfer", 'type'=>'boolean', 'tab'=>5, 'data'=>'int', 'help'=>''),
+			'bank_transfer_details'    => array('title'=>"Bank Transfer", 'type'=>'textarea', 'tab'=>5, 'data'=>'str', 'writeParms'=>array('placeholder'=>"Bank Account Details"), 'help'=>''),
+
 		);
 
 
@@ -657,6 +658,17 @@ class vstore_order_form_ui extends e_admin_form_ui
 
 	}
 
+	function order_ship_notes($curVal, $mode)
+	{
+		switch($mode)
+		{
+			case 'read':
+			case 'write':
+				$notes = $this->getController()->getFieldVar('order_ship_notes');
+				return $notes;
+				break;
+		}
+	}
 
 
 	function order_pay_amount($curVal,$mode)
@@ -776,7 +788,7 @@ Secret Key 	secret_key 	Default : null
 Region 	region
  */
 		// optional
-		protected $preftabs = array(LAN_GENERAL, "Emails", "How to Order", "Admin Area");
+		protected $preftabs = array(LAN_GENERAL, "Emails", "How to Order", "Admin Area", "Additional checkout fields");
 
 
 		protected $prefs = array(
@@ -795,6 +807,31 @@ Region 	region
 
 			'admin_items_perpage'	    => array('title'=> 'Products per page', 'tab'=>3, 'type'=>'number', 'help'=>''),
 			'admin_categories_perpage'	=> array('title'=> 'Categories per page', 'tab'=>3, 'type'=>'number', 'help'=>''),
+			'admin_confirm_order'		=> array('title'=> 'Confirm order', 'tab'=>3, 'type'=>'bool', 'help'=>'If ON, the customer has to confirm his order after selecting the payment method on the checkout page!'),
+
+			'add_field1_active'    		=> array('title'=>"Field 1 active", 'type'=>'boolean', 'tab'=>4, 'data'=>'int', 'help'=>'Field 1 will be rendered as text box'),
+			'add_field1_caption'    	=> array('title'=>"Field 1 caption", 'type'=>'text', 'tab'=>4, 'data'=>'str', 'writeParms'=>array('placeholder'=>"Field 1 caption"), 'help'=>''),
+			'add_field1_placeholder'   	=> array('title'=>"Field 1 placeholder", 'type'=>'text', 'tab'=>4, 'data'=>'str', 'writeParms'=>array('placeholder'=>"Field 1 placeholder"), 'help'=>''),
+			'add_field1_required'  		=> array('title'=>"Field 1 required", 'type'=>'boolean', 'tab'=>4, 'data'=>'int', 'help'=>''),
+			'add_field1_separator' 		=> array('title'=>"", 'type'=>'', 'tab'=>4, 'data'=>'int', 'help'=>''),
+
+			'add_field2_active'    		=> array('title'=>"Field 2 active", 'type'=>'boolean', 'tab'=>4, 'data'=>'int', 'help'=>'Field 2 will be rendered as text box'),
+			'add_field2_caption'    	=> array('title'=>"Field 2 caption", 'type'=>'text', 'tab'=>4, 'data'=>'str', 'writeParms'=>array('placeholder'=>"Field 2 caption"), 'help'=>''),
+			'add_field2_placeholder'   	=> array('title'=>"Field 2 placeholder", 'type'=>'text', 'tab'=>4, 'data'=>'str', 'writeParms'=>array('placeholder'=>"Field 2 placeholder"), 'help'=>''),
+			'add_field2_required'  		=> array('title'=>"Field 2 required", 'type'=>'boolean', 'tab'=>4, 'data'=>'int', 'help'=>''),
+			'add_field2_separator' 		=> array('title'=>"", 'type'=>'', 'tab'=>4, 'data'=>'int', 'help'=>''),
+
+			'add_field3_active'    		=> array('title'=>"Field 3 active", 'type'=>'boolean', 'tab'=>4, 'data'=>'int', 'help'=>'Field 3 will be rendered as checkbox'),
+			'add_field3_caption'    	=> array('title'=>"Field 3 caption", 'type'=>'text', 'tab'=>4, 'data'=>'str', 'writeParms'=>array('placeholder'=>"Field 3 caption"), 'help'=>''),
+			'add_field3_help'    		=> array('title'=>"Field 3 help text", 'type'=>'text', 'tab'=>4, 'data'=>'str', 'writeParms'=>array('placeholder'=>"Field 3 help text"), 'help'=>''),
+			'add_field3_required'  		=> array('title'=>"Field 3 required", 'type'=>'boolean', 'tab'=>4, 'data'=>'int', 'help'=>''),
+			'add_field3_separator' 		=> array('title'=>"", 'type'=>'', 'tab'=>4, 'data'=>'int', 'help'=>''),
+
+			'add_field4_active'    		=> array('title'=>"Field 4 active", 'type'=>'boolean', 'tab'=>4, 'data'=>'int', 'help'=>'Field 4 will be rendered as checkbox'),
+			'add_field4_caption'    	=> array('title'=>"Field 4 caption", 'type'=>'text', 'tab'=>4, 'data'=>'str', 'writeParms'=>array('placeholder'=>"Field 4 caption"), 'help'=>''),
+			'add_field4_help'    		=> array('title'=>"Field 4 help text", 'type'=>'text', 'tab'=>4, 'data'=>'str', 'writeParms'=>array('placeholder'=>"Field 4 help text"), 'help'=>''),
+			'add_field4_required'  		=> array('title'=>"Field 4 required", 'type'=>'boolean', 'tab'=>4, 'data'=>'int', 'help'=>''),
+			'add_field4_separator' 		=> array('title'=>"", 'type'=>'', 'tab'=>4, 'data'=>'int', 'help'=>''),
 
 		);
 

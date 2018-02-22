@@ -24,3 +24,5 @@
 .vstore-category-list .thumbnail .caption   { min-height:80px }
 
 .vstore-zoom::after                         { content: ''; display: block; width: 33px; height: 33px; position: absolute; top: 0; right: 0; background: url(https://raw.github.com/jackmoore/zoom/master/icon.png); }
+
+.cart h3, .cart h5                          { color: black; }
