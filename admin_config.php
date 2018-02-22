@@ -454,10 +454,6 @@ class vstore_order_ui extends e_admin_ui
 			'paypal_rest_secret'    => array('title'=>"Paypal Secret", 'type'=>'text', 'tab'=>1, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
 		//	'paypal_signature'      => array('title'=>"Paypal Signature", 'type'=>'text', 'tab'=>0, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
 
-			'bank_transfer_active'    => array('title'=>"Bank Transfer", 'type'=>'boolean', 'tab'=>4, 'data'=>'int', 'help'=>''),
-			'bank_transfer_details'    => array('title'=>"Bank Transfer", 'type'=>'textarea', 'tab'=>4, 'data'=>'str', 'writeParms'=>array('placeholder'=>"Bank Account Details"), 'help'=>''),
-
-
 			'coinbase_active'     => array('title'=>"Coinbase Payments", 'type'=>'boolean', 'tab'=>2, 'data'=>'int', 'help'=>''),
 			'coinbase_account'    => array('title'=>"Coinbase Account ID", 'type'=>'text', 'tab'=>2, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
 			'coinbase_api_key'    => array('title'=>"Coinbase API key", 'type'=>'text', 'tab'=>2, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
@@ -470,6 +466,10 @@ class vstore_order_ui extends e_admin_ui
 
 			'skrill_active'         => array('title'=>"Skrill Payments", 'type'=>'boolean', 'tab'=>4, 'data'=>'int', 'help'=>''),
 			'skrill_email'          => array('title'=>"Skrill Email", 'type'=>'text', 'tab'=>4, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
+
+			'bank_transfer_active'    => array('title'=>"Bank Transfer", 'type'=>'boolean', 'tab'=>5, 'data'=>'int', 'help'=>''),
+			'bank_transfer_details'    => array('title'=>"Bank Transfer", 'type'=>'textarea', 'tab'=>5, 'data'=>'str', 'writeParms'=>array('placeholder'=>"Bank Account Details"), 'help'=>''),
+
 		);
 
 
