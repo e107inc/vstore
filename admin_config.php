@@ -788,7 +788,7 @@ Secret Key 	secret_key 	Default : null
 Region 	region
  */
 		// optional
-		protected $preftabs = array(LAN_GENERAL, "Emails", "How to Order", "Admin Area", "Additional checkout fields");
+		protected $preftabs = array(LAN_GENERAL, "Emails", "How to Order", "Admin Area", "Check-Out");
 
 
 		protected $prefs = array(
@@ -809,7 +809,10 @@ Region 	region
 			'admin_categories_perpage'	=> array('title'=> 'Categories per page', 'tab'=>3, 'type'=>'number', 'help'=>''),
 			'admin_confirm_order'		=> array('title'=> 'Confirm order', 'tab'=>3, 'type'=>'bool', 'help'=>'If ON, the customer has to confirm his order after selecting the payment method on the checkout page!'),
 
-			'add_field1_active'    		=> array('title'=>"Field 1 active", 'type'=>'boolean', 'tab'=>4, 'data'=>'int', 'help'=>'Field 1 will be rendered as text box'),
+
+			'additional_fields'         => array('title'=>'Additional Fields', 'tab'=>4, 'type'=>'method'),
+
+		/*	'add_field1_active'    		=> array('title'=>"Field 1 active", 'type'=>'boolean', 'tab'=>4, 'data'=>'int', 'help'=>'Field 1 will be rendered as text box'),
 			'add_field1_caption'    	=> array('title'=>"Field 1 caption", 'type'=>'text', 'tab'=>4, 'data'=>'str', 'writeParms'=>array('placeholder'=>"Field 1 caption"), 'help'=>''),
 			'add_field1_placeholder'   	=> array('title'=>"Field 1 placeholder", 'type'=>'text', 'tab'=>4, 'data'=>'str', 'writeParms'=>array('placeholder'=>"Field 1 placeholder"), 'help'=>''),
 			'add_field1_required'  		=> array('title'=>"Field 1 required", 'type'=>'boolean', 'tab'=>4, 'data'=>'int', 'help'=>''),
@@ -831,7 +834,7 @@ Region 	region
 			'add_field4_caption'    	=> array('title'=>"Field 4 caption", 'type'=>'text', 'tab'=>4, 'data'=>'str', 'writeParms'=>array('placeholder'=>"Field 4 caption"), 'help'=>''),
 			'add_field4_help'    		=> array('title'=>"Field 4 help text", 'type'=>'text', 'tab'=>4, 'data'=>'str', 'writeParms'=>array('placeholder'=>"Field 4 help text"), 'help'=>''),
 			'add_field4_required'  		=> array('title'=>"Field 4 required", 'type'=>'boolean', 'tab'=>4, 'data'=>'int', 'help'=>''),
-			'add_field4_separator' 		=> array('title'=>"", 'type'=>'', 'tab'=>4, 'data'=>'int', 'help'=>''),
+			'add_field4_separator' 		=> array('title'=>"", 'type'=>'', 'tab'=>4, 'data'=>'int', 'help'=>''),*/
 
 		);
 
@@ -859,6 +862,51 @@ Region 	region
 
 class vstore_cart_form_ui extends e_admin_form_ui
 {
+
+	function additional_fields($curVal,$mode)
+	{
+		
+		$tmp = range(0,3);
+
+		$text = "<table class='table table-striped table-bordered'>
+			<colgroup>
+				<col style='width:100px' />
+				<col style='width:auto' />
+				<col style='width:auto' />
+				<col style='width:10%' />
+				<col style='width:100px' />
+			</colgroup>";
+
+			$opts = array('text'=>"Text Box",'checkbox'=> "Check box");
+
+		foreach($tmp as $i)
+		{
+
+			$activeVal       = !empty($curVal[$i]['active']) ? $curVal[$i]['active'] : null;
+			$capVal          = !empty($curVal[$i]['caption'][e_LANGUAGE]) ? $curVal[$i]['caption'][e_LANGUAGE] : null;
+			$placeholderVal  = !empty($curVal[$i]['placeholder'][e_LANGUAGE]) ? $curVal[$i]['caption'][e_LANGUAGE] : null;
+			$reqVal          = !empty($curVal[$i]['required']) ? $curVal[$i]['required'] : null;
+			$typeVal          = !empty($curVal[$i]['type']) ? $curVal[$i]['type'] : 'text';
+
+			$post = '<small class="input-group-addon"><i class="fa fa-language"><!-- --></i></small>';
+
+			$text .= "
+				<tr>
+					<td>".$this->flipswitch('additional_fields['.$i.'][active]', $activeVal, null, array('switch'=>'small'))."</td>
+					<td><span class='input-group'>".$this->text('additional_fields['.$i.'][caption]['.e_LANGUAGE.']', $capVal, 30, array('placeholder'=>LAN_CAPTION, 'size'=>'block-level')).$post."</span></td>
+					<td><span class='input-group'>".$this->text('additional_fields['.$i.'][placeholder]['.e_LANGUAGE.']',$placeholderVal, 30, array('placeholder'=>"Placeholder", 'size'=>'block-level')).$post."</span></td>
+					<td>".$this->select('additional_fields['.$i.'][type]', $opts, $typeVal )."</td>
+					<td>".$this->flipswitch('additional_fields['.$i.'][required]', $reqVal)."</td>
+				</tr>
+			";
+
+		}
+
+		$text .= "</table>";
+
+		return $text;
+	}
+
 
 	
 	// Custom Method/Function 
