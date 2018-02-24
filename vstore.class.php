@@ -1910,7 +1910,8 @@ class vstore
 			}
 		}
 		
-		if(!empty($data['cat_info']))
+		//if(!empty($data['cat_info']))
+		if (!empty(e107::pref('vstore', 'howtoorder')))
 		{
 			$tabData['howto']		= array('caption'=>'How to Order', 'text'=> $tmpl['item']['howto']);
 		}
