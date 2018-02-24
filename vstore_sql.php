@@ -80,6 +80,7 @@ CREATE TABLE vstore_items (
   `item_link` varchar(255) DEFAULT NULL,
   `item_download` varchar(255) DEFAULT NULL,
   `item_related` text NOT NULL,
+	`item_userclass` SMALLINT(5) NOT NULL DEFAULT '0',
   PRIMARY KEY (`item_id`)
 ) ENGINE=MyISAM;
 

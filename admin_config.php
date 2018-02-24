@@ -514,7 +514,24 @@ class vstore_order_ui extends e_admin_ui
 
 		public function afterUpdate($new_data, $old_data, $id)
 		{
-			// do something
+			$isSession = vartrue($_POST['__after_submit_action']) && !isset($_POST['e__execute_batch']) != 'edit' ? true : false;
+			if (array_key_exists('order_status', $new_data)) 
+			{
+				if ($new_data['order_status'] === 'C')
+				{
+					// Update userclass
+					vstore::setCustomerUserclass($old_data['order_e107_user'], json_decode($old_data['order_items'], true));
+				}
+				elseif ($old_data['order_status'] === 'C')
+				{
+					$uc = vstore::getCustomerUserclass(json_decode($old_data['order_items'], true));
+					if ($uc)
+					{
+						$uc_list = e107::getDB()->retrieve('SELECT GROUP_CONCAT(userclass_name) AS ucs FROM e107_userclass_classes WHERE FIND_IN_SET(userclass_id, "'.$uc.'")');
+						e107::getMessage()->addWarning('The userclasses, the user has received during the purchase can not be removed automatically.<br/>Click <a href="'.e_ADMIN.'users.php?searchquery='.$old_data['order_e107_user'].'">here</a> to open the users property page and to remove the following userclasses manually.<br/>'.str_replace(',', ', ', $uc_list), 'default', $isSession);
+					}
+				}
+			}
 		}
 
 		public function onUpdateError($new_data, $old_data, $id)
@@ -798,6 +815,7 @@ Region 	region
 
 			'currency'		            => array('title'=> 'Currency', 'type'=>'dropdown', 'data' => 'string','help'=>'Select a currency'),
 			'shipping'		            => array('title'=> 'Calculate Shipping', 'type'=>'boolean', 'data' => 'int','help'=>'Including shipping calculation at checkout.'),
+		    'customer_userclass'        => array('title' => 'Add userclass', 'type' => 'method', 'help' => 'Add userclass to user on purchase'),
 			'howtoorder'	            => array('title'=> 'How to order', 'tab'=>2,'type'=>'bbarea', 'help'=>'Enter how-to-order info.'),
 
 			'sender_name'               => array('title'=> 'Sender Name', 'tab'=>1, 'type'=>'text', 'writeParms'=>array('placeholder'=>'Sales Department'), 'help'=>'Leave blank to use system default','multilan'=>false),
@@ -807,10 +825,9 @@ Region 	region
 
 			'admin_items_perpage'	    => array('title'=> 'Products per page', 'tab'=>3, 'type'=>'number', 'help'=>''),
 			'admin_categories_perpage'	=> array('title'=> 'Categories per page', 'tab'=>3, 'type'=>'number', 'help'=>''),
-			'admin_confirm_order'		=> array('title'=> 'Confirm order', 'tab'=>3, 'type'=>'bool', 'help'=>'If ON, the customer has to confirm his order after selecting the payment method on the checkout page!'),
-
 
 			'additional_fields'         => array('title'=>'Additional Fields', 'tab'=>4, 'type'=>'method'),
+			'admin_confirm_order'		=> array('title'=> 'Confirm order', 'tab'=>4, 'type'=>'bool', 'help'=>'If ON, the customer has to confirm his order after selecting the payment method on the checkout page!'),
 
 		);
 
@@ -883,6 +900,17 @@ class vstore_cart_form_ui extends e_admin_form_ui
 		return $text;
 	}
 
+	function customer_userclass($curVal, $mode)
+	{
+		$frm = e107::getForm();
+				 
+		
+		// , 'readParms' => 'classlist=classes', 'writeParms' => "classlist=classes", 'class' => 'left', 'thclass' => 'left',  
+		$items = e107::getUserClass()->getClassList('nobody,member,classes');
+		$items = array('-1' => 'As defined in product') + $items;
+		return $frm->select('customer_userclass', $items, $curVal);
+		
+	}
 
 	
 	// Custom Method/Function 

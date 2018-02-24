@@ -10,7 +10,7 @@
 **
 */
 
-class _blank_setup
+class vstore_setup
 {
 	
  	function install_pre($var)
@@ -34,7 +34,7 @@ class _blank_setup
 		(3, 'ITEM3', 'Product Three', NULL, 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris libero magna, ornare sit amet nibh vitae, feugiat luctus nulla. Pellentesque placerat Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris libero magna, ornare sit amet nibh v', 1, 'array (\n  0 => \n  array (\n    \'path\' => \'{e_MEDIA_IMAGE}2016-04/logo_alone_1050_.jpg\',\n  ),\n  1 => \n  array (\n    \'path\' => \'\',\n  ),\n  2 => \n  array (\n    \'path\' => \'\',\n  ),\n  3 => \n  array (\n    \'path\' => \'\',\n  ),\n  4 => \n  array (\n    \'path\' => \'\',\n  ),\n)', 'array (\n  0 => \n  array (\n    \'path\' => \'\',\n    \'name\' => \'e107_banners.zip\',\n    \'id\' => \'171\',\n  ),\n  1 => \n  array (\n    \'path\' => \'\',\n    \'name\' => \'\',\n    \'id\' => \'\',\n  ),\n  2 => \n  array (\n    \'path\' => \'\',\n    \'name\' => \'\',\n    \'id\' => \'\',\n  ),\n  3 => \n  array (\n    \'path\' => \'\',\n    \'name\' => \'\',\n    \'id\' => \'\',\n  ),\n  4 => \n  array (\n    \'path\' => \'\',\n    \'name\' => \'\',\n    \'id\' => \'\',\n  ),\n)', '3.00', '2.00', '[html]<p>Some details go here.</p>[/html]', 'Here&#039;s a review of sorts. ', 1, 6, '', NULL, 'array (\n  \'caption\' => \'\',\n  \'src\' => \'\',\n)');
 
 		INSERT INTO `#vstore_cat` (`cat_id`, `cat_name`, `cat_description`, `cat_sef`, `cat_image`, `cat_info`, `cat_class`, `cat_order`) VALUES
-(1, 'General', 'Category Description here', 'general', '', '[html]<p>Some category details go here. </p>[/html]', '0', 0);
+		(1, 'General', 'Category Description here', 'general', '', '[html]<p>Some category details go here. </p>[/html]', '0', 0);
 		";
 		
 		if($sql->gen($dump))
@@ -51,9 +51,7 @@ class _blank_setup
 	function uninstall_options()
 	{
 	
-
 	}
-	
 
 	function uninstall_post($var)
 	{
