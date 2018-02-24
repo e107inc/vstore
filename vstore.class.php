@@ -487,7 +487,7 @@ class vstore_plugin_shortcodes extends e_shortcode
 
 	function sc_item_status($parm=null)
 	{
-		if($this->var['item_inventory'] > 0)
+		if($this->var['item_inventory'] != 0)
 		{
 			return '<span class="text-success"><strong>In Stock</strong></span>';
 		}	
@@ -679,27 +679,13 @@ class vstore
 			$this->captionBase = $pref['caption'][e_LANGUAGE];
 		}
 
-		if (vartrue($pref['add_field1_active'], false))
+		foreach($pref['additional_fields'] as $k => $v)
 		{
-			static::$shippingFields[] = 'add_field1';
+			if (vartrue($v['active'], false))
+			{
+				static::$shippingFields[] = 'add_field'.$k;
+			}
 		}
-
-		if (vartrue($pref['add_field2_active'], false))
-		{
-			static::$shippingFields[] = 'add_field2';
-		}
-
-		if (vartrue($pref['add_field3_active'], false))
-		{
-			static::$shippingFields[] = 'add_field3';
-		}
-
-		if (vartrue($pref['add_field4_active'], false))
-		{
-			static::$shippingFields[] = 'add_field4';
-		}
-
-
 
 		if(!empty($pref['caption_categories']) && !empty($pref['caption_categories'][e_LANGUAGE]))
 		{
@@ -952,10 +938,10 @@ class vstore
 		 */
 		$pref = e107::pref('vstore');
 		$addFieldActive = 0;
-		for ($i=1; $i<5; $i++) 
+		foreach ($pref['additional_fields'] as $k => $v) 
 		{
 			// Check if additional fields are enabled
-			if (vartrue($pref['add_field'.$i.'_active'], false))
+			if (vartrue($v['active'], false))
 			{
 				$addFieldActive++;
 			}
@@ -966,22 +952,23 @@ class vstore
 			// If any additional fields are enabled
 			// add active fields to form
 			$text .= '<br/><div class="row">';
-			for ($i=1; $i<5; $i++) 
+			foreach ($pref['additional_fields'] as $k => $v) 
 			{
-				if (vartrue($pref['add_field'.$i.'_active'], false))
+				if (vartrue($v['active'], false))
 				{
-					if ($i >= 1 && $i <= 2)
+					$fieldname = 'add_field'.$k;
+					if ($v['type'] == 'text')
 					{
 						// Textboxes
-						$field = $frm->text('add_field'.$i, $this->post['add_field'.$i], 100, array('placeholder'=>varset($pref['add_field'.$i.'_placeholder'], ''), 'required'=>vartrue($pref['add_field'.$i.'_required'], true)));
+						$field = $frm->text($fieldname, $this->post[$fieldname], 100, array('placeholder'=>varset($v['placeholder'][e_LANGUAGE], ''), 'required'=>($v['required'] ? 1 : 0)));
 					}
-					elseif ($i >= 3 && $i <= 4)
+					elseif ($v['type'] == 'checkbox')
 					{
 						// Checkboxes
-						$field = '<div class="form-control-static">'.$frm->checkbox('add_field'.$i, 1, $this->post['add_field'.$i], array('required'=>vartrue($pref['add_field'.$i.'_required'], true)));
-						if (vartrue($pref['add_field'.$i.'_help']))
+						$field = '<div class="form-control">'.$frm->checkbox($fieldname, 1, $this->post[$fieldname], array('required'=>($v['required'] ? 1 : 0)));
+						if (vartrue($v['placeholder']))
 						{
-							$field .= ' <span class="text-muted">&nbsp;'.$pref['add_field'.$i.'_help'].'</span>';
+							$field .= ' <span class="text-muted">&nbsp;'.$v['placeholder'][e_LANGUAGE].'</span>';
 						}
 						$field .= '</div>';
 					}
@@ -990,7 +977,7 @@ class vstore
 					$text .= '
 						<div class="'.($addFieldActive == 1 ? 'col-md-12' : 'col-xs-6 col-sm-6 col-md-6').'">
 							<div class="form-group">
-								<label for="add_field'.$i.'">'.varset($pref['add_field'.$i.'_caption'], 'Additional field '.$i).'</label>
+								<label for="'.$fieldname.'">'.varset($v['caption'][e_LANGUAGE], 'Additional field '.$k).'</label>
 								'.$field.'
 							</div>
 						</div>
@@ -1595,15 +1582,28 @@ class vstore
 		{
 			if(!empty($row['quantity']) && !empty($row['id']) && !empty($row['name']))
 			{
-				if($sql->update('vstore_items','item_inventory = item_inventory - '.intval($row['quantity']).' WHERE item_id='.intval($row['id']).' AND item_code="'.$row['name'].'" LIMIT 1'))
+				$curQuantity = $sql->retrieve('vstore_items', 'item_inventory', 'item_id='.intval($row['id']).' AND item_code="'.$row['name'].'"');
+				if ($curQuantity > 0)
 				{
-					e107::getMessage()->addDebug("Reduced inventory of ".$row['name']." by ".$row['quantity']);
+					$reduceBy = intval($row['quantity']);
+					if ($reduceBy > $curQuantity)
+					{
+						$reduceBy = $curQuantity;
+					}
+					if($sql->update('vstore_items','item_inventory = item_inventory - '.$reduceBy.' WHERE item_id='.intval($row['id']).' AND item_code="'.$row['name'].'" LIMIT 1'))
+					{
+						e107::getMessage()->addDebug("Reduced inventory of ".$row['name']." by ".$row['quantity']);
+					}
+					else
+					{
+						e107::getMessage()->addDebug("Was UNABLE to reduce inventory of ".$row['name']." (".$row['id'].") by ".$row['quantity']);
+					}
 				}
 				else
 				{
-					e107::getMessage()->addDebug("Was UNABLE to reduce inventory of ".$row['name']." (".$row['id'].") by ".$row['quantity']);
+					e107::getMessage()->addDebug("Unlimited item not reduced: ".$row['name']." (".$row['id'].")");
 				}
-			}
+		}
 		}
 
 	}
@@ -1650,6 +1650,17 @@ class vstore
 		{
 			foreach($array as $id=>$qty)
 			{
+				// Check if enough items are in stock
+				if ($sql->gen('SELECT item_inventory, item_name FROM #vstore_cart LEFT JOIN #vstore_items ON (cart_item = item_id) WHERE cart_id='.intval($id).' LIMIT 1'))
+				{
+					$inStock = $sql->fetch();
+					if ($qty > $inStock['item_inventory'])
+					{
+						$qty = $inStock['item_inventory'];
+						e107::getMessage()->addWarning('Quantity of item "'.$inStock['item_name'].'" cart exceeds the number of items in stock!<br/>The quantity has been adjusted!', 'vstore');
+					}
+				}
+
 				$sql->update('vstore_cart', 'cart_qty = '.intval($qty).' WHERE cart_id = '.intval($id).' LIMIT 1');				
 			}
 		}
@@ -1899,7 +1910,8 @@ class vstore
 			}
 		}
 		
-		if(!empty($data['cat_info']))
+		//if(!empty($data['cat_info']))
+		if (!empty(e107::pref('vstore', 'howtoorder')))
 		{
 			$tabData['howto']		= array('caption'=>'How to Order', 'text'=> $tmpl['item']['howto']);
 		}
@@ -1931,6 +1943,17 @@ class vstore
 		if($rec = $sql->retrieve('SELECT cart_id FROM #vstore_cart WHERE cart_session = "'.$this->cartId.'" AND cart_item = '.intval($id).' LIMIT 1'))
 		{
 
+			// Check if enough items are in stock
+			if ($sql->gen('SELECT item_inventory, item_name, cart_qty FROM #vstore_cart LEFT JOIN #vstore_items ON (cart_item = item_id) WHERE cart_session = "'.$this->cartId.'" AND cart_item = '.intval($id).' LIMIT 1'))
+			{
+				$inStock = $sql->fetch();
+				if ($inStock['item_inventory'] >= 0 && ($inStock['cart_qty'] + 1) > $inStock['item_inventory'])
+				{
+					e107::getMessage()->addWarning('Quantity of item "'.$inStock['item_name'].'" cart exceeds the number of items in stock!<br/>The quantity has been adjusted!', 'vstore');
+					return false;
+				}
+			}
+
 			if($sql->update('vstore_cart', 'cart_qty = cart_qty +1 WHERE cart_id = '.$rec))
 			{
 				return true;
@@ -1938,7 +1961,18 @@ class vstore
 		
 			return false;	
 		}
-		
+
+		if ($sql->gen('SELECT item_inventory, item_name FROM #vstore_items WHERE item_id='.intval($id).' LIMIT 1'))
+		{
+			$inStock = $sql->fetch();
+			if ($inStock['item_inventory'] >= 0 && $inStock['item_inventory']<1)
+			{
+				e107::getMessage()->addWarning('The item "'.$inStock['item_name'].'" is out of stock and has not been added to the cart!', 'vstore');
+				return false;
+			}
+		}
+
+	
 		
 		$insert = array(
 			'cart_id' 			=> 0,
@@ -1977,6 +2011,8 @@ class vstore
 		
 		$text = $frm->open('cart','post', e107::url('vstore','cart'));
 		
+		$text .= e107::getMessage()->render('vstore');
+
 		$text .= '
 		
 		
@@ -2121,14 +2157,14 @@ class vstore
 			if (substr($fld, 0, strlen('add_field')) == 'add_field')
 			{
 				$fieldid = intval(substr($fld, strlen('add_field')));
-				$caption = strip_tags(varset($pref[$fld.'_caption'], 'Field '.$fieldid));
-				if ($fieldid <= 2)
+				$caption = strip_tags(varset($pref['additional_fields'][$fieldid]['caption'][e_LANGUAGE], 'Field '.$fieldid));
+				if ($pref['additional_fields'][$fieldid]['type'] == 'text')
 				{
-					$order_ship_add_fields[] = $caption . ': ' . $data[$fld];
+					$order_ship_add_fields[] = $caption . ': ' . trim(strip_tags($data[$fld]));
 				}
-				else
+				elseif ($pref['additional_fields'][$fieldid]['type'] == 'checkbox')
 				{
-					$order_ship_add_fields[] = $caption . ': ' . ($data[$fld] ? 'Checked' : 'Unchecked');
+					$order_ship_add_fields[] = $caption . ': ' . (vartrue($data[$fld], false) ? 'Checked' : 'Unchecked');
 				}
 			}
 			else
@@ -2138,12 +2174,12 @@ class vstore
 		}
 		if (varset($order_ship_add_fields))
 		{
-			//$_SESSION['vstore']['shipping']['order_ship_add_fields'] = implode("<br/>\n", $order_ship_add_fields);
 			if ($_SESSION['vstore']['shipping']['order_ship_notes'] != '')
 			{
-				$_SESSION['vstore']['shipping']['order_ship_notes'] .= "<br/>\n<br/>\n";
+				$_SESSION['vstore']['shipping']['order_ship_notes'] .= "\n\n";
 			}
-			$_SESSION['vstore']['shipping']['order_ship_notes'] .= implode("<br/>\n", $order_ship_add_fields);
+			$_SESSION['vstore']['shipping']['order_ship_notes'] .= "Additional fields:\n";
+			$_SESSION['vstore']['shipping']['order_ship_notes'] .= implode("\n", $order_ship_add_fields);
 		}
 
 
