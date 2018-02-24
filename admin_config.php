@@ -664,7 +664,7 @@ class vstore_order_form_ui extends e_admin_form_ui
 		{
 			case 'read':
 			case 'write':
-				$notes = $this->getController()->getFieldVar('order_ship_notes');
+				$notes = nl2br($this->getController()->getFieldVar('order_ship_notes'));
 				return $notes;
 				break;
 		}
@@ -884,19 +884,19 @@ class vstore_cart_form_ui extends e_admin_form_ui
 
 			$activeVal       = !empty($curVal[$i]['active']) ? $curVal[$i]['active'] : null;
 			$capVal          = !empty($curVal[$i]['caption'][e_LANGUAGE]) ? $curVal[$i]['caption'][e_LANGUAGE] : null;
-			$placeholderVal  = !empty($curVal[$i]['placeholder'][e_LANGUAGE]) ? $curVal[$i]['caption'][e_LANGUAGE] : null;
+			$placeholderVal  = !empty($curVal[$i]['placeholder'][e_LANGUAGE]) ? $curVal[$i]['placeholder'][e_LANGUAGE] : null;
 			$reqVal          = !empty($curVal[$i]['required']) ? $curVal[$i]['required'] : null;
-			$typeVal          = !empty($curVal[$i]['type']) ? $curVal[$i]['type'] : 'text';
+			$typeVal         = !empty($curVal[$i]['type']) ? $curVal[$i]['type'] : 'text';
 
 			$post = '<small class="input-group-addon"><i class="fa fa-language"><!-- --></i></small>';
 
 			$text .= "
 				<tr>
-					<td>".$this->flipswitch('additional_fields['.$i.'][active]', $activeVal, null, array('switch'=>'small'))."</td>
+					<td>".$this->flipswitch('additional_fields['.$i.'][active]', $activeVal, null, array('switch'=>'small', 'title' => LAN_ACTIVE))."</td>
 					<td><span class='input-group'>".$this->text('additional_fields['.$i.'][caption]['.e_LANGUAGE.']', $capVal, 30, array('placeholder'=>LAN_CAPTION, 'size'=>'block-level')).$post."</span></td>
 					<td><span class='input-group'>".$this->text('additional_fields['.$i.'][placeholder]['.e_LANGUAGE.']',$placeholderVal, 30, array('placeholder'=>"Placeholder", 'size'=>'block-level')).$post."</span></td>
 					<td>".$this->select('additional_fields['.$i.'][type]', $opts, $typeVal )."</td>
-					<td>".$this->flipswitch('additional_fields['.$i.'][required]', $reqVal)."</td>
+					<td>".$this->flipswitch('additional_fields['.$i.'][required]', $reqVal, null, array('switch'=>'small', 'title' => 'Required'))."</td>
 				</tr>
 			";
 
