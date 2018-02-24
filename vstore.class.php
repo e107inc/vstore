@@ -487,7 +487,7 @@ class vstore_plugin_shortcodes extends e_shortcode
 
 	function sc_item_status($parm=null)
 	{
-		if($this->var['item_inventory'] > 0)
+		if($this->var['item_inventory'] != 0)
 		{
 			return '<span class="text-success"><strong>In Stock</strong></span>';
 		}	
@@ -1582,15 +1582,28 @@ class vstore
 		{
 			if(!empty($row['quantity']) && !empty($row['id']) && !empty($row['name']))
 			{
-				if($sql->update('vstore_items','item_inventory = item_inventory - '.intval($row['quantity']).' WHERE item_id='.intval($row['id']).' AND item_code="'.$row['name'].'" LIMIT 1'))
+				$curQuantity = $sql->retrieve('vstore_items', 'item_inventory', 'item_id='.intval($row['id']).' AND item_code="'.$row['name'].'"');
+				if ($curQuantity > 0)
 				{
-					e107::getMessage()->addDebug("Reduced inventory of ".$row['name']." by ".$row['quantity']);
+					$reduceBy = intval($row['quantity']);
+					if ($reduceBy > $curQuantity)
+					{
+						$reduceBy = $curQuantity;
+					}
+					if($sql->update('vstore_items','item_inventory = item_inventory - '.$reduceBy.' WHERE item_id='.intval($row['id']).' AND item_code="'.$row['name'].'" LIMIT 1'))
+					{
+						e107::getMessage()->addDebug("Reduced inventory of ".$row['name']." by ".$row['quantity']);
+					}
+					else
+					{
+						e107::getMessage()->addDebug("Was UNABLE to reduce inventory of ".$row['name']." (".$row['id'].") by ".$row['quantity']);
+					}
 				}
 				else
 				{
-					e107::getMessage()->addDebug("Was UNABLE to reduce inventory of ".$row['name']." (".$row['id'].") by ".$row['quantity']);
+					e107::getMessage()->addDebug("Unlimited item not reduced: ".$row['name']." (".$row['id'].")");
 				}
-			}
+		}
 		}
 
 	}
@@ -1637,6 +1650,17 @@ class vstore
 		{
 			foreach($array as $id=>$qty)
 			{
+				// Check if enough items are in stock
+				if ($sql->gen('SELECT item_inventory, item_name FROM #vstore_cart LEFT JOIN #vstore_items ON (cart_item = item_id) WHERE cart_id='.intval($id).' LIMIT 1'))
+				{
+					$inStock = $sql->fetch();
+					if ($qty > $inStock['item_inventory'])
+					{
+						$qty = $inStock['item_inventory'];
+						e107::getMessage()->addWarning('Quantity of item "'.$inStock['item_name'].'" cart exceeds the number of items in stock!<br/>The quantity has been adjusted!', 'vstore');
+					}
+				}
+
 				$sql->update('vstore_cart', 'cart_qty = '.intval($qty).' WHERE cart_id = '.intval($id).' LIMIT 1');				
 			}
 		}
@@ -1918,6 +1942,17 @@ class vstore
 		if($rec = $sql->retrieve('SELECT cart_id FROM #vstore_cart WHERE cart_session = "'.$this->cartId.'" AND cart_item = '.intval($id).' LIMIT 1'))
 		{
 
+			// Check if enough items are in stock
+			if ($sql->gen('SELECT item_inventory, item_name, cart_qty FROM #vstore_cart LEFT JOIN #vstore_items ON (cart_item = item_id) WHERE cart_session = "'.$this->cartId.'" AND cart_item = '.intval($id).' LIMIT 1'))
+			{
+				$inStock = $sql->fetch();
+				if ($inStock['item_inventory'] >= 0 && ($inStock['cart_qty'] + 1) > $inStock['item_inventory'])
+				{
+					e107::getMessage()->addWarning('Quantity of item "'.$inStock['item_name'].'" cart exceeds the number of items in stock!<br/>The quantity has been adjusted!', 'vstore');
+					return false;
+				}
+			}
+
 			if($sql->update('vstore_cart', 'cart_qty = cart_qty +1 WHERE cart_id = '.$rec))
 			{
 				return true;
@@ -1925,7 +1960,18 @@ class vstore
 		
 			return false;	
 		}
-		
+
+		if ($sql->gen('SELECT item_inventory, item_name FROM #vstore_items WHERE item_id='.intval($id).' LIMIT 1'))
+		{
+			$inStock = $sql->fetch();
+			if ($inStock['item_inventory'] >= 0 && $inStock['item_inventory']<1)
+			{
+				e107::getMessage()->addWarning('The item "'.$inStock['item_name'].'" is out of stock and has not been added to the cart!', 'vstore');
+				return false;
+			}
+		}
+
+	
 		
 		$insert = array(
 			'cart_id' 			=> 0,
@@ -1964,6 +2010,8 @@ class vstore
 		
 		$text = $frm->open('cart','post', e107::url('vstore','cart'));
 		
+		$text .= e107::getMessage()->render('vstore');
+
 		$text .= '
 		
 		

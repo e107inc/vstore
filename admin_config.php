@@ -812,30 +812,6 @@ Region 	region
 
 			'additional_fields'         => array('title'=>'Additional Fields', 'tab'=>4, 'type'=>'method'),
 
-		/*	'add_field1_active'    		=> array('title'=>"Field 1 active", 'type'=>'boolean', 'tab'=>4, 'data'=>'int', 'help'=>'Field 1 will be rendered as text box'),
-			'add_field1_caption'    	=> array('title'=>"Field 1 caption", 'type'=>'text', 'tab'=>4, 'data'=>'str', 'writeParms'=>array('placeholder'=>"Field 1 caption"), 'help'=>''),
-			'add_field1_placeholder'   	=> array('title'=>"Field 1 placeholder", 'type'=>'text', 'tab'=>4, 'data'=>'str', 'writeParms'=>array('placeholder'=>"Field 1 placeholder"), 'help'=>''),
-			'add_field1_required'  		=> array('title'=>"Field 1 required", 'type'=>'boolean', 'tab'=>4, 'data'=>'int', 'help'=>''),
-			'add_field1_separator' 		=> array('title'=>"", 'type'=>'', 'tab'=>4, 'data'=>'int', 'help'=>''),
-
-			'add_field2_active'    		=> array('title'=>"Field 2 active", 'type'=>'boolean', 'tab'=>4, 'data'=>'int', 'help'=>'Field 2 will be rendered as text box'),
-			'add_field2_caption'    	=> array('title'=>"Field 2 caption", 'type'=>'text', 'tab'=>4, 'data'=>'str', 'writeParms'=>array('placeholder'=>"Field 2 caption"), 'help'=>''),
-			'add_field2_placeholder'   	=> array('title'=>"Field 2 placeholder", 'type'=>'text', 'tab'=>4, 'data'=>'str', 'writeParms'=>array('placeholder'=>"Field 2 placeholder"), 'help'=>''),
-			'add_field2_required'  		=> array('title'=>"Field 2 required", 'type'=>'boolean', 'tab'=>4, 'data'=>'int', 'help'=>''),
-			'add_field2_separator' 		=> array('title'=>"", 'type'=>'', 'tab'=>4, 'data'=>'int', 'help'=>''),
-
-			'add_field3_active'    		=> array('title'=>"Field 3 active", 'type'=>'boolean', 'tab'=>4, 'data'=>'int', 'help'=>'Field 3 will be rendered as checkbox'),
-			'add_field3_caption'    	=> array('title'=>"Field 3 caption", 'type'=>'text', 'tab'=>4, 'data'=>'str', 'writeParms'=>array('placeholder'=>"Field 3 caption"), 'help'=>''),
-			'add_field3_help'    		=> array('title'=>"Field 3 help text", 'type'=>'text', 'tab'=>4, 'data'=>'str', 'writeParms'=>array('placeholder'=>"Field 3 help text"), 'help'=>''),
-			'add_field3_required'  		=> array('title'=>"Field 3 required", 'type'=>'boolean', 'tab'=>4, 'data'=>'int', 'help'=>''),
-			'add_field3_separator' 		=> array('title'=>"", 'type'=>'', 'tab'=>4, 'data'=>'int', 'help'=>''),
-
-			'add_field4_active'    		=> array('title'=>"Field 4 active", 'type'=>'boolean', 'tab'=>4, 'data'=>'int', 'help'=>'Field 4 will be rendered as checkbox'),
-			'add_field4_caption'    	=> array('title'=>"Field 4 caption", 'type'=>'text', 'tab'=>4, 'data'=>'str', 'writeParms'=>array('placeholder'=>"Field 4 caption"), 'help'=>''),
-			'add_field4_help'    		=> array('title'=>"Field 4 help text", 'type'=>'text', 'tab'=>4, 'data'=>'str', 'writeParms'=>array('placeholder'=>"Field 4 help text"), 'help'=>''),
-			'add_field4_required'  		=> array('title'=>"Field 4 required", 'type'=>'boolean', 'tab'=>4, 'data'=>'int', 'help'=>''),
-			'add_field4_separator' 		=> array('title'=>"", 'type'=>'', 'tab'=>4, 'data'=>'int', 'help'=>''),*/
-
 		);
 
 
@@ -1363,8 +1339,8 @@ class vstore_items_ui extends e_admin_ui
 	
 		protected $fields 		= array (  
 		  'checkboxes' 			=>   array ( 'title' => '', 'type' => null, 'data' => null, 	'width' => '5%', 'thclass' => 'center', 'forced' => '1', 'class' => 'center', 'toggle' => 'e-multiselect',  ),
-		  'item_preview'       =>   array( 'title' => LAN_PREVIEW, 'type'=>'method', 'data'=>false, 'width'=>'5%', 'forced'=>1),
-		   'item_id' 			=>   array ( 'title' => LAN_ID, 			'type'=>'text', 'data' => 'int', 	'width' => '5%', 'help' => '', 'readParms'=>'link=sef&target=blank', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+		  'item_preview'        =>   array( 'title' => LAN_PREVIEW, 'type'=>'method', 'data'=>false, 'width'=>'5%', 'forced'=>1),
+		  'item_id' 			=>   array ( 'title' => LAN_ID, 			'type'=>'text', 'data' => 'int', 	'width' => '5%', 'help' => '', 'readParms'=>'link=sef&target=blank', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 		  'item_code' 			=>   array ( 'title' => 'Code', 			'type' => 'text', 'inline'=>true,	'data' => 'str', 'width' => '2%', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'center', 'thclass' => 'center',  ),
 		  'item_name'			=>   array ( 'title' => LAN_TITLE, 			'type' => 'text', 	'data' => 'str', 'width' => 'auto', 'inline' => true, 'help' => '', 'readParms' => '', 'writeParms' => array('size'=>'xxlarge'), 'class' => 'left', 'thclass' => 'left',  ),
 		  'item_desc' 			=>   array ( 'title' => 'Description', 		'type' => 'textarea', 	'data' => 'str', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => array('size'=>'xxlarge','maxlength'=>250), 'class' => 'center', 'thclass' => 'center',  ),
@@ -1378,9 +1354,8 @@ class vstore_items_ui extends e_admin_ui
 		  'item_related' 		=>   array ( 'title' => 'Related', 			'type' => 'method', 'tab'=>2, 'data' => 'array', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => 'video=1', 'class' => 'center', 'thclass' => 'center',  ),
 	 
 		  'item_order' 			=>   array ( 'title' => LAN_ORDER, 			'type' => 'hidden', 'data' => 'int', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
-		  'item_inventory' 		=>   array ( 'title' => 'Inventory', 		'type' => 'method', 'data' => 'int', 'width' => 'auto', 'inline'=>true, 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'right item-inventory', 'thclass' => 'right',  ),
+		  'item_inventory' 		=>   array ( 'title' => 'Inventory', 		'type' => 'method', 'data' => 'int', 'width' => 'auto', 'inline'=>true, 'help' => 'Enter -1 if this item is always available', 'readParms' => '', 'writeParms' => '', 'class' => 'right item-inventory', 'thclass' => 'right',  ),
 		  'item_vars' 	        =>   array ( 'title' => 'Product Variations', 	'type' => 'comma', 'data' => 'str', 'width' => 'auto', 'inline'=>true, 'help' => '', 'readParms' => '', 'writeParms' => array(), 'class' => 'right item-inventory', 'thclass' => 'right',  ),
-
 
 
 		  'item_link' 			=>   array ( 'title' => 'External Link', 	'type' => 'text', 'tab'=>3, 'data' => 'str', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'center', 'thclass' => 'center',  ),
@@ -1554,7 +1529,8 @@ class vstore_items_form_ui extends e_admin_form_ui
 			break;
 
 			case 'write': // Edit Page
-				return $frm->number('item_inventory',$curVal);
+				return $frm->text('item_inventory', $curVal, null, array('pattern' => '^-?\d+$')); // to allow also negative values (<0 = Item will not run out of stock)
+				//return $frm->number('item_inventory',$curVal);
 			break;
 
 			case 'filter':
