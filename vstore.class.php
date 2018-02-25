@@ -1732,7 +1732,7 @@ class vstore
 				if ($sql->gen('SELECT item_inventory, item_name FROM #vstore_cart LEFT JOIN #vstore_items ON (cart_item = item_id) WHERE cart_id='.intval($id).' LIMIT 1'))
 				{
 					$inStock = $sql->fetch();
-					if ($qty > $inStock['item_inventory'])
+					if ($qty > $inStock['item_inventory'] && $inStock['item_inventory']>-1)
 					{
 						$qty = $inStock['item_inventory'];
 						e107::getMessage()->addWarning('Quantity of item "'.$inStock['item_name'].'" cart exceeds the number of items in stock!<br/>The quantity has been adjusted!', 'vstore');
@@ -2025,7 +2025,7 @@ class vstore
 			if ($sql->gen('SELECT item_inventory, item_name, cart_qty FROM #vstore_cart LEFT JOIN #vstore_items ON (cart_item = item_id) WHERE cart_session = "'.$this->cartId.'" AND cart_item = '.intval($id).' LIMIT 1'))
 			{
 				$inStock = $sql->fetch();
-				if ($inStock['item_inventory'] >= 0 && ($inStock['cart_qty'] + 1) > $inStock['item_inventory'])
+				if ($inStock['item_inventory'] > -1 && ($inStock['cart_qty'] + 1) > $inStock['item_inventory'])
 				{
 					e107::getMessage()->addWarning('Quantity of item "'.$inStock['item_name'].'" cart exceeds the number of items in stock!<br/>The quantity has been adjusted!', 'vstore');
 					return false;

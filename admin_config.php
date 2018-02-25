@@ -400,7 +400,7 @@ class vstore_order_ui extends e_admin_ui
 
 		protected $pluginTitle		= 'Vstore';
 		protected $pluginName		= 'vstore';
-	//	protected $eventName		= 'test-vstore_trans'; // remove comment to enable event triggers in admin.
+		protected $eventName		= 'vstore_order'; // remove comment to enable event triggers in admin.
 		protected $table			= 'vstore_orders';
 		protected $pid				= 'order_id';
 		protected $perPage			= 10;
@@ -484,6 +484,25 @@ class vstore_order_ui extends e_admin_ui
 			{
 				unset($this->preftabs[3],$this->preftabs[4]); // Disable Amazon and Skrill for Now until they work. // TODO //FIXME
 			}
+
+			// check for responses on inline editing
+			// and display them
+			$js = '
+			$(function(){
+				$(".e-editable").on("save", function(e, params){
+					var msg = params.response;
+					if ($("#vstore-message").length > 0)
+					{
+						$("#vstore-message").html(msg);
+					}
+					else
+					{
+						$("#admin-ui-list-filter").prepend("<div id=\"vstore-message\">" + msg + "</div>");
+					}
+				});
+			});
+			';
+			e107::getJs()->footerInline($js);
 		}
 
 
@@ -509,27 +528,46 @@ class vstore_order_ui extends e_admin_ui
 
 		public function beforeUpdate($new_data, $old_data, $id)
 		{
+			if (array_key_exists('order_status', $new_data)) 
+			{
+				if ($old_data['order_status'] === 'C' && $new_data['order_status'] !== 'C')
+				{
+					// Check if this order "contains" any userclasses that have been assigned
+					$uc = vstore::getCustomerUserclass(json_decode($old_data['order_items'], true));
+					if ($uc)
+					{
+						$uc_list = e107::getDB()->retrieve('SELECT GROUP_CONCAT(userclass_name) AS ucs FROM e107_userclass_classes WHERE FIND_IN_SET(userclass_id, "'.$uc.'")');
+						$msg = sprintf('The userclasses, the customer has been assigned to during the purchase can not be removed automatically.<br/>
+							Click <a href="'.e_ADMIN.'users.php?searchquery=%d">here</a> to remove the following userclasses manually.<br/>
+							%s', $old_data['order_e107_user'], str_replace(',', ', ', $uc_list));
+						
+						if (e_AJAX_REQUEST)
+						{
+							$response_msg = e107::getMessage()->addWarning($msg)->render();
+							$new_data['etrigger_submit'] = 'Update';
+
+							$response = $this->getResponse();
+							$response->getJsHelper()->addResponse($response_msg);
+						}
+						else
+						{
+							e107::getMessage()->addWarning($msg);
+						}
+					}
+				}
+			}
 			return $new_data;
 		}
 
 		public function afterUpdate($new_data, $old_data, $id)
 		{
-			$isSession = vartrue($_POST['__after_submit_action']) && !isset($_POST['e__execute_batch']) != 'edit' ? true : false;
 			if (array_key_exists('order_status', $new_data)) 
 			{
-				if ($new_data['order_status'] === 'C')
+				// Assign "purchased" userclasses to customer, once the order has been completed
+				if ($new_data['order_status'] === 'C' && $old_data['order_status'] !== 'C')
 				{
 					// Update userclass
 					vstore::setCustomerUserclass($old_data['order_e107_user'], json_decode($old_data['order_items'], true));
-				}
-				elseif ($old_data['order_status'] === 'C')
-				{
-					$uc = vstore::getCustomerUserclass(json_decode($old_data['order_items'], true));
-					if ($uc)
-					{
-						$uc_list = e107::getDB()->retrieve('SELECT GROUP_CONCAT(userclass_name) AS ucs FROM e107_userclass_classes WHERE FIND_IN_SET(userclass_id, "'.$uc.'")');
-						e107::getMessage()->addWarning('The userclasses, the user has received during the purchase can not be removed automatically.<br/>Click <a href="'.e_ADMIN.'users.php?searchquery='.$old_data['order_e107_user'].'">here</a> to open the users property page and to remove the following userclasses manually.<br/>'.str_replace(',', ', ', $uc_list), 'default', $isSession);
-					}
 				}
 			}
 		}
@@ -815,7 +853,7 @@ Region 	region
 
 			'currency'		            => array('title'=> 'Currency', 'type'=>'dropdown', 'data' => 'string','help'=>'Select a currency'),
 			'shipping'		            => array('title'=> 'Calculate Shipping', 'type'=>'boolean', 'data' => 'int','help'=>'Including shipping calculation at checkout.'),
-		    'customer_userclass'        => array('title' => 'Add userclass', 'type' => 'method', 'help' => 'Add userclass to user on purchase'),
+		    'customer_userclass'        => array('title' => 'Assign userclass', 'type' => 'method', 'help' => 'Assign userclass to customer on purchase'),
 			'howtoorder'	            => array('title'=> 'How to order', 'tab'=>2,'type'=>'bbarea', 'help'=>'Enter how-to-order info.'),
 
 			'sender_name'               => array('title'=> 'Sender Name', 'tab'=>1, 'type'=>'text', 'writeParms'=>array('placeholder'=>'Sales Department'), 'help'=>'Leave blank to use system default','multilan'=>false),
@@ -903,9 +941,7 @@ class vstore_cart_form_ui extends e_admin_form_ui
 	function customer_userclass($curVal, $mode)
 	{
 		$frm = e107::getForm();
-				 
-		
-		// , 'readParms' => 'classlist=classes', 'writeParms' => "classlist=classes", 'class' => 'left', 'thclass' => 'left',  
+	
 		$items = e107::getUserClass()->getClassList('nobody,member,classes');
 		$items = array('-1' => 'As defined in product') + $items;
 		return $frm->select('customer_userclass', $items, $curVal);
@@ -1378,14 +1414,16 @@ class vstore_items_ui extends e_admin_ui
 		  'item_price' 			=>   array ( 'title' => 'Price', 			'type' => 'text', 'data' => 'str', 'width' => 'auto', 'inline'=>true, 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'right', 'thclass' => 'right',  ),
 		  'item_shipping' 		=>   array ( 'title' => 'Shipping', 		'type' => 'text', 'data' => 'str', 'width' => 'auto',  'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'center', 'thclass' => 'center',  ),
 		  'item_details' 		=>   array ( 'title' => 'Details', 			'type' => 'bbarea', 'tab'=>1, 'data' => 'str', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'center', 'thclass' => 'center',  ),
+	 
 		  'item_reviews' 		=>   array ( 'title' => 'Reviews', 			'type' => 'textarea', 'tab'=>2, 'data' => 'str', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => 'size=xxlarge', 'class' => 'center', 'thclass' => 'center',  ),
 		  'item_related' 		=>   array ( 'title' => 'Related', 			'type' => 'method', 'tab'=>2, 'data' => 'array', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => 'video=1', 'class' => 'center', 'thclass' => 'center',  ),
-	 
+
 		  'item_order' 			=>   array ( 'title' => LAN_ORDER, 			'type' => 'hidden', 'data' => 'int', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 		  'item_inventory' 		=>   array ( 'title' => 'Inventory', 		'type' => 'method', 'data' => 'int', 'width' => 'auto', 'inline'=>true, 'help' => 'Enter -1 if this item is always available', 'readParms' => '', 'writeParms' => '', 'class' => 'right item-inventory', 'thclass' => 'right',  ),
 		  'item_vars' 	        =>   array ( 'title' => 'Product Variations', 	'type' => 'comma', 'data' => 'str', 'width' => 'auto', 'inline'=>true, 'help' => '', 'readParms' => '', 'writeParms' => array(), 'class' => 'right item-inventory', 'thclass' => 'right',  ),
 
-
+		  'item_userclass'      =>   array ( 'title' => 'Assign userclass', 'type' => 'method', 'help' => 'Assign userclass to customer on purchase'),
+		  
 		  'item_link' 			=>   array ( 'title' => 'External Link', 	'type' => 'text', 'tab'=>3, 'data' => 'str', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'center', 'thclass' => 'center',  ),
 		  'item_download' 		=>   array ( 'title' => 'Download File', 	'type' => 'file', 'tab'=>3, 'data' => 'str', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => 'media=vstore_file', 'class' => 'center', 'thclass' => 'center',  ),
 			
@@ -1708,6 +1746,41 @@ class vstore_items_form_ui extends e_admin_form_ui
 			break;
 		}
 	}
+
+	function item_userclass($curVal, $mode)
+	{
+		$frm = e107::getForm();
+		$uc = intval(e107::pref('vstore', 'customer_userclass'));
+
+
+		switch($mode)
+		{
+			case 'read': // List Page
+				return $curVal;
+			break;
+			
+			case 'write': // Edit Page
+				if ($uc !== -1)
+				{
+					$text = $frm->text('', e107::getDB()->retrieve('userclass_classes', 'userclass_name', 'userclass_id='.$uc), null, array('disabled' => true, 'title'=>'Userclass defined in store preferences'));
+					$text .= $frm->hidden('item_userclass', $curVal);
+					return $text;
+				}
+				else
+				{
+					$items = e107::getUserClass()->getClassList('nobody,member,classes');
+					return $frm->select('item_userclass', $items, $curVal, array('readonly' => ($uc !== -1)));
+				}
+			break;
+			
+			case 'filter':
+			case 'batch':
+				return  null;
+			break;
+		}
+	}
+
+	
 }		
 
 
