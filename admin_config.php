@@ -400,7 +400,7 @@ class vstore_order_ui extends e_admin_ui
 
 		protected $pluginTitle		= 'Vstore';
 		protected $pluginName		= 'vstore';
-	//	protected $eventName		= 'test-vstore_trans'; // remove comment to enable event triggers in admin.
+		protected $eventName		= 'vstore_order'; // remove comment to enable event triggers in admin.
 		protected $table			= 'vstore_orders';
 		protected $pid				= 'order_id';
 		protected $perPage			= 10;
@@ -484,6 +484,25 @@ class vstore_order_ui extends e_admin_ui
 			{
 				unset($this->preftabs[3],$this->preftabs[4]); // Disable Amazon and Skrill for Now until they work. // TODO //FIXME
 			}
+
+			// check for responses on inline editing
+			// and display them
+			$js = '
+			$(function(){
+				$(".e-editable").on("save", function(e, params){
+					var msg = params.response;
+					if ($("#vstore-message").length > 0)
+					{
+						$("#vstore-message").html(msg);
+					}
+					else
+					{
+						$("#admin-ui-list-filter").prepend("<div id=\"vstore-message\">" + msg + "</div>");
+					}
+				});
+			});
+			';
+			e107::getJs()->footerInline($js);
 		}
 
 
@@ -509,12 +528,48 @@ class vstore_order_ui extends e_admin_ui
 
 		public function beforeUpdate($new_data, $old_data, $id)
 		{
+			if (array_key_exists('order_status', $new_data)) 
+			{
+				if ($old_data['order_status'] === 'C' && $new_data['order_status'] !== 'C')
+				{
+					// Check if this order "contains" any userclasses that have been assigned
+					$uc = vstore::getCustomerUserclass(json_decode($old_data['order_items'], true));
+					if ($uc)
+					{
+						$uc_list = e107::getDB()->retrieve('SELECT GROUP_CONCAT(userclass_name) AS ucs FROM e107_userclass_classes WHERE FIND_IN_SET(userclass_id, "'.$uc.'")');
+						$msg = sprintf('The userclasses, the customer has been assigned to during the purchase can not be removed automatically.<br/>
+							Click <a href="'.e_ADMIN.'users.php?searchquery=%d">here</a> to remove the following userclasses manually.<br/>
+							%s', $old_data['order_e107_user'], str_replace(',', ', ', $uc_list));
+						
+						if (e_AJAX_REQUEST)
+						{
+							$response_msg = e107::getMessage()->addWarning($msg)->render();
+							$new_data['etrigger_submit'] = 'Update';
+
+							$response = $this->getResponse();
+							$response->getJsHelper()->addResponse($response_msg);
+						}
+						else
+						{
+							e107::getMessage()->addWarning($msg);
+						}
+					}
+				}
+			}
 			return $new_data;
 		}
 
 		public function afterUpdate($new_data, $old_data, $id)
 		{
-			// do something
+			if (array_key_exists('order_status', $new_data)) 
+			{
+				// Assign "purchased" userclasses to customer, once the order has been completed
+				if ($new_data['order_status'] === 'C' && $old_data['order_status'] !== 'C')
+				{
+					// Update userclass
+					vstore::setCustomerUserclass($old_data['order_e107_user'], json_decode($old_data['order_items'], true));
+				}
+			}
 		}
 
 		public function onUpdateError($new_data, $old_data, $id)
@@ -798,19 +853,20 @@ Region 	region
 
 			'currency'		            => array('title'=> 'Currency', 'type'=>'dropdown', 'data' => 'string','help'=>'Select a currency'),
 			'shipping'		            => array('title'=> 'Calculate Shipping', 'type'=>'boolean', 'data' => 'int','help'=>'Including shipping calculation at checkout.'),
+		    'customer_userclass'        => array('title' => 'Assign userclass', 'type' => 'method', 'help' => 'Assign userclass to customer on purchase'),
 			'howtoorder'	            => array('title'=> 'How to order', 'tab'=>2,'type'=>'bbarea', 'help'=>'Enter how-to-order info.'),
 
 			'sender_name'               => array('title'=> 'Sender Name', 'tab'=>1, 'type'=>'text', 'writeParms'=>array('placeholder'=>'Sales Department'), 'help'=>'Leave blank to use system default','multilan'=>false),
 			'sender_email'              => array('title'=> LAN_EMAIL, 'tab'=>1, 'type'=>'text', 'writeParms'=>array('placeholder'=>'orders@mysite.com'), 'help'=>'Leave blank to use system default', 'multilan'=>false),
-			'merchant_info'              => array('title'=> "Merchant Name/Address", 'tab'=>1, 'type'=>'textarea', 'writeParms'=>array('placeholder'=>'My Store Inc. etc.'), 'help'=>'Will be displayed on customer email.', 'multilan'=>false),
+			'merchant_info'             => array('title'=> "Merchant Name/Address", 'tab'=>1, 'type'=>'textarea', 'writeParms'=>array('placeholder'=>'My Store Inc. etc.'), 'help'=>'Will be displayed on customer email.', 'multilan'=>false),
+			'email_templates'           => array('title'=> "Email templates", 'tab'=>1, 'type'=>'method'), //, 'writeParms'=>array('placeholder'=>'My Store Inc. etc.'), 'help'=>'Will be displayed on customer email.', 'multilan'=>false),
 
 
 			'admin_items_perpage'	    => array('title'=> 'Products per page', 'tab'=>3, 'type'=>'number', 'help'=>''),
 			'admin_categories_perpage'	=> array('title'=> 'Categories per page', 'tab'=>3, 'type'=>'number', 'help'=>''),
-			'admin_confirm_order'		=> array('title'=> 'Confirm order', 'tab'=>3, 'type'=>'bool', 'help'=>'If ON, the customer has to confirm his order after selecting the payment method on the checkout page!'),
-
 
 			'additional_fields'         => array('title'=>'Additional Fields', 'tab'=>4, 'type'=>'method'),
+			'admin_confirm_order'		=> array('title'=> 'Confirm order', 'tab'=>4, 'type'=>'bool', 'help'=>'If ON, the customer has to confirm his order after selecting the payment method on the checkout page!'),
 
 		);
 
@@ -820,6 +876,29 @@ Region 	region
 		public function init()
 		{
 			$this->prefs['currency']['writeParms'] = array('USD'=>'US Dollars', 'EUR'=>'Euros', 'CAN'=>'Canadian Dollars');
+
+			$email_fields = array(
+				'{ORDER_REF}'			=> 'The order reference number',
+				'{ORDER_MERCHANT_INFO}'	=> 'Merchant name & adress',
+				'{ORDER_SHIP_FIRSTNAME}'=> 'The customers firstname',
+				'{ORDER_SHIP_LASTNAME}' => 'The customers lastname',
+				'{ORDER_SHIP_ADDRESS}'	=> 'The customers shipping to street',
+				'{ORDER_SHIP_CITY}'		=> 'The customers shipping to city',
+				'{ORDER_SHIP_STATE}'	=> 'The customers shipping to state',
+				'{ORDER_SHIP_ZIP}'		=> 'The customers shipping to zip code',
+				'{ORDER_SHIP_COUNTRY}'	=> 'The customers shipping to country',
+				'{ORDER_ITEMS}'			=> 'The ordered items',
+				'{ORDER_PAYMENT_INSTRUCTIONS}' => 'In case of payment method "bank transfer", the bank transfer details'
+			);
+	
+			foreach ($email_fields as $key => $value) {
+				$field_notes[] = sprintf('<div>%s</div><div class="col-sm-offset-1">%s</div>', $key, $value);
+			}
+	
+			$text = '<div>'.$this->prefs['email_templates']['title'].'<br/><br/>Available fields<br/>';
+			$text .= '<div class="small">'.implode("\n", $field_notes).'</div></div>';
+	
+			$this->prefs['email_templates']['title'] = $text;
 		}
 	
 	/*
@@ -838,6 +917,11 @@ Region 	region
 
 class vstore_cart_form_ui extends e_admin_form_ui
 {
+
+	public function init()
+	{
+
+	}
 
 	function additional_fields($curVal,$mode)
 	{
@@ -883,6 +967,45 @@ class vstore_cart_form_ui extends e_admin_form_ui
 		return $text;
 	}
 
+
+	function email_templates($curVal, $mode)
+	{
+		$frm = e107::getForm();		
+
+		$email_types = array(
+			'default' => 'Order confirmation', 
+			'completed' => 'Order completed'
+		);
+
+		e107::wysiwyg(true);
+		
+		$text = '';
+		foreach ($email_types as $type => $label) {
+
+			if (empty($curVal[$type]))
+			{
+				$curVal[$type] = e107::getTemplate('vstore', 'vstore_email', $type);
+			}
+
+			$text .= '<div><label><b>'.$label.'</b>';
+			$text .= $frm->textarea('email_templates['.$type.']', $curVal[$type], null, null, array('class' => 'e-wysiwyg'));		
+			$text .= '</label></div><br/>
+			';
+		}
+
+		return $text;
+		 		
+	}
+
+	function customer_userclass($curVal, $mode)
+	{
+		$frm = e107::getForm();
+	
+		$items = e107::getUserClass()->getClassList('nobody,member,classes');
+		$items = array('-1' => 'As defined in product') + $items;
+		return $frm->select('customer_userclass', $items, $curVal);
+		
+	}
 
 	
 	// Custom Method/Function 
@@ -1350,14 +1473,16 @@ class vstore_items_ui extends e_admin_ui
 		  'item_price' 			=>   array ( 'title' => 'Price', 			'type' => 'text', 'data' => 'str', 'width' => 'auto', 'inline'=>true, 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'right', 'thclass' => 'right',  ),
 		  'item_shipping' 		=>   array ( 'title' => 'Shipping', 		'type' => 'text', 'data' => 'str', 'width' => 'auto',  'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'center', 'thclass' => 'center',  ),
 		  'item_details' 		=>   array ( 'title' => 'Details', 			'type' => 'bbarea', 'tab'=>1, 'data' => 'str', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'center', 'thclass' => 'center',  ),
+	 
 		  'item_reviews' 		=>   array ( 'title' => 'Reviews', 			'type' => 'textarea', 'tab'=>2, 'data' => 'str', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => 'size=xxlarge', 'class' => 'center', 'thclass' => 'center',  ),
 		  'item_related' 		=>   array ( 'title' => 'Related', 			'type' => 'method', 'tab'=>2, 'data' => 'array', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => 'video=1', 'class' => 'center', 'thclass' => 'center',  ),
-	 
+
 		  'item_order' 			=>   array ( 'title' => LAN_ORDER, 			'type' => 'hidden', 'data' => 'int', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 		  'item_inventory' 		=>   array ( 'title' => 'Inventory', 		'type' => 'method', 'data' => 'int', 'width' => 'auto', 'inline'=>true, 'help' => 'Enter -1 if this item is always available', 'readParms' => '', 'writeParms' => '', 'class' => 'right item-inventory', 'thclass' => 'right',  ),
 		  'item_vars' 	        =>   array ( 'title' => 'Product Variations', 	'type' => 'comma', 'data' => 'str', 'width' => 'auto', 'inline'=>true, 'help' => '', 'readParms' => '', 'writeParms' => array(), 'class' => 'right item-inventory', 'thclass' => 'right',  ),
 
-
+		  'item_userclass'      =>   array ( 'title' => 'Assign userclass', 'type' => 'method', 'help' => 'Assign userclass to customer on purchase'),
+		  
 		  'item_link' 			=>   array ( 'title' => 'External Link', 	'type' => 'text', 'tab'=>3, 'data' => 'str', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'center', 'thclass' => 'center',  ),
 		  'item_download' 		=>   array ( 'title' => 'Download File', 	'type' => 'file', 'tab'=>3, 'data' => 'str', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => 'media=vstore_file', 'class' => 'center', 'thclass' => 'center',  ),
 			
@@ -1680,6 +1805,41 @@ class vstore_items_form_ui extends e_admin_form_ui
 			break;
 		}
 	}
+
+	function item_userclass($curVal, $mode)
+	{
+		$frm = e107::getForm();
+		$uc = intval(e107::pref('vstore', 'customer_userclass'));
+
+
+		switch($mode)
+		{
+			case 'read': // List Page
+				return $curVal;
+			break;
+			
+			case 'write': // Edit Page
+				if ($uc !== -1)
+				{
+					$text = $frm->text('', e107::getDB()->retrieve('userclass_classes', 'userclass_name', 'userclass_id='.$uc), null, array('disabled' => true, 'title'=>'Userclass defined in store preferences'));
+					$text .= $frm->hidden('item_userclass', $curVal);
+					return $text;
+				}
+				else
+				{
+					$items = e107::getUserClass()->getClassList('nobody,member,classes');
+					return $frm->select('item_userclass', $items, $curVal, array('readonly' => ($uc !== -1)));
+				}
+			break;
+			
+			case 'filter':
+			case 'batch':
+				return  null;
+			break;
+		}
+	}
+
+	
 }		
 
 

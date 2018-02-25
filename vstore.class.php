@@ -1493,6 +1493,12 @@ class vstore
 		}
 
 
+		if (!empty($transData))
+		{
+			$this->setCustomerUserclass(USERID, $items);
+		}
+
+
 		$insert['order_pay_gateway']    = $this->getGatewayType();
 		$insert['order_pay_status']     = empty($transData) ? 'incomplete' : 'complete';
 		$insert['order_pay_transid']    = $id;
@@ -1523,14 +1529,102 @@ class vstore
 
 	}
 
+	/**
+	 * Add userclass to customer
+	 *
+	 * @param int $userid Userid of the customer
+	 * @param array $items Array of order_items
+	 * @return void
+	 */
+	static function setCustomerUserclass($userid, $items)
+	{
+		$uc_global = e107::pref('vstore', 'customer_userclass');
+		if ($uc_global == -1)
+		{
+			$usr = e107::getSystemUser($userid, true);
+			// set userclass as defined in product
+			if (!empty($items) && is_array($items))
+			{
+				$sql = e107::getDb();
+				foreach ($items as $item) {
+					$uc = $sql->retrieve('vstore_items', 'item_userclass', 'item_id='.intval($item['id']));
+					if ($uc > 0 && $uc != 255)
+					{
+						$usr->addClass($uc);
+					}
+				}
+			}
+		}
+		elseif ($uc_global != 255)
+		{
+			$usr = e107::getSystemUser($userid, true);
+			// all classes except No One (inactive)
+			$usr->addClass($uc_global);
+		}
+	}
+
+	/**
+	 * Return the userclasses that will be added to customer
+	 *
+	 * @param array $items array of order_items
+	 * @return bool/string false, if no userclass, otherwise comma-separated list of userclasses
+	 */
+	static function getCustomerUserclass($items)
+	{
+		$uc_global = e107::pref('vstore', 'customer_userclass');
+		if ($uc_global == -1)
+		{
+			// set userclass as defined in product
+			if (!empty($items) && is_array($items))
+			{
+				$sql = e107::getDb();
+				$ucs = array();
+				foreach ($items as $item) {
+					$uc = $sql->retrieve('vstore_items', 'item_userclass', 'item_id='.intval($item['id']));
+					if ($uc > 0 && $uc != 255)
+					{
+						$ucs[] = $uc;
+					}
+				}
+				$ucs = array_unique($ucs);
+				if ($ucs && count($ucs))
+				{
+					return implode(',', $ucs);
+				}
+			}
+		}
+		elseif ($uc_global != 255)
+		{
+			// all classes except No One (inactive)
+			return ''.$uc_global;
+		}
+		return false;
+	}
+
 
 	/**
 	 * TODO - add a pref (multilan) containing the entire template which can be edited from within the admin area.
 	 * TODO - fallback to template in file if pref is empty.
 	 */
-	private function getEmailTemplate()
+	private function getEmailTemplate($type='default')
 	{
-		$template = e107::getTemplate('vstore', 'vstore_email', 'default');
+		if (empty($type))
+		{
+			$type = 'default';
+		}
+		$template = e107::pref('vstore', 'email_templates');
+		if (empty($template[$type]))
+		{
+			$template = e107::getTemplate('vstore', 'vstore_email', $type);
+			if (empty($template))
+			{
+				$template = e107::getTemplate('vstore', 'vstore_email', 'default');
+			}
+		}
+		else
+		{
+			$template = str_ireplace(array('[html]', '[/html'), '', $template[$type]);
+		}
 		return $template;
 	}
 
@@ -1654,7 +1748,7 @@ class vstore
 				if ($sql->gen('SELECT item_inventory, item_name FROM #vstore_cart LEFT JOIN #vstore_items ON (cart_item = item_id) WHERE cart_id='.intval($id).' LIMIT 1'))
 				{
 					$inStock = $sql->fetch();
-					if ($qty > $inStock['item_inventory'])
+					if ($qty > $inStock['item_inventory'] && $inStock['item_inventory']>-1)
 					{
 						$qty = $inStock['item_inventory'];
 						e107::getMessage()->addWarning('Quantity of item "'.$inStock['item_name'].'" cart exceeds the number of items in stock!<br/>The quantity has been adjusted!', 'vstore');
@@ -1947,7 +2041,7 @@ class vstore
 			if ($sql->gen('SELECT item_inventory, item_name, cart_qty FROM #vstore_cart LEFT JOIN #vstore_items ON (cart_item = item_id) WHERE cart_session = "'.$this->cartId.'" AND cart_item = '.intval($id).' LIMIT 1'))
 			{
 				$inStock = $sql->fetch();
-				if ($inStock['item_inventory'] >= 0 && ($inStock['cart_qty'] + 1) > $inStock['item_inventory'])
+				if ($inStock['item_inventory'] > -1 && ($inStock['cart_qty'] + 1) > $inStock['item_inventory'])
 				{
 					e107::getMessage()->addWarning('Quantity of item "'.$inStock['item_name'].'" cart exceeds the number of items in stock!<br/>The quantity has been adjusted!', 'vstore');
 					return false;
