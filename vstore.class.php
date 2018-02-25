@@ -1606,9 +1606,25 @@ class vstore
 	 * TODO - add a pref (multilan) containing the entire template which can be edited from within the admin area.
 	 * TODO - fallback to template in file if pref is empty.
 	 */
-	private function getEmailTemplate()
+	private function getEmailTemplate($type='default')
 	{
-		$template = e107::getTemplate('vstore', 'vstore_email', 'default');
+		if (empty($type))
+		{
+			$type = 'default';
+		}
+		$template = e107::pref('vstore', 'email_templates');
+		if (empty($template[$type]))
+		{
+			$template = e107::getTemplate('vstore', 'vstore_email', $type);
+			if (empty($template))
+			{
+				$template = e107::getTemplate('vstore', 'vstore_email', 'default');
+			}
+		}
+		else
+		{
+			$template = str_ireplace(array('[html]', '[/html'), '', $template[$type]);
+		}
 		return $template;
 	}
 

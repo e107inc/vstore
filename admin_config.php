@@ -858,7 +858,8 @@ Region 	region
 
 			'sender_name'               => array('title'=> 'Sender Name', 'tab'=>1, 'type'=>'text', 'writeParms'=>array('placeholder'=>'Sales Department'), 'help'=>'Leave blank to use system default','multilan'=>false),
 			'sender_email'              => array('title'=> LAN_EMAIL, 'tab'=>1, 'type'=>'text', 'writeParms'=>array('placeholder'=>'orders@mysite.com'), 'help'=>'Leave blank to use system default', 'multilan'=>false),
-			'merchant_info'              => array('title'=> "Merchant Name/Address", 'tab'=>1, 'type'=>'textarea', 'writeParms'=>array('placeholder'=>'My Store Inc. etc.'), 'help'=>'Will be displayed on customer email.', 'multilan'=>false),
+			'merchant_info'             => array('title'=> "Merchant Name/Address", 'tab'=>1, 'type'=>'textarea', 'writeParms'=>array('placeholder'=>'My Store Inc. etc.'), 'help'=>'Will be displayed on customer email.', 'multilan'=>false),
+			'email_templates'           => array('title'=> "Email templates", 'tab'=>1, 'type'=>'method'), //, 'writeParms'=>array('placeholder'=>'My Store Inc. etc.'), 'help'=>'Will be displayed on customer email.', 'multilan'=>false),
 
 
 			'admin_items_perpage'	    => array('title'=> 'Products per page', 'tab'=>3, 'type'=>'number', 'help'=>''),
@@ -875,6 +876,29 @@ Region 	region
 		public function init()
 		{
 			$this->prefs['currency']['writeParms'] = array('USD'=>'US Dollars', 'EUR'=>'Euros', 'CAN'=>'Canadian Dollars');
+
+			$email_fields = array(
+				'{ORDER_REF}'			=> 'The order reference number',
+				'{ORDER_MERCHANT_INFO}'	=> 'Merchant name & adress',
+				'{ORDER_SHIP_FIRSTNAME}'=> 'The customers firstname',
+				'{ORDER_SHIP_LASTNAME}' => 'The customers lastname',
+				'{ORDER_SHIP_ADDRESS}'	=> 'The customers shipping to street',
+				'{ORDER_SHIP_CITY}'		=> 'The customers shipping to city',
+				'{ORDER_SHIP_STATE}'	=> 'The customers shipping to state',
+				'{ORDER_SHIP_ZIP}'		=> 'The customers shipping to zip code',
+				'{ORDER_SHIP_COUNTRY}'	=> 'The customers shipping to country',
+				'{ORDER_ITEMS}'			=> 'The ordered items',
+				'{ORDER_PAYMENT_INSTRUCTIONS}' => 'In case of payment method "bank transfer", the bank transfer details'
+			);
+	
+			foreach ($email_fields as $key => $value) {
+				$field_notes[] = sprintf('<div>%s</div><div class="col-sm-offset-1">%s</div>', $key, $value);
+			}
+	
+			$text = '<div>'.$this->prefs['email_templates']['title'].'<br/><br/>Available fields<br/>';
+			$text .= '<div class="small">'.implode("\n", $field_notes).'</div></div>';
+	
+			$this->prefs['email_templates']['title'] = $text;
 		}
 	
 	/*
@@ -893,6 +917,11 @@ Region 	region
 
 class vstore_cart_form_ui extends e_admin_form_ui
 {
+
+	public function init()
+	{
+
+	}
 
 	function additional_fields($curVal,$mode)
 	{
@@ -936,6 +965,36 @@ class vstore_cart_form_ui extends e_admin_form_ui
 		$text .= "</table>";
 
 		return $text;
+	}
+
+
+	function email_templates($curVal, $mode)
+	{
+		$frm = e107::getForm();		
+
+		$email_types = array(
+			'default' => 'Order confirmation', 
+			'completed' => 'Order completed'
+		);
+
+		e107::wysiwyg(true);
+		
+		$text = '';
+		foreach ($email_types as $type => $label) {
+
+			if (empty($curVal[$type]))
+			{
+				$curVal[$type] = e107::getTemplate('vstore', 'vstore_email', $type);
+			}
+
+			$text .= '<div><label><b>'.$label.'</b>';
+			$text .= $frm->textarea('email_templates['.$type.']', $curVal[$type], null, null, array('class' => 'e-wysiwyg'));		
+			$text .= '</label></div><br/>
+			';
+		}
+
+		return $text;
+		 		
 	}
 
 	function customer_userclass($curVal, $mode)
