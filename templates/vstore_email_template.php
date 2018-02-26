@@ -8,77 +8,110 @@
 	 *
 	 */
 
-	 $VSTORE_EMAIL_TEMPLATE = array();
+	$VSTORE_EMAIL_TEMPLATE = array();
 
 	// Content of the email.
 
 
-	 $VSTORE_EMAIL_TEMPLATE['default'] = "
-		
-	 Hello {ORDER_SHIP_FIRSTNAME} {ORDER_SHIP_LASTNAME},<br />
-	 <br />
-	 Thank you for your purchase.<br />
-	 Your order reference number is: #{ORDER_REF}<br />
-	 <br />
-	 <table class='table'>
-	 	<colgroup>	
-	 		<col style='width:50%' />
-	 		<col style='width:50%' />
-	 	</colgroup>
-	 	<tr>
-	 		<th>Merchant</th>
-	 		<th class='text-right'>Customer</th>
-	 	</tr>
-	 	<tr>
-	 		<td>{ORDER_MERCHANT_INFO}</td>
-	 		<td class='text-right'>
-	 			{ORDER_SHIP_FIRSTNAME} {ORDER_SHIP_LASTNAME}<br />
-	 			{ORDER_SHIP_ADDRESS}<br />
-	 			{ORDER_SHIP_CITY} &nbsp;{ORDER_SHIP_STATE} &nbsp;{ORDER_SHIP_ZIP}<br />
-	 			{ORDER_SHIP_COUNTRY}
-			</td>
-	 	</tr>
-	 </table>
-	 
-	 
-	 {ORDER_ITEMS}
-	 
-	 <hr />
-	 {ORDER_PAYMENT_INSTRUCTIONS}
-	 
-	 ";
+	$VSTORE_EMAIL_TEMPLATE['default'] = "
+	
+	Hello {ORDER_SHIP_FIRSTNAME} {ORDER_SHIP_LASTNAME},<br />
+	<br />
+	Thank you for your purchase.<br />
+	Your order reference number is: #{ORDER_REF}<br />
+	<br />
+	<table class='table'>
+	<colgroup>	
+		<col style='width:50%' />
+		<col style='width:50%' />
+	</colgroup>
+	<tr>
+		<th>Merchant</th>
+		<th class='text-right'>Customer</th>
+	</tr>
+	<tr>
+		<td>{ORDER_MERCHANT_INFO}</td>
+		<td class='text-right'>
+			{ORDER_SHIP_FIRSTNAME} {ORDER_SHIP_LASTNAME}<br />
+			{ORDER_SHIP_ADDRESS}<br />
+			{ORDER_SHIP_CITY} &nbsp;{ORDER_SHIP_STATE} &nbsp;{ORDER_SHIP_ZIP}<br />
+			{ORDER_SHIP_COUNTRY}
+		</td>
+	</tr>
+	</table>
+	
+	
+	{ORDER_ITEMS}
+	
+	<hr />
+	{ORDER_PAYMENT_INSTRUCTIONS}
+	
+	<br />
+	<br />
+	Kind regards,<br />
+	{SENDER_NAME}
 
-	 $VSTORE_EMAIL_TEMPLATE['completed'] = "
-		
-	 Hello {ORDER_SHIP_FIRSTNAME} {ORDER_SHIP_LASTNAME},<br />
-	 <br />
-	 your order #{ORDER_REF} has just been completed and will be shipped to you soon.<br />
-	 <br />
-	 <table class='table'>
-	 	<colgroup>	
-	 		<col style='width:50%' />
-	 		<col style='width:50%' />
-	 	</colgroup>
-	 	<tr>
-	 		<th>Merchant</th>
-	 		<th class='text-right'>Customer</th>
-	 	</tr>
-	 	<tr>
-	 		<td>{ORDER_MERCHANT_INFO}</td>
-	 		<td class='text-right'>
-	 			{ORDER_SHIP_FIRSTNAME} {ORDER_SHIP_LASTNAME}<br />
-	 			{ORDER_SHIP_ADDRESS}<br />
-	 			{ORDER_SHIP_CITY} &nbsp;{ORDER_SHIP_STATE} &nbsp;{ORDER_SHIP_ZIP}<br />
-	 			{ORDER_SHIP_COUNTRY}
-			</td>
-	 	</tr>
-	 </table>
-	 
-	 
-	 {ORDER_ITEMS}
-	 
-	 
-	 ";
+	";
+
+	$VSTORE_EMAIL_TEMPLATE['completed'] = "
+	
+	Hello {ORDER_SHIP_FIRSTNAME} {ORDER_SHIP_LASTNAME},<br />
+	<br />
+	your order #{ORDER_REF} has just been completed and will be shipped to you soon.<br />
+	<br />
+	<table class='table'>
+	<colgroup>	
+		<col style='width:50%' />
+		<col style='width:50%' />
+	</colgroup>
+	<tr>
+		<th>Merchant</th>
+		<th class='text-right'>Customer</th>
+	</tr>
+	<tr>
+		<td>{ORDER_MERCHANT_INFO}</td>
+		<td class='text-right'>
+			{ORDER_SHIP_FIRSTNAME} {ORDER_SHIP_LASTNAME}<br />
+			{ORDER_SHIP_ADDRESS}<br />
+			{ORDER_SHIP_CITY} &nbsp;{ORDER_SHIP_STATE} &nbsp;{ORDER_SHIP_ZIP}<br />
+			{ORDER_SHIP_COUNTRY}
+		</td>
+	</tr>
+	</table>
+	
+	
+	{ORDER_ITEMS}
+	
+	<br />
+	<br />
+	Kind regards,<br />
+	{SENDER_NAME}
+	
+	";
+
+	$VSTORE_EMAIL_TEMPLATE['cancelled'] = "
+	
+	Hello {ORDER_SHIP_FIRSTNAME} {ORDER_SHIP_LASTNAME},<br />
+	<br />
+	your order #{ORDER_REF} has just been cancelled.<br />
+	<br />
+	Any payment we received from you on this order will be refunded.<br />
+	<br />
+	Kind regards,<br />
+	{SENDER_NAME}
+
+	";
+
+	$VSTORE_EMAIL_TEMPLATE['refunded'] = "
+	
+	Hello {ORDER_SHIP_FIRSTNAME} {ORDER_SHIP_LASTNAME},<br />
+	<br />
+	the payment for your order #{ORDER_REF} has just been refunded.<br />
+	<br />
+	Kind regards,<br />
+	{SENDER_NAME}
+
+	";
 /*
 
 	  $VSTORE_EMAIL_TEMPLATE['error'] = "

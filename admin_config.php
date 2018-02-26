@@ -570,6 +570,9 @@ class vstore_order_ui extends e_admin_ui
 					vstore::setCustomerUserclass($old_data['order_e107_user'], json_decode($old_data['order_items'], true));
 				}
 			}
+			// Send our email to customer
+			$vs = e107::getSingleton('vstore');
+			$vs->emailCustomerOnStatusChange($new_data['order_id']);
 		}
 
 		public function onUpdateError($new_data, $old_data, $id)
@@ -888,7 +891,8 @@ Region 	region
 				'{ORDER_SHIP_ZIP}'		=> 'The customers shipping to zip code',
 				'{ORDER_SHIP_COUNTRY}'	=> 'The customers shipping to country',
 				'{ORDER_ITEMS}'			=> 'The ordered items',
-				'{ORDER_PAYMENT_INSTRUCTIONS}' => 'In case of payment method "bank transfer", the bank transfer details'
+				'{ORDER_PAYMENT_INSTRUCTIONS}' => 'In case of payment method "bank transfer", the bank transfer details',
+				'{SENDER_NAME}'			=> 'Sender name es defined in the vstore prefs'
 			);
 	
 			foreach ($email_fields as $key => $value) {
@@ -900,8 +904,8 @@ Region 	region
 	
 			$this->prefs['email_templates']['title'] = $text;
 		}
-	
-	/*
+
+		/*
 		public function customPage()
 		{
 			$ns = e107::getRender();
@@ -920,7 +924,19 @@ class vstore_cart_form_ui extends e_admin_form_ui
 
 	public function init()
 	{
+		$js = "
+		$(function(){
+			$('.vstore-email-reset').click(function(){
+				var type = $(this).data('type');
+				var template = decodeURIComponent($(this).data('template'));
 
+				var id = 'email-templates-'+type+'-template';
+				$('#'+id).val(template);
+				$(tinymce.get(id).getBody()).html(template);
+			});
+		});
+		";
+		e107::js('footer-inline', $js);
 	}
 
 	function additional_fields($curVal,$mode)
@@ -972,25 +988,28 @@ class vstore_cart_form_ui extends e_admin_form_ui
 	{
 		$frm = e107::getForm();		
 
-		$email_types = array(
-			'default' => 'Order confirmation', 
-			'completed' => 'Order completed'
-		);
-
 		e107::wysiwyg(true);
-		
-		$text = '';
-		foreach ($email_types as $type => $label) {
 
-			if (empty($curVal[$type]))
+		$orig_templates = e107::getTemplate('vstore', 'vstore_email');
+		$text = '';
+		foreach (vstore::getEmailTypes() as $type => $label) {
+
+			// $orig_template = e107::getTemplate('vstore', 'vstore_email', $type);
+			$orig_template = $orig_templates[$type];
+			if (empty($curVal[$type]['template']))
 			{
-				$curVal[$type] = e107::getTemplate('vstore', 'vstore_email', $type);
+				$curVal[$type]['template'] = $orig_template;
 			}
+			$isActive = isset($curVal[$type]['active']) ? $curVal[$type]['active'] : true;
 
 			$text .= '<div><label><b>'.$label.'</b>';
-			$text .= $frm->textarea('email_templates['.$type.']', $curVal[$type], null, null, array('class' => 'e-wysiwyg'));		
+			$text .= '<div><label>'.LAN_ACTIVE.'? '. $this->flipswitch('email_templates['.$type.'][active]', $isActive, null, array('switch'=>'small', 'title' => LAN_ACTIVE)).'</label>';
+			$text .= $this->button('', '<span class="fa fa-undo"></span> '. 'Reset template', 'action', '', array('data-template' => rawurlencode($orig_template), 'data-type' => $type, 'class' => 'vstore-email-reset pull-right btn-sm', 'title' => 'Click & save to reset this template to the default template.'));
+			$text .= '</div>';
+			$text .= $this->textarea('email_templates['.$type.'][template]', $curVal[$type]['template'], null, null, array('class' => 'e-wysiwyg'));		
 			$text .= '</label></div><br/>
 			';
+
 		}
 
 		return $text;
