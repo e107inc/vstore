@@ -158,6 +158,17 @@ class vstore_plugin_shortcodes extends e_shortcode
 
 	}
 
+	function sc_sender_name()
+	{
+		$info = e107::pref('vstore', 'sender_name');
+
+		if(empty($info))
+		{
+			return null;
+		}
+
+		return e107::getParser()->toHtml($info, true);
+	}
 
 
 
@@ -641,6 +652,13 @@ class vstore
 		'R' => 'Refunded'
 	);
 
+	protected static $emailTypes = array(
+		'default' => 'Order confirmation', 
+		'completed' => 'Order completed',
+		'cancelled' => 'Order cancelled',
+		'refunded' => 'Order refunded'
+	);
+
 
 	protected static $shippingFields = array(
 		 'firstname',
@@ -790,6 +808,16 @@ class vstore
 
 	}
 
+	public static function getEmailTypes($type=null)
+	{
+		if(!empty($type))
+		{
+			return self::$emailTypes[$type];
+		}
+
+		return self::$emailTypes;
+
+	}
 
 	public static function getShippingFields()
 	{
@@ -1492,13 +1520,6 @@ class vstore
 			$insert[$fld]    = $val;
 		}
 
-
-		if (!empty($transData))
-		{
-			$this->setCustomerUserclass(USERID, $items);
-		}
-
-
 		$insert['order_pay_gateway']    = $this->getGatewayType();
 		$insert['order_pay_status']     = empty($transData) ? 'incomplete' : 'complete';
 		$insert['order_pay_transid']    = $id;
@@ -1516,8 +1537,13 @@ class vstore
 			$refId = $this->getOrderRef($nid,$insert['order_ship_firstname'],$insert['order_ship_lastname']);
 			$mes->addSuccess("Your order <b>#".$refId."</b> is complete",'vstore');
 			$this->updateInventory($insert['order_items']);
-			$this->emailCustomer('success', $refId, $insert);
+			$this->emailCustomer('default', $refId, $insert);
 
+			if (!empty($transData))
+			{
+				$this->setCustomerUserclass(USERID, $items);
+			}
+	
 		}
 		else
 		{
@@ -1526,6 +1552,39 @@ class vstore
 
 		}
 
+
+	}
+
+	/**
+	 * Send an email to the customer with a template depending on the order_status
+	 * This is used on the sales admin pages, when changing the order_status
+	 * 
+	 * @param int $order_id
+	 * @return void
+	 */
+	public function emailCustomerOnStatusChange($order_id)
+	{
+		if (intval($order_id) <= 0)
+		{
+			e107::getMessage()->addDebug('No order_id supplied or order_id "'.intval($order_id).'" is invalid!', 'vstore');
+			return;
+		}
+
+		$sql = e107::getDB();
+
+		$order = $sql->retrieve('vstore_orders', '*', 'order_id='.intval($order_id));
+
+		if ($order && is_array($order))
+		{
+			$order['order_items'] = json_decode($order['order_items'], true);
+			$refId = $this->getOrderRef($order['order_id'], $order['order_ship_firstname'], $order['order_ship_lastname']);
+
+			$this->emailCustomer(strtolower($this->getStatus($order['order_status'])), $refId, $order);
+		}
+		else
+		{
+			e107::getMessage()->addDebug('No order with given order_id "'.intval($order_id).'" found!', 'vstore');
+		}
 
 	}
 
@@ -1613,12 +1672,16 @@ class vstore
 			$type = 'default';
 		}
 		$template = e107::pref('vstore', 'email_templates');
-		if (empty($template[$type]))
+		if (!varsettrue($template[$type]['active'], false))
+		{
+			return '';
+		}
+		if (empty($template[$type]['template']))
 		{
 			$template = e107::getTemplate('vstore', 'vstore_email', $type);
 			if (empty($template))
 			{
-				$template = e107::getTemplate('vstore', 'vstore_email', 'default');
+				return '';
 			}
 		}
 		else
@@ -1631,10 +1694,17 @@ class vstore
 
 
 
-	private function emailCustomer($templateKey, $ref, $insert=array())
+	function emailCustomer($templateKey='default', $ref, $insert=array())
 	{
 		$tp = e107::getParser();
-		$template = $this->getEmailTemplate();
+		$template = $this->getEmailTemplate($templateKey);
+
+		if (empty($template))
+		{
+			// No template available... No mail to send ...
+			e107::getMessage()->addDebug('No template found or template is empty!', 'vstore');
+			return;
+		}
 
 		$insert['order_ref'] = $ref;
 
@@ -1664,6 +1734,8 @@ class vstore
 		e107::getEmail()->sendEmail($email, $name, $eml);
 
 	}
+
+
 
 
 
