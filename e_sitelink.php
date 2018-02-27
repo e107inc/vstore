@@ -79,6 +79,7 @@ class vstore_sitelink // include plugin-folder in the name.
 	{
 
 		$vst = e107::getSingleton('vstore',e_PLUGIN.'vstore/vstore.class.php');
+		$sc = e107::getScBatch('vstore_plugin');
 
 		$data = $vst->getCartData();
 		$frm = e107::getForm();
@@ -101,7 +102,7 @@ e107::getDebug()->log($data);
 
 
 		$text .= '
-                    <div class="form-group">
+                    <div class="form-group alert alert-info">
                             <ul class="media-list list-unstyled">';
 
 		$total = 0;
@@ -119,8 +120,7 @@ e107::getDebug()->log($data);
 			$text .= '<li class="media">
 					<span class="media-object pull-left">'.$img.'</span>
 					<div class="media-body"><b>'.$item['item_name'].'</b><br />
-						<small class="text-muted smalltext">Qty: '.$item['cart_qty'].'</small><br />
-						'.number_format($subtotal,2).'
+						<span class="pull-right">'.$item['cart_qty'].' &times; '.$sc->sc_cart_currency_symbol().' '.number_format($subtotal,2).'</span>
 					</div>
 					</li>';
 
@@ -132,12 +132,15 @@ e107::getDebug()->log($data);
 
            $text .= '
 
-						<li class="media text-right"><h4>Total: '.number_format($total,2).'</h4></li>
+						<li class="media text-right"><h4>Total: '.$sc->sc_cart_currency_symbol().' '.number_format($total,2).'</h4></li>
                             </ul>
 
                     </div>
 
-                     <div><a class="btn btn-block btn-primary" href="'.e107::url('vstore','cart').'">Checkout</a></div>
+					<div>
+						 <a class="btn btn-block btn-danger" href="#" onclick="vstoreCartReset()"><i class="fa fa-trash-o" aria-hidden="true"></i> Clear cart</a>
+						 <a class="btn btn-block btn-primary col-xs-6" href="'.e107::url('vstore','cart').'"><i class="fa fa-shopping-cart" aria-hidden="true"></i> Checkout</a>
+					</div>
 				</div>			';
 
 		return $text;

@@ -16,7 +16,7 @@ $VSTORE_TEMPLATE['list']['item']    =  '
 								                               </p>
 								                                <div class="row">
 								                                    <div class="col-md-5"><a class="item-price" href="{ITEM_URL}">{ITEM_PRICE}</a></div>
-								                                    <div class="col-md-7 text-right">{ITEM_ADDTOCART: class=btn btn-sm btn-success&class0=btn btn-sm btn-default disabled}</div>
+								                                    <div class="col-md-7 text-right">{ITEM_ADDTOCART: class=btn btn-sm btn-success vstore-add&class0=btn btn-sm btn-default disabled}</div>
 								                                </div>
 
 							                            </div>

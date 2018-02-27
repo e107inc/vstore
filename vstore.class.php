@@ -382,6 +382,11 @@ class vstore_plugin_shortcodes extends e_shortcode
 		return e107::getParser()->thumbUrl($this->var['cat_image']);
 	}
 	
+	function sc_cat_pic($parm=null)
+	{
+		return e107::getParser()->toImage($this->var['cat_image']);
+	}
+
 	function sc_cat_url($parm=null)
 	{
 
@@ -479,6 +484,7 @@ class vstore_plugin_shortcodes extends e_shortcode
 	
 		$url = ($this->var['item_price'] == '0.00' || empty($this->var['item_inventory'])) ? $this->sc_item_url() :e107::url('vstore', 'addtocart', $this->var);
 		$label =  ($this->var['item_price'] == '0.00' || empty($this->var['item_inventory'])) ? LAN_READ_MORE : 'Add to cart';
+		$itemid = 'data-vstore-item="'.varset($this->var['item_id'], 0).'"';
 /*
 		if($parm == 'url')
 		{
@@ -492,7 +498,7 @@ class vstore_plugin_shortcodes extends e_shortcode
 
 
 
-		return '<a class="'.$class.'" href="'.$url.'"><span class="glyphicon glyphicon-shopping-cart"></span> '.$label.'</a>';
+		return '<a class="'.$class.'" '.$itemid.' href="'.$url.'"><span class="glyphicon glyphicon-shopping-cart"></span> '.$label.'</a>';
 	}
 
 
@@ -608,7 +614,10 @@ class vstore_plugin_shortcodes extends e_shortcode
 		return $this->curSymbol.number_format( $this->var['cart_grandTotal'], 2);
 	}
 		
-	
+	public function sc_cart_currency_symbol($parm=null)
+	{
+		return $this->curSymbol;
+	}
 
 }
 
@@ -864,7 +873,10 @@ class vstore
 
 		if(!empty($this->get['add']))
 		{
-			$this->addToCart($this->get['add']);
+			if (!e_AJAX_REQUEST)
+			{
+				$this->addToCart($this->get['add']);
+			}
 		}
 
 
@@ -1063,10 +1075,61 @@ class vstore
 
 		if($this->get['add'])
 		{
+			if(e_AJAX_REQUEST)
+			{
+				$js = e107::getJshelper();
+				$js->_reset();
+				$itemid = $this->get['add'];
+				if (!$this->addToCart($itemid))
+				{
+					$msg = e107::getMessage()->render('vstore');
+					ob_clean();
+					$js->addTextResponse($msg)->sendResponse();
+					exit;
+				}
+				else
+				{
+					$sl = new vstore_sitelink();
+					$msg = $sl->storeCart();
+				}
+				ob_clean();
+				$js->addTextResponse('ok '.$msg)->sendResponse();
+				exit;
+			}
 			$bread = $this->breadcrumb();
 			$text = $this->cartView();
 			$ns->tablerender($this->captionBase, $bread.$text, 'vstore-cart-view');
 			return null;
+		}
+
+		
+		if(!empty($this->get['reset']))
+		{
+			if(e_AJAX_REQUEST)
+			{
+				$this->resetCart();
+				$sl = new vstore_sitelink();
+				$msg = $sl->storeCart();
+				ob_clean();
+				$js = e107::getJshelper();
+				$js->_reset();
+				$js->addTextResponse('ok '.$msg)->sendResponse();
+				exit;
+			}
+		}
+		
+		if(!empty($this->get['refresh']))
+		{
+			if(e_AJAX_REQUEST)
+			{
+				$sl = new vstore_sitelink();
+				$msg = $sl->storeCart();
+				ob_clean();
+				$js = e107::getJshelper();
+				$js->_reset();
+				$js->addTextResponse('ok '.$msg)->sendResponse();
+				exit;
+			}
 		}
 
 
@@ -1401,6 +1464,9 @@ class vstore
 			}
 
 			unset($_SESSION['vstore']['_data']);
+
+			// Forcethe browser window to refresh the cart menu
+			e107::js('inline-footer', '$(function(){ vstoreCartRefresh(); });');
 			return null;
 		}
 		elseif($mode === 'init')
@@ -1845,8 +1911,11 @@ class vstore
 
 	protected function resetCart()
 	{
+		// Delete cart from database
+		e107::getDb()->delete('vstore_cart', 'cart_id='.$_COOKIE["cartId"]);
 		$_COOKIE["cartId"] = false;
 		cookie("cartId", null, time()-3600);
+		$this->cartId = null;
 		e107::getDebug()->log("Destroying CartID");
 		return null;
 	}
@@ -1894,17 +1963,17 @@ class vstore
 
 			
 		$template = '
-		{SETIMAGE: w=320&h=200&crop=1}
+		{SETIMAGE: w=320&h=250&crop=1}
 		<div class="vstore-category-list col-sm-4 col-lg-4 col-md-4">
-                        <div class="thumbnail">
-                            <a href="{CAT_URL}"><img src="{CAT_IMAGE}" alt="" style="height:200px"></a>
-                            <div class="caption text-center">
-                                <h4><a href="{CAT_URL}">{CAT_NAME}</a></h4>
-                                <p class="cat-description"><small>{CAT_DESCRIPTION}</small></p>
-                               
-                            </div>
-                           </div>
-                    </div>';
+			<div class="thumbnail">
+				<a href="{CAT_URL}">{CAT_PIC}</a>
+				<div class="caption text-center">
+					<h4><a href="{CAT_URL}">{CAT_NAME}</a></h4>
+					<p class="cat-description"><small>{CAT_DESCRIPTION}</small></p>
+					
+				</div>
+			</div>
+		</div>';
 					
 		$this->sc->setCategories($this->categories);
 		
@@ -2103,6 +2172,12 @@ class vstore
 	
 	protected function addToCart($id)
 	{
+		if (USERID === 0){
+			// Allow only logged in users to add items to the cart
+			e107::getMessage()->addError('You must be logged in before adding products to the cart!', 'vstore');
+			return false;
+		}
+
 		$sql = e107::getDb();
 		
 		// Item Exists. 
