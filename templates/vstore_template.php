@@ -43,26 +43,47 @@ $VSTORE_TEMPLATE['list']['end']         = '</div>';
 
 
 $VSTORE_TEMPLATE['menu']['start'] =  '';
-$VSTORE_TEMPLATE['menu']['item'] =  '
-			{SETIMAGE: w=320&h=250&crop=1}
-			<div class="vstore-product-list col-sm-12 col-lg-12 col-md-12">
-	                        <div class="thumbnail">
-                            <a href="{ITEM_URL}">{ITEM_PIC}</a>
-                            <div class="caption">
-                                <h4><a href="{ITEM_URL}">{ITEM_NAME}</a></h4>
-                                <p class="item-description">{ITEM_DESCRIPTION}</p>
-                                <div class="row">
-								<div class="col-xs-12 col-sm-6 col-md-6 col-lg-6">
-									<p class="lead">{ITEM_PRICE}</p>
-								</div>
-								<div class="col-xs-12 col-sm-6 col-md-6 col-lg-6">
-									{ITEM_ADDTOCART}
-								</div>
-							</div>
-                            </div>
+// $VSTORE_TEMPLATE['menu']['item'] =  '
+// 			{SETIMAGE: w=320&h=250&crop=1}
+// 			<div class="vstore-product-list col-sm-12 col-lg-12 col-md-12">
+// 	                        <div class="thumbnail">
+//                             <a href="{ITEM_URL}">{ITEM_PIC}</a>
+//                             <div class="caption">
+//                                 <h4><a href="{ITEM_URL}">{ITEM_NAME}</a></h4>
+//                                 <p class="item-description">{ITEM_DESCRIPTION}</p>
+//                                 <div class="row">
+// 								<div class="col-xs-12 col-sm-6 col-md-6 col-lg-6">
+// 									<p class="lead">{ITEM_PRICE}</p>
+// 								</div>
+// 								<div class="col-xs-12 col-sm-6 col-md-6 col-lg-6">
+// 									{ITEM_ADDTOCART}
+// 								</div>
+// 							</div>
+//                             </div>
 
-                        </div>
-                    </div>';
+//                         </div>
+//                     </div>';
+$VSTORE_TEMPLATE['menu']['item'] =  '
+			{SETIMAGE: w=100&h=100&crop=1}
+			<div class="vstore-product-list col-sm-12 col-lg-12 col-md-12">
+				<div class="thumbnail" style="height:auto;">
+					<div class="caption">
+						<div class="row">
+							<a href="{ITEM_URL}" class="col-xs-4">{ITEM_PIC}</a>
+							<h4 class="col-xs-8"><a href="{ITEM_URL}">{ITEM_NAME}</a></h4>
+						</div>
+						<!-- <p class="item-description">{ITEM_DESCRIPTION}</p> -->
+						<div class="row">
+							<div class="col-xs-12 col-sm-6 col-md-6 col-lg-6">
+								<p class="lead">{ITEM_PRICE}</p>
+							</div>
+							<div class="col-xs-12 col-sm-6 col-md-6 col-lg-6">
+								{ITEM_ADDTOCART: class=btn btn-sm btn-success vstore-add&class0=btn btn-sm btn-default disabled}
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>';
 
 $VSTORE_TEMPLATE['menu']['end'] =  '';
 // Item View.

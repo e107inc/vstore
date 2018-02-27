@@ -106,7 +106,7 @@ e107::getDebug()->log($data);
                             <ul class="media-list list-unstyled">';
 
 		$total = 0;
-
+		$itemcount = 0;
 
 
 		foreach($data as $item)
@@ -116,6 +116,7 @@ e107::getDebug()->log($data);
 
 		//	$text .= '<li>'.$img.$item['item_name'].'</li>';
 			$subtotal = ($item['item_price'] * $item['cart_qty']);
+			$itemcount += $item['cart_qty'];
 
 			$text .= '<li class="media">
 					<span class="media-object pull-left">'.$img.'</span>
@@ -134,7 +135,7 @@ e107::getDebug()->log($data);
 
 						<li class="media text-right"><h4>Total: '.$sc->sc_cart_currency_symbol().' '.number_format($total,2).'</h4></li>
                             </ul>
-
+						<div id="vstore-item-count" class="hidden">'.$itemcount.'</div>
                     </div>
 
 					<div>

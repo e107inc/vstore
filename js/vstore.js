@@ -133,12 +133,15 @@ var e107 = e107 || {'settings': {}, 'behaviors': {}};
 						var msg = (typeof resp != 'undefined') ? resp : '';
 						if (msg.substr(0, 2) == 'ok')
 						{
+							// if ok, update cart menu with new content
 							msg = msg.substr(2);
 							$('#vstore-cart-dropdown').replaceWith(msg);
-							$('#vstore-cart-icon .badge').html($('#vstore-cart-dropdown span.media-object').length);
+							var itemcount = $('#vstore-item-count').text();
+							if (itemcount <= 0) itemcount = 0;
+							$('#vstore-cart-icon .badge').html(itemcount);
 							return;
 						}
-
+						// Print our any (error) message 
 						$('#uiAlert').html(msg);
 
 					});
@@ -163,6 +166,7 @@ function vstoreCartReset()
 		var msg = (typeof resp != 'undefined') ? resp : '';
 		if (msg.substr(0, 2) == 'ok')
 		{
+			// if ok, update cart menu with new content
 			msg = msg.substr(2);
 			$('#vstore-cart-dropdown').replaceWith(msg);
 			$('#vstore-cart-icon .badge').html(0);
@@ -186,9 +190,12 @@ function vstoreCartRefresh()
 		var msg = (typeof resp != 'undefined') ? resp : '';
 		if (msg.substr(0, 2) == 'ok')
 		{
+			// if ok, update cart menu with new content
 			msg = msg.substr(2);
 			$('#vstore-cart-dropdown').replaceWith(msg);
-			$('#vstore-cart-icon .badge').html(0);
+			var itemcount = $('#vstore-item-count').text();
+			if (itemcount <= 0) itemcount = 0;
+			$('#vstore-cart-icon .badge').html(itemcount);
 			return;
 		}
 	});
