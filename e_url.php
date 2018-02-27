@@ -21,8 +21,13 @@ class vstore_url // plugin-folder + '_url'
 	{
 		$config = array();
 
+		$config['download'] = array(
+			'regex'			=> '^{alias}\/download/([\d]*)$',
+			'redirect'		=> '{e_PLUGIN}vstore/vstore.php?download=$1&',
+			'sef'			=> '{alias}/download/{item_id}'
+		);
+		
 		$config['cancel'] = array(
-
 			'regex'			=> '^vstore/checkout/cancel/?$',
 			'redirect'		=> '{e_PLUGIN}vstore/vstore.php?mode=cancel',
 			'sef'			=>  'vstore/checkout/cancel/',
@@ -37,37 +42,34 @@ class vstore_url // plugin-folder + '_url'
 
 
 		$config['checkout'] = array(
-
-			'regex'			=> '^vstore/checkout/?$',
+			'regex'			=> '^{alias}/checkout/?$',
 			'redirect'		=> '{e_PLUGIN}vstore/vstore.php?mode=checkout',
-			'sef'			=>  'vstore/checkout/',
+			'sef'			=>  '{alias}/checkout/',
 		);
 
 
 		$config['addtocart'] = array(
-			'regex'			=> '^vstore/cart/add/([\d]*)$',
+			'regex'			=> '^{alias}/cart/add/([\d]*)$',
 			'redirect'		=> '{e_PLUGIN}vstore/vstore.php?mode=cart&add=$1',
-			'sef'			=>  'vstore/cart/add/{item_id}',
+			'sef'			=>  '{alias}/cart/add/{item_id}',
 		);
 
 		$config['cart'] = array(
-			'regex'			=> '^vstore/cart/?\??(.*)$',
+			'regex'			=> '^{alias}/cart/?\??(.*)$',
 			'redirect'		=> '{e_PLUGIN}vstore/vstore.php?mode=cart&$1',
-			'sef'			=>  'vstore/cart/',
+			'sef'			=>  '{alias}/cart/',
 		);
 
 		$config['index'] = array(
 			'regex'			=> '^{alias}\/?([\?].*)?\/?$',
-			'sef'			=> '{alias}/',
 			'redirect'		=> '{e_PLUGIN}vstore/vstore.php$1',
-
+			'sef'			=> '{alias}/'
 		);
 
 		$config['product'] = array(
 			'regex'			=> '^{alias}/([^\/]*)/([\d]*)/(.*)',
-			'sef'			=> '{alias}/{cat_sef}/{item_id}/{item_sef}',
 			'redirect'		=> '{e_PLUGIN}vstore/vstore.php?item=$2',
-
+			'sef'			=> '{alias}/{cat_sef}/{item_id}/{item_sef}'
 		);
 
 		$config['subcategory'] = array(
@@ -76,13 +78,12 @@ class vstore_url // plugin-folder + '_url'
 			'sef'			=> '{alias}/{cat_sef}/{subcat_sef}/'
 		);
 
-
 		$config['category'] = array(
 			'regex'			=> '^{alias}\/([^\/\?\=]*)\/?\??',
 			'redirect'		=> '{e_PLUGIN}vstore/vstore.php?catsef=$1&',
 			'sef'			=> '{alias}/{cat_sef}/'
 		);
-		
+
 		return $config;
 	}
 	

@@ -86,8 +86,12 @@ class vstore_plugin_shortcodes extends e_shortcode
 
 	function sc_order_items()
 	{
-
-		$items = e107::unserialize($this->var['order_items']);
+		$items = $this->var['order_items'];
+		if (!is_array($items))
+		{
+			$items = e107::unserialize($items);
+		}
+		
 
 		$text  = "<table class='table table-bordered'>
 					<colgroup>	
@@ -106,26 +110,43 @@ class vstore_plugin_shortcodes extends e_shortcode
 
 		foreach($items as $key=>$item)
 		{
-			$text .= "<tr>
-						<td>".$item['description']."</td>
+			$desc = $item['description'];
+			if ($item['id']>0 && varset($item['file']))
+			{
+				if ($this->var['order_status'] === 'C' || ($this->var['order_status'] === 'N' && $this->var['order_pay_status'] == 'complete'))
+				{
+					$linktext = 'Download';
+				}
+				else
+				{
+					$linktext = 'Download (will be available once the payment has been received)';
+				}
+				$desc .= '<br/><a href="'.e107::url('vstore', 'download', array('item_id' => $item['id']), array('mode'=>'full')).'">'.$linktext.'</a>';
+			}
+			$text .= "
+					<tr>
+						<td>".$desc."</td>
 						<td class='text-right'>".$this->curSymbol.$item['price']."</td>
 						<td class='text-right'>".$item['quantity']."</td>
 						<td class='text-right'>".$this->curSymbol.($item['price'] * $item['quantity'])."</tdclass>
-					</tr>\n";
+					</tr>";
 		}
 
-		$text .= "<tr>
+		$text .= "
+				<tr>
 					<td colspan='3' class='text-right'><b>Shipping</b></td>
 					<td class='text-right'>".$this->curSymbol.$this->var['order_pay_shipping']."</td>
-					</tr>";
+				</tr>";
 
-		$text .= "<tr>
+		$text .= "
+				<tr>
 					<td colspan='3' class='text-right'><b>Total</b></td>
 					<td class='text-right'>".$this->curSymbol.$this->var['order_pay_amount']."</td>
-					</tr>";
+				</tr>";
 
 
-		$text .= "</table>";
+		$text .= "
+		</table>";
 
 		return $text;
 
@@ -350,7 +371,7 @@ class vstore_plugin_shortcodes extends e_shortcode
 	
 	
 	
-// Categories	
+	// Categories	
 	
 	function sc_cat_id($parm=null)
 	{
@@ -485,7 +506,7 @@ class vstore_plugin_shortcodes extends e_shortcode
 		$url = ($this->var['item_price'] == '0.00' || empty($this->var['item_inventory'])) ? $this->sc_item_url() :e107::url('vstore', 'addtocart', $this->var);
 		$label =  ($this->var['item_price'] == '0.00' || empty($this->var['item_inventory'])) ? LAN_READ_MORE : 'Add to cart';
 		$itemid = 'data-vstore-item="'.varset($this->var['item_id'], 0).'"';
-/*
+		/*
 		if($parm == 'url')
 		{
 			return $url;
@@ -879,8 +900,6 @@ class vstore
 			}
 		}
 
-
-
 	}
 
 
@@ -1102,6 +1121,14 @@ class vstore
 			return null;
 		}
 
+		if (!empty($this->get['download']))
+		{
+			if (!$this->downloadFile($this->get['download']))
+			{
+				echo e107::getMessage()->render('vstore');
+				return null;
+			}
+		}
 		
 		if(!empty($this->get['reset']))
 		{
@@ -1738,7 +1765,7 @@ class vstore
 			$type = 'default';
 		}
 		$template = e107::pref('vstore', 'email_templates');
-		if (!varsettrue($template[$type]['active'], false))
+		if (isset($template[$type]['active']) && ($template[$type]['active'] ? false : true))
 		{
 			return '';
 		}
@@ -2443,8 +2470,82 @@ class vstore
 	}
 	
 	
+	private function downloadFile($item_id=null)
+	{
+		if ($item_id == null || intval($item_id) <= 0)
+		{
+			e107::getMessage()->addDebug('Download id "'.intval($item_id).'" to download missing or invalid!','vstore');
+		}
+
+		if (USERID === 0)
+		{
+			return false;
+		}
+
+		if (!$this->hasItemPurchased($item_id))
+		{
+			return false;
+		}
+
+		$filepath = e107::getDb()->retrieve('vstore_items', 'item_download', 'item_id='.intval($item_id));
+
+		if (varset($filepath))
+		{
+			e107::getFile()->send($filepath); 
+		}
+		else
+		{
+			e107::getMessage()->addError('Download id  "'.intval($item_id).'" doesn\'t contain a file to download!', 'vstore');
+		}
+
+	}
 	
-	
+	/**
+	 * Check if the current user has purchased (and payed) given item_id
+	 *
+	 * @param int $item_id
+	 * @return boolean
+	 */
+	private function hasItemPurchased($item_id)
+	{
+		if ($item_id == null || intval($item_id)<=0)
+		{
+			e107::getMessage()->addDebug('Download id "'.intval($item_id).'" missing or invalid!','vstore');
+			return false;
+		}
+
+		if (USERID === 0)
+		{
+			e107::getMessage()->addError('You need to login to download the file!', 'vstore');
+			return false;
+		}
+		$sql = e107::getDb();
+		$order = $sql->select('vstore_orders', '*', 'order_e107_user='.USERID.' AND order_items LIKE \'%"id": "'.intval($item_id).'",%\' ORDER BY order_id DESC');
+
+
+		if (!$order)
+		{
+			e107::getMessage()->addError('We were unable to find your order and therefore the download has been denied!', 'vstore');
+			return false;
+		}
+
+		while($order = $sql->fetch())
+		{
+			if ($order['order_status'] == 'C')
+			{
+				// Status Completed = Payment OK, regardless of the orde_pay_status (e.g. in case of banktransfer)
+				return true;
+			}
+			elseif ($order['order_pay_status'] == 'complete' && $order['order_status'] == 'N')
+			{
+				// If order_status = New and pay_status = complete (e.g. in case of paypal payment)
+				return true;
+			}
+		}
+		// Order not completed or payment not complete + order_status = New 
+		e107::getMessage()->addError('Your order is still in a state ('.vstore::getStatus($order['order_status']).') which doesn\'t allow to download the file!', 'vstore');
+		return false;
+	}
 	
 	
 	
