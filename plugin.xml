@@ -13,8 +13,8 @@
 		<link url="admin_config.php" description="" icon="images/vstore_32.png" iconSmall="images/vstore_16.png" icon128="images/vstore_128.png" primary="true" >LAN_CONFIGURE</link>
 	</adminLinks>
 	<siteLinks>
-		<link url="{e_PLUGIN}vstore/vstore.php" sef='index' perm="admin" >LAN_PLUGIN_VSTORE_NAME</link>
-		<link url="#"  description="Shopping Cart" perm="everyone" function="vstore::storeCart" >LAN_PLUGIN_VSTORE_CARTICON</link>
+		<link url="{e_PLUGIN}vstore/vstore.php" sef='index' perm="member" >LAN_PLUGIN_VSTORE_NAME</link>
+		<link url="#"  description="Shopping Cart" perm="member" function="storeCart" >LAN_PLUGIN_VSTORE_CARTICON</link>
 	</siteLinks>
 	<pluginPrefs>
 		<pref name='currency'>USD</pref>

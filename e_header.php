@@ -26,8 +26,14 @@
 
                 $data = $vst->getCartData();
 
-                $count = count($data);
-
+                //$count = count($data);
+                // Sum up cart quantity for badge instead of only number of different products (items)
+                $count = 0;
+                if($data && count($data)){
+                    foreach ($data as $row) {
+                        $count += $row['cart_qty'];
+                    }
+                }
 
 
             }

@@ -12,6 +12,8 @@ if (!defined('e107_INIT'))
 e107::js('vstore','js/jquery.zoom.min.js');
 e107::js('vstore','js/vstore.js');
 
+e107::js('settings', array('vstore' => array('cart' => array('url' => e107::url('vstore', 'cart').'cart.php'))));
+
 $vstore = e107::getSingleton('vstore',e_PLUGIN.'vstore/vstore.class.php');
 $vstore->init();
 require_once(HEADERF);

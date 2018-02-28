@@ -86,8 +86,12 @@ class vstore_plugin_shortcodes extends e_shortcode
 
 	function sc_order_items()
 	{
-
-		$items = e107::unserialize($this->var['order_items']);
+		$items = $this->var['order_items'];
+		if (!is_array($items))
+		{
+			$items = e107::unserialize($items);
+		}
+		
 
 		$text  = "<table class='table table-bordered'>
 					<colgroup>	
@@ -106,26 +110,43 @@ class vstore_plugin_shortcodes extends e_shortcode
 
 		foreach($items as $key=>$item)
 		{
-			$text .= "<tr>
-						<td>".$item['description']."</td>
+			$desc = $item['description'];
+			if ($item['id']>0 && varset($item['file']))
+			{
+				if ($this->var['order_status'] === 'C' || ($this->var['order_status'] === 'N' && $this->var['order_pay_status'] == 'complete'))
+				{
+					$linktext = 'Download';
+				}
+				else
+				{
+					$linktext = 'Download (will be available once the payment has been received)';
+				}
+				$desc .= '<br/><a href="'.e107::url('vstore', 'download', array('item_id' => $item['id']), array('mode'=>'full')).'">'.$linktext.'</a>';
+			}
+			$text .= "
+					<tr>
+						<td>".$desc."</td>
 						<td class='text-right'>".$this->curSymbol.$item['price']."</td>
 						<td class='text-right'>".$item['quantity']."</td>
 						<td class='text-right'>".$this->curSymbol.($item['price'] * $item['quantity'])."</tdclass>
-					</tr>\n";
+					</tr>";
 		}
 
-		$text .= "<tr>
+		$text .= "
+				<tr>
 					<td colspan='3' class='text-right'><b>Shipping</b></td>
 					<td class='text-right'>".$this->curSymbol.$this->var['order_pay_shipping']."</td>
-					</tr>";
+				</tr>";
 
-		$text .= "<tr>
+		$text .= "
+				<tr>
 					<td colspan='3' class='text-right'><b>Total</b></td>
 					<td class='text-right'>".$this->curSymbol.$this->var['order_pay_amount']."</td>
-					</tr>";
+				</tr>";
 
 
-		$text .= "</table>";
+		$text .= "
+		</table>";
 
 		return $text;
 
@@ -350,7 +371,7 @@ class vstore_plugin_shortcodes extends e_shortcode
 	
 	
 	
-// Categories	
+	// Categories	
 	
 	function sc_cat_id($parm=null)
 	{
@@ -382,6 +403,11 @@ class vstore_plugin_shortcodes extends e_shortcode
 		return e107::getParser()->thumbUrl($this->var['cat_image']);
 	}
 	
+	function sc_cat_pic($parm=null)
+	{
+		return e107::getParser()->toImage($this->var['cat_image']);
+	}
+
 	function sc_cat_url($parm=null)
 	{
 
@@ -479,7 +505,8 @@ class vstore_plugin_shortcodes extends e_shortcode
 	
 		$url = ($this->var['item_price'] == '0.00' || empty($this->var['item_inventory'])) ? $this->sc_item_url() :e107::url('vstore', 'addtocart', $this->var);
 		$label =  ($this->var['item_price'] == '0.00' || empty($this->var['item_inventory'])) ? LAN_READ_MORE : 'Add to cart';
-/*
+		$itemid = 'data-vstore-item="'.varset($this->var['item_id'], 0).'"';
+		/*
 		if($parm == 'url')
 		{
 			return $url;
@@ -492,7 +519,7 @@ class vstore_plugin_shortcodes extends e_shortcode
 
 
 
-		return '<a class="'.$class.'" href="'.$url.'"><span class="glyphicon glyphicon-shopping-cart"></span> '.$label.'</a>';
+		return '<a class="'.$class.'" '.$itemid.' href="'.$url.'"><span class="glyphicon glyphicon-shopping-cart"></span> '.$label.'</a>';
 	}
 
 
@@ -608,7 +635,10 @@ class vstore_plugin_shortcodes extends e_shortcode
 		return $this->curSymbol.number_format( $this->var['cart_grandTotal'], 2);
 	}
 		
-	
+	public function sc_cart_currency_symbol($parm=null)
+	{
+		return $this->curSymbol;
+	}
 
 }
 
@@ -864,10 +894,11 @@ class vstore
 
 		if(!empty($this->get['add']))
 		{
-			$this->addToCart($this->get['add']);
+			if (!e_AJAX_REQUEST)
+			{
+				$this->addToCart($this->get['add']);
+			}
 		}
-
-
 
 	}
 
@@ -1063,10 +1094,69 @@ class vstore
 
 		if($this->get['add'])
 		{
+			if(e_AJAX_REQUEST)
+			{
+				$js = e107::getJshelper();
+				$js->_reset();
+				$itemid = $this->get['add'];
+				if (!$this->addToCart($itemid))
+				{
+					$msg = e107::getMessage()->render('vstore');
+					ob_clean();
+					$js->addTextResponse($msg)->sendResponse();
+					exit;
+				}
+				else
+				{
+					$sl = new vstore_sitelink();
+					$msg = $sl->storeCart();
+				}
+				ob_clean();
+				$js->addTextResponse('ok '.$msg)->sendResponse();
+				exit;
+			}
 			$bread = $this->breadcrumb();
 			$text = $this->cartView();
 			$ns->tablerender($this->captionBase, $bread.$text, 'vstore-cart-view');
 			return null;
+		}
+
+		if (!empty($this->get['download']))
+		{
+			if (!$this->downloadFile($this->get['download']))
+			{
+				echo e107::getMessage()->render('vstore');
+				return null;
+			}
+		}
+		
+		if(!empty($this->get['reset']))
+		{
+			if(e_AJAX_REQUEST)
+			{
+				$this->resetCart();
+				$sl = new vstore_sitelink();
+				$msg = $sl->storeCart();
+				ob_clean();
+				$js = e107::getJshelper();
+				$js->_reset();
+				$js->addTextResponse('ok '.$msg)->sendResponse();
+				exit;
+			}
+		}
+		
+		if(!empty($this->get['refresh']))
+		{
+			if(e_AJAX_REQUEST)
+			{
+				$sl = new vstore_sitelink();
+				$msg = $sl->storeCart();
+				ob_clean();
+				$js = e107::getJshelper();
+				$js->_reset();
+				$js->addTextResponse('ok '.$msg)->sendResponse();
+				exit;
+			}
 		}
 
 
@@ -1401,6 +1491,9 @@ class vstore
 			}
 
 			unset($_SESSION['vstore']['_data']);
+
+			// Forcethe browser window to refresh the cart menu
+			e107::js('inline-footer', '$(function(){ vstoreCartRefresh(); });');
 			return null;
 		}
 		elseif($mode === 'init')
@@ -1672,7 +1765,7 @@ class vstore
 			$type = 'default';
 		}
 		$template = e107::pref('vstore', 'email_templates');
-		if (!varsettrue($template[$type]['active'], false))
+		if (isset($template[$type]['active']) && ($template[$type]['active'] ? false : true))
 		{
 			return '';
 		}
@@ -1845,8 +1938,11 @@ class vstore
 
 	protected function resetCart()
 	{
+		// Delete cart from database
+		e107::getDb()->delete('vstore_cart', 'cart_id='.$_COOKIE["cartId"]);
 		$_COOKIE["cartId"] = false;
 		cookie("cartId", null, time()-3600);
+		$this->cartId = null;
 		e107::getDebug()->log("Destroying CartID");
 		return null;
 	}
@@ -1894,17 +1990,17 @@ class vstore
 
 			
 		$template = '
-		{SETIMAGE: w=320&h=200&crop=1}
+		{SETIMAGE: w=320&h=250&crop=1}
 		<div class="vstore-category-list col-sm-4 col-lg-4 col-md-4">
-                        <div class="thumbnail">
-                            <a href="{CAT_URL}"><img src="{CAT_IMAGE}" alt="" style="height:200px"></a>
-                            <div class="caption text-center">
-                                <h4><a href="{CAT_URL}">{CAT_NAME}</a></h4>
-                                <p class="cat-description"><small>{CAT_DESCRIPTION}</small></p>
-                               
-                            </div>
-                           </div>
-                    </div>';
+			<div class="thumbnail">
+				<a href="{CAT_URL}">{CAT_PIC}</a>
+				<div class="caption text-center">
+					<h4><a href="{CAT_URL}">{CAT_NAME}</a></h4>
+					<p class="cat-description"><small>{CAT_DESCRIPTION}</small></p>
+					
+				</div>
+			</div>
+		</div>';
 					
 		$this->sc->setCategories($this->categories);
 		
@@ -2103,6 +2199,12 @@ class vstore
 	
 	protected function addToCart($id)
 	{
+		if (USERID === 0){
+			// Allow only logged in users to add items to the cart
+			e107::getMessage()->addError('You must be logged in before adding products to the cart!', 'vstore');
+			return false;
+		}
+
 		$sql = e107::getDb();
 		
 		// Item Exists. 
@@ -2368,8 +2470,82 @@ class vstore
 	}
 	
 	
+	private function downloadFile($item_id=null)
+	{
+		if ($item_id == null || intval($item_id) <= 0)
+		{
+			e107::getMessage()->addDebug('Download id "'.intval($item_id).'" to download missing or invalid!','vstore');
+		}
+
+		if (USERID === 0)
+		{
+			return false;
+		}
+
+		if (!$this->hasItemPurchased($item_id))
+		{
+			return false;
+		}
+
+		$filepath = e107::getDb()->retrieve('vstore_items', 'item_download', 'item_id='.intval($item_id));
+
+		if (varset($filepath))
+		{
+			e107::getFile()->send($filepath); 
+		}
+		else
+		{
+			e107::getMessage()->addError('Download id  "'.intval($item_id).'" doesn\'t contain a file to download!', 'vstore');
+		}
+
+	}
 	
-	
+	/**
+	 * Check if the current user has purchased (and payed) given item_id
+	 *
+	 * @param int $item_id
+	 * @return boolean
+	 */
+	private function hasItemPurchased($item_id)
+	{
+		if ($item_id == null || intval($item_id)<=0)
+		{
+			e107::getMessage()->addDebug('Download id "'.intval($item_id).'" missing or invalid!','vstore');
+			return false;
+		}
+
+		if (USERID === 0)
+		{
+			e107::getMessage()->addError('You need to login to download the file!', 'vstore');
+			return false;
+		}
+		$sql = e107::getDb();
+		$order = $sql->select('vstore_orders', '*', 'order_e107_user='.USERID.' AND order_items LIKE \'%"id": "'.intval($item_id).'",%\' ORDER BY order_id DESC');
+
+
+		if (!$order)
+		{
+			e107::getMessage()->addError('We were unable to find your order and therefore the download has been denied!', 'vstore');
+			return false;
+		}
+
+		while($order = $sql->fetch())
+		{
+			if ($order['order_status'] == 'C')
+			{
+				// Status Completed = Payment OK, regardless of the orde_pay_status (e.g. in case of banktransfer)
+				return true;
+			}
+			elseif ($order['order_pay_status'] == 'complete' && $order['order_status'] == 'N')
+			{
+				// If order_status = New and pay_status = complete (e.g. in case of paypal payment)
+				return true;
+			}
+		}
+		// Order not completed or payment not complete + order_status = New 
+		e107::getMessage()->addError('Your order is still in a state ('.vstore::getStatus($order['order_status']).') which doesn\'t allow to download the file!', 'vstore');
+		return false;
+	}
 	
 	
 	
