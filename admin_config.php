@@ -1498,7 +1498,8 @@ class vstore_items_ui extends e_admin_ui
 
 		  'item_order' 			=>   array ( 'title' => LAN_ORDER, 			'type' => 'hidden', 'data' => 'int', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 		  'item_inventory' 		=>   array ( 'title' => 'Inventory', 		'type' => 'method', 'data' => 'int', 'width' => 'auto', 'inline'=>true, 'help' => 'Enter -1 if this item is always available', 'readParms' => '', 'writeParms' => '', 'class' => 'right item-inventory', 'thclass' => 'right',  ),
-		  'item_vars' 	        =>   array ( 'title' => 'Product Variations', 	'type' => 'comma', 'data' => 'str', 'width' => 'auto', 'inline'=>true, 'help' => '', 'readParms' => '', 'writeParms' => array(), 'class' => 'right item-inventory', 'thclass' => 'right',  ),
+		  'item_vars' 	        =>   array ( 'title' => 'Product Variations', 	'type' => 'method'), //'type' => 'comma', 'data' => 'str', 'width' => 'auto', 'inline'=>true, 'help' => '', 'readParms' => '', 'writeParms' => array(), 'class' => 'right item-inventory', 'thclass' => 'right',  ),
+		  'item_vars_inventory' =>   array ( 'title' => 'Variations Inventory', 'type' => 'method', 'data' => 'json'), //, 'data' => 'str', 'width' => 'auto', 'inline'=>true, 'help' => '', 'readParms' => '', 'writeParms' => array(), 'class' => 'right item-inventory', 'thclass' => 'right',  ),
 
 		  'item_userclass'      =>   array ( 'title' => 'Assign userclass', 'type' => 'method', 'help' => 'Assign userclass to customer on purchase'),
 		  
@@ -1551,7 +1552,7 @@ class vstore_items_ui extends e_admin_ui
 			$this->fields['item_cat']['writeParms'] = ($this->getAction() == 'list') ? $this->categories : $this->categoriesTree;
 		//	print_a($this->categories);
 			
-			
+			e107::css('inline', 'table input.form-control{ width: 80px; }');
 		}
 
 
@@ -1567,6 +1568,33 @@ class vstore_items_ui extends e_admin_ui
 
 		public function beforeUpdate($new_data, $old_data, $id)
 		{
+			if ($new_data['item_vars'] !== explode(',', $old_data['item_vars']))
+			{
+				if ($new_data['item_vars'] == '')
+				{
+					$new_data['item_vars_inventory'] = '';
+				}
+				else //if ($old_data['item_vars'] != '')
+				{
+
+					$new = $new_data['item_vars'];
+					if (count($new)>2)
+					{
+						// Only 2 vars allowed
+						$new_data['item_vars'] = array($new[0], $new[1]);
+						// $new = explode(',', $new_data['item_vars']);
+					}
+					// Item vars have changed
+					// Initialize inventory
+					$new_data['item_vars_inventory'] = '';
+
+				}
+			}
+			if (array_key_exists('item_vars', $new_data))
+			{
+				$new_data['item_vars'] = implode(',', $new_data['item_vars']);
+			}
+
 			return $new_data;
 		}
 
@@ -1673,7 +1701,10 @@ class vstore_items_form_ui extends e_admin_form_ui
 			break;
 
 			case 'write': // Edit Page
-				return $frm->text('item_inventory', $curVal, null, array('pattern' => '^-?\d+$')); // to allow also negative values (<0 = Item will not run out of stock)
+				$text = $frm->text('item_inventory', $curVal, null, array('pattern' => '^-?\d+$')); // to allow also negative values (<0 = Item will not run out of stock)
+				$text .= '<span class="small">In case of any Product Variations selected, this setting will ignored! You have to fill out the Variations Inventory instead!</span>';
+				return $text;
+				// return $frm->text('item_inventory', $curVal, null, array('pattern' => '^-?\d+$')); // to allow also negative values (<0 = Item will not run out of stock)
 				//return $frm->number('item_inventory',$curVal);
 			break;
 
@@ -1700,6 +1731,130 @@ class vstore_items_form_ui extends e_admin_form_ui
 		}
 	}
 
+
+	function item_vars_inventory($curVal, $mode)
+	{
+		$item_vars = $this->getController()->getFieldVar('item_vars');
+
+		if ($item_vars == '')
+		{
+			return 'You need to select the Product Variations first!';
+		}
+
+		$sql = e107::getDb();
+		$frm = e107::getForm();
+
+		if ($sql->select('vstore_items_vars', '*', sprintf('FIND_IN_SET(item_var_id, "%s") LIMIT 2', $item_vars)))
+		{
+
+			if ($curVal && !is_array($curVal))
+			{
+				$curVal = e107::unserialize($curVal);
+			}
+
+
+			$col = array();
+			$key = 'x';
+			while($item = $sql->fetch())
+			{
+				$col[$key]['id'] = $item['item_var_id'];
+				$col[$key]['caption'] = $item['item_var_name'];
+				$attr = e107::unserialize($item['item_var_attributes']);
+				foreach ($attr as $row) {
+					$col[$key]['names'][] = $row['name'];
+				}
+				$key = 'y';
+			}
+
+			$text = '<table class="table table-striped table-bordered">
+			';
+			if (count($col)==2)
+			{
+				$text .= sprintf('<tr><th>%s</th><th colspan="%d">%s</th></tr>', 'Inventory', count($col['y']['names']), $col['y']['caption']);
+
+				$text .= sprintf('<tr><th>%s</th>', $col['x']['caption']);
+				foreach ($col['y']['names'] as $value) {
+					$text .= sprintf('<th>%s</th>', $value);
+				}
+			
+				$text .= '</tr>
+				';
+			}
+
+			if (count($col) == 1)
+			{
+				$text .= sprintf('<tr><th style="width: 20%%;">%s</th><th>%s</th>', $col['x']['caption'], 'Inventory');
+				foreach ($col['x']['names'] as $nameX) {
+					$text .= sprintf('<tr><th style="width: 20%%;">%s</th>', $nameX);
+					$nameX = $frm->name2id($nameX);
+					$value = varset($curVal[$nameX], 0);
+					$text .= sprintf('<td>%s</td>', $frm->text('item_vars_inventory['.$nameX.']', $value, 5, array('pattern' => '^-?\d+$', 'size' => 'sm')));
+					$text .= '</tr>
+					';
+				}
+			}
+			else
+			{
+				foreach ($col['x']['names'] as $nameX) {
+					$text .= sprintf('<tr><th style="width: 20%%;">%s</th>', $nameX);
+					$nameX = $frm->name2id($nameX);
+					foreach ($col['y']['names'] as $nameY) {
+						$nameY = $frm->name2id($nameY);
+						$value = varset($curVal[$nameX][$nameY], 0);
+						$text .= sprintf('<td>%s</td>', $frm->text('item_vars_inventory['.$nameX.']['.$nameY.']', $value, 5, array('pattern' => '^-?\d+$', 'size' => 'sm')));
+					}
+					$text .= '</tr>
+					';
+				}
+			}
+			$text .= '</table>
+			';
+
+			return $text;
+		}
+		return e107::getMessage()->addError('Product Variations not found! Maybe they have been deleted in the meanwhile ...', 'vstore')->render('vstore');
+	}
+
+	function item_vars($curVal,$mode)
+	{
+		$frm = e107::getForm();		
+		 		
+		switch($mode)
+		{
+			case 'read': // List Page
+				return $curVal;
+			break;
+			
+			case 'write': // Edit Page
+				$opt_array = array();
+				if($data = e107::getDb()->retrieve('SELECT item_var_id,item_var_name FROM #vstore_items_vars ORDER BY item_var_name', true))
+				{
+					foreach($data as $k=>$v)
+					{
+						$key = $v['item_var_id'];
+						$opt_array[$key] = $v['item_var_name'];
+					}
+				}
+
+				$text = $frm->select('item_vars', $opt_array, $curVal, array('multiple'=>1));
+				if ($curVal)
+				{
+					$text .= '<p class="small">Do not select more than 2 variations, as only the first 2 will be stored.<br>
+						<b>Be aware, that changing this setting will initialize the Variations Inventory table during save!</b></p>';
+				}
+				else
+				{
+					$text .= '<p class="small">Select up to 2 variations, save product and reopen it to access the Variations Inventory table</p>';
+				}
+				return $text; 		
+			break;
+			
+			case 'filter':
+			case 'batch':
+				return  null;
+			break;
+		}
+	}
 	
 	// Custom Method/Function 
 	function item_pic($curVal,$mode)
@@ -1889,14 +2044,14 @@ class vstore_items_vars_ui extends e_admin_ui
 		protected $fields 		= array (  'checkboxes' =>   array ( 'title' => '', 'type' => null, 'data' => null, 'width' => '5%', 'thclass' => 'center', 'forced' => '1', 'class' => 'center', 'toggle' => 'e-multiselect',  ),
 		  'item_var_id'         =>   array ( 'title' => LAN_ID, 'data' => 'int', 'width' => '5%', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 		  'item_var_name'       =>   array ( 'title' => LAN_TITLE, 'type' => 'text', 'data' => 'str', 'width' => 'auto', 'inline' => true, 'help' => 'Enter a name for the group, for eg. "Size" ', 'readParms' => '', 'writeParms'  => array('size'=>'xxlarge'), 'class' => 'left', 'thclass' => 'left',  ),
-		  'item_var_info'       =>   array ( 'title' => 'Info', 'type' => 'text', 'data' => 'str', 'width' => 'auto', 'help' => 'Only displays in admin area, help identify group.', 'readParms' => '', 'writeParms' => array('size'=>'xxlarge'), 'class' => 'left', 'thclass' => 'left',  ),
+		  'item_var_info'       =>   array ( 'title' => 'Info', 'type' => 'text', 'data' => 'str', 'width' => 'auto', 'inline' => true,'help' => 'Only displays in admin area, help identify group.', 'readParms' => '', 'writeParms' => array('size'=>'xxlarge'), 'class' => 'left', 'thclass' => 'left',  ),
 		  'item_var_attributes' =>   array ( 'title' => 'Attributes', 'type' => 'method', 'data' => 'json', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 		  'item_var_compulsory' =>   array ( 'title' => 'Required', 'type' => 'boolean', 'data' => 'int', 'width' => 'auto', 'batch' => true, 'inline' => true, 'help' => 'A selection will be required', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 		  'item_var_userclass'  =>   array ( 'title' => 'Userclass', 'type' => 'userclass', 'data' => 'int', 'width' => 'auto', 'batch' => true, 'inline' => true, 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 		  'options'             =>   array ( 'title' => LAN_OPTIONS, 'type' => null, 'data' => null, 'width' => '10%', 'thclass' => 'center last', 'class' => 'center last', 'forced' => '1',  ),
 		);
 
-		protected $fieldpref = array('item_var_name', 'item_var_compulsory', 'item_var_userclass');
+		protected $fieldpref = array('item_var_name', 'item_var_info', 'item_var_compulsory', 'item_var_userclass');
 
 
 	//	protected $preftabs        = array('General', 'Other' );

@@ -13,10 +13,13 @@ $VSTORE_TEMPLATE['list']['item']    =  '
 								                            <div>
 								                                <h4 class="clearfix"><a href="{ITEM_URL}">{ITEM_NAME}</a><span class="pull-right"></span></h4>
 								                                <p class="item-description clearfix">{ITEM_DESCRIPTION: limit=150}
-								                               </p>
+																</p>
+
+																{ITEM_VARS}
+															   
 								                                <div class="row">
 								                                    <div class="col-md-5"><a class="item-price" href="{ITEM_URL}">{ITEM_PRICE}</a></div>
-								                                    <div class="col-md-7 text-right">{ITEM_ADDTOCART: class=btn btn-sm btn-success vstore-add&class0=btn btn-sm btn-default disabled}</div>
+								                                    <div class="col-md-7 text-right">{ITEM_ADDTOCART: class=btn btn-sm btn-success vstore-add&class0=btn btn-sm btn-default disabled vstore-add}</div>
 								                                </div>
 
 							                            </div>
@@ -63,6 +66,7 @@ $VSTORE_TEMPLATE['menu']['start'] =  '';
 
 //                         </div>
 //                     </div>';
+
 $VSTORE_TEMPLATE['menu']['item'] =  '
 			{SETIMAGE: w=100&h=100&crop=1}
 			<div class="vstore-product-list col-sm-12 col-lg-12 col-md-12">
@@ -111,6 +115,8 @@ $VSTORE_TEMPLATE['item']['main']        = '{SETIMAGE: w=600&h=600}
 										            <h3>{ITEM_NAME}</h3>
 
 													<p>{ITEM_DESCRIPTION}</p>
+
+													<p>{ITEM_VARS}</p>
 										            <p>
 										            Product Code: {ITEM_CODE}<br />
 										            Availability: {ITEM_AVAILABILITY}<br /><br />
@@ -118,7 +124,7 @@ $VSTORE_TEMPLATE['item']['main']        = '{SETIMAGE: w=600&h=600}
 										            </p>
 										            <div class="row">
 										                <div class="col-md-6 item-price"><h3>{ITEM_PRICE}</h3></div>
-										                <div class="col-md-6">{ITEM_ADDTOCART}</div>
+										                <div class="col-md-6">{ITEM_ADDTOCART: class=btn btn-success vstore-add&class0=btn btn-sm btn-default disabled}</div>
 										            </div>
 												</div>
 									        </div>

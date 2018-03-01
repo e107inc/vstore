@@ -118,9 +118,24 @@ e107::getDebug()->log($data);
 			$subtotal = ($item['item_price'] * $item['cart_qty']);
 			$itemcount += $item['cart_qty'];
 
+			$itemvarstring = '';
+			if (!empty($item['cart_item_var_keys']))
+			{
+				$itemvarkeys = explode(',', $item['cart_item_var_keys']);
+				$itemvarvalues = explode(',', $item['cart_item_var_values']);
+
+				foreach($itemvarkeys as $i => $key)
+				{
+					$itemvarstring .= ($itemvarstring ? ' / ' : '') . vstore::getItemVarString($key, $itemvarvalues[$i]);
+				}
+				if (!empty($itemvarstring))
+				{
+					$itemvarstring = '<br/><span class="vstore-cart-item-var small">' . $itemvarstring . '</span>';
+				}
+			}
 			$text .= '<li class="media">
 					<span class="media-object pull-left">'.$img.'</span>
-					<div class="media-body"><b>'.$item['item_name'].'</b><br />
+					<div class="media-body"><b>'.$item['item_name'].'</b>'.$itemvarstring.'<br />
 						<span class="pull-right">'.$item['cart_qty'].' &times; '.$sc->sc_cart_currency_symbol().' '.number_format($subtotal,2).'</span>
 					</div>
 					</li>';
