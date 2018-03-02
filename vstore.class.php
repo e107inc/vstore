@@ -1311,6 +1311,7 @@ class vstore
 			}
 			$bread = $this->breadcrumb();
 			$text = $this->cartView();
+			$text = e107::getMessage()->render('vstore') . $text;
 			$ns->tablerender($this->captionBase, $bread.$text, 'vstore-cart-view');
 			return null;
 		}
@@ -1383,6 +1384,7 @@ class vstore
 			// print_a($this->post);
 			$bread = $this->breadcrumb();
 			$text = $this->cartView();
+			$text = e107::getMessage()->render('vstore') . $text;
 			$ns->tablerender($this->captionBase, $bread.$text, 'vstore-cart-list');
 			return null;
 		}
@@ -2133,11 +2135,24 @@ class vstore
 					}
 				}
 
+				// Check if item exists and is active
+				$iteminfo = $sql->retrieve('vstore_items', 'item_active, item_name', 'item_id=' . $itemid);
+				
+				if ($iteminfo && $iteminfo['item_active'] == 0)
+				{
+					// Item not found or not longer active => Remove from cart
+					e107::getMessage()->addWarning('We\'re sorry, but we could\'t find the selected item "'.$iteminfo['item_name'].'" or it is no longer active!', 'vstore');
+					$sql->delete('vstore_cart', 'cart_id = '.intval($id).' AND cart_item = '.intval($itemid).' LIMIT 1');				
+					continue;
+				}
+
+				$itemname = $iteminfo['item_name'];
+
+				// check if item is in stock
 				$inStock = $this->getItemInventory($itemid, $itemvars);
 				if ($qty > $inStock && $inStock >= 0)
 				{
 					$qty = $inStock;
-					$itemname = $sql->retrieve('vstore_items', 'item_name', 'item_id=' . $itemid);
 					$itemvarstring = '';
 					if (!empty($itemvars))
 					{
@@ -2438,6 +2453,14 @@ class vstore
 		$itemvars = $this->fixItemVarArray($itemvars);
 		$sql = e107::getDb();
 
+		$isActive = $sql->retrieve('vstore_items', 'item_active', 'item_id='.intval($id));
+		if (!$isActive)
+		{
+			e107::getMessage()->addWarning('We\'re sorry, but this item is not longer available!', 'vstore');
+			$sql->delete('vstore_cart', 'cart_session="'.$this->cartId.'" AND cart_item='.intval($id));
+			return false;
+		}
+
 		$where = 'cart_session = "'.$this->cartId.'" AND cart_item = ' . intval($id);
 		if (is_array($itemvars))
 		{
@@ -2631,9 +2654,19 @@ class vstore
 
 			$checkoutData['id'] = $this->getCartId();
 
+			$count_active = 0;
 			foreach($data as $row)
 			{
-			
+
+				if (!$this->isItemActive($row['cart_item']))
+				{
+					e107::getMessage()->addWarning('We\'re sorry, but the item "'.$row['item_name'].'" is missing or not longer active and has been removed from the cart!', 'vstore');
+					e107::getDb()->delete('vstore_cart', 'cart_id='.$row['cart_id'].' AND cart_item='.$row['cart_item']);
+					continue;
+				}
+
+				$count_active++;
+
 				$subTotal += ($row['cart_qty'] * $row['item_price']);	
 				$shippingTotal	+= ($row['cart_qty'] * $row['item_shipping']);	
 						
@@ -2641,7 +2674,13 @@ class vstore
 				$checkoutData['items'][] = $row;
 				$text .= $tp->parseTemplate($template, true, $this->sc);	
 			}
-			
+
+			if ($count_active == 0)
+			{
+				return e107::getMessage()->addInfo("Your cart is empty.",'vstore')->render('vstore');
+			}
+
+
 			$grandTotal = $subTotal + $shippingTotal;
 			$totals = array('cart_subTotal' => $subTotal, 'cart_shippingTotal'=>$shippingTotal, 'cart_grandTotal'=>$grandTotal);
 
@@ -2842,7 +2881,22 @@ class vstore
 		e107::getMessage()->addError('Your order is still in a state ('.vstore::getStatus($order['order_status']).') which doesn\'t allow to download the file!', 'vstore');
 		return false;
 	}
+
 	
+	private function isItemActive($itemid)
+	{
+		if (intval($itemid) <= 0)
+		{
+			return false;
+		}
+		$sql = e107::getDb();
+		
+		if ($sql->gen('SELECT item_id FROM `#vstore_items` LEFT JOIN `#vstore_cat` ON (item_cat = cat_id) WHERE item_active=1 AND cat_active=1 AND item_id='.intval($itemid)))
+		{
+			return true;
+		}
+		return false;
+	}
 
 	public static function getItemVarString($itemvarid, $itemvarvalue)
 	{

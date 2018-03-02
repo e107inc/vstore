@@ -1570,33 +1570,32 @@ class vstore_items_ui extends e_admin_ui
 
 		public function beforeUpdate($new_data, $old_data, $id)
 		{
-			if ($new_data['item_vars'] !== explode(',', $old_data['item_vars']))
-			{
-				if ($new_data['item_vars'] == '')
-				{
-					$new_data['item_vars_inventory'] = '';
-				}
-				else //if ($old_data['item_vars'] != '')
-				{
-
-					$new = $new_data['item_vars'];
-					if (count($new)>2)
-					{
-						// Only 2 vars allowed
-						$new_data['item_vars'] = array($new[0], $new[1]);
-						// $new = explode(',', $new_data['item_vars']);
-					}
-					// Item vars have changed
-					// Initialize inventory
-					$new_data['item_vars_inventory'] = '';
-
-				}
-			}
 			if (array_key_exists('item_vars', $new_data))
 			{
+				if ($new_data['item_vars'] !== explode(',', $old_data['item_vars']))
+				{
+					if ($new_data['item_vars'] == '')
+					{
+						$new_data['item_vars_inventory'] = '';
+					}
+					else //if ($old_data['item_vars'] != '')
+					{
+
+						$new = $new_data['item_vars'];
+						if (count($new)>2)
+						{
+							// Only 2 vars allowed
+							$new_data['item_vars'] = array($new[0], $new[1]);
+							// $new = explode(',', $new_data['item_vars']);
+						}
+						// Item vars have changed
+						// Initialize inventory
+						$new_data['item_vars_inventory'] = '';
+
+					}
+				}
 				$new_data['item_vars'] = implode(',', $new_data['item_vars']);
 			}
-
 			return $new_data;
 		}
 
