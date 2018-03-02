@@ -474,7 +474,17 @@ class vstore_plugin_shortcodes extends e_shortcode
 	
 	function sc_item_brand($parm=null)
 	{
-		return $this->var['item_brand'];	
+		return e107::getParser()->toHtml($this->var['cat_name'], true,'TITLE');	
+	}
+	
+	function sc_item_brand_url($parm=null)
+	{
+		// if(!empty($this->var['cat_sef']))
+		// {
+		// 	return $this->var['item_link'];
+		// }
+	
+		return e107::url('vstore', 'category', array('cat_sef' => $this->var['cat_sef']));
 	}
 
 	function sc_item_pic($parm=null)
@@ -1441,7 +1451,13 @@ class vstore
 
 		$array = array();
 		
-		$array[] = array('url'=> e107::url('vstore','index'), 'text'=>$this->captionCategories);
+		// $array[] = array('url'=> e107::url('vstore','index'), 'text'=>$this->captionCategories);
+		$array[] = array('url'=> e107::url('vstore','index'), 'text'=>$this->captionBase);
+
+		if (!isset($this->get['mode']))
+		{
+			$array[] = array('url'=> e107::url('vstore','index'), 'text'=>$this->captionCategories);
+		}
 		
 		if($this->get['cat'] || $this->get['item'])
 		{
@@ -2583,7 +2599,7 @@ class vstore
 
 	public function getCartData()
 	{
-		return e107::getDb()->retrieve('SELECT c.*,i.* FROM #vstore_cart AS c LEFT JOIN #vstore_items as i ON c.cart_item = i.item_id WHERE c.cart_session = "'.$this->cartId.'" AND c.cart_status ="" ', true);
+		return e107::getDb()->retrieve('SELECT c.*, i.*, cat.cat_name, cat.cat_sef FROM `#vstore_cart` AS c LEFT JOIN `#vstore_items` as i ON (c.cart_item = i.item_id) LEFT JOIN `#vstore_cat` as cat ON (i.item_cat = cat.cat_id) WHERE c.cart_session = "'.$this->cartId.'" AND c.cart_status ="" ', true);
 	}
 
 
@@ -2634,7 +2650,7 @@ class vstore
 		                           </div>
 		                             <div class="media-body">
 		                                <h4 class="media-heading"><a href="{ITEM_URL}">{ITEM_NAME}</a></h4>
-		                                <h5 class="media-heading"> by <a href="#">Brand name</a></h5>
+		                                <h5 class="media-heading"> by <a href="{ITEM_BRAND_URL}">{ITEM_BRAND}</a></h5>
 		                                {ITEM_VAR_STRING}
 		                            </div>
 		                        </div></td>
