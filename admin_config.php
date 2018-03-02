@@ -937,8 +937,6 @@ class vstore_cart_form_ui extends e_admin_form_ui
 		});
 		";
 		e107::js('footer-inline', $js);
-
-		e107::setRegistry('core/e107/wysiwyg', true);
 	}
 
 	function additional_fields($curVal,$mode)
