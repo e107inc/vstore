@@ -358,7 +358,7 @@ class vstore_plugin_shortcodes extends e_shortcode
 
 					$text .= '
 						<div>
-							<label>'.$row['item_var_info'].'
+							<label>'.$row['item_var_name'].'
 							'.$select.'
 							</label>
 						</div>';
@@ -2848,7 +2848,7 @@ class vstore
 		{
 			return '';
 		}
-		$itemvar = e107::getDb()->retrieve('vstore_items_vars', 'item_var_name, item_var_info, item_var_attributes', 'item_var_id='.$itemvarid);
+		$itemvar = e107::getDb()->retrieve('vstore_items_vars', 'item_var_name, item_var_attributes', 'item_var_id='.$itemvarid);
 
 		if (!$itemvar)
 		{

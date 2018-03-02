@@ -2043,15 +2043,16 @@ class vstore_items_vars_ui extends e_admin_ui
 
 		protected $fields 		= array (  'checkboxes' =>   array ( 'title' => '', 'type' => null, 'data' => null, 'width' => '5%', 'thclass' => 'center', 'forced' => '1', 'class' => 'center', 'toggle' => 'e-multiselect',  ),
 		  'item_var_id'         =>   array ( 'title' => LAN_ID, 'data' => 'int', 'width' => '5%', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
-		  'item_var_name'       =>   array ( 'title' => LAN_TITLE, 'type' => 'text', 'data' => 'str', 'width' => 'auto', 'inline' => true, 'help' => 'Enter a name for the group, for eg. "Size" ', 'readParms' => '', 'writeParms'  => array('size'=>'xxlarge'), 'class' => 'left', 'thclass' => 'left',  ),
-		  'item_var_info'       =>   array ( 'title' => 'Info', 'type' => 'text', 'data' => 'str', 'width' => 'auto', 'inline' => true,'help' => 'Only displays in admin area, help identify group.', 'readParms' => '', 'writeParms' => array('size'=>'xxlarge'), 'class' => 'left', 'thclass' => 'left',  ),
+		  'item_var_name'       =>   array ( 'title' => LAN_NAME, 'type' => 'text', 'data' => 'str', 'width' => 'auto', 'inline' => true, 'help' => 'Enter a name for the group, for eg. "Size" ', 'readParms' => '', 'writeParms'  => array('size'=>'xxlarge'), 'class' => 'left', 'thclass' => 'left',  ),
+		//   'item_var_info'       =>   array ( 'title' => 'Info', 'type' => 'text', 'data' => 'str', 'width' => 'auto', 'inline' => true,'help' => 'Only displays in admin area, help identify group.', 'readParms' => '', 'writeParms' => array('size'=>'xxlarge'), 'class' => 'left', 'thclass' => 'left',  ),
 		  'item_var_attributes' =>   array ( 'title' => 'Attributes', 'type' => 'method', 'data' => 'json', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 		  'item_var_compulsory' =>   array ( 'title' => 'Required', 'type' => 'boolean', 'data' => 'int', 'width' => 'auto', 'batch' => true, 'inline' => true, 'help' => 'A selection will be required', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 		  'item_var_userclass'  =>   array ( 'title' => 'Userclass', 'type' => 'userclass', 'data' => 'int', 'width' => 'auto', 'batch' => true, 'inline' => true, 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 		  'options'             =>   array ( 'title' => LAN_OPTIONS, 'type' => null, 'data' => null, 'width' => '10%', 'thclass' => 'center last', 'class' => 'center last', 'forced' => '1',  ),
 		);
 
-		protected $fieldpref = array('item_var_name', 'item_var_info', 'item_var_compulsory', 'item_var_userclass');
+		// protected $fieldpref = array('item_var_name', 'item_var_info', 'item_var_compulsory', 'item_var_userclass');
+		protected $fieldpref = array('item_var_name', 'item_var_compulsory', 'item_var_userclass');
 
 
 	//	protected $preftabs        = array('General', 'Other' );
