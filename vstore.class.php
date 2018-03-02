@@ -945,7 +945,7 @@ class vstore
 		e107::getDebug()->log("CartID:".$this->cartId);
 
 		// get all category data.
-		$query = 'SELECT * FROM #vstore_cat ';
+		$query = 'SELECT * FROM #vstore_cat WHERE cat_active=1 ';
 		if(!$data = e107::getDb()->retrieve($query, true))
 		{
 
@@ -2202,10 +2202,11 @@ class vstore
 		
 		$this->from = vartrue($this->get['frm'],0);
 
-		$query = 'SELECT * FROM #vstore_cat WHERE cat_parent = '.$parent.' ORDER BY cat_order LIMIT '.$this->from.",".$this->perPage;
+		$query = 'SELECT * FROM #vstore_cat WHERE cat_active=1 AND cat_parent = '.$parent.' ORDER BY cat_order LIMIT '.$this->from.",".$this->perPage;
 		if(!$data = e107::getDb()->retrieve($query, true))
 		{
-			return false;
+			return e107::getMessage()->addInfo('No categories available!', 'vstore')->render('vstore');
+			//return false;
 		}
 
 
@@ -2277,7 +2278,8 @@ class vstore
 
 
 
-		if(!$data = e107::getDb()->retrieve('SELECT SQL_CALC_FOUND_ROWS * FROM #vstore_items WHERE item_cat = '.intval($category).' ORDER BY item_order LIMIT '.$this->from.','.$this->perPage, true))
+//		if(!$data = e107::getDb()->retrieve('SELECT SQL_CALC_FOUND_ROWS * FROM #vstore_items WHERE cat_active=1 AND item_active=1 AND item_cat = '.intval($category).' ORDER BY item_order LIMIT '.$this->from.','.$this->perPage, true))
+		if(!$data = e107::getDb()->retrieve('SELECT SQL_CALC_FOUND_ROWS *, cat_active FROM #vstore_items LEFT JOIN #vstore_cat ON (item_cat = cat_id) WHERE cat_active=1 AND item_active=1 AND item_cat = '.intval($category).' ORDER BY item_order LIMIT '.$this->from.','.$this->perPage, true))
 		{
 
 			return e107::getMessage()->addInfo("No products available in this category",'vstore')->render('vstore');
@@ -2335,7 +2337,7 @@ class vstore
 	
 	protected function productView($id=0)
 	{
-		if(!$row = e107::getDb()->retrieve('SELECT * FROM #vstore_items WHERE item_id = '.intval($id).'  LIMIT 1',true))
+		if(!$row = e107::getDb()->retrieve('SELECT * FROM #vstore_items WHERE item_active=1 AND item_id = '.intval($id).'  LIMIT 1',true))
 		{
 			e107::getMessage()->addInfo("No products available in this category",'vstore');
 			return null;

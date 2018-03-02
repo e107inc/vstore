@@ -51,6 +51,7 @@ CREATE TABLE vstore_orders (
 
 CREATE TABLE vstore_cat (
   `cat_id` int(5) NOT NULL AUTO_INCREMENT,
+	`cat_active` TINYINT(1) UNSIGNED NOT NULL DEFAULT '1',
   `cat_parent` int(5) NOT NULL DEFAULT '0',
   `cat_name` varchar(250) DEFAULT NULL,
   `cat_description` varchar(250) DEFAULT NULL,
@@ -65,6 +66,7 @@ CREATE TABLE vstore_cat (
 
 CREATE TABLE vstore_items (
   `item_id` int(11) NOT NULL AUTO_INCREMENT,
+	`item_active` TINYINT(1) UNSIGNED NOT NULL DEFAULT '1',
   `item_code` varchar(10) NOT NULL DEFAULT '',
   `item_name` varchar(127) DEFAULT NULL,
   `item_keywords` varchar(127) DEFAULT NULL,
