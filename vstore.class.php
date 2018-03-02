@@ -2218,12 +2218,14 @@ class vstore
 		$this->from = vartrue($this->get['frm'],0);
 
 		$query = 'SELECT * FROM #vstore_cat WHERE cat_active=1 AND cat_parent = '.$parent.' ORDER BY cat_order LIMIT '.$this->from.",".$this->perPage;
-		if(!$data = e107::getDb()->retrieve($query, true))
+		if ((!$data = e107::getDb()->retrieve($query, true)) &&  intval($parent) == 0)
 		{
 			return e107::getMessage()->addInfo('No categories available!', 'vstore')->render('vstore');
-			//return false;
 		}
-
+		elseif (!$data)
+		{
+			return '';
+		}
 
 	//	$data = $this->categories;
 		
