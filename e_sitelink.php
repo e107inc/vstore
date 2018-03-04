@@ -102,7 +102,7 @@ e107::getDebug()->log($data);
 
 
 		$text .= '
-                    <div class="form-group alert alert-info">
+                    <div class="form-group alert alert-info" style="max-height: 400px;overflow-y:auto;">
                             <ul class="media-list list-unstyled">';
 
 		$total = 0;
@@ -114,13 +114,26 @@ e107::getDebug()->log($data);
 			$images = e107::unserialize($item['item_pic']);
 			$img = $tp->toImage($images[0]['path'],array('w'=>60));
 
-		//	$text .= '<li>'.$img.$item['item_name'].'</li>';
 			$subtotal = ($item['item_price'] * $item['cart_qty']);
 			$itemcount += $item['cart_qty'];
 
+			$itemvarstring = '';
+			if (!empty($item['cart_item_vars']))
+			{
+				$itemvars = vstore::item_vars_toArray($item['cart_item_vars']);
+
+				foreach($itemvars as $k => $v)
+				{
+					$itemvarstring .= ($itemvarstring ? ' / ' : '') . vstore::getItemVarString($k, $v);
+				}
+				if (!empty($itemvarstring))
+				{
+					$itemvarstring = '<br/><span class="vstore-cart-item-var small">' . $itemvarstring . '</span>';
+				}
+			}
 			$text .= '<li class="media">
 					<span class="media-object pull-left">'.$img.'</span>
-					<div class="media-body"><b>'.$item['item_name'].'</b><br />
+					<div class="media-body"><b>'.$item['item_name'].'</b>'.$itemvarstring.'<br />
 						<span class="pull-right">'.$item['cart_qty'].' &times; '.$sc->sc_cart_currency_symbol().' '.number_format($subtotal,2).'</span>
 					</div>
 					</li>';

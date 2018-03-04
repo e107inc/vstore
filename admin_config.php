@@ -1006,7 +1006,7 @@ class vstore_cart_form_ui extends e_admin_form_ui
 			$text .= '<div><label>'.LAN_ACTIVE.'? '. $this->flipswitch('email_templates['.$type.'][active]', $isActive, null, array('switch'=>'small', 'title' => LAN_ACTIVE)).'</label>';
 			$text .= $this->button('', '<span class="fa fa-undo"></span> '. 'Reset template', 'action', '', array('data-template' => rawurlencode($orig_template), 'data-type' => $type, 'class' => 'vstore-email-reset pull-right btn-sm', 'title' => 'Click & save to reset this template to the default template.'));
 			$text .= '</div>';
-			$text .= $this->textarea('email_templates['.$type.'][template]', $curVal[$type]['template'], null, null, array('class' => 'e-wysiwyg'));		
+			$text .= $this->textarea('email_templates['.$type.'][template]', $curVal[$type]['template'], 10, 80, array('class' => 'tbox form-control input-block-level e-autoheight e-wysiwyg'));		
 			$text .= '</label></div><br/>
 			';
 
@@ -1253,10 +1253,11 @@ class vstore_cat_ui extends e_admin_ui
 		protected $fields 		= array (  
 			'checkboxes' 		=>   array ( 'title' => '', 'type' => null, 'data' => null, 'width' => '5%', 'thclass' => 'center', 'forced' => '1', 'class' => 'center', 'toggle' => 'e-multiselect',  ),
 		  	'cat_id' 			=>   array ( 'title' => LAN_ID, 'data' => 'int', 'width' => '5%', 'help' => '', 'readParms' => 'url=category&target=dialog', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+		  	'cat_active' 		=>   array ( 'title' => LAN_ACTIVE, 'type'=>'boolean', 'data' => 'int', 'inline'=>true, 'width' => '5%', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 		  	'cat_name' 			=>   array ( 'title' => LAN_TITLE, 'type' => 'text', 'data' => 'str', 'width' => 'auto', 'inline' => true, 'help' => '', 'readParms' => '', 'writeParms' => array('size'=>'xxlarge'), 'class' => 'left', 'thclass' => 'left',  ),
 		    'cat_description' 	=>   array ( 'title' => LAN_DESCRIPTION, 'type' => 'textarea', 'data' => 'str', 'width' => '40%', 'help' => '', 'readParms' => '', 'writeParms' => array('maxlength' => 220, 'size'=>'xxlarge'), 'class' => 'left', 'thclass' => 'left',  ),
 		  	'cat_sef' 			=>   array ( 'title' => LAN_SEFURL, 'type' => 'text', 'data' => 'str', 'width' => 'auto', 'batch'=>true, 'inline' => true, 'help' => '', 'readParms' => '', 'writeParms' => array('size'=>'xxlarge','sef'=>'cat_name'), 'class' => 'left', 'thclass' => 'left',  ),
-			'cat_parent'        =>  array('title'=>"Parent", 'type'=>'dropdown', 'data'=>'int', 'inline'=>true,  'width'=>'auto'),
+			'cat_parent'        =>   array ( 'title' => "Parent", 'type'=>'dropdown', 'data'=>'int', 'inline'=>true,  'width'=>'auto'),
 		  	'cat_image' 		=>   array ( 'title' => LAN_IMAGE, 'type' => 'image', 'data' => 'str', 'width' => '40%', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),	
 		 	'cat_info' 			=>   array ( 'title' => "Details", 'type' => 'bbarea', 'data' => 'str', 'width' => '40%', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 		  	'cat_class' 		=>   array ( 'title' => LAN_USERCLASS, 'type' => 'userclass', 'data' => 'str', 'width' => 'auto', 'batch' => true, 'filter' => true, 'inline' => true, 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
@@ -1264,7 +1265,7 @@ class vstore_cat_ui extends e_admin_ui
 		  	'options' 			=>   array ( 'title' => 'Options', 'type' => null, 'data' => null, 'width' => '10%', 'thclass' => 'center last', 'class' => 'center last', 'forced' => '1', 'sort'=>1  ),
 		);		
 		
-		protected $fieldpref = array('cat_id', 'cat_name', 'cat_sef', 'cat_class');
+		protected $fieldpref = array('cat_id', 'cat_active', 'cat_name', 'cat_sef', 'cat_class');
 
 
 
@@ -1481,13 +1482,14 @@ class vstore_items_ui extends e_admin_ui
 	
 		protected $fields 		= array (  
 		  'checkboxes' 			=>   array ( 'title' => '', 'type' => null, 'data' => null, 	'width' => '5%', 'thclass' => 'center', 'forced' => '1', 'class' => 'center', 'toggle' => 'e-multiselect',  ),
-		  'item_preview'        =>   array( 'title' => LAN_PREVIEW, 'type'=>'method', 'data'=>false, 'width'=>'5%', 'forced'=>1),
-		  'item_id' 			=>   array ( 'title' => LAN_ID, 			'type'=>'text', 'data' => 'int', 	'width' => '5%', 'help' => '', 'readParms'=>'link=sef&target=blank', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+		  'item_preview'        =>   array ( 'title' => LAN_PREVIEW, 'type'=>'method', 'data'=>false, 'width'=>'5%', 'forced'=>1),
+		  'item_id' 			=>   array ( 'title' => LAN_ID, 			'type' => 'text', 'data' => 'int', 	'width' => '5%', 'help' => '', 'readParms'=>'link=sef&target=blank', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+		  'item_active' 		=>   array ( 'title' => LAN_ACTIVE, 		'type' => 'boolean', 'data' => 'int', 'inline' =>true, 'width' => '5%', 'help' => '', 'readParms'=>'', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 		  'item_code' 			=>   array ( 'title' => 'Code', 			'type' => 'text', 'inline'=>true,	'data' => 'str', 'width' => '2%', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'center', 'thclass' => 'center',  ),
 		  'item_name'			=>   array ( 'title' => LAN_TITLE, 			'type' => 'text', 	'data' => 'str', 'width' => 'auto', 'inline' => true, 'help' => '', 'readParms' => '', 'writeParms' => array('size'=>'xxlarge'), 'class' => 'left', 'thclass' => 'left',  ),
 		  'item_desc' 			=>   array ( 'title' => 'Description', 		'type' => 'textarea', 	'data' => 'str', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => array('size'=>'xxlarge','maxlength'=>250), 'class' => 'center', 'thclass' => 'center',  ),
 		  'item_cat' 			=>   array ( 'title' => 'Category', 		'type' => 'dropdown', 'data' => 'int', 'width' => 'auto', 'filter'=>true, 'batch'=>true, 'inline' => true, 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
-		  'item_pic' 			=>   array ( 'title' => 'Images/Videos', 			'type' => 'images', 'data' => 'array', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => 'media=vstore&video=1&max=8', 'class' => 'center', 'thclass' => 'center',  ),
+		  'item_pic' 			=>   array ( 'title' => 'Images/Videos', 	'type' => 'images', 'data' => 'array', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => 'media=vstore&video=1&max=8', 'class' => 'center', 'thclass' => 'center',  ),
 	 	  'item_files' 			=>   array ( 'title' => 'Files', 			'type' => 'files', 'tab'=>3, 'data' => 'array', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => 'media=vstore_file_2', 'class' => 'center', 'thclass' => 'center',  ),
 		  'item_price' 			=>   array ( 'title' => 'Price', 			'type' => 'text', 'data' => 'str', 'width' => 'auto', 'inline'=>true, 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'right', 'thclass' => 'right',  ),
 		  'item_shipping' 		=>   array ( 'title' => 'Shipping', 		'type' => 'text', 'data' => 'str', 'width' => 'auto',  'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'center', 'thclass' => 'center',  ),
@@ -1498,7 +1500,8 @@ class vstore_items_ui extends e_admin_ui
 
 		  'item_order' 			=>   array ( 'title' => LAN_ORDER, 			'type' => 'hidden', 'data' => 'int', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 		  'item_inventory' 		=>   array ( 'title' => 'Inventory', 		'type' => 'method', 'data' => 'int', 'width' => 'auto', 'inline'=>true, 'help' => 'Enter -1 if this item is always available', 'readParms' => '', 'writeParms' => '', 'class' => 'right item-inventory', 'thclass' => 'right',  ),
-		  'item_vars' 	        =>   array ( 'title' => 'Product Variations', 	'type' => 'comma', 'data' => 'str', 'width' => 'auto', 'inline'=>true, 'help' => '', 'readParms' => '', 'writeParms' => array(), 'class' => 'right item-inventory', 'thclass' => 'right',  ),
+		  'item_vars' 	        =>   array ( 'title' => 'Product Variations', 	'type' => 'method'), 
+		  'item_vars_inventory' =>   array ( 'title' => 'Variations Inventory', 'type' => 'method', 'data' => 'json'), 
 
 		  'item_userclass'      =>   array ( 'title' => 'Assign userclass', 'type' => 'method', 'help' => 'Assign userclass to customer on purchase'),
 		  
@@ -1508,7 +1511,7 @@ class vstore_items_ui extends e_admin_ui
 		  'options' 			=>   array ( 'title' => LAN_OPTIONS, 		'type' => null, 'data' => null, 'width' => '5%', 'thclass' => 'right last', 'class' => 'right last', 'forced' => '1',  ),
 		);		
 		
-		protected $fieldpref = array('item_code', 'item_name', 'item_sef', 'item_cat', 'item_price', 'item_inventory');
+		protected $fieldpref = array('item_active', 'item_code', 'item_name', 'item_sef', 'item_cat', 'item_price', 'item_inventory');
 				
 		protected $categories = array();
 		protected $categoriesTree = array();
@@ -1551,7 +1554,7 @@ class vstore_items_ui extends e_admin_ui
 			$this->fields['item_cat']['writeParms'] = ($this->getAction() == 'list') ? $this->categories : $this->categoriesTree;
 		//	print_a($this->categories);
 			
-			
+			e107::css('inline', 'table input.form-control{ width: 80px; }');
 		}
 
 
@@ -1567,6 +1570,32 @@ class vstore_items_ui extends e_admin_ui
 
 		public function beforeUpdate($new_data, $old_data, $id)
 		{
+			if (array_key_exists('item_vars', $new_data))
+			{
+				if ($new_data['item_vars'] !== explode(',', $old_data['item_vars']))
+				{
+					if ($new_data['item_vars'] == '')
+					{
+						$new_data['item_vars_inventory'] = '';
+					}
+					else //if ($old_data['item_vars'] != '')
+					{
+
+						$new = $new_data['item_vars'];
+						if (count($new)>2)
+						{
+							// Only 2 vars allowed
+							$new_data['item_vars'] = array($new[0], $new[1]);
+							// $new = explode(',', $new_data['item_vars']);
+						}
+						// Item vars have changed
+						// Initialize inventory
+						$new_data['item_vars_inventory'] = '';
+
+					}
+				}
+				$new_data['item_vars'] = implode(',', $new_data['item_vars']);
+			}
 			return $new_data;
 		}
 
@@ -1673,7 +1702,10 @@ class vstore_items_form_ui extends e_admin_form_ui
 			break;
 
 			case 'write': // Edit Page
-				return $frm->text('item_inventory', $curVal, null, array('pattern' => '^-?\d+$')); // to allow also negative values (<0 = Item will not run out of stock)
+				$text = $frm->text('item_inventory', $curVal, null, array('pattern' => '^-?\d+$')); // to allow also negative values (<0 = Item will not run out of stock)
+				$text .= '<span class="small">In case of any Product Variations selected, this setting will ignored! You have to fill out the Variations Inventory instead!</span>';
+				return $text;
+				// return $frm->text('item_inventory', $curVal, null, array('pattern' => '^-?\d+$')); // to allow also negative values (<0 = Item will not run out of stock)
 				//return $frm->number('item_inventory',$curVal);
 			break;
 
@@ -1700,6 +1732,130 @@ class vstore_items_form_ui extends e_admin_form_ui
 		}
 	}
 
+
+	function item_vars_inventory($curVal, $mode)
+	{
+		$item_vars = $this->getController()->getFieldVar('item_vars');
+
+		if ($item_vars == '')
+		{
+			return 'You need to select the Product Variations first!';
+		}
+
+		$sql = e107::getDb();
+		$frm = e107::getForm();
+
+		if ($sql->select('vstore_items_vars', '*', sprintf('FIND_IN_SET(item_var_id, "%s") LIMIT 2', $item_vars)))
+		{
+
+			if ($curVal && !is_array($curVal))
+			{
+				$curVal = e107::unserialize($curVal);
+			}
+
+
+			$col = array();
+			$key = 'x';
+			while($item = $sql->fetch())
+			{
+				$col[$key]['id'] = $item['item_var_id'];
+				$col[$key]['caption'] = $item['item_var_name'];
+				$attr = e107::unserialize($item['item_var_attributes']);
+				foreach ($attr as $row) {
+					$col[$key]['names'][] = $row['name'];
+				}
+				$key = 'y';
+			}
+
+			$text = '<table class="table table-striped table-bordered">
+			';
+			if (count($col)==2)
+			{
+				$text .= sprintf('<tr><th>%s</th><th colspan="%d">%s</th></tr>', 'Inventory', count($col['y']['names']), $col['y']['caption']);
+
+				$text .= sprintf('<tr><th>%s</th>', $col['x']['caption']);
+				foreach ($col['y']['names'] as $value) {
+					$text .= sprintf('<th>%s</th>', $value);
+				}
+			
+				$text .= '</tr>
+				';
+			}
+
+			if (count($col) == 1)
+			{
+				$text .= sprintf('<tr><th style="width: 20%%;">%s</th><th>%s</th>', $col['x']['caption'], 'Inventory');
+				foreach ($col['x']['names'] as $nameX) {
+					$text .= sprintf('<tr><th style="width: 20%%;">%s</th>', $nameX);
+					$nameX = $frm->name2id($nameX);
+					$value = varset($curVal[$nameX], 0);
+					$text .= sprintf('<td>%s</td>', $frm->text('item_vars_inventory['.$nameX.']', $value, 5, array('pattern' => '^-?\d+$', 'size' => 'sm')));
+					$text .= '</tr>
+					';
+				}
+			}
+			else
+			{
+				foreach ($col['x']['names'] as $nameX) {
+					$text .= sprintf('<tr><th style="width: 20%%;">%s</th>', $nameX);
+					$nameX = $frm->name2id($nameX);
+					foreach ($col['y']['names'] as $nameY) {
+						$nameY = $frm->name2id($nameY);
+						$value = varset($curVal[$nameX][$nameY], 0);
+						$text .= sprintf('<td>%s</td>', $frm->text('item_vars_inventory['.$nameX.']['.$nameY.']', $value, 5, array('pattern' => '^-?\d+$', 'size' => 'sm')));
+					}
+					$text .= '</tr>
+					';
+				}
+			}
+			$text .= '</table>
+			';
+
+			return $text;
+		}
+		return e107::getMessage()->addError('Product Variations not found! Maybe they have been deleted in the meanwhile ...', 'vstore')->render('vstore');
+	}
+
+	function item_vars($curVal,$mode)
+	{
+		$frm = e107::getForm();		
+		 		
+		switch($mode)
+		{
+			case 'read': // List Page
+				return $curVal;
+			break;
+			
+			case 'write': // Edit Page
+				$opt_array = array();
+				if($data = e107::getDb()->retrieve('SELECT item_var_id,item_var_name FROM #vstore_items_vars ORDER BY item_var_name', true))
+				{
+					foreach($data as $k=>$v)
+					{
+						$key = $v['item_var_id'];
+						$opt_array[$key] = $v['item_var_name'];
+					}
+				}
+
+				$text = $frm->select('item_vars', $opt_array, $curVal, array('multiple'=>1));
+				if ($curVal)
+				{
+					$text .= '<p class="small">Do not select more than 2 variations, as only the first 2 will be stored.<br>
+						<b>Be aware, that changing this setting will initialize the Variations Inventory table during save!</b></p>';
+				}
+				else
+				{
+					$text .= '<p class="small">Select up to 2 variations, save product and reopen it to access the Variations Inventory table</p>';
+				}
+				return $text; 		
+			break;
+			
+			case 'filter':
+			case 'batch':
+				return  null;
+			break;
+		}
+	}
 	
 	// Custom Method/Function 
 	function item_pic($curVal,$mode)
@@ -1888,14 +2044,15 @@ class vstore_items_vars_ui extends e_admin_ui
 
 		protected $fields 		= array (  'checkboxes' =>   array ( 'title' => '', 'type' => null, 'data' => null, 'width' => '5%', 'thclass' => 'center', 'forced' => '1', 'class' => 'center', 'toggle' => 'e-multiselect',  ),
 		  'item_var_id'         =>   array ( 'title' => LAN_ID, 'data' => 'int', 'width' => '5%', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
-		  'item_var_name'       =>   array ( 'title' => LAN_TITLE, 'type' => 'text', 'data' => 'str', 'width' => 'auto', 'inline' => true, 'help' => 'Enter a name for the group, for eg. "Size" ', 'readParms' => '', 'writeParms'  => array('size'=>'xxlarge'), 'class' => 'left', 'thclass' => 'left',  ),
-		  'item_var_info'       =>   array ( 'title' => 'Info', 'type' => 'text', 'data' => 'str', 'width' => 'auto', 'help' => 'Only displays in admin area, help identify group.', 'readParms' => '', 'writeParms' => array('size'=>'xxlarge'), 'class' => 'left', 'thclass' => 'left',  ),
+		  'item_var_name'       =>   array ( 'title' => LAN_NAME, 'type' => 'text', 'data' => 'str', 'width' => 'auto', 'inline' => true, 'help' => 'Enter a name for the group, for eg. "Size" ', 'readParms' => '', 'writeParms'  => array('size'=>'xxlarge'), 'class' => 'left', 'thclass' => 'left',  ),
+		//   'item_var_info'       =>   array ( 'title' => 'Info', 'type' => 'text', 'data' => 'str', 'width' => 'auto', 'inline' => true,'help' => 'Only displays in admin area, help identify group.', 'readParms' => '', 'writeParms' => array('size'=>'xxlarge'), 'class' => 'left', 'thclass' => 'left',  ),
 		  'item_var_attributes' =>   array ( 'title' => 'Attributes', 'type' => 'method', 'data' => 'json', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 		  'item_var_compulsory' =>   array ( 'title' => 'Required', 'type' => 'boolean', 'data' => 'int', 'width' => 'auto', 'batch' => true, 'inline' => true, 'help' => 'A selection will be required', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 		  'item_var_userclass'  =>   array ( 'title' => 'Userclass', 'type' => 'userclass', 'data' => 'int', 'width' => 'auto', 'batch' => true, 'inline' => true, 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 		  'options'             =>   array ( 'title' => LAN_OPTIONS, 'type' => null, 'data' => null, 'width' => '10%', 'thclass' => 'center last', 'class' => 'center last', 'forced' => '1',  ),
 		);
 
+		// protected $fieldpref = array('item_var_name', 'item_var_info', 'item_var_compulsory', 'item_var_userclass');
 		protected $fieldpref = array('item_var_name', 'item_var_compulsory', 'item_var_userclass');
 
 

@@ -111,6 +111,12 @@ class vstore_plugin_shortcodes extends e_shortcode
 		foreach($items as $key=>$item)
 		{
 			$desc = $item['description'];
+
+			if (!empty($item['vars']))
+			{
+				$desc .= '<br/>' . $item['vars'];
+			}
+
 			if ($item['id']>0 && varset($item['file']))
 			{
 				if ($this->var['order_status'] === 'C' || ($this->var['order_status'] === 'N' && $this->var['order_pay_status'] == 'complete'))
@@ -123,25 +129,26 @@ class vstore_plugin_shortcodes extends e_shortcode
 				}
 				$desc .= '<br/><a href="'.e107::url('vstore', 'download', array('item_id' => $item['id']), array('mode'=>'full')).'">'.$linktext.'</a>';
 			}
+
 			$text .= "
 					<tr>
 						<td>".$desc."</td>
-						<td class='text-right'>".$this->curSymbol.$item['price']."</td>
+						<td class='text-right'>".number_format($this->curSymbol.$item['price'], 2)."</td>
 						<td class='text-right'>".$item['quantity']."</td>
-						<td class='text-right'>".$this->curSymbol.($item['price'] * $item['quantity'])."</tdclass>
+						<td class='text-right'>".$this->curSymbol.number_format($item['price'] * $item['quantity'], 2)."</tdclass>
 					</tr>";
 		}
 
 		$text .= "
 				<tr>
 					<td colspan='3' class='text-right'><b>Shipping</b></td>
-					<td class='text-right'>".$this->curSymbol.$this->var['order_pay_shipping']."</td>
+					<td class='text-right'>".$this->curSymbol.number_format($this->var['order_pay_shipping'], 2)."</td>
 				</tr>";
 
 		$text .= "
 				<tr>
 					<td colspan='3' class='text-right'><b>Total</b></td>
-					<td class='text-right'>".$this->curSymbol.$this->var['order_pay_amount']."</td>
+					<td class='text-right'>".$this->curSymbol.number_format($this->var['order_pay_amount'], 2)."</td>
 				</tr>";
 
 
@@ -204,7 +211,41 @@ class vstore_plugin_shortcodes extends e_shortcode
 		$this->categories = $data;
 	}
 	
-	
+	function inStock()
+	{
+		$inStock = true;
+		if(empty($this->var['item_vars'])){
+			$inStock = empty($this->var['item_inventory']) ? false : ($this->var['item_inventory'] != 0);
+		}
+		else
+		{
+			$itemvars = explode(',', $this->var['item_vars']);
+			$inv = e107::unserialize($this->var['item_vars_inventory']);
+			if (empty($this->var['item_vars_inventory']))
+			{
+				$inStock = false;
+			}
+			elseif(count($itemvars) == 1)
+			{
+				$varX = array_keys($inv)[0];
+				if (intval($inv[$varX]) == 0)
+				{
+					$inStock = false;
+				}
+			}
+			elseif(count($itemvars) == 2)
+			{
+				$varX = array_keys($inv)[0];
+				$varY = array_keys($inv[$varX])[0];
+				if (intval($inv[$varX][$varY]) == 0)
+				{
+					$inStock = false;
+				}
+			}
+		}
+		return $inStock;		
+	}
+
 	function sc_item_id($parm=null)
 	{
 		return $this->var['item_id'];	
@@ -218,6 +259,21 @@ class vstore_plugin_shortcodes extends e_shortcode
 	function sc_item_name($parm=null)
 	{
 		return e107::getParser()->toHtml($this->var['item_name'], true,'TITLE');	
+	}
+
+	function sc_item_var_string($parm=null)
+	{
+		$itemvarstring = '';
+		if (!empty($this->var['cart_item_vars']))
+		{
+			$itemvars = vstore::item_vars_toArray($this->var['cart_item_vars']);
+			foreach($itemvars as $k => $v)
+			{
+				$itemvarstring .= ($itemvarstring ? ' / ' : '') . vstore::getItemVarString($k, $v);
+			}
+		}
+
+		return e107::getParser()->toHtml($itemvarstring, true,'BODY');	
 	}
 
 	function sc_item_description($parm=null)
@@ -240,6 +296,111 @@ class vstore_plugin_shortcodes extends e_shortcode
 		return e107::getParser()->toHtml($this->var['item_details'], true,'BODY');
 	}
 	
+
+	function sc_item_vars($parm=null)
+	{
+		$itemid = intval($this->var['item_id']);
+		$baseprice = floatval($this->var['item_price']);
+		$this->var['item_var_price'] = $baseprice;
+		if (varset($this->var['item_vars']))
+		{
+			$ns = e107::getParser();
+			$frm = e107::getForm();
+			$sql = e107::getDb();
+			if ($sql->select('vstore_items_vars', '*', 'FIND_IN_SET(item_var_id, "'.$this->var['item_vars'].'")'))
+			{
+				$text = '
+					<div id="vstore-item-vars-'.$itemid.'">';
+				while($row = $sql->fetch())
+				{
+					$attributes = e107::unserialize($row['item_var_attributes']);
+
+					$select = $frm->select_open(
+						'item_var['.$itemid.']['.$row['item_var_id'].']', 
+						array('class' => 'vstore-item-var tbox select form-control', 'data-id'=>$itemid, 'data-name'=>varset($row['name'], 'foo'), 'required' => vartrue($row['item_var_compulsory']))
+					);
+					
+					$selected = true;
+					foreach($attributes as $var)
+					{
+						$varname = $var['name'];
+						if (floatval($var['value']) > 0.0)
+						{
+							switch ($var['operator'])
+							{
+							case '%':
+								if ($selected) $this->var['item_var_price'] += $baseprice * (floatval($var['value']) / 100.0);
+								$varname .= ' (+ '.floatval($var['value']).'%)';
+								break;
+							case '+':
+								if ($selected) $this->var['item_var_price'] += floatval($var['value']);
+								$varname .= ' (+ '.$this->currency.$this->curSymbol.number_format(floatval($var['value']), 2).')';
+								break;
+							case '-':
+								if ($selected) $this->var['item_var_price'] -= floatval($var['value']);
+								$varname .= ' (- '.$this->currency.$this->curSymbol.number_format(floatval($var['value']), 2).')';
+								break;
+							}
+						}
+
+						$select .= $frm->option(
+							$varname, 
+							$frm->name2id($var['name']), 
+							$selected, 
+							array('data-op'=>$var['operator'], 'data-val'=>floatval($var['value']), 'data-id'=>$row['item_var_id'], 'data-item'=>$itemid)
+						);
+						$selected = false;
+					}
+
+					$select .= $frm->select_close();
+
+					$text .= '
+						<div>
+							<label>'.$row['item_var_name'].'
+							'.$select.'
+							</label>
+						</div>';
+				}
+				$text .= '
+					</div>';
+
+
+				if (varset($this->var['item_vars_inventory']))
+				{
+					e107::js('settings', array('vstore' => array(
+							'stock' => array( 
+								"x{$itemid}" => e107::unserialize($this->var['item_vars_inventory'])
+								)
+							)
+						)
+					);
+				}
+				else
+				{
+					e107::js('settings', array('vstore' => array(
+							'stock' => array( 
+								"x{$itemid}" => intval($this->var['item_inventory'])
+								)
+							)
+						)
+					);
+			
+				}
+				return $text;
+			}
+		}
+		else
+		{
+			e107::js('settings', array('vstore' => array(
+					'stock' => array( 
+						"x{$itemid}" => intval($this->var['item_inventory'])
+						)
+					)
+				)
+			);
+		}
+		return ''; // No item_vars set
+	}
 
 	
 	
@@ -311,7 +472,17 @@ class vstore_plugin_shortcodes extends e_shortcode
 	
 	function sc_item_brand($parm=null)
 	{
-		return $this->var['item_brand'];	
+		return e107::getParser()->toHtml($this->var['cat_name'], true,'TITLE');	
+	}
+	
+	function sc_item_brand_url($parm=null)
+	{
+		// if(!empty($this->var['cat_sef']))
+		// {
+		// 	return $this->var['item_link'];
+		// }
+	
+		return e107::url('vstore', 'category', array('cat_sef' => $this->var['cat_sef']));
 	}
 
 	function sc_item_pic($parm=null)
@@ -487,39 +658,58 @@ class vstore_plugin_shortcodes extends e_shortcode
 	
 	function sc_item_price($parm=null)
 	{
-		return ($this->var['item_price'] == '0.00') ? "" : $this->currency.$this->curSymbol.' '.$this->var['item_price'];	
+		$itemid = intval($this->var['item_id']);
+		$baseprice = $price = floatval($this->var['item_price']);
+		$varprice = floatval($this->var['item_var_price']);
+
+		if ($varprice > 0.0 && $varprice != $baseprice)
+		{
+			$price = $varprice;
+		}
+		return $this->currency.$this->curSymbol.' <span class="vstore-item-price-'.$itemid.'">'.number_format($price, 2).'</span><span class="hidden vstore-item-baseprice-'.$itemid.'">'.$baseprice.'</span>'; 
+		// return ($this->var['item_price'] == '0.00') ? "" : $this->currency.$this->curSymbol.' '.$this->var['item_price'];	
 	}	
 	
 	
 	function sc_item_addtocart($parm=null)
 	{
 
-		$class = empty($parm['class']) ? 'btn btn-success' : $parm['class'];
-		$classo = empty($parm['class0']) ? 'btn btn-default disabled' : $parm['class0'];
+		$class = empty($parm['class']) ? 'btn btn-success vstore-add' : $parm['class'];
+		$classo = empty($parm['class0']) ? 'btn btn-default disabled vstore-add' : $parm['class0'];
+		$itemid = ' data-vstore-item="'.varset($this->var['item_id'], 0).'"';
 
-		if(empty($this->var['item_inventory']))
+		if (!in_array('vstore-add', explode(' ', $class)))
 		{
-			return "<a href='#' class='btn-out-of-stock ".$classo."'>".$this->captionOutOfStock."</a>";
+			$class .= ' vstore-add';
 		}
+		if (!in_array('vstore-add', explode(' ', $classo)))
+		{
+			$classo .= ' vstore-add';
+		}
+		$itemclass = ' vstore-add-item-'.varset($this->var['item_id'], 0);
+
+		$class .= $itemclass;
+		$class0 .= $itemclass;
+
+		$inStock = $this->inStock();
+
+		if(!$inStock)
+		{
+			return "<a href='#' class='btn-out-of-stock ".$classo."'".$itemid.">".$this->captionOutOfStock."</a>";
+		}
+		// if(empty($this->var['item_inventory']))
+		// {
+		// 	return "<a href='#' class='btn-out-of-stock ".$classo."'".$itemid.">".$this->captionOutOfStock."</a>";
+		// }
 
 	
-		$url = ($this->var['item_price'] == '0.00' || empty($this->var['item_inventory'])) ? $this->sc_item_url() :e107::url('vstore', 'addtocart', $this->var);
-		$label =  ($this->var['item_price'] == '0.00' || empty($this->var['item_inventory'])) ? LAN_READ_MORE : 'Add to cart';
-		$itemid = 'data-vstore-item="'.varset($this->var['item_id'], 0).'"';
-		/*
-		if($parm == 'url')
-		{
-			return $url;
-		}
-
-		if($parm == 'label')
-		{
-			return $label;
-		}*/
+		// $url = ($this->var['item_price'] == '0.00' || empty($this->var['item_inventory'])) ? $this->sc_item_url() :e107::url('vstore', 'addtocart', $this->var);
+		// $label =  ($this->var['item_price'] == '0.00' || empty($this->var['item_inventory'])) ? LAN_READ_MORE : 'Add to cart';
+		$label =  ($this->var['item_price'] == '0.00' || !$inStock) ? LAN_READ_MORE : 'Add to cart';
 
 
-
-		return '<a class="'.$class.'" '.$itemid.' href="'.$url.'"><span class="glyphicon glyphicon-shopping-cart"></span> '.$label.'</a>';
+		// return '<a class="'.$class.'" '.$itemid.' href="'.$url.'"><span class="glyphicon glyphicon-shopping-cart"></span> '.$label.'</a>';
+		return '<a class="'.$class.'" '.$itemid.' href="#"><span class="glyphicon glyphicon-shopping-cart"></span> '.$label.'</a>';
 	}
 
 
@@ -562,19 +752,31 @@ class vstore_plugin_shortcodes extends e_shortcode
 		{
 			$readonly = '';
 
-			if(!empty($this->var['item_download'])) // digital download so set to 1.
-			{
-				$this->var['cart_qty'] = 1;
-				$readonly = 'readonly';
-			}
+			/*
+			 * Commented it out, because i think it doesn't matter if it's a dgital download or not
+			 * Selling 3 t-shirts or 3 licenses should not make a difference
+			 */
+			// if(!empty($this->var['item_download'])) // digital download so set to 1.
+			// {
+			// 	$this->var['cart_qty'] = 1;
+			// 	$readonly = 'readonly';
+			// }
 
-			return '<input type="input" '.$readonly.' name="cartQty['.$this->var['cart_id'].']" class="form-control text-right cart-qty" id="cart-'.$this->var['cart_id'].'" value="'.intval($this->var['cart_qty']).'">';
+			return '<input type="input" '.$readonly.' name="cartQty['.$this->var['cart_id'].'][qty]" class="form-control text-right cart-qty" id="cart-'.$this->var['cart_id'].'" value="'.intval($this->var['cart_qty']).'">';
 		}
 		
 		
 		return $this->var['cart_qty'];
 	}
 	
+	function sc_cart_vars($parm=null)
+	{
+		$text = $this->var['cart_item_vars'];
+
+		$text2 = '<input type="hidden" name="cartQty['.$this->var['cart_id'].'][id]" id="cart-id-'.$this->var['cart_id'].'" value="'.$this->var['cart_item'].'">';
+		$text2 .='<input type="hidden" name="cartQty['.$this->var['cart_id'].'][vars]" id="cart-vars-'.$this->var['cart_id'].'" value="'.$text.'">';
+		return $text2;
+	}
 	
 	function sc_cart_removebutton($parm=null)
 	{
@@ -621,12 +823,13 @@ class vstore_plugin_shortcodes extends e_shortcode
 
 	function sc_item_availability()
 	{
-		if(empty($this->var['item_inventory']))
+		//if(empty($this->var['item_inventory']))
+		if (!$this->inStock())
 		{
-			return "<span class='label label-danger'>".$this->captionOutOfStock."</span>";
+			return "<span class='label label-danger vstore-item-avail-".$this->var['item_id']."'>".$this->captionOutOfStock."</span>";
 		}
 
-		return "<span class='label label-success'>In Stock</span>";
+		return "<span class='label label-success vstore-item-avail-".$this->var['item_id']."'>In Stock</span>";
 	}
 	
 	
@@ -752,7 +955,7 @@ class vstore
 		e107::getDebug()->log("CartID:".$this->cartId);
 
 		// get all category data.
-		$query = 'SELECT * FROM #vstore_cat ';
+		$query = 'SELECT * FROM #vstore_cat WHERE cat_active=1 ';
 		if(!$data = e107::getDb()->retrieve($query, true))
 		{
 
@@ -884,7 +1087,7 @@ class vstore
 
 		if(varset($this->post['cartQty']))
 		{
-			$this->updateCart('modify', $this->post['cartQty']);
+			$this->updateCart('modify', $this->post['cartQty'], $this->post['cartVars']);
 		}
 
 		if(varset($this->post['cartRemove']))
@@ -896,7 +1099,7 @@ class vstore
 		{
 			if (!e_AJAX_REQUEST)
 			{
-				$this->addToCart($this->get['add']);
+				$this->addToCart($this->get['add'], $this->get['itemvar']);
 			}
 		}
 
@@ -1099,7 +1302,8 @@ class vstore
 				$js = e107::getJshelper();
 				$js->_reset();
 				$itemid = $this->get['add'];
-				if (!$this->addToCart($itemid))
+				$itemvars = $this->get['itemvar'];
+				if (!$this->addToCart($itemid, $itemvars))
 				{
 					$msg = e107::getMessage()->render('vstore');
 					ob_clean();
@@ -1117,6 +1321,7 @@ class vstore
 			}
 			$bread = $this->breadcrumb();
 			$text = $this->cartView();
+			$text = e107::getMessage()->render('vstore') . $text;
 			$ns->tablerender($this->captionBase, $bread.$text, 'vstore-cart-view');
 			return null;
 		}
@@ -1189,6 +1394,7 @@ class vstore
 			// print_a($this->post);
 			$bread = $this->breadcrumb();
 			$text = $this->cartView();
+			$text = e107::getMessage()->render('vstore') . $text;
 			$ns->tablerender($this->captionBase, $bread.$text, 'vstore-cart-list');
 			return null;
 		}
@@ -1245,7 +1451,13 @@ class vstore
 
 		$array = array();
 		
-		$array[] = array('url'=> e107::url('vstore','index'), 'text'=>$this->captionCategories);
+		// $array[] = array('url'=> e107::url('vstore','index'), 'text'=>$this->captionCategories);
+		$array[] = array('url'=> e107::url('vstore','index'), 'text'=>$this->captionBase);
+
+		if (!isset($this->get['mode']))
+		{
+			$array[] = array('url'=> e107::url('vstore','index'), 'text'=>$this->captionCategories);
+		}
 		
 		if($this->get['cat'] || $this->get['item'])
 		{
@@ -1467,6 +1679,19 @@ class vstore
 
 			foreach($data['items'] as $var)
 			{
+				$itemvarstring = '';
+				if (!empty($var['cart_item_vars']))
+				{
+					$itemvars = self::item_vars_toArray($var['cart_item_vars']);
+	
+					foreach($itemvars as $k => $v)
+					{
+						$itemvarstring .= ($itemvarstring ? ' / ' : '') . vstore::getItemVarString($k, $v);
+					}
+				}
+					
+
+
 				$items[] = array(
 					'id'          => $var['item_id'],
 					'name'        => $var['item_code'],
@@ -1474,6 +1699,7 @@ class vstore
 					'description' => $var['item_name'],
 					'quantity'    => $var['cart_qty'],
 					'file'        => $var['item_download'],
+					'vars'		  => $itemvarstring,
 				);
 			}
 		}
@@ -1907,17 +2133,51 @@ class vstore
 		
 		if($type == 'modify')
 		{
-			foreach($array as $id=>$qty)
+			foreach($array as $id=>$val)
 			{
-				// Check if enough items are in stock
-				if ($sql->gen('SELECT item_inventory, item_name FROM #vstore_cart LEFT JOIN #vstore_items ON (cart_item = item_id) WHERE cart_id='.intval($id).' LIMIT 1'))
+
+				$itemid = (int) $val['id'];
+				$qty = (int) $val['qty'];
+				$itemvars = $val['vars'];
+				if (!empty($itemvars))
 				{
-					$inStock = $sql->fetch();
-					if ($qty > $inStock['item_inventory'] && $inStock['item_inventory']>-1)
-					{
-						$qty = $inStock['item_inventory'];
-						e107::getMessage()->addWarning('Quantity of item "'.$inStock['item_name'].'" cart exceeds the number of items in stock!<br/>The quantity has been adjusted!', 'vstore');
+					list($itemkeys, $itemvalues) = explode('|', $itemvars);
+					$itemkeys = explode(',', $itemkeys);
+					$itemvalues = explode(',', $itemvalues);
+					$itemvars = array();
+					foreach ($itemkeys as $k=>$v) {
+						$itemvars[$v] = $itemvalues[$k];
 					}
+				}
+
+				// Check if item exists and is active
+				$iteminfo = $sql->retrieve('vstore_items', 'item_active, item_name', 'item_id=' . $itemid);
+				
+				if ($iteminfo && $iteminfo['item_active'] == 0)
+				{
+					// Item not found or not longer active => Remove from cart
+					e107::getMessage()->addWarning('We\'re sorry, but we could\'t find the selected item "'.$iteminfo['item_name'].'" or it is no longer active!', 'vstore');
+					$sql->delete('vstore_cart', 'cart_id = '.intval($id).' AND cart_item = '.intval($itemid).' LIMIT 1');				
+					continue;
+				}
+
+				$itemname = $iteminfo['item_name'];
+
+				// check if item is in stock
+				$inStock = $this->getItemInventory($itemid, $itemvars);
+				if ($qty > $inStock && $inStock >= 0)
+				{
+					$qty = $inStock;
+					$itemvarstring = '';
+					if (!empty($itemvars))
+					{
+						foreach ($itemkeys as $k => $v) {
+							$itemvarstring .= ($itemvarstring ? ' / ' : '') . vstore::getItemVarString($v, $itemvalues[$k]);
+						}
+						$itemvarstring = " ({$itemvarstring})";
+					}
+					$itemname .= $itemvarstring;
+					e107::getMessage()->addWarning('The entered quantity for "'.$itemname.'" exceeds the number of items in stock!<br/>The quantity has been adjusted!', 'vstore');
 				}
 
 				$sql->update('vstore_cart', 'cart_qty = '.intval($qty).' WHERE cart_id = '.intval($id).' LIMIT 1');				
@@ -1972,12 +2232,15 @@ class vstore
 		
 		$this->from = vartrue($this->get['frm'],0);
 
-		$query = 'SELECT * FROM #vstore_cat WHERE cat_parent = '.$parent.' ORDER BY cat_order LIMIT '.$this->from.",".$this->perPage;
-		if(!$data = e107::getDb()->retrieve($query, true))
+		$query = 'SELECT * FROM #vstore_cat WHERE cat_active=1 AND cat_parent = '.$parent.' ORDER BY cat_order LIMIT '.$this->from.",".$this->perPage;
+		if ((!$data = e107::getDb()->retrieve($query, true)) &&  intval($parent) == 0)
 		{
-			return false;
+			return e107::getMessage()->addInfo('No categories available!', 'vstore')->render('vstore');
 		}
-
+		elseif (!$data)
+		{
+			return '';
+		}
 
 	//	$data = $this->categories;
 		
@@ -2047,7 +2310,8 @@ class vstore
 
 
 
-		if(!$data = e107::getDb()->retrieve('SELECT SQL_CALC_FOUND_ROWS * FROM #vstore_items WHERE item_cat = '.intval($category).' ORDER BY item_order LIMIT '.$this->from.','.$this->perPage, true))
+//		if(!$data = e107::getDb()->retrieve('SELECT SQL_CALC_FOUND_ROWS * FROM #vstore_items WHERE cat_active=1 AND item_active=1 AND item_cat = '.intval($category).' ORDER BY item_order LIMIT '.$this->from.','.$this->perPage, true))
+		if(!$data = e107::getDb()->retrieve('SELECT SQL_CALC_FOUND_ROWS *, cat_active FROM #vstore_items LEFT JOIN #vstore_cat ON (item_cat = cat_id) WHERE cat_active=1 AND item_active=1 AND item_cat = '.intval($category).' ORDER BY item_order LIMIT '.$this->from.','.$this->perPage, true))
 		{
 
 			return e107::getMessage()->addInfo("No products available in this category",'vstore')->render('vstore');
@@ -2105,7 +2369,7 @@ class vstore
 	
 	protected function productView($id=0)
 	{
-		if(!$row = e107::getDb()->retrieve('SELECT * FROM #vstore_items WHERE item_id = '.intval($id).'  LIMIT 1',true))
+		if(!$row = e107::getDb()->retrieve('SELECT * FROM #vstore_items WHERE item_active=1 AND item_id = '.intval($id).'  LIMIT 1',true))
 		{
 			e107::getMessage()->addInfo("No products available in this category",'vstore');
 			return null;
@@ -2191,13 +2455,11 @@ class vstore
 	
 	protected function cartData()
 	{
-		
-		
-		
+
 	}
 	
 	
-	protected function addToCart($id)
+	protected function addToCart($id, $itemvars=false)
 	{
 		if (USERID === 0){
 			// Allow only logged in users to add items to the cart
@@ -2205,62 +2467,158 @@ class vstore
 			return false;
 		}
 
+		$itemvars = $this->fixItemVarArray($itemvars);
 		$sql = e107::getDb();
+
+		$isActive = $sql->retrieve('vstore_items', 'item_active', 'item_id='.intval($id));
+		if (!$isActive)
+		{
+			e107::getMessage()->addWarning('We\'re sorry, but this item is not longer available!', 'vstore');
+			$sql->delete('vstore_cart', 'cart_session="'.$this->cartId.'" AND cart_item='.intval($id));
+			return false;
+		}
+
+		$where = 'cart_session = "'.$this->cartId.'" AND cart_item = ' . intval($id);
+		if (is_array($itemvars))
+		{
+			$where .= ' AND cart_item_vars LIKE "'.self::item_vars_toDB($itemvars).'"';
+		}
+
 		
 		// Item Exists. 
-		if($rec = $sql->retrieve('SELECT cart_id FROM #vstore_cart WHERE cart_session = "'.$this->cartId.'" AND cart_item = '.intval($id).' LIMIT 1'))
+		if ($sql->select('vstore_cart', 'cart_qty, cart_item_vars', $where . ' LIMIT 1'))
 		{
+			$cart = $sql->fetch();
 
-			// Check if enough items are in stock
-			if ($sql->gen('SELECT item_inventory, item_name, cart_qty FROM #vstore_cart LEFT JOIN #vstore_items ON (cart_item = item_id) WHERE cart_session = "'.$this->cartId.'" AND cart_item = '.intval($id).' LIMIT 1'))
+			$inventory = $this->getItemInventory(intval($id), $itemvars);
+
+			if ($inventory && (intval($cart['cart_qty']) + 1) <= $inventory)
 			{
-				$inStock = $sql->fetch();
-				if ($inStock['item_inventory'] > -1 && ($inStock['cart_qty'] + 1) > $inStock['item_inventory'])
+				if($sql->update('vstore_cart', 'cart_qty = cart_qty +1 WHERE ' . $where))
 				{
-					e107::getMessage()->addWarning('Quantity of item "'.$inStock['item_name'].'" cart exceeds the number of items in stock!<br/>The quantity has been adjusted!', 'vstore');
-					return false;
+					return true;
 				}
 			}
-
-			if($sql->update('vstore_cart', 'cart_qty = cart_qty +1 WHERE cart_id = '.$rec))
-			{
-				return true;
-			}
-		
-			return false;	
+			e107::getMessage()->addWarning('Quantity of selected product exceeds the number of items in stock!<br/>The quantity has been adjusted!', 'vstore');
+			return false;
 		}
 
-		if ($sql->gen('SELECT item_inventory, item_name FROM #vstore_items WHERE item_id='.intval($id).' LIMIT 1'))
-		{
-			$inStock = $sql->fetch();
-			if ($inStock['item_inventory'] >= 0 && $inStock['item_inventory']<1)
-			{
-				e107::getMessage()->addWarning('The item "'.$inStock['item_name'].'" is out of stock and has not been added to the cart!', 'vstore');
-				return false;
-			}
-		}
-
-	
 		
 		$insert = array(
 			'cart_id' 			=> 0,
 			'cart_session' 		=> $this->cartId,
 	  		'cart_e107_user'	=> USERID,
 	  		'cart_status'		=> '',
-	  		'cart_item'			=> intval($id),
+			'cart_item'			=> intval($id),
+			'cart_item_vars'	=> $itemvars ? self::item_vars_toDB($itemvars) : '',
 	  		'cart_qty'			=> 1
   		);
 
 		// Add new Item. 
 		return $sql->insert('vstore_cart', $insert);
-			
-		
+	
+	}
+
+	private function fixItemVarArray($itemvars)
+	{
+		if (!is_array($itemvars))
+		{
+			return false;
+		}
+		$result = array();
+		if (array_key_exists(0, $itemvars))
+		{
+			foreach ($itemvars as $value) {
+				list($id, $name) = explode('-', $value);
+				$result[$id] = $name;
+			}
+		}
+		else
+		{
+			$result = $itemvars;
+		}
+		ksort($result);
+		return $result;
+	}
+
+	public static function item_vars_toDB($itemvarsarray)
+	{
+		if (!is_array($itemvarsarray))
+		{
+			return '';
+		}
+		$result = implode(',', array_keys($itemvarsarray));
+		$result .= '|' . implode(',', array_values($itemvarsarray));
+		return $result;
+	}
+
+	public static function item_vars_toArray($itemvarsstring)
+	{
+		if (empty($itemvarsstring) || strpos($itemvarsstring, '|') === false)
+		{
+			return null;
+		}
+		list($k, $v) = explode('|', $itemvarsstring);
+		return array_combine(explode(',', $k), explode(',', $v));
+	}
+
+	private function getItemInventory($itemid, $itemvars=false)
+	{
+
+		$itemvars = $this->fixItemVarArray($itemvars);
+
+		$sql = e107::getDb();
+
+		if ($itemvars && count($itemvars))
+		{
+			$itemvarkeys = array_values($itemvars) ;
+			$where = 'item_id=' . intval($itemid);
+
+			if ($sql->select('vstore_items', 'item_vars_inventory', $where))
+			{
+				$inventory = array_shift($sql->fetch());
+
+				$inventory = e107::unserialize($inventory);
+
+				if (count($itemvarkeys) == 1)
+				{
+					$qty = (int) $inventory[$itemvarkeys[0]];
+				}
+				elseif (count($itemvarkeys) == 2)
+				{
+					$qty = (int) $inventory[$itemvarkeys[0]][$itemvarkeys[1]];
+				}
+				else
+				{
+					e107::getMessage()->addDebug('Invalid number of item_vars!', 'vstore');
+					return 0;
+				}
+
+				if ($qty < 0){
+					return 9999999;
+				}
+				return $qty;
+			}
+
+			e107::getMessage()->addDebug('Item not found!', 'vstore');
+			return 0;
+
+		}
+		else
+		{
+			$inventory = (int) $sql->retrieve('vstore_items', 'item_inventory', 'cart_item = '.intval($id));
+			if ($inventory < 0){
+				return 9999999;
+			}
+			return $inventory;
+		}
+
 	}
 
 
 	public function getCartData()
 	{
-		return e107::getDb()->retrieve('SELECT c.*,i.* FROM #vstore_cart AS c LEFT JOIN #vstore_items as i ON c.cart_item = i.item_id WHERE c.cart_session = "'.$this->cartId.'" AND c.cart_status ="" ', true);
+		return e107::getDb()->retrieve('SELECT c.*, i.*, cat.cat_name, cat.cat_sef FROM `#vstore_cart` AS c LEFT JOIN `#vstore_items` as i ON (c.cart_item = i.item_id) LEFT JOIN `#vstore_cat` as cat ON (i.item_cat = cat.cat_id) WHERE c.cart_session = "'.$this->cartId.'" AND c.cart_status ="" ', true);
 	}
 
 
@@ -2273,7 +2631,7 @@ class vstore
 
 
 		}
-		
+
 		$tp = e107::getParser();
 		$frm = e107::getForm();
 		
@@ -2311,12 +2669,12 @@ class vstore
 		                           </div>
 		                             <div class="media-body">
 		                                <h4 class="media-heading"><a href="{ITEM_URL}">{ITEM_NAME}</a></h4>
-		                                <h5 class="media-heading"> by <a href="#">Brand name</a></h5>
-		                                <span>Status: </span>{ITEM_STATUS}
+		                                <h5 class="media-heading"> by <a href="{ITEM_BRAND_URL}">{ITEM_BRAND}</a></h5>
+		                                {ITEM_VAR_STRING}
 		                            </div>
 		                        </div></td>
 		                         <td class="col-sm-1 col-md-1 text-center">{CART_REMOVEBUTTON}</td>
-		                        <td class="col-sm-1 col-md-1 text-center">{CART_QTY=edit} </td>
+		                        <td class="col-sm-1 col-md-1 text-center">{CART_VARS}{CART_QTY=edit} </td>
 		                        <td class="col-sm-1 col-md-1 text-right">{CART_PRICE}</td>
 		                        <td class="col-sm-1 col-md-1 text-right"><strong>{CART_TOTAL}</strong></td>
 
@@ -2330,22 +2688,36 @@ class vstore
 			$subTotal 		= 0;
 			$shippingTotal 	= 0;
 			$checkoutData = array();
-		//	$grandTotal		= 0;
 
 			$checkoutData['id'] = $this->getCartId();
 
+			$count_active = 0;
 			foreach($data as $row)
 			{
-			
+
+				if (!$this->isItemActive($row['cart_item']))
+				{
+					e107::getMessage()->addWarning('We\'re sorry, but the item "'.$row['item_name'].'" is missing or not longer active and has been removed from the cart!', 'vstore');
+					e107::getDb()->delete('vstore_cart', 'cart_id='.$row['cart_id'].' AND cart_item='.$row['cart_item']);
+					continue;
+				}
+
+				$count_active++;
+
 				$subTotal += ($row['cart_qty'] * $row['item_price']);	
 				$shippingTotal	+= ($row['cart_qty'] * $row['item_shipping']);	
-				
-				
+						
 				$this->sc->setVars($row);
 				$checkoutData['items'][] = $row;
 				$text .= $tp->parseTemplate($template, true, $this->sc);	
 			}
-			
+
+			if ($count_active == 0)
+			{
+				return e107::getMessage()->addInfo("Your cart is empty.",'vstore')->render('vstore');
+			}
+
+
 			$grandTotal = $subTotal + $shippingTotal;
 			$totals = array('cart_subTotal' => $subTotal, 'cart_shippingTotal'=>$shippingTotal, 'cart_grandTotal'=>$grandTotal);
 
@@ -2546,7 +2918,55 @@ class vstore
 		e107::getMessage()->addError('Your order is still in a state ('.vstore::getStatus($order['order_status']).') which doesn\'t allow to download the file!', 'vstore');
 		return false;
 	}
+
 	
+	private function isItemActive($itemid)
+	{
+		if (intval($itemid) <= 0)
+		{
+			return false;
+		}
+		$sql = e107::getDb();
+		
+		if ($sql->gen('SELECT item_id FROM `#vstore_items` LEFT JOIN `#vstore_cat` ON (item_cat = cat_id) WHERE item_active=1 AND cat_active=1 AND item_id='.intval($itemid)))
+		{
+			return true;
+		}
+		return false;
+	}
+
+	public static function getItemVarString($itemvarid, $itemvarvalue)
+	{
+		if ($itemvarid == null || $itemvarid <= 0)
+		{
+			return '';
+		}
+		$itemvar = e107::getDb()->retrieve('vstore_items_vars', 'item_var_name, item_var_attributes', 'item_var_id='.$itemvarid);
+
+		if (!$itemvar)
+		{
+			return '';
+		}
+
+		$attr = e107::unserialize($itemvar['item_var_attributes']);
+
+		$text = $itemvar['item_var_name'];
+
+		$value = $itemvarvalue;
+
+		if (is_array($attr))
+		{
+			$frm = e107::getForm();
+			foreach ($attr as $row) {
+				if ($frm->name2id($row['name']) == $itemvarvalue)
+				{
+					$value = $row['name'];
+				}
+			}
+		}
+
+		return "{$text}: {$value}";
+	}
 	
 	
 }
