@@ -102,7 +102,7 @@ e107::getDebug()->log($data);
 
 
 		$text .= '
-                    <div class="form-group alert alert-info">
+                    <div class="form-group alert alert-info" style="max-height: 400px;overflow-y:auto;">
                             <ul class="media-list list-unstyled">';
 
 		$total = 0;
@@ -114,19 +114,17 @@ e107::getDebug()->log($data);
 			$images = e107::unserialize($item['item_pic']);
 			$img = $tp->toImage($images[0]['path'],array('w'=>60));
 
-		//	$text .= '<li>'.$img.$item['item_name'].'</li>';
 			$subtotal = ($item['item_price'] * $item['cart_qty']);
 			$itemcount += $item['cart_qty'];
 
 			$itemvarstring = '';
-			if (!empty($item['cart_item_var_keys']))
+			if (!empty($item['cart_item_vars']))
 			{
-				$itemvarkeys = explode(',', $item['cart_item_var_keys']);
-				$itemvarvalues = explode(',', $item['cart_item_var_values']);
+				$itemvars = vstore::item_vars_toArray($item['cart_item_vars']);
 
-				foreach($itemvarkeys as $i => $key)
+				foreach($itemvars as $k => $v)
 				{
-					$itemvarstring .= ($itemvarstring ? ' / ' : '') . vstore::getItemVarString($key, $itemvarvalues[$i]);
+					$itemvarstring .= ($itemvarstring ? ' / ' : '') . vstore::getItemVarString($k, $v);
 				}
 				if (!empty($itemvarstring))
 				{

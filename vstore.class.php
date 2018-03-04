@@ -133,22 +133,22 @@ class vstore_plugin_shortcodes extends e_shortcode
 			$text .= "
 					<tr>
 						<td>".$desc."</td>
-						<td class='text-right'>".format_number($this->curSymbol.$item['price'], 2)."</td>
+						<td class='text-right'>".number_format($this->curSymbol.$item['price'], 2)."</td>
 						<td class='text-right'>".$item['quantity']."</td>
-						<td class='text-right'>".$this->curSymbol.format_number($item['price'] * $item['quantity'], 2)."</tdclass>
+						<td class='text-right'>".$this->curSymbol.number_format($item['price'] * $item['quantity'], 2)."</tdclass>
 					</tr>";
 		}
 
 		$text .= "
 				<tr>
 					<td colspan='3' class='text-right'><b>Shipping</b></td>
-					<td class='text-right'>".$this->curSymbol.format_number($this->var['order_pay_shipping'], 2)."</td>
+					<td class='text-right'>".$this->curSymbol.number_format($this->var['order_pay_shipping'], 2)."</td>
 				</tr>";
 
 		$text .= "
 				<tr>
 					<td colspan='3' class='text-right'><b>Total</b></td>
-					<td class='text-right'>".$this->curSymbol.format_number($this->var['order_pay_amount'], 2)."</td>
+					<td class='text-right'>".$this->curSymbol.number_format($this->var['order_pay_amount'], 2)."</td>
 				</tr>";
 
 
@@ -264,14 +264,12 @@ class vstore_plugin_shortcodes extends e_shortcode
 	function sc_item_var_string($parm=null)
 	{
 		$itemvarstring = '';
-		if (!empty($this->var['cart_item_var_keys']))
+		if (!empty($this->var['cart_item_vars']))
 		{
-			$itemvarkeys = explode(',', $this->var['cart_item_var_keys']);
-			$itemvarvalues = explode(',', $this->var['cart_item_var_values']);
-
-			foreach($itemvarkeys as $i => $key)
+			$itemvars = vstore::item_vars_toArray($this->var['cart_item_vars']);
+			foreach($itemvars as $k => $v)
 			{
-				$itemvarstring .= ($itemvarstring ? ' / ' : '') . vstore::getItemVarString($key, $itemvarvalues[$i]);
+				$itemvarstring .= ($itemvarstring ? ' / ' : '') . vstore::getItemVarString($k, $v);
 			}
 		}
 
@@ -754,11 +752,15 @@ class vstore_plugin_shortcodes extends e_shortcode
 		{
 			$readonly = '';
 
-			if(!empty($this->var['item_download'])) // digital download so set to 1.
-			{
-				$this->var['cart_qty'] = 1;
-				$readonly = 'readonly';
-			}
+			/*
+			 * Commented it out, because i think it doesn't matter if it's a dgital download or not
+			 * Selling 3 t-shirts or 3 licenses should not make a difference
+			 */
+			// if(!empty($this->var['item_download'])) // digital download so set to 1.
+			// {
+			// 	$this->var['cart_qty'] = 1;
+			// 	$readonly = 'readonly';
+			// }
 
 			return '<input type="input" '.$readonly.' name="cartQty['.$this->var['cart_id'].'][qty]" class="form-control text-right cart-qty" id="cart-'.$this->var['cart_id'].'" value="'.intval($this->var['cart_qty']).'">';
 		}
@@ -769,9 +771,7 @@ class vstore_plugin_shortcodes extends e_shortcode
 	
 	function sc_cart_vars($parm=null)
 	{
-		$text = $this->var['cart_item_var_keys'] . '|' . $this->var['cart_item_var_values'];
-		if ($text == '|') $text = '';
-
+		$text = $this->var['cart_item_vars'];
 
 		$text2 = '<input type="hidden" name="cartQty['.$this->var['cart_id'].'][id]" id="cart-id-'.$this->var['cart_id'].'" value="'.$this->var['cart_item'].'">';
 		$text2 .='<input type="hidden" name="cartQty['.$this->var['cart_id'].'][vars]" id="cart-vars-'.$this->var['cart_id'].'" value="'.$text.'">';
@@ -1680,14 +1680,13 @@ class vstore
 			foreach($data['items'] as $var)
 			{
 				$itemvarstring = '';
-				if (!empty($var['cart_item_var_keys']))
+				if (!empty($var['cart_item_vars']))
 				{
-					$itemvarkeys = explode(',', $var['cart_item_var_keys']);
-					$itemvarvalues = explode(',', $var['cart_item_var_values']);
+					$itemvars = self::item_vars_toArray($var['cart_item_vars']);
 	
-					foreach($itemvarkeys as $i => $key)
+					foreach($itemvars as $k => $v)
 					{
-						$itemvarstring .= ($itemvarstring ? ' / ' : '') . vstore::getItemVarString($key, $itemvarvalues[$i]);
+						$itemvarstring .= ($itemvarstring ? ' / ' : '') . vstore::getItemVarString($k, $v);
 					}
 				}
 					
@@ -2482,12 +2481,12 @@ class vstore
 		$where = 'cart_session = "'.$this->cartId.'" AND cart_item = ' . intval($id);
 		if (is_array($itemvars))
 		{
-			$where .= ' AND cart_item_var_keys = "'.implode(',', array_keys($itemvars)).'"';
+			$where .= ' AND cart_item_vars LIKE "'.self::item_vars_toDB($itemvars).'"';
 		}
 
 		
 		// Item Exists. 
-		if ($sql->select('vstore_cart', 'cart_qty, cart_item_var_keys, cart_item_var_values', $where . ' LIMIT 1'))
+		if ($sql->select('vstore_cart', 'cart_qty, cart_item_vars', $where . ' LIMIT 1'))
 		{
 			$cart = $sql->fetch();
 
@@ -2511,8 +2510,7 @@ class vstore
 	  		'cart_e107_user'	=> USERID,
 	  		'cart_status'		=> '',
 			'cart_item'			=> intval($id),
-			'cart_item_var_keys'	=> $itemvars ? implode(',', array_keys($itemvars)) : '',
-			'cart_item_var_values'	=> $itemvars ? implode(',', array_values($itemvars)) : '',
+			'cart_item_vars'	=> $itemvars ? self::item_vars_toDB($itemvars) : '',
 	  		'cart_qty'			=> 1
   		);
 
@@ -2541,6 +2539,27 @@ class vstore
 		}
 		ksort($result);
 		return $result;
+	}
+
+	public static function item_vars_toDB($itemvarsarray)
+	{
+		if (!is_array($itemvarsarray))
+		{
+			return '';
+		}
+		$result = implode(',', array_keys($itemvarsarray));
+		$result .= '|' . implode(',', array_values($itemvarsarray));
+		return $result;
+	}
+
+	public static function item_vars_toArray($itemvarsstring)
+	{
+		if (empty($itemvarsstring) || strpos($itemvarsstring, '|') === false)
+		{
+			return null;
+		}
+		list($k, $v) = explode('|', $itemvarsstring);
+		return array_combine(explode(',', $k), explode(',', $v));
 	}
 
 	private function getItemInventory($itemid, $itemvars=false)
