@@ -1034,6 +1034,12 @@ class vstore
 
 	}
 
+	/**
+	 * Get status string from key or (if key is empty) complete status array
+	 *
+	 * @param string $key
+	 * @return array/string
+	 */
 	public static function getStatus($key=null)
 	{
 		if(!empty($key))
@@ -1045,6 +1051,12 @@ class vstore
 
 	}
 
+	/**
+	 * Get email type string from key or (if key is empty) complete email type array
+	 *
+	 * @param string $key
+	 * @return array/string
+	 */
 	public static function getEmailTypes($type=null)
 	{
 		if(!empty($type))
@@ -1056,6 +1068,11 @@ class vstore
 
 	}
 
+	/**
+	 * Return the shippingFields array
+	 *
+	 * @return array
+	 */
 	public static function getShippingFields()
 	{
 		return self::$shippingFields;
@@ -1184,7 +1201,11 @@ class vstore
 
 	}
 
-
+	/**
+	 * Render customer information form
+	 *
+	 * @return string the form
+	 */
 	private function renderForm()
 	{
 
@@ -1369,41 +1390,15 @@ class vstore
 		$this->get['mode'] = $mode;
 	}
 
+	/**
+	 * Render the vstore pages
+	 *
+	 * @return string
+	 */
 	public function render()
 	{
 
 		$ns = e107::getRender();
-
-		// if($this->get['add'])
-		// {
-		// 	if(e_AJAX_REQUEST)
-		// 	{
-		// 		$js = e107::getJshelper();
-		// 		$js->_reset();
-		// 		$itemid = $this->get['add'];
-		// 		$itemvars = $this->get['itemvar'];
-		// 		if (!$this->addToCart($itemid, $itemvars))
-		// 		{
-		// 			$msg = e107::getMessage()->render('vstore');
-		// 			ob_clean();
-		// 			$js->addTextResponse($msg)->sendResponse();
-		// 			exit;
-		// 		}
-		// 		else
-		// 		{
-		// 			$sl = new vstore_sitelink();
-		// 			$msg = $sl->storeCart();
-		// 		}
-		// 		ob_clean();
-		// 		$js->addTextResponse('ok '.$msg)->sendResponse();
-		// 		exit;
-		// 	}
-		// 	$bread = $this->breadcrumb();
-		// 	$text = $this->cartView();
-		// 	$text = e107::getMessage()->render('vstore') . $text;
-		// 	$ns->tablerender($this->captionBase, $bread.$text, 'vstore-cart-view');
-		// 	return null;
-		// }
 
 		if (!empty($this->get['download']))
 		{
@@ -1413,37 +1408,8 @@ class vstore
 				return null;
 			}
 		}
-		
-		// if(!empty($this->get['reset']))
-		// {
-		// 	if(e_AJAX_REQUEST)
-		// 	{
-		// 		$this->resetCart();
-		// 		$sl = new vstore_sitelink();
-		// 		$msg = $sl->storeCart();
-		// 		ob_clean();
-		// 		$js = e107::getJshelper();
-		// 		$js->_reset();
-		// 		$js->addTextResponse('ok '.$msg)->sendResponse();
-		// 		exit;
-		// 	}
-		// }
-		
-		// if(!empty($this->get['refresh']))
-		// {
-		// 	if(e_AJAX_REQUEST)
-		// 	{
-		// 		$sl = new vstore_sitelink();
-		// 		$msg = $sl->storeCart();
-		// 		ob_clean();
-		// 		$js = e107::getJshelper();
-		// 		$js->_reset();
-		// 		$js->addTextResponse('ok '.$msg)->sendResponse();
-		// 		exit;
-		// 	}
-		// }
 
-
+		
 		if($this->getMode() == 'return')
 		{
 			// print_a($this->post);
@@ -1477,9 +1443,6 @@ class vstore
 			$ns->tablerender($this->captionBase, $bread.$text, 'vstore-cart-list');
 			return null;
 		}
-
-
-
 
 
 		if($this->get['item'])
@@ -1521,7 +1484,11 @@ class vstore
 
 
 
-
+	/**
+	 * Render breadcrumb
+	 *
+	 * @return string the breadcrumb
+	 */
 	private function breadcrumb()
 	{
 		$frm = e107::getForm();
@@ -1586,16 +1553,24 @@ class vstore
 	}
 
 
+	/**
+	 * Return the active payment gateway information
+	 *
+	 * @return array
+	 */
 	private function getActiveGateways()
 	{
-
 
 		return $this->active;
 
 	}
 
 
-
+	/**
+	 * Render checkout complete message
+	 *
+	 * @return string
+	 */
 	private function checkoutComplete()
 	{
 		$text = e107::getMessage()->render('vstore');
@@ -1606,7 +1581,11 @@ class vstore
 	}
 
 
-
+	/**
+	 * Render checkout page to enter the customers shipping information
+	 *
+	 * @return string
+	 */
 	private function checkoutView()
 	{
 		$active = $this->getActiveGateways();
@@ -1665,8 +1644,14 @@ class vstore
 	}
 
 
-	//  // help http://stackoverflow.com/questions/20756067/omnipay-paypal-integration-with-laravel-4
-	// https://www.youtube.com/watch?v=EvfFN0-aBmI
+	/**
+	 * Process the payment via selected payment gateway
+	 *
+	 * @see http://stackoverflow.com/questions/20756067/omnipay-paypal-integration-with-laravel-4
+	 * @see https://www.youtube.com/watch?v=EvfFN0-aBmI
+	 * @param string $mode
+	 * @return boolean
+	 */
 	private function processGateway($mode = 'init')
 	{
 		$type = $this->getGatewayType();
@@ -1877,7 +1862,14 @@ class vstore
 		}
 	}
 
-
+	/**
+	 * Build a order reference number out of the order_id, first- & lastname
+	 *
+	 * @param int $id
+	 * @param string $firstname
+	 * @param string $lastname
+	 * @return string
+	 */
 	private function getOrderRef($id,$firstname,$lastname)
 	{
 		$text = substr($firstname,0,2);
@@ -1890,6 +1882,14 @@ class vstore
 	}
 
 
+	/**
+	 * Save the transaction to the database
+	 *
+	 * @param string $id transaction id
+	 * @param array $transData transaction data
+	 * @param array $items purchased item
+	 * @return void
+	 */
 	private function saveTransaction($id, $transData, $items)
 	{
 
@@ -2060,8 +2060,12 @@ class vstore
 
 
 	/**
-	 * TODO - add a pref (multilan) containing the entire template which can be edited from within the admin area.
-	 * TODO - fallback to template in file if pref is empty.
+	 * Get the current email template
+	 * If it isn't defined in the admin area, load the template from the template folder
+	 *
+	 * @todo add a pref (multilan) containing the entire template which can be edited from within the admin area.
+	 * @param string $type email type 
+	 * @return string the template
 	 */
 	private function getEmailTemplate($type='default')
 	{
@@ -2091,7 +2095,14 @@ class vstore
 
 
 
-
+	/**
+	 * Send an email to the customer
+	 *
+	 * @param string $templateKey the email type
+	 * @param string $ref the order ref.
+	 * @param array $insert email contents
+	 * @return void
+	 */
 	function emailCustomer($templateKey='default', $ref, $insert=array())
 	{
 		$tp = e107::getParser();
@@ -2136,7 +2147,12 @@ class vstore
 
 
 
-
+	/**
+	 * Update the items inventory based on the given json string
+	 *
+	 * @param string $json
+	 * @return void
+	 */
 	private function updateInventory($json)
 	{
 		$sql = e107::getDb();
@@ -2167,12 +2183,17 @@ class vstore
 				{
 					e107::getMessage()->addDebug("Unlimited item not reduced: ".$row['name']." (".$row['id'].")");
 				}
-		}
+			}
 		}
 
 	}
 
-
+	/**
+	 * Return the icon for the given gateway
+	 *
+	 * @param string $type
+	 * @return string
+	 */
 	private function getGatewayIcon($type='')
 	{
 		$text = !empty(self::$gateways[$type]) ? self::$gateways[$type]['icon'] : '';
@@ -2180,32 +2201,61 @@ class vstore
 
 	}
 
-
-	public static function getGatewayTitle($key)
+	/**
+	 * Return the title/name of the given gateway
+	 *
+	 * @param string $type
+	 * @return string
+	 */
+	public static function getGatewayTitle($type)
 	{
-		return self::$gateways[$key]['title'];
+		return self::$gateways[$type]['title'];
 
 	}
 
 
+	/**
+	 * Return the type of the current gateway
+	 *
+	 * @param string $type
+	 * @return string
+	 */
 	private function getGatewayType()
 	{
 		return $_SESSION['vstore']['gateway']['type'];
 	}
 
 
+	/**
+	 * Set the type of the current gateway
+	 *
+	 * @param string $type
+	 * @return void
+	 */
 	private function setGatewayType($type='')
 	{
 		 $_SESSION['vstore']['gateway']['type'] = $type;
 	}
 
 
-	
+	/**
+	 * Set the number of items per page
+	 *
+	 * @param int $num
+	 * @return void
+	 */
 	public function setPerPage($num)
 	{
 		$this->perPage = intval($num);	
 	}
 
+	/**
+	 * Update the cart
+	 *
+	 * @param string $type (modify, remove)
+	 * @param array $array of the ids and item used for modify or remove
+	 * @return void
+	 */
 	protected function updateCart($type = 'modify', $array)
 	{
 		$sql = e107::getDb();
@@ -2275,6 +2325,12 @@ class vstore
 	}
 
 
+	/**
+	 * Reset the cart
+	 * Remove all items from the cart
+	 *
+	 * @return void
+	 */
 	protected function resetCart()
 	{
 		// Delete cart from database
@@ -2287,7 +2343,11 @@ class vstore
 	}
 
 
-
+	/**
+	 * Return the current cart id
+	 *
+	 * @return string
+	 */
 	protected function getCartId()
 	{
 		if(!empty($_COOKIE["cartId"]))
@@ -2305,7 +2365,13 @@ class vstore
 		}
 	}
 
-
+	/**
+	 * Render the list of categories
+	 *
+	 * @param integer $parent 0 = root categories
+	 * @param boolean $np true = render nextprev control; false = dont't render nextprev
+	 * @return string
+	 */
 	public function categoryList($parent=0,$np=false)
 	{
 		
@@ -2384,12 +2450,19 @@ class vstore
 	}
 		
 	
+	/**
+	 * Render the list of products
+	 *
+	 * @param integer $category selected category id
+	 * @param boolean $np	render nextpref yes/no
+	 * @param string $templateID name of the template to use
+	 * @return string
+	 */
 	public function productList($category=1,$np=false,$templateID = 'list')
 	{
 
 
 
-//		if(!$data = e107::getDb()->retrieve('SELECT SQL_CALC_FOUND_ROWS * FROM #vstore_items WHERE cat_active=1 AND item_active=1 AND item_cat = '.intval($category).' ORDER BY item_order LIMIT '.$this->from.','.$this->perPage, true))
 		if(!$data = e107::getDb()->retrieve('SELECT SQL_CALC_FOUND_ROWS *, cat_active FROM #vstore_items LEFT JOIN #vstore_cat ON (item_cat = cat_id) WHERE cat_active=1 AND item_active=1 AND item_cat = '.intval($category).' ORDER BY item_order LIMIT '.$this->from.','.$this->perPage, true))
 		{
 
@@ -2445,7 +2518,12 @@ class vstore
 	}	
 	
 	
-	
+	/**
+	 * Render a single product/item
+	 *
+	 * @param integer $id item_id
+	 * @return string
+	 */
 	protected function productView($id=0)
 	{
 		if(!$row = e107::getDb()->retrieve('SELECT * FROM #vstore_items WHERE item_active=1 AND item_id = '.intval($id).'  LIMIT 1',true))
@@ -2515,7 +2593,6 @@ class vstore
 			}
 		}
 		
-		//if(!empty($data['cat_info']))
 		if (!empty(e107::pref('vstore', 'howtoorder')))
 		{
 			$tabData['howto']		= array('caption'=>'How to Order', 'text'=> $tmpl['item']['howto']);
@@ -2525,19 +2602,21 @@ class vstore
 		{
 			$text .= $frm->tabs($tabData);
 		}
-	//	print_a($text);
+
 		$parsed = $tp->parseTemplate($text, true, $this->sc);
 
 		return $parsed;
 	}
 	
 	
-	protected function cartData()
-	{
-
-	}
-	
-	
+	/**
+	 * Add a single item to the cart
+	 * if the item is already on the list increase the quantity by 1
+	 *
+	 * @param int $id item_id
+	 * @param array $itemvars array of item variations
+	 * @return bool true on success
+	 */	
 	protected function addToCart($id, $itemvars=false)
 	{
 		if (USERID === 0){
@@ -2598,6 +2677,12 @@ class vstore
 	
 	}
 
+	/**
+	 * fix the item variation array to be used in following processes
+	 *
+	 * @param array $itemvars
+	 * @return array
+	 */
 	private function fixItemVarArray($itemvars)
 	{
 		if (!is_array($itemvars))
@@ -2620,6 +2705,12 @@ class vstore
 		return $result;
 	}
 
+	/**
+	 * Format the item variation array for use in the db field
+	 *
+	 * @param array $itemvarsarray
+	 * @return string
+	 */
 	public static function item_vars_toDB($itemvarsarray)
 	{
 		if (!is_array($itemvarsarray))
@@ -2631,6 +2722,12 @@ class vstore
 		return $result;
 	}
 
+	/**
+	 * Format the item variation string to an array
+	 *
+	 * @param string $itemvarsstring
+	 * @return array
+	 */
 	public static function item_vars_toArray($itemvarsstring)
 	{
 		if (empty($itemvarsstring) || strpos($itemvarsstring, '|') === false)
@@ -2701,14 +2798,22 @@ class vstore
 
 	}
 
-
+	/**
+	 * Fetch the cart data 
+	 *
+	 * @return array
+	 */
 	public function getCartData()
 	{
 		return e107::getDb()->retrieve('SELECT c.*, i.*, cat.cat_name, cat.cat_sef FROM `#vstore_cart` AS c LEFT JOIN `#vstore_items` as i ON (c.cart_item = i.item_id) LEFT JOIN `#vstore_cat` as cat ON (i.item_cat = cat.cat_id) WHERE c.cart_session = "'.$this->cartId.'" AND c.cart_status ="" ', true);
 	}
 
 
-
+	/**
+	 * Render the cart 
+	 *
+	 * @return string
+	 */
 	protected function cartView()
 	{
 		if(!$data = $this->getCartData() )
@@ -2860,19 +2965,29 @@ class vstore
 		$this->setCheckoutData($checkoutData);
 
 		return $text;
-	//	$ns->tablerender("Shopping Cart",$text,'vstore-view-cart');
-		
 
 	}
 	
 
-
+	/**
+	 * Store checkout data in session variable
+	 *
+	 * @param array $data data to store in session
+	 * @return void
+	 */
 	private function setCheckoutData($data=array())
 	{
 		$_SESSION['vstore']['checkout'] = $data;
 		$_SESSION['vstore']['checkout']['currency'] = $this->currency;
 	}
 
+
+	/**
+	 * Store shipping data in session variable
+	 *
+	 * @param array $data data to store
+	 * @return void
+	 */
 	private function setShippingData($data=array())
 	{
 		$pref = e107::pref('vstore');
@@ -2911,12 +3026,23 @@ class vstore
 
 	}
 
-	private function getShippingData($data=array())
+	/**
+	 * Return the shipping data from the session variable
+	 *
+	 * @return array
+	 */
+	private function getShippingData()
 	{
 		return $_SESSION['vstore']['shipping'];
 	}
 
 
+	/**
+	 * Return the checkoutdata from the session variable
+	 *
+	 * @param int $id  
+	 * @return array
+	 */
 	private function getCheckoutData($id=null)
 	{
 		if(!empty($id))
@@ -2927,12 +3053,18 @@ class vstore
 		return $_SESSION['vstore']['checkout'];
 	}
 	
-	
+	/**
+	 * Process a download request of a downloadable item
+	 *
+	 * @param int $item_id
+	 * @return bool false on error	 
+	 */
 	private function downloadFile($item_id=null)
 	{
 		if ($item_id == null || intval($item_id) <= 0)
 		{
 			e107::getMessage()->addDebug('Download id "'.intval($item_id).'" to download missing or invalid!','vstore');
+			return false;
 		}
 
 		if (USERID === 0)
@@ -2954,6 +3086,7 @@ class vstore
 		else
 		{
 			e107::getMessage()->addError('Download id  "'.intval($item_id).'" doesn\'t contain a file to download!', 'vstore');
+			return false;
 		}
 
 	}
@@ -3005,7 +3138,12 @@ class vstore
 		return false;
 	}
 
-	
+	/**
+	 * Is the item (incl. the category of the item) active?
+	 *
+	 * @param int $itemid
+	 * @return boolean true = active; false = inactive
+	 */	
 	private function isItemActive($itemid)
 	{
 		if (intval($itemid) <= 0)
@@ -3021,6 +3159,13 @@ class vstore
 		return false;
 	}
 
+	/**
+	 * Get the item variation string from the given id and value
+	 *
+	 * @param int $itemvarid
+	 * @param string $itemvarvalue
+	 * @return string
+	 */
 	public static function getItemVarString($itemvarid, $itemvarvalue)
 	{
 		if ($itemvarid == null || $itemvarid <= 0)
@@ -3056,5 +3201,3 @@ class vstore
 	
 	
 }
-
-
