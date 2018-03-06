@@ -263,17 +263,7 @@ class vstore_plugin_shortcodes extends e_shortcode
 
 	function sc_item_var_string($parm=null)
 	{
-		$itemvarstring = '';
-		if (!empty($this->var['cart_item_vars']))
-		{
-			$itemvars = vstore::item_vars_toArray($this->var['cart_item_vars']);
-			foreach($itemvars as $k => $v)
-			{
-				$itemvarstring .= ($itemvarstring ? ' / ' : '') . vstore::getItemVarString($k, $v);
-			}
-		}
-
-		return e107::getParser()->toHtml($itemvarstring, true,'BODY');	
+		return e107::getParser()->toHtml($this->var['itemvarstring'], true,'BODY');	
 	}
 
 	function sc_item_description($parm=null)
@@ -301,7 +291,7 @@ class vstore_plugin_shortcodes extends e_shortcode
 	{
 		$itemid = intval($this->var['item_id']);
 		$baseprice = floatval($this->var['item_price']);
-		$this->var['item_var_price'] = $baseprice;
+		$this->var['item_var_price'] = -1;
 		if (varset($this->var['item_vars']))
 		{
 			$ns = e107::getParser();
@@ -329,15 +319,15 @@ class vstore_plugin_shortcodes extends e_shortcode
 							switch ($var['operator'])
 							{
 							case '%':
-								if ($selected) $this->var['item_var_price'] += $baseprice * (floatval($var['value']) / 100.0);
+								if ($selected) $this->var['item_var_price'] = $baseprice * (floatval($var['value']) / 100.0);
 								$varname .= ' (+ '.floatval($var['value']).'%)';
 								break;
 							case '+':
-								if ($selected) $this->var['item_var_price'] += floatval($var['value']);
+								if ($selected) $this->var['item_var_price'] = $baseprice + floatval($var['value']);
 								$varname .= ' (+ '.$this->currency.$this->curSymbol.number_format(floatval($var['value']), 2).')';
 								break;
 							case '-':
-								if ($selected) $this->var['item_var_price'] -= floatval($var['value']);
+								if ($selected) $this->var['item_var_price'] = $baseprice - floatval($var['value']);
 								$varname .= ' (- '.$this->currency.$this->curSymbol.number_format(floatval($var['value']), 2).')';
 								break;
 							}
@@ -662,7 +652,7 @@ class vstore_plugin_shortcodes extends e_shortcode
 		$baseprice = $price = floatval($this->var['item_price']);
 		$varprice = floatval($this->var['item_var_price']);
 
-		if ($varprice > 0.0 && $varprice != $baseprice)
+		if ($varprice >= 0.0 && $varprice != $baseprice)
 		{
 			$price = $varprice;
 		}
@@ -737,7 +727,7 @@ class vstore_plugin_shortcodes extends e_shortcode
 	
 	function sc_cart_price($parm=null)
 	{
-		return $this->curSymbol.$this->var['item_price'];		
+		return $this->curSymbol.number_format($this->var['item_price'], 2);
 	}
 	
 	function sc_cart_total($parm=null)
@@ -1379,6 +1369,87 @@ class vstore
 
 	}
 
+	private function renderOrderConfirmation()
+	{
+/*
+		 'firstname',
+		 'lastname',
+		 'email',
+		 'phone',
+		 'company',
+		 'address',
+		 'city',
+		 'state',
+		 'zip',
+		 'country',
+		 'notes'
+
+		 				return $fname." ".$lname."<br />".$address."<br />".$city.", ".$state."  ".$zip."<br />".$this->getCountry($country);
+
+*/
+		$shippingData = $this->getShippingData();
+		$cartData = $this->getCartData();
+
+		$frm = e107::getForm();
+
+		$text = '
+		<h3>Summary</h3>
+		<div class="row">
+			<div class="col-xs-6 col-sm-6 col-md-6">
+				<h4>Shipping address</h4>';
+		
+		$text .= $shippingData['firstname'] . ' ' . $shippingData['lastname'] . '<br/>';
+		$text .= $shippingData['company'] . '<br/>';
+		$text .= $shippingData['address'] . '<br/>';
+		$text .= $shippingData['city'] . ', ' . $shippingData['state'] . ' ' . $shippingData['zip'] . '<br/>';
+		$text .= $this->getCountry($shippingData['country']) . '<br/>';
+
+		$text .= '
+			</div>
+			<div class="col-xs-6 col-sm-6 col-md-6">
+				<h4>Items</h4>';
+
+		foreach($cartData as $row)
+		{
+			$subtotal = $item['item_price'] * $item['cart_qty'];
+			$itemvar = '';
+			if (!empty($row['cart_item_vars']))
+			{
+				$itemprop = self::getItemVarProperties($row['cart_item_vars'], $row['item_price']);
+
+				if ($itemprop)
+				{
+					$itemvar = $itemprop['variation'];
+					$subtotal = ($item['item_price'] + $itemprop['price']) * $item['cart_qty'];
+				}
+				$itemvar = '<br/>'.$itemvar;
+			}
+			$text .= '
+				<div class="row">
+					<div class="col-xs-8">'.$row['item_name'].$itemvar.'</div>
+					<div class="col-xs-4">'.$subtotal.'</div>
+				</div>';
+
+		}
+
+
+		$text .= '
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-xs-12">
+				<button class="btn btn-default vstore-btn-back">&laquo; Back</button>
+				<button class="btn btn-primary vstore-btn-buy-now">Buy now!</button>
+			</div>
+		</div>
+		
+		
+		';
+
+
+		return $text;
+	}
+
 
 	private function getMode()
 	{
@@ -1743,14 +1814,22 @@ class vstore
 
 			foreach($data['items'] as $var)
 			{
+				$subtotal = $var['item_price'];
 				$itemvarstring = '';
 				if (!empty($var['cart_item_vars']))
 				{
-					$itemvars = self::item_vars_toArray($var['cart_item_vars']);
+					// $itemvars = self::item_vars_toArray($var['cart_item_vars']);
 	
-					foreach($itemvars as $k => $v)
+					// foreach($itemvars as $k => $v)
+					// {
+					// 	$itemvarstring .= ($itemvarstring ? ' / ' : '') . vstore::getItemVarString($k, $v);
+					// }
+					$itemprop = self::getItemVarProperties($var['cart_item_vars'], $var['item_price']);
+
+					if ($itemprop)
 					{
-						$itemvarstring .= ($itemvarstring ? ' / ' : '') . vstore::getItemVarString($k, $v);
+						$itemvarstring = $itemprop['variation'];
+						$subtotal = ($var['item_price'] + $itemprop['price']);
 					}
 				}
 					
@@ -1759,7 +1838,8 @@ class vstore
 				$items[] = array(
 					'id'          => $var['item_id'],
 					'name'        => $var['item_code'],
-					'price'       => $var['item_price'],
+					// 'price'       => $var['item_price'],
+					'price'       => $subtotal,
 					'description' => $var['item_name'],
 					'quantity'    => $var['cart_qty'],
 					'file'        => $var['item_download'],
@@ -2300,10 +2380,13 @@ class vstore
 					$itemvarstring = '';
 					if (!empty($itemvars))
 					{
-						foreach ($itemkeys as $k => $v) {
-							$itemvarstring .= ($itemvarstring ? ' / ' : '') . vstore::getItemVarString($v, $itemvalues[$k]);
+						$itemprop = vstore::getItemVarProperties($itemvars, 0);
+
+						if ($itemprop)
+						{
+							$itemvarstring = $itemprop['variation'];
 						}
-						$itemvarstring = " ({$itemvarstring})";
+								
 					}
 					$itemname .= $itemvarstring;
 					e107::getMessage()->addWarning('The entered quantity for "'.$itemname.'" exceeds the number of items in stock!<br/>The quantity has been adjusted!', 'vstore');
@@ -2894,8 +2977,20 @@ class vstore
 				}
 
 				$count_active++;
+				$price = $row['item_price'];
+				$row['itemvarstring'] = '';
+				if (!empty($row['cart_item_vars']))
+				{
+					$varinfo = self::getItemVarProperties($row['cart_item_vars'], $row['item_price']);
+					if ($varinfo)
+					{
+						$price += $varinfo['price'];
+						$row['item_price'] = $price;
+						$row['itemvarstring'] = $varinfo['variation'];
+					}
+				}
 
-				$subTotal += ($row['cart_qty'] * $row['item_price']);	
+				$subTotal += ($row['cart_qty'] * $price);	
 				$shippingTotal	+= ($row['cart_qty'] * $row['item_shipping']);	
 						
 				$this->sc->setVars($row);
@@ -3159,45 +3254,115 @@ class vstore
 		return false;
 	}
 
+	// /**
+	//  * Get the item variation string from the given id and value
+	//  *
+	//  * @param int $itemvarid
+	//  * @param string $itemvarvalue
+	//  * @return string
+	//  */
+	// public static function getItemVarString($itemvarid, $itemvarvalue)
+	// {
+	// 	if ($itemvarid == null || $itemvarid <= 0)
+	// 	{
+	// 		return '';
+	// 	}
+	// 	$itemvar = e107::getDb()->retrieve('vstore_items_vars', 'item_var_name, item_var_attributes', 'item_var_id='.$itemvarid);
+
+	// 	if (!$itemvar)
+	// 	{
+	// 		return '';
+	// 	}
+
+	// 	$attr = e107::unserialize($itemvar['item_var_attributes']);
+
+	// 	$text = $itemvar['item_var_name'];
+
+	// 	$value = $itemvarvalue;
+
+	// 	if (is_array($attr))
+	// 	{
+	// 		$frm = e107::getForm();
+	// 		foreach ($attr as $row) {
+	// 			if ($frm->name2id($row['name']) == $itemvarvalue)
+	// 			{
+	// 				$value = $row['name'];
+	// 			}
+	// 		}
+	// 	}
+
+	// 	return "{$text}: {$value}";
+	// }
+	
 	/**
-	 * Get the item variation string from the given id and value
+	 * Return an array containing the variatons string and the pricemodified
 	 *
-	 * @param int $itemvarid
-	 * @param string $itemvarvalue
-	 * @return string
+	 * @param array $itemvars
+	 * @param double $baseprice
+	 * @return array [price => x.x, variation => yyy]
 	 */
-	public static function getItemVarString($itemvarid, $itemvarvalue)
+	public static function getItemVarProperties($itemvars, $baseprice)
 	{
-		if ($itemvarid == null || $itemvarid <= 0)
+		if (empty($itemvars))
 		{
-			return '';
+			return false;
 		}
-		$itemvar = e107::getDb()->retrieve('vstore_items_vars', 'item_var_name, item_var_attributes', 'item_var_id='.$itemvarid);
+		
+		$baseprice = floatval($baseprice);
 
-		if (!$itemvar)
+		if (is_string($itemvars))
 		{
-			return '';
+			$itemvars = self::item_vars_toArray($itemvars);
 		}
 
-		$attr = e107::unserialize($itemvar['item_var_attributes']);
+		$result = array('price' => 0.0, 'variation' => '');
 
-		$text = $itemvar['item_var_name'];
-
-		$value = $itemvarvalue;
-
-		if (is_array($attr))
+		$sql = e107::getDb();
+		if ($sql->select('vstore_items_vars', 'item_var_id, item_var_name, item_var_attributes', 'FIND_IN_SET(item_var_id, "'.implode(',', array_keys($itemvars)).'")'))
 		{
-			$frm = e107::getForm();
-			foreach ($attr as $row) {
-				if ($frm->name2id($row['name']) == $itemvarvalue)
+			while($itemvar = $sql->fetch())
+			{
+				$attr = e107::unserialize($itemvar['item_var_attributes']);
+				$text = $itemvar['item_var_name'];
+				$value = $itemvars[$itemvar['item_var_id']];
+				$operator = '';
+				$op_val = 0.0;
+				
+				if (is_array($attr))
 				{
-					$value = $row['name'];
+					$frm = e107::getForm();
+					foreach ($attr as $row) {
+						if ($frm->name2id($row['name']) == $value)
+						{
+							$value = $row['name'];
+							$operator = $row['operator'];
+							$op_val = floatval($row['value']);
+							break;
+						}
+					}
+				}
+		
+				$result['variation'][] =  "{$text}: {$value}";
+		
+
+				switch($operator)
+				{
+					case '%':
+						$result['price'] += ($baseprice * $op_val / 100.0);
+						break;
+					case '+':
+						$result['price'] += $op_val;
+						break;
+					case '-':
+						$result['price'] -= $op_val;
+						break;
 				}
 			}
 		}
 
-		return "{$text}: {$value}";
+		$result['variation'] = implode(' / ', $result['variation']);
+
+		return $result;
+
 	}
-	
-	
 }

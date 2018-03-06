@@ -120,12 +120,14 @@ e107::getDebug()->log($data);
 			$itemvarstring = '';
 			if (!empty($item['cart_item_vars']))
 			{
-				$itemvars = vstore::item_vars_toArray($item['cart_item_vars']);
+				$itemprop = vstore::getItemVarProperties($item['cart_item_vars'], $item['item_price']);
 
-				foreach($itemvars as $k => $v)
+				if ($itemprop)
 				{
-					$itemvarstring .= ($itemvarstring ? ' / ' : '') . vstore::getItemVarString($k, $v);
+					$itemvarstring = $itemprop['variation'];
+					$subtotal = ($item['item_price'] + $itemprop['price']) * $item['cart_qty'];
 				}
+
 				if (!empty($itemvarstring))
 				{
 					$itemvarstring = '<br/><span class="vstore-cart-item-var small">' . $itemvarstring . '</span>';
