@@ -13,7 +13,7 @@ e107::css('inline',"
 
 	img.level-1 { margin:0 5px 0 15px; }
 	item-inventory { font-weight: bold }
-
+	#custom-css{ font-family: monospace; }
 ");
 
 require_once('vstore.class.php');
@@ -846,7 +846,7 @@ Secret Key 	secret_key 	Default : null
 Region 	region
  */
 		// optional
-		protected $preftabs = array(LAN_GENERAL, "Emails", "How to Order", "Admin Area", "Check-Out");
+		protected $preftabs = array(LAN_GENERAL, "Emails", "How to Order", "Admin Area", "Check-Out", "Custom CSS");
 
 
 		protected $prefs = array(
@@ -862,7 +862,7 @@ Region 	region
 			'sender_name'               => array('title'=> 'Sender Name', 'tab'=>1, 'type'=>'text', 'writeParms'=>array('placeholder'=>'Sales Department'), 'help'=>'Leave blank to use system default','multilan'=>false),
 			'sender_email'              => array('title'=> LAN_EMAIL, 'tab'=>1, 'type'=>'text', 'writeParms'=>array('placeholder'=>'orders@mysite.com'), 'help'=>'Leave blank to use system default', 'multilan'=>false),
 			'merchant_info'             => array('title'=> "Merchant Name/Address", 'tab'=>1, 'type'=>'textarea', 'writeParms'=>array('placeholder'=>'My Store Inc. etc.'), 'help'=>'Will be displayed on customer email.', 'multilan'=>false),
-			'email_templates'           => array('title'=> "Email templates", 'tab'=>1, 'type'=>'method'), //, 'writeParms'=>array('placeholder'=>'My Store Inc. etc.'), 'help'=>'Will be displayed on customer email.', 'multilan'=>false),
+			'email_templates'           => array('title'=> "Email templates", 'tab'=>1, 'type'=>'method'),
 
 
 			'admin_items_perpage'	    => array('title'=> 'Products per page', 'tab'=>3, 'type'=>'number', 'help'=>''),
@@ -871,6 +871,7 @@ Region 	region
 			'additional_fields'         => array('title'=>'Additional Fields', 'tab'=>4, 'type'=>'method'),
 			'admin_confirm_order'		=> array('title'=> 'Confirm order', 'tab'=>4, 'type'=>'bool', 'help'=>'If ON, the customer has to confirm his order after selecting the payment method on the checkout page!'),
 
+			'custom_css'	            => array('title'=> 'Custom CSS', 'tab'=>5, 'type' => 'textarea', 'data' => 'str', 'width' => '100%', 'readParms' => '', 'writeParms' => array('cols'=> 80, 'rows' => 10, 'size'=>'block-level'), 'help'=>'Use this field to enter any vstore related custom css, without the need to edit any source files.'),
 		);
 
 

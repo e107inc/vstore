@@ -22,6 +22,15 @@ e107::js('settings', array('vstore' =>
 	)
 ));
 
+
+if (!empty($vstore_prefs['custom_css']))
+{
+	// Add any custom css to the page
+	e107::css('inline', "
+	/* vstore custom css */
+	" . $vstore_prefs['custom_css']);
+}
+
 $vstore = e107::getSingleton('vstore',e_PLUGIN.'vstore/vstore.class.php');
 $vstore->init();
 require_once(HEADERF);
