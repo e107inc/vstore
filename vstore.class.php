@@ -1025,6 +1025,10 @@ class vstore
 			$this->get['cat'] = vartrue($this->categorySEF[$sef],0);
 		}
 
+		// Check for ajax requests and process them first 
+		$this->process_ajax();
+
+		// In case this is not an ajax request continue with processing
 		$this->process();
 		
 
@@ -1058,6 +1062,82 @@ class vstore
 	}
 
 
+	/**
+	 * Handle & process all ajax requests 
+	 *
+	 * @return void
+	 */
+	private function process_ajax()
+	{
+		if(e_AJAX_REQUEST)
+		{
+			// Process only ajax requests
+			if($this->get['add'])
+			{
+				// Add item to cart
+				$js = e107::getJshelper();
+				$js->_reset();
+				$itemid = $this->get['add'];
+				$itemvars = $this->get['itemvar'];
+				if (!$this->addToCart($itemid, $itemvars))
+				{
+					$msg = e107::getMessage()->render('vstore');
+					ob_clean();
+					$js->addTextResponse($msg)->sendResponse();
+					exit;
+				}
+				else
+				{
+					include_once 'e_sitelink.php';
+					$sl = new vstore_sitelink();
+					$msg = $sl->storeCart();
+				}
+				ob_clean();
+				$js->addTextResponse('ok '.$msg)->sendResponse();
+				exit;
+			}
+				
+			if(!empty($this->get['reset']))
+			{
+				// Reset cart
+				$this->resetCart();
+				include_once 'e_sitelink.php';
+				$sl = new vstore_sitelink();
+				$msg = $sl->storeCart();
+				ob_clean();
+				$js = e107::getJshelper();
+				$js->_reset();
+				$js->addTextResponse('ok '.$msg)->sendResponse();
+				exit;
+			}
+		
+
+			if(!empty($this->get['refresh']))
+			{
+				// Refresh cart menu
+				include_once 'e_sitelink.php';
+				$sl = new vstore_sitelink();
+				$msg = $sl->storeCart();
+				ob_clean();
+				$js = e107::getJshelper();
+				$js->_reset();
+				$js->addTextResponse('ok '.$msg)->sendResponse();
+				exit;
+			}
+
+			// In case that none of the above has handled the ajax request
+			// (which shouldn't happen) just exit
+			exit;
+		}
+
+	}
+
+
+	/**
+	 * Handle & process all non-ajax requests
+	 *
+	 * @return void
+	 */
 	private function process()
 	{
 
@@ -1065,7 +1145,6 @@ class vstore
 		{
 			$this->resetCart();
 		}
-
 
 		if(!empty($this->post['gateway']))
 		{
@@ -1295,36 +1374,36 @@ class vstore
 
 		$ns = e107::getRender();
 
-		if($this->get['add'])
-		{
-			if(e_AJAX_REQUEST)
-			{
-				$js = e107::getJshelper();
-				$js->_reset();
-				$itemid = $this->get['add'];
-				$itemvars = $this->get['itemvar'];
-				if (!$this->addToCart($itemid, $itemvars))
-				{
-					$msg = e107::getMessage()->render('vstore');
-					ob_clean();
-					$js->addTextResponse($msg)->sendResponse();
-					exit;
-				}
-				else
-				{
-					$sl = new vstore_sitelink();
-					$msg = $sl->storeCart();
-				}
-				ob_clean();
-				$js->addTextResponse('ok '.$msg)->sendResponse();
-				exit;
-			}
-			$bread = $this->breadcrumb();
-			$text = $this->cartView();
-			$text = e107::getMessage()->render('vstore') . $text;
-			$ns->tablerender($this->captionBase, $bread.$text, 'vstore-cart-view');
-			return null;
-		}
+		// if($this->get['add'])
+		// {
+		// 	if(e_AJAX_REQUEST)
+		// 	{
+		// 		$js = e107::getJshelper();
+		// 		$js->_reset();
+		// 		$itemid = $this->get['add'];
+		// 		$itemvars = $this->get['itemvar'];
+		// 		if (!$this->addToCart($itemid, $itemvars))
+		// 		{
+		// 			$msg = e107::getMessage()->render('vstore');
+		// 			ob_clean();
+		// 			$js->addTextResponse($msg)->sendResponse();
+		// 			exit;
+		// 		}
+		// 		else
+		// 		{
+		// 			$sl = new vstore_sitelink();
+		// 			$msg = $sl->storeCart();
+		// 		}
+		// 		ob_clean();
+		// 		$js->addTextResponse('ok '.$msg)->sendResponse();
+		// 		exit;
+		// 	}
+		// 	$bread = $this->breadcrumb();
+		// 	$text = $this->cartView();
+		// 	$text = e107::getMessage()->render('vstore') . $text;
+		// 	$ns->tablerender($this->captionBase, $bread.$text, 'vstore-cart-view');
+		// 	return null;
+		// }
 
 		if (!empty($this->get['download']))
 		{
@@ -1335,34 +1414,34 @@ class vstore
 			}
 		}
 		
-		if(!empty($this->get['reset']))
-		{
-			if(e_AJAX_REQUEST)
-			{
-				$this->resetCart();
-				$sl = new vstore_sitelink();
-				$msg = $sl->storeCart();
-				ob_clean();
-				$js = e107::getJshelper();
-				$js->_reset();
-				$js->addTextResponse('ok '.$msg)->sendResponse();
-				exit;
-			}
-		}
+		// if(!empty($this->get['reset']))
+		// {
+		// 	if(e_AJAX_REQUEST)
+		// 	{
+		// 		$this->resetCart();
+		// 		$sl = new vstore_sitelink();
+		// 		$msg = $sl->storeCart();
+		// 		ob_clean();
+		// 		$js = e107::getJshelper();
+		// 		$js->_reset();
+		// 		$js->addTextResponse('ok '.$msg)->sendResponse();
+		// 		exit;
+		// 	}
+		// }
 		
-		if(!empty($this->get['refresh']))
-		{
-			if(e_AJAX_REQUEST)
-			{
-				$sl = new vstore_sitelink();
-				$msg = $sl->storeCart();
-				ob_clean();
-				$js = e107::getJshelper();
-				$js->_reset();
-				$js->addTextResponse('ok '.$msg)->sendResponse();
-				exit;
-			}
-		}
+		// if(!empty($this->get['refresh']))
+		// {
+		// 	if(e_AJAX_REQUEST)
+		// 	{
+		// 		$sl = new vstore_sitelink();
+		// 		$msg = $sl->storeCart();
+		// 		ob_clean();
+		// 		$js = e107::getJshelper();
+		// 		$js->_reset();
+		// 		$js->addTextResponse('ok '.$msg)->sendResponse();
+		// 		exit;
+		// 	}
+		// }
 
 
 		if($this->getMode() == 'return')
@@ -2562,6 +2641,13 @@ class vstore
 		return array_combine(explode(',', $k), explode(',', $v));
 	}
 
+	/**
+	 * Get the current inventory of the given item / itemvars combination
+	 *
+	 * @param int $itemid
+	 * @param array/boolean $itemvars
+	 * @return int
+	 */
 	private function getItemInventory($itemid, $itemvars=false)
 	{
 
@@ -2606,7 +2692,7 @@ class vstore
 		}
 		else
 		{
-			$inventory = (int) $sql->retrieve('vstore_items', 'item_inventory', 'cart_item = '.intval($id));
+			$inventory = (int) $sql->retrieve('vstore_items', 'item_inventory', 'item_id = '.intval($itemid));
 			if ($inventory < 0){
 				return 9999999;
 			}
