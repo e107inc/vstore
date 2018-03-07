@@ -20,6 +20,13 @@ e107::js('settings', array('vstore' =>
 	)
 ));
 
+if (!empty($vstore_prefs['custom_css']))
+{
+	// Add any custom css to the page
+	e107::css('inline', "
+	/* vstore custom css */
+	" . $vstore_prefs['custom_css']);
+}
 
 $category = 1;  //TODO e_menu config.
 $caption = "Products";

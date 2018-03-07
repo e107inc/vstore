@@ -13,7 +13,7 @@ e107::css('inline',"
 
 	img.level-1 { margin:0 5px 0 15px; }
 	item-inventory { font-weight: bold }
-
+	#custom-css{ font-family: monospace; }
 ");
 
 require_once('vstore.class.php');
@@ -846,7 +846,7 @@ Secret Key 	secret_key 	Default : null
 Region 	region
  */
 		// optional
-		protected $preftabs = array(LAN_GENERAL, "Emails", "How to Order", "Admin Area", "Check-Out");
+		protected $preftabs = array(LAN_GENERAL, "Emails", "How to Order", "Admin Area", "Check-Out", "Custom CSS");
 
 
 		protected $prefs = array(
@@ -862,7 +862,7 @@ Region 	region
 			'sender_name'               => array('title'=> 'Sender Name', 'tab'=>1, 'type'=>'text', 'writeParms'=>array('placeholder'=>'Sales Department'), 'help'=>'Leave blank to use system default','multilan'=>false),
 			'sender_email'              => array('title'=> LAN_EMAIL, 'tab'=>1, 'type'=>'text', 'writeParms'=>array('placeholder'=>'orders@mysite.com'), 'help'=>'Leave blank to use system default', 'multilan'=>false),
 			'merchant_info'             => array('title'=> "Merchant Name/Address", 'tab'=>1, 'type'=>'textarea', 'writeParms'=>array('placeholder'=>'My Store Inc. etc.'), 'help'=>'Will be displayed on customer email.', 'multilan'=>false),
-			'email_templates'           => array('title'=> "Email templates", 'tab'=>1, 'type'=>'method'), //, 'writeParms'=>array('placeholder'=>'My Store Inc. etc.'), 'help'=>'Will be displayed on customer email.', 'multilan'=>false),
+			'email_templates'           => array('title'=> "Email templates", 'tab'=>1, 'type'=>'method'),
 
 
 			'admin_items_perpage'	    => array('title'=> 'Products per page', 'tab'=>3, 'type'=>'number', 'help'=>''),
@@ -871,6 +871,7 @@ Region 	region
 			'additional_fields'         => array('title'=>'Additional Fields', 'tab'=>4, 'type'=>'method'),
 			'admin_confirm_order'		=> array('title'=> 'Confirm order', 'tab'=>4, 'type'=>'bool', 'help'=>'If ON, the customer has to confirm his order after selecting the payment method on the checkout page!'),
 
+			'custom_css'	            => array('title'=> 'Custom CSS', 'tab'=>5, 'type' => 'textarea', 'data' => 'str', 'width' => '100%', 'readParms' => '', 'writeParms' => array('cols'=> 80, 'rows' => 10, 'size'=>'block-level'), 'help'=>'Use this field to enter any vstore related custom css, without the need to edit any source files.'),
 		);
 
 
@@ -1279,6 +1280,11 @@ class vstore_cat_ui extends e_admin_ui
 			{
 				$new_data['cat_sef'] = eHelper::title2sef($new_data['cat_name'], 'dashl');
 			}
+			
+			if (isset($new_data['cat_sef']))
+			{
+				$new_data['cat_sef'] = vstore::fix_sef($new_data['cat_sef'], $this->table, 'cat_sef');
+			}
 
 			return $new_data;
 		}
@@ -1296,6 +1302,10 @@ class vstore_cat_ui extends e_admin_ui
 				$new_data['cat_sef'] = eHelper::title2sef($new_data['cat_name'], 'dashl');
 			}
 
+			if (isset($new_data['cat_sef']))
+			{
+				$new_data['cat_sef'] = $this->fix_sef($new_data['cat_sef'], $this->table, 'cat_sef', $this->pid, $old_data[$this->pid]);
+			}
 			return $new_data;
 		}
 
@@ -1314,6 +1324,46 @@ class vstore_cat_ui extends e_admin_ui
 			// do something
 		}
 
+		/**
+		 * Check if a given sef string already exists and fix it by
+		 * searching for a free sef string by adding a incrementation number at the end
+		 * 
+		 * @example if "cat1" exists, it wil check for "cat1-2", "cat1-3" and so on until there is one that isn't used
+		 *
+		 * @param string $sef The sef string to check (e.g. cat1)
+		 * @param string $table The table to search in (e.g. vstore_cat)
+		 * @param string $sef_field The sef table field name (e.g. cat_sef)
+		 * @param string $id_field (optional) The id field of the table (e.g. cat_id)
+		 * @param variant $id_value (optional) The id value of an existing record
+		 * @param integer $try (Only used internally) defines which try it is, in case the tested sef was already in the table
+		 * @return string a sef string that isn't used to this moment.
+		 */
+		private function fix_sef($sef, $table, $sef_field, $id_field=null, $id_value=null, $try=0)
+		{
+			$result = e107::getParser()->toDB($sef);
+	
+			if ($try > 0)
+			{
+				$result .= '-' . ($try + 1);
+			}
+	
+			$where = "{$sef_field}='{$result}'";
+			if (!empty($id_field) && !empty($id_value))
+			{
+				$where .= " AND {$id_field}!='{$id_value}'";
+			}
+				
+			$count = (int) e107::getDb()->count($table, '(*)', $where);
+	
+			if ($count > 0)
+			{
+				$result = $this->fix_sef($sef, $table, $sef_field, $id_field, $id_value, ++$try);
+			}
+	
+			return $result;
+				
+		}
+			
 
 				// Correct bad ordering based on parent/child relationship.
 		private function checkOrder()
@@ -1417,7 +1467,9 @@ class vstore_cat_ui extends e_admin_ui
 
 
 class vstore_cat_form_ui extends e_admin_form_ui
-{/*
+{
+
+	/*
 		function cat_name($curVal,$mode,$parm)
 		{
 
