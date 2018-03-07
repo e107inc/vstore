@@ -1353,7 +1353,7 @@ class vstore_cat_ui extends e_admin_ui
 	
 			if ($count > 0)
 			{
-				$result = $this->check_sef($sef, $table, $sef_field, $id_field, $id_value, ++$try);
+				$result = $this->fix_sef($sef, $table, $sef_field, $id_field, $id_value, ++$try);
 			}
 	
 			return $result;
