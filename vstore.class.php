@@ -133,7 +133,7 @@ class vstore_plugin_shortcodes extends e_shortcode
 			$text .= "
 					<tr>
 						<td>".$desc."</td>
-						<td class='text-right'>".number_format($this->curSymbol.$item['price'], 2)."</td>
+						<td class='text-right'>".$this->curSymbol.number_format($item['price'], 2)."</td>
 						<td class='text-right'>".$item['quantity']."</td>
 						<td class='text-right'>".$this->curSymbol.number_format($item['price'] * $item['quantity'], 2)."</tdclass>
 					</tr>";
