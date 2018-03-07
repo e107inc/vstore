@@ -991,28 +991,32 @@ class vstore_cart_form_ui extends e_admin_form_ui
 		e107::wysiwyg(true);
 
 		$orig_templates = e107::getTemplate('vstore', 'vstore_email');
-		$text = '';
+	//	$text = '';
+		$tab = array();
 		foreach (vstore::getEmailTypes() as $type => $label) {
 
 			// $orig_template = e107::getTemplate('vstore', 'vstore_email', $type);
 			$orig_template = $orig_templates[$type];
 			if (empty($curVal[$type]['template']))
 			{
+				$curVal = array();
 				$curVal[$type]['template'] = $orig_template;
 			}
 			$isActive = isset($curVal[$type]['active']) ? $curVal[$type]['active'] : true;
 
-			$text .= '<div><label><b>'.$label.'</b>';
-			$text .= '<div><label>'.LAN_ACTIVE.'? '. $this->flipswitch('email_templates['.$type.'][active]', $isActive, null, array('switch'=>'small', 'title' => LAN_ACTIVE)).'</label>';
+		//	$text = '<div><label><b>'.$label.'</b>';
+			$text = '<div><label>'.LAN_ACTIVE.'? '. $this->flipswitch('email_templates['.$type.'][active]', $isActive, null, array('switch'=>'small', 'title' => LAN_ACTIVE)).'</label>';
 			$text .= $this->button('', '<span class="fa fa-undo"></span> '. 'Reset template', 'action', '', array('data-template' => rawurlencode($orig_template), 'data-type' => $type, 'class' => 'vstore-email-reset pull-right btn-sm', 'title' => 'Click & save to reset this template to the default template.'));
 			$text .= '</div>';
 			$text .= $this->textarea('email_templates['.$type.'][template]', $curVal[$type]['template'], 10, 80, array('class' => 'tbox form-control input-block-level e-autoheight e-wysiwyg'));		
-			$text .= '</label></div><br/>
-			';
+			$text .= '</label>'; // </div><br/>
+			
+
+			$tab[] = array('caption'=>$label,'text' => $text);
 
 		}
 
-		return $text;
+		return $this->tabs($tab);
 		 		
 	}
 
