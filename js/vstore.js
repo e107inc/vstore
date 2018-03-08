@@ -232,6 +232,26 @@ var e107 = e107 || {'settings': {}, 'behaviors': {}};
 			});
 		}
 	};
+
+
+
+	/**
+	 * add active class to selected payment type
+	 */
+	e107.behaviors.vstoreSetGateway = {
+		attach: function (context, settings)
+		{
+			$(context).find('.vstore-gateway-radio').once('vstore-set-gateway').each(function (e)
+			{
+
+				$(this).change(function(){
+					$(".vstore-gateway").removeClass("active");
+					$(this).parent().addClass("active");
+				});
+			});
+		}
+	}
+
 })(jQuery);
 
 /** 

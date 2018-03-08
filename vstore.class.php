@@ -36,6 +36,11 @@ class vstore_plugin_shortcodes extends e_shortcode
 		
 	}
 
+	public function getCurrencySymbol()
+	{
+		return $this->curSymbol;
+	}
+
 
 	function sc_order_ship_firstname()
 	{
@@ -1153,16 +1158,40 @@ class vstore
 			$this->resetCart();
 		}
 
-		if(!empty($this->post['gateway']))
+		// if(!empty($this->post['gateway']))
+		// {
+		// 	$this->setGatewayType($this->post['gateway']);
+
+		// 	if(!empty($this->post['firstname']))
+		// 	{
+		// 		$this->setShippingData($this->post);    // TODO Validate data before proceeding.
+		// 	}
+
+		// 	return $this->processGateway('init');
+		// }
+
+		if($this->post['mode'] == 'confirm')
 		{
-			$this->setGatewayType($this->post['gateway']);
-
-			if(!empty($this->post['firstname']))
+			$this->setMode($this->post['mode']);
+			if (empty($this->getGatewayType()))
 			{
-				$this->setShippingData($this->post);    // TODO Validate data before proceeding.
+				e107::getMessage()->addError('No payment method selected!', 'vstore');
+				return null;
 			}
-
-			return $this->processGateway('init');
+			elseif (empty($this->getCheckoutData()))
+			{
+				e107::getMessage()->addError('No items to checkout!', 'vstore');
+				return null;
+			}
+			elseif (empty($this->getShippingData()))
+			{
+				e107::getMessage()->addError('No shipping data set!', 'vstore');
+				return null;
+			}
+			else
+			{
+				return $this->processGateway('init');
+			}
 		}
 
 		if($this->get['mode'] == 'return')
@@ -1200,6 +1229,27 @@ class vstore
 	{
 
 		$frm = e107::getForm();
+
+		if (!isset($this->post['firstname']))
+		{
+			// load saved shipping data and assign to variables
+			$data = $this->getShippingData();
+			$fields = $this->getShippingFields();
+			foreach ($fields as $field) {
+				$this->post[$field] = $data['order_ship_'.$field];
+			}
+			if (isset($data['additional']))
+			{
+				// if additional fields are defined
+				// reset notes field to only notes field data (without the info from the additional fields)
+				$this->post['notes'] = $data['additional']['notes'];
+				$addFields = json_decode($data['additional']['fields'], true);
+				foreach ($addFields as $key => $value) {
+					// assign only the values of the text fields. Ignore checkboxes (user needs to check them again)
+					$this->post['add_field'.$key] = $value;
+				}
+			}
+		}
 
 		$text = '<h3>Shipping Details</h3>
 			    			<div class="row">
@@ -1369,49 +1419,46 @@ class vstore
 
 	}
 
-	private function renderOrderConfirmation()
+	private function renderConfirmOrder()
 	{
-/*
-		 'firstname',
-		 'lastname',
-		 'email',
-		 'phone',
-		 'company',
-		 'address',
-		 'city',
-		 'state',
-		 'zip',
-		 'country',
-		 'notes'
 
-		 				return $fname." ".$lname."<br />".$address."<br />".$city.", ".$state."  ".$zip."<br />".$this->getCountry($country);
-
-*/
 		$shippingData = $this->getShippingData();
 		$cartData = $this->getCartData();
+
+		$gatewayType = $this->getGatewayType();
+		$gatewayIcon = $this->getGatewayIcon($gatewayType, '2x');
+		$gatewayIconSmall = $this->getGatewayIcon($gatewayType, '1x');
+		$gatewayTitle = $this->getGatewayTitle($gatewayType);
+
+		$sc = new vstore_plugin_shortcodes();
 
 		$frm = e107::getForm();
 
 		$text = '
 		<h3>Summary</h3>
 		<div class="row">
-			<div class="col-xs-6 col-sm-6 col-md-6">
+			<div class="col-xs-12 col-sm-6 col-md-6">
 				<h4>Shipping address</h4>';
 		
-		$text .= $shippingData['firstname'] . ' ' . $shippingData['lastname'] . '<br/>';
-		$text .= $shippingData['company'] . '<br/>';
-		$text .= $shippingData['address'] . '<br/>';
-		$text .= $shippingData['city'] . ', ' . $shippingData['state'] . ' ' . $shippingData['zip'] . '<br/>';
-		$text .= $this->getCountry($shippingData['country']) . '<br/>';
+		$text .= $shippingData['order_ship_firstname'] . ' ' . $shippingData['order_ship_lastname'] . '<br/>';
+		$text .= $shippingData['order_ship_company'] . '<br/>';
+		$text .= $shippingData['order_ship_address'] . '<br/>';
+		$text .= $shippingData['order_ship_city'] . ', ' . $shippingData['order_ship_state'] . ' ' . $shippingData['order_ship_zip'] . '<br/>';
+		$text .= $frm->getCountry($shippingData['order_ship_country']) . '<br/>';
 
 		$text .= '
-			</div>
-			<div class="col-xs-6 col-sm-6 col-md-6">
+			<br />
+			<h4>Selected payment method</h4>
+			<p>' . $gatewayIcon . ' ' . $gatewayTitle . '</p>
+		</div>
+			<div class="col-xs-12 col-sm-6 col-md-6">
 				<h4>Items</h4>';
 
+		$grandTotal = 0.0;
+		$shippingTotal = 0.0;
 		foreach($cartData as $row)
 		{
-			$subtotal = $item['item_price'] * $item['cart_qty'];
+			$subtotal = $row['item_price'] * $row['cart_qty'];
 			$itemvar = '';
 			if (!empty($row['cart_item_vars']))
 			{
@@ -1420,32 +1467,52 @@ class vstore
 				if ($itemprop)
 				{
 					$itemvar = $itemprop['variation'];
-					$subtotal = ($item['item_price'] + $itemprop['price']) * $item['cart_qty'];
+					$subtotal = ($row['item_price'] + $itemprop['price']) * $row['cart_qty'];
 				}
-				$itemvar = '<br/>'.$itemvar;
+				$itemvar = '<br/><span class="small">'.$itemvar.'</span>';
 			}
+			$grandTotal += $subtotal;
+			$shippingTotal += ($row['cart_qty'] * $row['item_shipping']);	
+
 			$text .= '
 				<div class="row">
+				<p>
 					<div class="col-xs-8">'.$row['item_name'].$itemvar.'</div>
-					<div class="col-xs-4">'.$subtotal.'</div>
+					<div class="col-xs-4 text-right">'.$sc->getCurrencySymbol().number_format($subtotal, 2).'</div>
+				</p>
 				</div>';
 
 		}
 
+		$grandTotal += $shippingTotal;
+
+		$text .= '
+				<div class="row" style="border-top:1px solid #ccc;margin-top: 6px;">
+				<p>
+					<div class="col-xs-8">Shipping</div>
+					<div class="col-xs-4 text-right">'.$sc->getCurrencySymbol().number_format($shippingTotal, 2).'</div>
+				</p>
+				</div>
+				<div class="row" style="border-top:4px double #ccc;margin-top: 6px;">
+				<p>
+					<div class="col-xs-8"><b>Total</b></div>
+					<div class="col-xs-4 text-right"><b>'.$sc->getCurrencySymbol().number_format($grandTotal, 2).'</b></div>
+				</p>
+				</div>';
 
 		$text .= '
 			</div>
 		</div>
+		<hr />
 		<div class="row">
 			<div class="col-xs-12">
-				<button class="btn btn-default vstore-btn-back">&laquo; Back</button>
-				<button class="btn btn-primary vstore-btn-buy-now">Buy now!</button>
+				<a class="btn btn-default vstore-btn-back-confirm col-xs-5" href="'.e107::url('vstore', 'checkout', 'sef').'">&laquo; Back</a>
+				<button class="btn btn-primary vstore-btn-buy-now col-xs-5 pull-right" type="submit" name="mode" value="confirm">'.$gatewayIconSmall.' Buy now!</button>
 			</div>
 		</div>
 		
 		
 		';
-
 
 		return $text;
 	}
@@ -1486,23 +1553,62 @@ class vstore
 			// print_a($this->post);
 			$bread = $this->breadcrumb();
 			$text = $this->checkoutComplete();
+			$msg = e107::getMessage()->render('vstore');
 
 			//TODO Check for digital download purchase and render download button.
 
-			$ns->tablerender($this->captionBase, $bread.$text, 'vstore-cart-complete');
+			$ns->tablerender($this->captionBase, $bread.$msg.$text, 'vstore-cart-complete');
 			return null;
 		}
 
+		if(!empty($this->post['gateway']))
+		{
+			$this->setGatewayType($this->post['gateway']);
+
+			if(!empty($this->post['firstname']))
+			{
+				$this->setShippingData($this->post);    // TODO Validate data before proceeding.
+			}
+
+			//return $this->processGateway('init');
+			$bread = $this->breadcrumb();
+			$text = $this->confirmOrderView();
+			$msg = e107::getMessage()->render('vstore');
+			$ns->tablerender($this->captionBase, $bread.$msg.$text, 'vstore-cart-confirm');
+			return null;
+
+		}
 
 		if($this->getMode() == 'checkout')
 		{
 			// print_a($this->post);
 			$bread = $this->breadcrumb();
-			$text = $this->checkoutView();
+
+			if (empty($this->getCheckoutData()))
+			{
+				$text = e107::getMessage()->addError('No items to checkout!', 'vstore')->render('vstore');
+			}
+			else
+			{
+				$text = $this->checkoutView();
+			}
 			$ns->tablerender($this->captionBase, $bread.$text, 'vstore-cart-list');
 			return null;
 		}
 
+		if($this->getMode() == 'confirm')
+		{
+			// print_a($this->post);
+			$msg = e107::getMessage()->render('vstore');
+
+			if ($msg)
+			{
+				$bread = $this->breadcrumb();
+				$ns->tablerender($this->captionBase, $bread.$msg, 'vstore-cart-list');
+			}
+
+			return null;
+		}
 
 
 		if($this->getMode() == 'cart')
@@ -1510,8 +1616,8 @@ class vstore
 			// print_a($this->post);
 			$bread = $this->breadcrumb();
 			$text = $this->cartView();
-			$text = e107::getMessage()->render('vstore') . $text;
-			$ns->tablerender($this->captionBase, $bread.$text, 'vstore-cart-list');
+			$msg = e107::getMessage()->render('vstore');
+			$ns->tablerender($this->captionBase, $bread.$msg.$text, 'vstore-cart-list');
 			return null;
 		}
 
@@ -1520,7 +1626,8 @@ class vstore
 		{
 			$text = $this->productView($this->get['item']);
 			$bread = $this->breadcrumb();
-			$ns->tablerender($this->captionBase, $bread.$text, 'vstore-product-view');
+			$msg = e107::getMessage()->render('vstore');
+			$ns->tablerender($this->captionBase, $bread.$msg.$text, 'vstore-product-view');
 			return null;
 		}
 
@@ -1533,11 +1640,10 @@ class vstore
 			    $subCategoryText .= "<hr />";
 			}
 
-
 			$text = $this->productList($this->get['cat'], true);
 			$bread = $this->breadcrumb();
-			$ns->tablerender($this->captionBase, $bread. $subCategoryText.$text, 'vstore-product-list');
-
+			$msg = e107::getMessage()->render('vstore');
+			$ns->tablerender($this->captionBase, $bread.$msg.$subCategoryText.$text, 'vstore-product-list');
 
 		}
 		else
@@ -1545,10 +1651,9 @@ class vstore
 
 			$text = $this->categoryList(0, true);
 			$bread = $this->breadcrumb();
-			$ns->tablerender($this->captionBase, $bread.$text, 'vstore-category-list');
+			$msg = e107::getMessage()->render('vstore');
+			$ns->tablerender($this->captionBase, $bread.$msg.$text, 'vstore-category-list');
 		}
-
-
 
 	}
 
@@ -1660,51 +1765,65 @@ class vstore
 	private function checkoutView()
 	{
 		$active = $this->getActiveGateways();
-
+		$curGateway = $this->getGatewayType();
 		if(!empty($active))
 		{
-			$text = e107::getForm()->open('gateway-select','post', null, array('class'=>'form'));
+			//$text = e107::getForm()->open('gateway-select','post', null, array('class'=>'form'));
+			$text = e107::getForm()->open('gateway-select','post', e107::url('vstore', 'confirm', 'sef'), array('class'=>'form'));
 
 			$text .= $this->renderForm();
 
 
 			$text .= "<hr /><h3>Select payment method to continue</h3><div class='vstore-gateway-list row'>";
 
+			if (count($active) == 1 && empty($curGateway))
+			{
+				$curGateway = array_keys($active)[0];
+			}
 			foreach($active as $gateway => $icon)
 			{
 
-					$text .= "
+				$text .= "
 						<div class='col-md-4'>
-						<button class='btn btn-default btn-block btn-".$gateway."' name='gateway' type='submit' value='".$gateway."'>".$icon."
-						<h4>".$this->getGatewayTitle($gateway)."</h4>
-						</button>
-
+							<label class='btn btn-default btn-block btn-".$gateway." ".($curGateway == $gateway ? 'active' : '')." vstore-gateway'>
+								<input type='radio' name='gateway' value='".$gateway."' style='display:none;' class='vstore-gateway-radio' required ".($curGateway == $gateway ? 'checked' : '').">
+								".$icon."
+								<h4>".$this->getGatewayTitle($gateway)."</h4>
+							</label>
 						</div>";
-
 
 			}
 
 			$text .= "</div>";
+
+			$text .= '<br/>
+			<div class="row">
+				<div class="col-xs-12">
+					<a class="btn btn-default vstore-btn-back-confirm col-xs-5" href="'.e107::url('vstore', 'cart', 'sef').'">&laquo; Back</a>
+					<button class="btn btn-primary vstore-btn-buy-now col-xs-5 pull-right" type="submit" name="mode" value="gateway">Continue &raquo;</button>
+				</div>
+			</div>';
+
 			$text .= e107::getForm()->close();
 
-			if (vartrue(e107::pref('vstore', 'admin_confirm_order')))
-			{
-				// If the user has to confirm the order
-				$text .= '
-				<script type="text/javascript">
-				$(function(){
-					$("#gateway-select").submit(function(e){
-						if(!confirm("By clicking on OK you confirm that you order the content of the shopping cart for the shown cost!"))
-						{
-							e.preventDefault();
-							return false;
-						}
-						return true;
-					});
-				});
-				</script>
-				';
-			}
+			// if (vartrue(e107::pref('vstore', 'admin_confirm_order')))
+			// {
+			// 	// If the user has to confirm the order
+			// 	$text .= '
+			// 	<script type="text/javascript">
+			// 	$(function(){
+			// 		$("#gateway-select").submit(function(e){
+			// 			if(!confirm("By clicking on OK you confirm that you order the content of the shopping cart for the shown cost!"))
+			// 			{
+			// 				e.preventDefault();
+			// 				return false;
+			// 			}
+			// 			return true;
+			// 		});
+			// 	});
+			// 	</script>
+			// 	';
+			// }
 
 			return $text;
 		}
@@ -1712,6 +1831,42 @@ class vstore
 		return "No Payment Options Set";
 
 
+	}
+
+
+	/**
+	 * Render confirm order page
+	 *
+	 * @return string
+	 */
+	private function confirmOrderView()
+	{
+		$text = e107::getForm()->open('confirm-order','post', null, array('class'=>'form'));
+
+		$text .= $this->renderConfirmOrder();
+
+		$text .= e107::getForm()->close();
+
+		// if (vartrue(e107::pref('vstore', 'admin_confirm_order')))
+		// {
+		// 	// If the user has to confirm the order
+		// 	$text .= '
+		// 	<script type="text/javascript">
+		// 	$(function(){
+		// 		$("#gateway-select").submit(function(e){
+		// 			if(!confirm("By clicking on OK you confirm that you order the content of the shopping cart for the shown cost!"))
+		// 			{
+		// 				e.preventDefault();
+		// 				return false;
+		// 			}
+		// 			return true;
+		// 		});
+		// 	});
+		// 	</script>
+		// 	';
+		// }
+
+		return $text;
 	}
 
 
@@ -1814,22 +1969,16 @@ class vstore
 
 			foreach($data['items'] as $var)
 			{
-				$subtotal = $var['item_price'];
+				$price = $var['item_price'];
 				$itemvarstring = '';
 				if (!empty($var['cart_item_vars']))
 				{
-					// $itemvars = self::item_vars_toArray($var['cart_item_vars']);
-	
-					// foreach($itemvars as $k => $v)
-					// {
-					// 	$itemvarstring .= ($itemvarstring ? ' / ' : '') . vstore::getItemVarString($k, $v);
-					// }
 					$itemprop = self::getItemVarProperties($var['cart_item_vars'], $var['item_price']);
 
 					if ($itemprop)
 					{
 						$itemvarstring = $itemprop['variation'];
-						$subtotal = ($var['item_price'] + $itemprop['price']);
+						$price = ($var['item_price'] + $itemprop['price']);
 					}
 				}
 					
@@ -1838,8 +1987,7 @@ class vstore
 				$items[] = array(
 					'id'          => $var['item_id'],
 					'name'        => $var['item_code'],
-					// 'price'       => $var['item_price'],
-					'price'       => $subtotal,
+					'price'       => $price,
 					'description' => $var['item_name'],
 					'quantity'    => $var['cart_qty'],
 					'file'        => $var['item_download'],
@@ -1863,7 +2011,7 @@ class vstore
 			unset($_SESSION['vstore']['_data']);
 
 			// Forcethe browser window to refresh the cart menu
-			e107::js('inline-footer', '$(function(){ vstoreCartRefresh(); });');
+			e107::js('footer-inline', '$(function(){ vstoreCartRefresh(); });');
 			return null;
 		}
 		elseif($mode === 'init')
@@ -1989,10 +2137,11 @@ class vstore
 		    'order_e107_user'     => USERID,
 		    'order_cust_id'       => '',
 			'order_status'        => 'N' // New
-		 );
+		);
 
-		 $insert['order_items'] = json_encode($items, JSON_PRETTY_PRINT);
+		$insert['order_items'] = json_encode($items, JSON_PRETTY_PRINT);
 
+		unset($shippingData['additional']); // remove temporary data before save
 		foreach($shippingData as $fld=>$val)
 		{
 			$insert[$fld]    = $val;
@@ -2013,7 +2162,7 @@ class vstore
 		if( $nid !== false)
 		{
 			$refId = $this->getOrderRef($nid,$insert['order_ship_firstname'],$insert['order_ship_lastname']);
-			$mes->addSuccess("Your order <b>#".$refId."</b> is complete",'vstore');
+			$mes->addSuccess("Your order <b>#".$refId."</b> is complete and you will receive a order confirmation with all details within the next few minutes!",'vstore');
 			$this->updateInventory($insert['order_items']);
 			$this->emailCustomer('default', $refId, $insert);
 
@@ -2272,12 +2421,13 @@ class vstore
 	 * Return the icon for the given gateway
 	 *
 	 * @param string $type
+	 * @param string $size default 5x (2x, 3x, 4x, 5x)
 	 * @return string
 	 */
-	private function getGatewayIcon($type='')
+	private function getGatewayIcon($type='', $size='5x')
 	{
 		$text = !empty(self::$gateways[$type]) ? self::$gateways[$type]['icon'] : '';
-		return e107::getParser()->toGlyph($text, array('size'=>'5x'));
+		return e107::getParser()->toGlyph($text, array('size'=>$size));
 
 	}
 
@@ -3088,6 +3238,7 @@ class vstore
 		$pref = e107::pref('vstore');
 		$fields = self::getShippingFields();
 		$order_ship_add_fields = array();
+		$order_tmp = array();
 		foreach($fields as $fld)
 		{
 			if (substr($fld, 0, strlen('add_field')) == 'add_field')
@@ -3097,6 +3248,7 @@ class vstore
 				if ($pref['additional_fields'][$fieldid]['type'] == 'text')
 				{
 					$order_ship_add_fields[] = $caption . ': ' . trim(strip_tags($data[$fld]));
+					$order_tmp[$fieldid] = trim(strip_tags($data[$fld]));
 				}
 				elseif ($pref['additional_fields'][$fieldid]['type'] == 'checkbox')
 				{
@@ -3110,6 +3262,8 @@ class vstore
 		}
 		if (varset($order_ship_add_fields))
 		{
+			$_SESSION['vstore']['shipping']['additional']['notes'] = $_SESSION['vstore']['shipping']['order_ship_notes'];
+			$_SESSION['vstore']['shipping']['additional']['fields'] = json_encode($order_tmp);
 			if ($_SESSION['vstore']['shipping']['order_ship_notes'] != '')
 			{
 				$_SESSION['vstore']['shipping']['order_ship_notes'] .= "\n\n";
