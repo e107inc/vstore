@@ -1170,9 +1170,28 @@ class vstore
 		// 	return $this->processGateway('init');
 		// }
 
-		if(!empty($this->post['confirm']))
+		if($this->post['mode'] == 'confirm')
 		{
-			return $this->processGateway('init');
+			$this->setMode($this->post['mode']);
+			if (empty($this->getGatewayType()))
+			{
+				e107::getMessage()->addError('No payment method selected!', 'vstore');
+				return null;
+			}
+			elseif (empty($this->getCheckoutData()))
+			{
+				e107::getMessage()->addError('No items to checkout!', 'vstore');
+				return null;
+			}
+			elseif (empty($this->getShippingData()))
+			{
+				e107::getMessage()->addError('No shipping data set!', 'vstore');
+				return null;
+			}
+			else
+			{
+				return $this->processGateway('init');
+			}
 		}
 
 		if($this->get['mode'] == 'return')
@@ -1428,7 +1447,10 @@ class vstore
 		$text .= $frm->getCountry($shippingData['order_ship_country']) . '<br/>';
 
 		$text .= '
-			</div>
+			<br />
+			<h4>Selected payment method</h4>
+			<p>' . $gatewayIcon . ' ' . $gatewayTitle . '</p>
+		</div>
 			<div class="col-xs-12 col-sm-6 col-md-6">
 				<h4>Items</h4>';
 
@@ -1481,13 +1503,7 @@ class vstore
 		$text .= '
 			</div>
 		</div>
-		<div class="row">
-			<div class="col-xs-12">
-			<h4>Selected payment method</h4>
-			<p>' . $gatewayIcon . ' ' . $gatewayTitle . '</p>
-			</div>
-		</div>
-		<br/>
+		<hr />
 		<div class="row">
 			<div class="col-xs-12">
 				<a class="btn btn-default vstore-btn-back-confirm col-xs-5" href="'.e107::url('vstore', 'checkout', 'sef').'">&laquo; Back</a>
@@ -1537,10 +1553,11 @@ class vstore
 			// print_a($this->post);
 			$bread = $this->breadcrumb();
 			$text = $this->checkoutComplete();
+			$msg = e107::getMessage()->render('vstore');
 
 			//TODO Check for digital download purchase and render download button.
 
-			$ns->tablerender($this->captionBase, $bread.$text, 'vstore-cart-complete');
+			$ns->tablerender($this->captionBase, $bread.$msg.$text, 'vstore-cart-complete');
 			return null;
 		}
 
@@ -1556,7 +1573,8 @@ class vstore
 			//return $this->processGateway('init');
 			$bread = $this->breadcrumb();
 			$text = $this->confirmOrderView();
-			$ns->tablerender($this->captionBase, $bread.$text, 'vstore-cart-confirm');
+			$msg = e107::getMessage()->render('vstore');
+			$ns->tablerender($this->captionBase, $bread.$msg.$text, 'vstore-cart-confirm');
 			return null;
 
 		}
@@ -1565,8 +1583,30 @@ class vstore
 		{
 			// print_a($this->post);
 			$bread = $this->breadcrumb();
-			$text = $this->checkoutView();
+
+			if (empty($this->getCheckoutData()))
+			{
+				$text = e107::getMessage()->addError('No items to checkout!', 'vstore')->render('vstore');
+			}
+			else
+			{
+				$text = $this->checkoutView();
+			}
 			$ns->tablerender($this->captionBase, $bread.$text, 'vstore-cart-list');
+			return null;
+		}
+
+		if($this->getMode() == 'confirm')
+		{
+			// print_a($this->post);
+			$msg = e107::getMessage()->render('vstore');
+
+			if ($msg)
+			{
+				$bread = $this->breadcrumb();
+				$ns->tablerender($this->captionBase, $bread.$msg, 'vstore-cart-list');
+			}
+
 			return null;
 		}
 
@@ -1576,8 +1616,8 @@ class vstore
 			// print_a($this->post);
 			$bread = $this->breadcrumb();
 			$text = $this->cartView();
-			$text = e107::getMessage()->render('vstore') . $text;
-			$ns->tablerender($this->captionBase, $bread.$text, 'vstore-cart-list');
+			$msg = e107::getMessage()->render('vstore');
+			$ns->tablerender($this->captionBase, $bread.$msg.$text, 'vstore-cart-list');
 			return null;
 		}
 
@@ -1586,7 +1626,8 @@ class vstore
 		{
 			$text = $this->productView($this->get['item']);
 			$bread = $this->breadcrumb();
-			$ns->tablerender($this->captionBase, $bread.$text, 'vstore-product-view');
+			$msg = e107::getMessage()->render('vstore');
+			$ns->tablerender($this->captionBase, $bread.$msg.$text, 'vstore-product-view');
 			return null;
 		}
 
@@ -1599,11 +1640,10 @@ class vstore
 			    $subCategoryText .= "<hr />";
 			}
 
-
 			$text = $this->productList($this->get['cat'], true);
 			$bread = $this->breadcrumb();
-			$ns->tablerender($this->captionBase, $bread. $subCategoryText.$text, 'vstore-product-list');
-
+			$msg = e107::getMessage()->render('vstore');
+			$ns->tablerender($this->captionBase, $bread.$msg.$subCategoryText.$text, 'vstore-product-list');
 
 		}
 		else
@@ -1611,10 +1651,9 @@ class vstore
 
 			$text = $this->categoryList(0, true);
 			$bread = $this->breadcrumb();
-			$ns->tablerender($this->captionBase, $bread.$text, 'vstore-category-list');
+			$msg = e107::getMessage()->render('vstore');
+			$ns->tablerender($this->captionBase, $bread.$msg.$text, 'vstore-category-list');
 		}
-
-
 
 	}
 
@@ -1737,26 +1776,21 @@ class vstore
 
 			$text .= "<hr /><h3>Select payment method to continue</h3><div class='vstore-gateway-list row'>";
 
+			if (count($active) == 1 && empty($curGateway))
+			{
+				$curGateway = array_keys($active)[0];
+			}
 			foreach($active as $gateway => $icon)
 			{
 
-				// <label class="btn btn-default btn-circle btn-lg">       <input type="radio" name="q1" value="1"><i class="glyphicon glyphicon-ok"></i></label>
-				// $text .= "
-				// 		<div class='col-md-4'>
-				// 		<button class='btn btn-default btn-block btn-".$gateway."' name='gateway' type='submit' value='".$gateway."'>".$icon."
-				// 		<h4>".$this->getGatewayTitle($gateway)."</h4>
-				// 		</button>
-
-				// 		</div>";
 				$text .= "
 						<div class='col-md-4'>
-							<label class='btn btn-default btn-block btn-".$gateway." ".($curGateway == $gateway ? 'active' : '')."'>
-								<input type='radio' name='gateway' value='".$gateway."' style='display:none;' required ".($curGateway == $gateway ? 'checked' : '').">
+							<label class='btn btn-default btn-block btn-".$gateway." ".($curGateway == $gateway ? 'active' : '')." vstore-gateway'>
+								<input type='radio' name='gateway' value='".$gateway."' style='display:none;' class='vstore-gateway-radio' required ".($curGateway == $gateway ? 'checked' : '').">
 								".$icon."
 								<h4>".$this->getGatewayTitle($gateway)."</h4>
 							</label>
 						</div>";
-
 
 			}
 
@@ -1769,8 +1803,6 @@ class vstore
 					<button class="btn btn-primary vstore-btn-buy-now col-xs-5 pull-right" type="submit" name="mode" value="gateway">Continue &raquo;</button>
 				</div>
 			</div>';
-
-
 
 			$text .= e107::getForm()->close();
 
@@ -1937,22 +1969,16 @@ class vstore
 
 			foreach($data['items'] as $var)
 			{
-				$subtotal = $var['item_price'];
+				$price = $var['item_price'];
 				$itemvarstring = '';
 				if (!empty($var['cart_item_vars']))
 				{
-					// $itemvars = self::item_vars_toArray($var['cart_item_vars']);
-	
-					// foreach($itemvars as $k => $v)
-					// {
-					// 	$itemvarstring .= ($itemvarstring ? ' / ' : '') . vstore::getItemVarString($k, $v);
-					// }
 					$itemprop = self::getItemVarProperties($var['cart_item_vars'], $var['item_price']);
 
 					if ($itemprop)
 					{
 						$itemvarstring = $itemprop['variation'];
-						$subtotal = ($var['item_price'] + $itemprop['price']);
+						$price = ($var['item_price'] + $itemprop['price']);
 					}
 				}
 					
@@ -1961,8 +1987,7 @@ class vstore
 				$items[] = array(
 					'id'          => $var['item_id'],
 					'name'        => $var['item_code'],
-					// 'price'       => $var['item_price'],
-					'price'       => $subtotal,
+					'price'       => $price,
 					'description' => $var['item_name'],
 					'quantity'    => $var['cart_qty'],
 					'file'        => $var['item_download'],
@@ -1986,7 +2011,7 @@ class vstore
 			unset($_SESSION['vstore']['_data']);
 
 			// Forcethe browser window to refresh the cart menu
-			e107::js('inline-footer', '$(function(){ vstoreCartRefresh(); });');
+			e107::js('footer-inline', '$(function(){ vstoreCartRefresh(); });');
 			return null;
 		}
 		elseif($mode === 'init')
@@ -2137,7 +2162,7 @@ class vstore
 		if( $nid !== false)
 		{
 			$refId = $this->getOrderRef($nid,$insert['order_ship_firstname'],$insert['order_ship_lastname']);
-			$mes->addSuccess("Your order <b>#".$refId."</b> is complete",'vstore');
+			$mes->addSuccess("Your order <b>#".$refId."</b> is complete and you will receive a order confirmation with all details within the next few minutes!",'vstore');
 			$this->updateInventory($insert['order_items']);
 			$this->emailCustomer('default', $refId, $insert);
 
