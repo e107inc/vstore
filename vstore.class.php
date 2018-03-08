@@ -2112,10 +2112,11 @@ class vstore
 		    'order_e107_user'     => USERID,
 		    'order_cust_id'       => '',
 			'order_status'        => 'N' // New
-		 );
+		);
 
-		 $insert['order_items'] = json_encode($items, JSON_PRETTY_PRINT);
+		$insert['order_items'] = json_encode($items, JSON_PRETTY_PRINT);
 
+		unset($shippingData['additional']); // remove temporary data before save
 		foreach($shippingData as $fld=>$val)
 		{
 			$insert[$fld]    = $val;
