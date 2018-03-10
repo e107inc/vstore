@@ -473,11 +473,6 @@ class vstore_plugin_shortcodes extends e_shortcode
 	
 	function sc_item_brand_url($parm=null)
 	{
-		// if(!empty($this->var['cat_sef']))
-		// {
-		// 	return $this->var['item_link'];
-		// }
-	
 		return e107::url('vstore', 'category', array('cat_sef' => $this->var['cat_sef']));
 	}
 
@@ -634,18 +629,26 @@ class vstore_plugin_shortcodes extends e_shortcode
 		}
 
 
-		$qry = 'SELECT media_id,media_name FROM #core_media WHERE media_id IN ('.implode(',',$id).') ORDER BY media_name ';
-		$files = e107::getDb()->retrieve($qry,true);
+		// $qry = 'SELECT media_id,media_name FROM #core_media WHERE media_id IN ('.implode(',',$id).') ORDER BY media_name ';
+		// $files = e107::getDb()->retrieve($qry,true);
 
-		$tp = e107::getParser();
+		// $tp = e107::getParser();
 		
-		$text = '<ul>';
-		foreach($files as $i)
-		{
-			$bb = '[file='.$i['media_id'].']'.$i['media_name'].'[/file]';
-			$text .= '<li>'.$tp->toHtml($bb,true).'</li>';
+		// $text = '<ul>';
+		// foreach($files as $i)
+		// {
+		// 	// $bb = '[file='.$i['media_id'].']'.$i['media_name'].'[/file]';
+		// 	// $text .= '<li>'.$tp->toHtml($bb,true).'</li>';
+		// }
+		
+		foreach ($ival as $item) {
+			if(!empty($item['path']) && !empty($item['id']))
+			{
+				$linktext = $item['name'];
+				$text .= '<li><a href="'.e107::url('vstore', 'download', array('item_id' => $item['id']), array('mode'=>'full')).'">'.$linktext.'</a></li>';
+			}
 		}
-		
+
 		$text .= '</ul>';
 		
 		return $text;
@@ -1533,15 +1536,18 @@ class vstore
 
 		$ns = e107::getRender();
 
+
 		if (!empty($this->get['download']))
 		{
 			if (!$this->downloadFile($this->get['download']))
 			{
-				echo e107::getMessage()->render('vstore');
+				$bread = $this->breadcrumb();
+				$msg = e107::getMessage()->render('vstore');
+	
+				$ns->tablerender($this->captionBase, $bread.$msg, 'vstore-download-failed');
 				return null;
 			}
 		}
-
 		
 		if($this->getMode() == 'return')
 		{
@@ -1549,8 +1555,6 @@ class vstore
 			$bread = $this->breadcrumb();
 			$text = $this->checkoutComplete();
 			$msg = e107::getMessage()->render('vstore');
-
-			//TODO Check for digital download purchase and render download button.
 
 			$ns->tablerender($this->captionBase, $bread.$msg.$text, 'vstore-cart-complete');
 			return null;
@@ -1673,7 +1677,14 @@ class vstore
 
 		if (!isset($this->get['mode']))
 		{
-			$array[] = array('url'=> e107::url('vstore','index'), 'text'=>$this->captionCategories);
+			if (!empty($this->get['download']))
+			{
+				$array[] = array('url'=> e107::url('vstore','index'), 'text'=>'Download');
+			}
+			else
+			{
+				$array[] = array('url'=> e107::url('vstore','index'), 'text'=>$this->captionCategories);
+			}
 		}
 		
 		if($this->get['cat'] || $this->get['item'])

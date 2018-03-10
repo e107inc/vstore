@@ -22,9 +22,9 @@ class vstore_url // plugin-folder + '_url'
 		$config = array();
 
 		$config['download'] = array(
-			'regex'			=> '^{alias}\/download/([\d]*)$',
+			'regex'			=> '^{alias}\/dl/([\d]*)$',
 			'redirect'		=> '{e_PLUGIN}vstore/vstore.php?download=$1&',
-			'sef'			=> '{alias}/download/{item_id}'
+			'sef'			=> '{alias}/dl/{item_id}'
 		);
 		
 		$config['cancel'] = array(
