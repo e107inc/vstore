@@ -28,7 +28,8 @@ class vstore_plugin_shortcodes extends e_shortcode
 	{
 	 	$this->vpref = e107::pref('vstore');	
 				
-		$this->symbols = array('USD'=>'$','EUR'=>'€','CAN'=>'$','GBP'=>'£', "BTC"=> "<i class='fa fa-btc'></i>");
+		//$this->symbols = array('USD'=>'$','EUR'=>'€','CAN'=>'$','GBP'=>'£', "BTC"=> "<i class='fa fa-btc'></i>");
+		$this->symbols = array('USD'=>'$','EUR'=>'€','CAN'=>'$','GBP'=>'£', "BTC"=> e107::getParser()->toGlyph('fa-btc'));
 		$currency = !empty($this->vpref['currency']) ? $this->vpref['currency'] : 'USD';
 
 		$this->curSymbol = vartrue($this->symbols[$currency],'$');
@@ -692,19 +693,11 @@ class vstore_plugin_shortcodes extends e_shortcode
 		{
 			return "<a href='#' class='btn-out-of-stock ".$classo."'".$itemid.">".$this->captionOutOfStock."</a>";
 		}
-		// if(empty($this->var['item_inventory']))
-		// {
-		// 	return "<a href='#' class='btn-out-of-stock ".$classo."'".$itemid.">".$this->captionOutOfStock."</a>";
-		// }
 
-	
-		// $url = ($this->var['item_price'] == '0.00' || empty($this->var['item_inventory'])) ? $this->sc_item_url() :e107::url('vstore', 'addtocart', $this->var);
-		// $label =  ($this->var['item_price'] == '0.00' || empty($this->var['item_inventory'])) ? LAN_READ_MORE : 'Add to cart';
 		$label =  ($this->var['item_price'] == '0.00' || !$inStock) ? LAN_READ_MORE : 'Add to cart';
 
 
-		// return '<a class="'.$class.'" '.$itemid.' href="'.$url.'"><span class="glyphicon glyphicon-shopping-cart"></span> '.$label.'</a>';
-		return '<a class="'.$class.'" '.$itemid.' href="#"><span class="glyphicon glyphicon-shopping-cart"></span> '.$label.'</a>';
+		return '<a class="'.$class.'" '.$itemid.' href="#">'.e107::getParser()->toGlyph('fa-shopping-cart').' '.$label.'</a>';
 	}
 
 
@@ -775,8 +768,9 @@ class vstore_plugin_shortcodes extends e_shortcode
 	
 	function sc_cart_removebutton($parm=null)
 	{
+
 		return '<button type="submit" name="cartRemove['.$this->var['cart_id'].']" class="btn btn-default btn-secondary" title="Remove">
-			<span class="fa fa-trash"></span></button>';
+			'.e107::getParser()->toGlyph('fa-trash').'</button>';
 		
 	}
 	
@@ -793,7 +787,7 @@ class vstore_plugin_shortcodes extends e_shortcode
 	function sc_cart_checkout_button()
 	{
 		$text = '<a href="'.e107::url('vstore','checkout').'" id="cart-checkout"  class="btn btn-success">
-		                            Checkout <span class="glyphicon glyphicon-play"></span>
+		                            Checkout '.e107::getParser()->toGlyph('fa-play').'
 		                        </a>
 		                        <button id="cart-qty-submit" style="display:none" type="submit" class="btn btn-warning">Re-Calculate</button>
 
@@ -812,7 +806,7 @@ class vstore_plugin_shortcodes extends e_shortcode
 		
 		return '
 		<a href="'.$link.'" class="btn btn-default btn-secondary">
-			<span class="glyphicon glyphicon-shopping-cart"></span> Continue Shopping
+		'.e107::getParser()->toGlyph('fa-shopping-cart').' Continue Shopping
 		</a>';
 	}
 

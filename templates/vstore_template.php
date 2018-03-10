@@ -27,12 +27,12 @@ $VSTORE_TEMPLATE['list']['item']    =  '
 						                            <!--
 						                            <div class="ratings">
 						                                <p class="pull-right">15 reviews</p>
-						                                <p>
-						                                    <span class="glyphicon glyphicon-star"></span>
-						                                    <span class="glyphicon glyphicon-star"></span>
-						                                    <span class="glyphicon glyphicon-star"></span>
-						                                    <span class="glyphicon glyphicon-star"></span>
-						                                    <span class="glyphicon glyphicon-star"></span>
+														<p>
+															<i class="fa fa-star"></i>
+															<i class="fa fa-star"></i>
+															<i class="fa fa-star"></i>
+															<i class="fa fa-star"></i>
+															<i class="fa fa-star"></i>
 						                                </p>
 						                            </div>
 						                            -->
