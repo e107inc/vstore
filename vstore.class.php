@@ -192,6 +192,27 @@ class vstore_plugin_shortcodes extends e_shortcode
 
 	}
 
+	function sc_order_gateway_title($parm=null)
+	{
+		$gateways = vstore::getGateways();
+		$gatewayType = $this->var['order_pay_gateway'];
+		return $gateways[$gatewayType]['title'];
+	}
+
+	function sc_order_gateway_icon($parm=null)
+	{
+		$gateways = vstore::getGateways();
+		$gatewayType = $this->var['order_pay_gateway'];
+		$icon = $gateways[$gatewayType]['icon'];
+		if (empty($icon)) return '';
+
+		if (empty($parm['size']))
+		{
+			return e107::getParser()->toGlyph($icon, array('size'=>'2x'));
+		}
+		return e107::getParser()->toGlyph($icon, array('size'=>$parm['size']));
+	}
+
 	function sc_sender_name()
 	{
 		$info = e107::pref('vstore', 'sender_name');
@@ -205,7 +226,10 @@ class vstore_plugin_shortcodes extends e_shortcode
 	}
 
 
-
+	function sc_order_checkout_url()
+	{
+		return e107::url('vstore', 'checkout', 'sef');
+	}
 
 
 
@@ -1416,100 +1440,51 @@ class vstore
 
 	}
 
+	/**
+	 * Render the confirm order page to review a summary of the order before confirming the order
+	 *
+	 * @return string
+	 */
 	private function renderConfirmOrder()
 	{
 
-		$shippingData = $this->getShippingData();
-		$cartData = $this->getCartData();
-
-		$gatewayType = $this->getGatewayType();
-		$gatewayIcon = $this->getGatewayIcon($gatewayType, '2x');
-		$gatewayIconSmall = $this->getGatewayIcon($gatewayType, '1x');
-		$gatewayTitle = $this->getGatewayTitle($gatewayType);
-
-		//$this->sc = new vstore_plugin_shortcodes();
-
-		$frm = e107::getForm();
-
-		$text = '
-		<h3>Summary</h3>
-		<div class="row">
-			<div class="col-12 col-xs-12 col-sm-6 col-md-6">
-				<h4>Shipping address</h4>';
-		
-		$text .= $shippingData['order_ship_firstname'] . ' ' . $shippingData['order_ship_lastname'] . '<br/>';
-		$text .= $shippingData['order_ship_company'] . '<br/>';
-		$text .= $shippingData['order_ship_address'] . '<br/>';
-		$text .= $shippingData['order_ship_city'] . ', ' . $shippingData['order_ship_state'] . ' ' . $shippingData['order_ship_zip'] . '<br/>';
-		$text .= $frm->getCountry($shippingData['order_ship_country']) . '<br/>';
-
-		$text .= '
-			<br />
-			<h4>Selected payment method</h4>
-			<p>' . $gatewayIcon . ' ' . $gatewayTitle . '</p>
-		</div>
-			<div class="col-6 col-xs-12 col-sm-6 col-md-6">
-				<h4>Items</h4>';
-
-		$grandTotal = 0.0;
-		$shippingTotal = 0.0;
-		foreach($cartData as $row)
+		$data = $this->getShippingData();
+		$checkoutData = $this->getCheckoutData();
+		foreach($checkoutData['items'] as $var)
 		{
-			$subtotal = $row['item_price'] * $row['cart_qty'];
-			$itemvar = '';
-			if (!empty($row['cart_item_vars']))
+			$price = $var['item_price'];
+			$itemvarstring = '';
+			if (!empty($var['cart_item_vars']))
 			{
-				$itemprop = self::getItemVarProperties($row['cart_item_vars'], $row['item_price']);
+				$itemprop = self::getItemVarProperties($var['cart_item_vars'], $var['item_price']);
 
 				if ($itemprop)
 				{
-					$itemvar = $itemprop['variation'];
-					$subtotal = ($row['item_price'] + $itemprop['price']) * $row['cart_qty'];
+					$itemvarstring = $itemprop['variation'];
 				}
-				$itemvar = '<br/><span class="small">'.$itemvar.'</span>';
 			}
-			$grandTotal += $subtotal;
-			$shippingTotal += ($row['cart_qty'] * $row['item_shipping']);	
-
-			$text .= '
-				<div class="row">
-				<p>
-					<div class="col-8 col-xs-8">'.$row['item_name'].$itemvar.'</div>
-					<div class="col-4 col-xs-4 text-right">'.$this->sc->getCurrencySymbol().number_format($subtotal, 2).'</div>
-				</p>
-				</div>';
-
+				
+			$items[] = array(
+				'id'          => $var['item_id'],
+				'name'        => $var['item_code'],
+				'price'       => $price,
+				'description' => $var['item_name'],
+				'quantity'    => $var['cart_qty'],
+				'file'        => $var['item_download'],
+				'vars'		  => $itemvarstring,
+			);
 		}
 
-		$grandTotal += $shippingTotal;
+		$data['order_items'] 		  = $items;
+		$data['order_pay_gateway'] 	  = $this->getGatewayType();
+		$data['order_pay_amount']     = $checkoutData['totals']['cart_grandTotal'];
+		$data['order_pay_shipping']   = $checkoutData['totals']['cart_shippingTotal'];
 
-		$text .= '
-				<div class="row" style="border-top:1px solid #ccc;margin-top: 6px;">
-				<p>
-					<div class="col-8 col-xs-8">Shipping</div>
-					<div class="col-4 col-xs-4 text-right">'.$this->sc->getCurrencySymbol().number_format($shippingTotal, 2).'</div>
-				</p>
-				</div>
-				<div class="row" style="border-top:4px double #ccc;margin-top: 6px;">
-				<p>
-					<div class="col-8 col-xs-8"><b>Total</b></div>
-					<div class="col-4 col-xs-4 text-right"><b>'.$this->sc->getCurrencySymbol().number_format($grandTotal, 2).'</b></div>
-				</p>
-				</div>';
+		$template = e107::getTemplate('vstore', 'vstore', 'orderconfirm');
 
-		$text .= '
-			</div>
-		</div>
-		<hr />
-		<div class="row">
-			<div class="col-12 col-xs-12">
-				<a class="btn btn-default btn-secondary vstore-btn-back-confirm" href="'.e107::url('vstore', 'checkout', 'sef').'">&laquo; Back</a>
-				<button class="btn btn-primary vstore-btn-buy-now pull-right float-right" type="submit" name="mode" value="confirm">'.$gatewayIconSmall.' Buy now!</button>
-			</div>
-		</div>
-		
-		
-		';
+		$this->sc->setVars($data);
+
+		$text = e107::getParser()->parseTemplate($template, true, $this->sc);
 
 		return $text;
 	}
@@ -2395,6 +2370,11 @@ class vstore
 			}
 		}
 
+	}
+
+	public static function getGateways()
+	{
+		return self::$gateways;
 	}
 
 	/**

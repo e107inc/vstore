@@ -162,3 +162,32 @@ $VSTORE_WRAPPER['item']['ITEM_PIC: w=200&h=200&crop=1&item=5&link=1&class=thumbn
 $VSTORE_WRAPPER['item']['ITEM_PIC: w=200&h=200&crop=1&item=6&link=1&class=thumbnail img-responsive'] = "<div class='col-xs-3'><p>{---}</p></div>";
 $VSTORE_WRAPPER['item']['ITEM_PIC: w=200&h=200&crop=1&item=7&link=1&class=thumbnail img-responsive'] = "<div class='col-xs-3'><p>{---}</p></div>";
 
+$VSTORE_TEMPLATE['orderconfirm'] = '
+		<h3>Summary</h3>
+		<div class="row">
+			<div class="col-12 col-xs-12 col-sm-6 col-md-6">
+				<h4>Shipping address</h4>
+
+				<p>{ORDER_SHIP_FIRSTNAME} {ORDER_SHIP_LASTNAME}</p>
+				<p>{ORDER_SHIP_COMPANY}</p>
+				<p>{ORDER_SHIP_ADDRESS}</p>
+				<p>{ORDER_SHIP_CITY}, {ORDER_SHIP_STATE} {ORDER_SHIP_ZIP}</p>
+				<p>{ORDER_SHIP_COUNTRY}</p>
+				<br />
+				<h4>Selected payment method</h4>
+				<p>{ORDER_GATEWAY_ICON} {ORDER_GATEWAY_TITLE}</p>
+			</div>
+
+			<div class="col-6 col-xs-12 col-sm-6 col-md-6">
+				<h4>Items</h4>
+				{ORDER_ITEMS}
+			</div>
+		</div>
+		<hr />
+		<div class="row">
+			<div class="col-12 col-xs-12">
+				<a class="btn btn-default btn-secondary vstore-btn-back-confirm" href="{ORDER_CHECKOUT_URL}">&laquo; Back</a>
+				<button class="btn btn-primary vstore-btn-buy-now pull-right float-right" type="submit" name="mode" value="confirm">{ORDER_GATEWAY_ICON: size=1x} Buy now!</button>
+			</div>
+		</div>
+		';
