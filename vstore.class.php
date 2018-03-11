@@ -602,7 +602,15 @@ class vstore_plugin_shortcodes extends e_shortcode
 	{
 		return e107::getParser()->toHtml($this->vpref['howtoorder'],true,'BODY');	
 	}
-	
+
+	/**
+	 * Creates download links to the "attached" media files
+	 * This are NOT the purchased files to download!
+	 * Just "some" files which will be shown on the product page
+	 *
+	 * @param integer $parm
+	 * @return string
+	 */
 	function sc_item_files($parm=0)
 	{
 
@@ -629,26 +637,17 @@ class vstore_plugin_shortcodes extends e_shortcode
 		}
 
 
-		// $qry = 'SELECT media_id,media_name FROM #core_media WHERE media_id IN ('.implode(',',$id).') ORDER BY media_name ';
-		// $files = e107::getDb()->retrieve($qry,true);
+		$qry = 'SELECT media_id,media_name FROM #core_media WHERE media_id IN ('.implode(',',$id).') ORDER BY media_name ';
+		$files = e107::getDb()->retrieve($qry,true);
 
-		// $tp = e107::getParser();
+		$tp = e107::getParser();
 		
-		// $text = '<ul>';
-		// foreach($files as $i)
-		// {
-		// 	// $bb = '[file='.$i['media_id'].']'.$i['media_name'].'[/file]';
-		// 	// $text .= '<li>'.$tp->toHtml($bb,true).'</li>';
-		// }
-		
-		foreach ($ival as $item) {
-			if(!empty($item['path']) && !empty($item['id']))
-			{
-				$linktext = $item['name'];
-				$text .= '<li><a href="'.e107::url('vstore', 'download', array('item_id' => $item['id']), array('mode'=>'full')).'">'.$linktext.'</a></li>';
-			}
+		$text = '<ul>';
+		foreach($files as $i)
+		{
+			$bb = '[file='.$i['media_id'].']'.$i['media_name'].'[/file]';
+			$text .= '<li>'.$tp->toHtml($bb, true).'</li>';
 		}
-
 		$text .= '</ul>';
 		
 		return $text;
@@ -1428,7 +1427,7 @@ class vstore
 		$gatewayIconSmall = $this->getGatewayIcon($gatewayType, '1x');
 		$gatewayTitle = $this->getGatewayTitle($gatewayType);
 
-		$sc = new vstore_plugin_shortcodes();
+		//$this->sc = new vstore_plugin_shortcodes();
 
 		$frm = e107::getForm();
 
@@ -1476,7 +1475,7 @@ class vstore
 				<div class="row">
 				<p>
 					<div class="col-8 col-xs-8">'.$row['item_name'].$itemvar.'</div>
-					<div class="col-4 col-xs-4 text-right">'.$sc->getCurrencySymbol().number_format($subtotal, 2).'</div>
+					<div class="col-4 col-xs-4 text-right">'.$this->sc->getCurrencySymbol().number_format($subtotal, 2).'</div>
 				</p>
 				</div>';
 
@@ -1488,13 +1487,13 @@ class vstore
 				<div class="row" style="border-top:1px solid #ccc;margin-top: 6px;">
 				<p>
 					<div class="col-8 col-xs-8">Shipping</div>
-					<div class="col-4 col-xs-4 text-right">'.$sc->getCurrencySymbol().number_format($shippingTotal, 2).'</div>
+					<div class="col-4 col-xs-4 text-right">'.$this->sc->getCurrencySymbol().number_format($shippingTotal, 2).'</div>
 				</p>
 				</div>
 				<div class="row" style="border-top:4px double #ccc;margin-top: 6px;">
 				<p>
 					<div class="col-8 col-xs-8"><b>Total</b></div>
-					<div class="col-4 col-xs-4 text-right"><b>'.$sc->getCurrencySymbol().number_format($grandTotal, 2).'</b></div>
+					<div class="col-4 col-xs-4 text-right"><b>'.$this->sc->getCurrencySymbol().number_format($grandTotal, 2).'</b></div>
 				</p>
 				</div>';
 
@@ -1545,6 +1544,15 @@ class vstore
 				$msg = e107::getMessage()->render('vstore');
 	
 				$ns->tablerender($this->captionBase, $bread.$msg, 'vstore-download-failed');
+				return null;
+			}
+			else
+			{
+				// Not needed but ...
+				$bread = $this->breadcrumb();
+				$msg = e107::getMessage()->addSuccess('File successfully downloaded!')->render('vstore');
+
+				$ns->tablerender($this->captionBase, $bread.$msg, 'vstore-download-done');
 				return null;
 			}
 		}
@@ -1914,8 +1922,11 @@ class vstore
 				$mode = 'halt';
 				$this->setMode('return');
 
-				$message = e107::getParser()->toHtml($this->pref['bank_transfer']['details'],true);
-
+				if (!empty($this->pref['bank_transfer']['details']))
+				{
+					$message = '<br />Use the following bank account information for your payment:<br />';
+					$message .= e107::getParser()->toHtml($this->pref['bank_transfer']['details'],true);
+				}
 
 				break;
 
@@ -2315,8 +2326,8 @@ class vstore
 
 		$insert['order_ref'] = $ref;
 
-		$sc = new vstore_plugin_shortcodes;
-		$sc->setVars($insert);
+		//$sc = new vstore_plugin_shortcodes;
+		$this->sc->setVars($insert);
 
 		$subject    = "Your Order #[x] at ".SITENAME; //todo add to template
 
@@ -2330,7 +2341,7 @@ class vstore
 			//		'replyto'		=> $email,
 					'html'			=> true,
 					'template'		=> 'default',
-					'body'			=> $tp->parseTemplate($template,true,$sc)
+					'body'			=> $tp->parseTemplate($template,true,$this->sc)
 		);
 
 	//	$debug = e107::getEmail()->preview($eml);
@@ -2595,7 +2606,7 @@ class vstore
 
 
 		$text = '
-			<div class="row">
+			<div clas s="row">
 		       ';
 
 			
@@ -2791,7 +2802,7 @@ class vstore
 			$tmp = e107::unserialize($data['item_files']);
 			if(!empty($tmp[0]['path']))
 			{
-				$tabData['files']		= array('caption'=>'Downloads', 'text'=> $tmpl['item']['files']);
+				$tabData['files']		= array('caption'=>'Files', 'text'=> $tmpl['item']['files']);
 			}
 		}
 		
@@ -3300,6 +3311,7 @@ class vstore
 		if (varset($filepath))
 		{
 			e107::getFile()->send($filepath); 
+			return true;
 		}
 		else
 		{
@@ -3338,8 +3350,10 @@ class vstore
 			return false;
 		}
 
+		$order_status = 'N';
 		while($order = $sql->fetch())
 		{
+			$order_status = $order['order_status'];
 			if ($order['order_status'] == 'C')
 			{
 				// Status Completed = Payment OK, regardless of the orde_pay_status (e.g. in case of banktransfer)
@@ -3352,7 +3366,7 @@ class vstore
 			}
 		}
 		// Order not completed or payment not complete + order_status = New 
-		e107::getMessage()->addError('Your order is still in a state ('.vstore::getStatus($order['order_status']).') which doesn\'t allow to download the file!', 'vstore');
+		e107::getMessage()->addError('Your order is still in a state ('.vstore::getStatus($order_status).') which doesn\'t allow to download the file!', 'vstore');
 		return false;
 	}
 
