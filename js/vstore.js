@@ -157,15 +157,23 @@ var e107 = e107 || {'settings': {}, 'behaviors': {}};
 						if (msg.substr(0, 2) == 'ok')
 						{
 							// if ok, update cart menu with new content
-							msg = msg.substr(2);
-							$('#vstore-cart-dropdown').replaceWith(msg);
-							var itemcount = $('#vstore-item-count').text();
+							msg = $.trim(msg.substr(2));
+							$('#vstore-cart-dropdown').html(msg);
+							var itemcount = $('#vstore-item-count').val();
 							if (itemcount <= 0) itemcount = 0;
-							$('#vstore-cart-icon .badge').html(itemcount);
+							if ($('#vstore-cart-icon .badge').length>0)
+							{
+								$('#vstore-cart-icon .badge').html(itemcount);
+							}
+							else if ($('#vstore-cart-icon .badge-pill').length>0)
+							{
+								$('#vstore-cart-icon .badge-pill').html(itemcount);
+							}
 							return;
 						}
 						// Print our any (error) message 
-						$('#uiAlert').html(msg);
+						// $('#uiAlert').html(msg);
+						vstorePrintMessage(msg);
 
 					});
 				});
@@ -184,7 +192,7 @@ var e107 = e107 || {'settings': {}, 'behaviors': {}};
 			{
 				$(this).change(function(e){
 					var itemid = $(this).data('id');
-					var baseprice = parseFloat($('.vstore-item-baseprice-'+itemid).text());
+					var baseprice = parseFloat($('.vstore-item-baseprice-'+itemid).val());
 					var varprice = baseprice;
 					var itemvars = [];
 
@@ -270,8 +278,15 @@ function vstoreCartReset()
 		{
 			// if ok, update cart menu with new content
 			msg = msg.substr(2);
-			$('#vstore-cart-dropdown').replaceWith(msg);
-			$('#vstore-cart-icon .badge').html(0);
+			$('#vstore-cart-dropdown').html(msg);
+			if ($('#vstore-cart-icon .badge').length>0)
+			{
+				$('#vstore-cart-icon .badge').html(0);
+			}
+			else if ($('#vstore-cart-icon .badge-pill').length>0)
+			{
+				$('#vstore-cart-icon .badge-pill').html(0);
+			}
 			return;
 		}
 	});
@@ -294,10 +309,17 @@ function vstoreCartRefresh()
 		{
 			// if ok, update cart menu with new content
 			msg = msg.substr(2);
-			$('#vstore-cart-dropdown').replaceWith(msg);
-			var itemcount = $('#vstore-item-count').text();
+			$('#vstore-cart-dropdown').html(msg);
+			var itemcount = $('#vstore-item-count').val();
 			if (itemcount <= 0) itemcount = 0;
-			$('#vstore-cart-icon .badge').html(itemcount);
+			if ($('#vstore-cart-icon .badge').length>0)
+			{
+				$('#vstore-cart-icon .badge').html(itemcount);
+			}
+			else if ($('#vstore-cart-icon .badge-pill').length>0)
+			{
+				$('#vstore-cart-icon .badge-pill').html(itemcount);
+			}
 			return;
 		}
 	});
@@ -358,4 +380,18 @@ function vstoreCheckInventory(itemid, itemvars)
 	}
 	return false;
 
+}
+
+function vstorePrintMessage(msg)
+{
+	if ($('#uiAlert').length > 0)
+	{	
+		$('#uiAlert').html(msg);
+	}
+	else
+	{
+		$('#breadcrumb').after('<div id="uiAlert">' + msg + '</div>');	
+	}
+	$('.s-message.fade').removeClass('fade');
+	$('.notifications.center > div').css('width', '50%');	
 }

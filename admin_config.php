@@ -869,7 +869,9 @@ Region 	region
 			'admin_categories_perpage'	=> array('title'=> 'Categories per page', 'tab'=>3, 'type'=>'number', 'help'=>''),
 
 			'additional_fields'         => array('title'=>'Additional Fields', 'tab'=>4, 'type'=>'method'),
-			'admin_confirm_order'		=> array('title'=> 'Confirm order', 'tab'=>4, 'type'=>'bool', 'help'=>'If ON, the customer has to confirm his order after selecting the payment method on the checkout page!'),
+			
+			// Not used anymore, because of the redisigned checkout process (Summary and order confirmation page)
+			//'admin_confirm_order'		=> array('title'=> 'Confirm order', 'tab'=>4, 'type'=>'bool', 'help'=>'If ON, the customer has to confirm his order after selecting the payment method on the checkout page!'),
 
 			'custom_css'	            => array('title'=> 'Custom CSS', 'tab'=>5, 'type' => 'textarea', 'data' => 'str', 'width' => '100%', 'readParms' => '', 'writeParms' => array('cols'=> 80, 'rows' => 10, 'size'=>'block-level'), 'help'=>'Use this field to enter any vstore related custom css, without the need to edit any source files.'),
 		);
@@ -970,8 +972,8 @@ class vstore_cart_form_ui extends e_admin_form_ui
 			$text .= "
 				<tr>
 					<td>".$this->flipswitch('additional_fields['.$i.'][active]', $activeVal, null, array('switch'=>'small', 'title' => LAN_ACTIVE))."</td>
-					<td><span class='input-group'>".$this->text('additional_fields['.$i.'][caption]['.e_LANGUAGE.']', $capVal, 30, array('placeholder'=>LAN_CAPTION, 'size'=>'block-level')).$post."</span></td>
-					<td><span class='input-group'>".$this->text('additional_fields['.$i.'][placeholder]['.e_LANGUAGE.']',$placeholderVal, 30, array('placeholder'=>"Placeholder", 'size'=>'block-level')).$post."</span></td>
+					<td><span class='input-group'>".$this->text('additional_fields['.$i.'][caption]['.e_LANGUAGE.']', $capVal, 250, array('placeholder'=>LAN_CAPTION, 'size'=>'block-level')).$post."</span></td>
+					<td><span class='input-group'>".$this->text('additional_fields['.$i.'][placeholder]['.e_LANGUAGE.']',$placeholderVal, 100, array('placeholder'=>"Placeholder", 'size'=>'block-level')).$post."</span></td>
 					<td>".$this->select('additional_fields['.$i.'][type]', $opts, $typeVal )."</td>
 					<td>".$this->flipswitch('additional_fields['.$i.'][required]', $reqVal, null, array('switch'=>'small', 'title' => 'Required'))."</td>
 				</tr>

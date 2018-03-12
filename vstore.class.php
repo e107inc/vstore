@@ -28,7 +28,8 @@ class vstore_plugin_shortcodes extends e_shortcode
 	{
 	 	$this->vpref = e107::pref('vstore');	
 				
-		$this->symbols = array('USD'=>'$','EUR'=>'€','CAN'=>'$','GBP'=>'£', "BTC"=> "<i class='fa fa-btc'></i>");
+		//$this->symbols = array('USD'=>'$','EUR'=>'€','CAN'=>'$','GBP'=>'£', "BTC"=> "<i class='fa fa-btc'></i>");
+		$this->symbols = array('USD'=>'$','EUR'=>'€','CAN'=>'$','GBP'=>'£', "BTC"=> e107::getParser()->toGlyph('fa-btc'));
 		$currency = !empty($this->vpref['currency']) ? $this->vpref['currency'] : 'USD';
 
 		$this->curSymbol = vartrue($this->symbols[$currency],'$');
@@ -191,6 +192,27 @@ class vstore_plugin_shortcodes extends e_shortcode
 
 	}
 
+	function sc_order_gateway_title($parm=null)
+	{
+		$gateways = vstore::getGateways();
+		$gatewayType = $this->var['order_pay_gateway'];
+		return $gateways[$gatewayType]['title'];
+	}
+
+	function sc_order_gateway_icon($parm=null)
+	{
+		$gateways = vstore::getGateways();
+		$gatewayType = $this->var['order_pay_gateway'];
+		$icon = $gateways[$gatewayType]['icon'];
+		if (empty($icon)) return '';
+
+		if (empty($parm['size']))
+		{
+			return e107::getParser()->toGlyph($icon, array('size'=>'2x'));
+		}
+		return e107::getParser()->toGlyph($icon, array('size'=>$parm['size']));
+	}
+
 	function sc_sender_name()
 	{
 		$info = e107::pref('vstore', 'sender_name');
@@ -204,7 +226,10 @@ class vstore_plugin_shortcodes extends e_shortcode
 	}
 
 
-
+	function sc_order_checkout_url()
+	{
+		return e107::url('vstore', 'checkout', 'sef');
+	}
 
 
 
@@ -472,11 +497,6 @@ class vstore_plugin_shortcodes extends e_shortcode
 	
 	function sc_item_brand_url($parm=null)
 	{
-		// if(!empty($this->var['cat_sef']))
-		// {
-		// 	return $this->var['item_link'];
-		// }
-	
 		return e107::url('vstore', 'category', array('cat_sef' => $this->var['cat_sef']));
 	}
 
@@ -606,7 +626,15 @@ class vstore_plugin_shortcodes extends e_shortcode
 	{
 		return e107::getParser()->toHtml($this->vpref['howtoorder'],true,'BODY');	
 	}
-	
+
+	/**
+	 * Creates download links to the "attached" media files
+	 * This are NOT the purchased files to download!
+	 * Just "some" files which will be shown on the product page
+	 *
+	 * @param integer $parm
+	 * @return string
+	 */
 	function sc_item_files($parm=0)
 	{
 
@@ -642,9 +670,8 @@ class vstore_plugin_shortcodes extends e_shortcode
 		foreach($files as $i)
 		{
 			$bb = '[file='.$i['media_id'].']'.$i['media_name'].'[/file]';
-			$text .= '<li>'.$tp->toHtml($bb,true).'</li>';
+			$text .= '<li>'.$tp->toHtml($bb, true).'</li>';
 		}
-		
 		$text .= '</ul>';
 		
 		return $text;
@@ -661,7 +688,7 @@ class vstore_plugin_shortcodes extends e_shortcode
 		{
 			$price = $varprice;
 		}
-		return $this->currency.$this->curSymbol.' <span class="vstore-item-price-'.$itemid.'">'.number_format($price, 2).'</span><span class="hidden vstore-item-baseprice-'.$itemid.'">'.$baseprice.'</span>'; 
+		return $this->currency.$this->curSymbol.' <span class="vstore-item-price-'.$itemid.'">'.number_format($price, 2).'</span><input type="hidden" class="vstore-item-baseprice-'.$itemid.'" value="'.$baseprice.'"/>'; 
 		// return ($this->var['item_price'] == '0.00') ? "" : $this->currency.$this->curSymbol.' '.$this->var['item_price'];	
 	}	
 	
@@ -670,7 +697,7 @@ class vstore_plugin_shortcodes extends e_shortcode
 	{
 
 		$class = empty($parm['class']) ? 'btn btn-success vstore-add' : $parm['class'];
-		$classo = empty($parm['class0']) ? 'btn btn-default disabled vstore-add' : $parm['class0'];
+		$classo = empty($parm['class0']) ? 'btn btn-default btn-secondary disabled vstore-add' : $parm['class0'];
 		$itemid = ' data-vstore-item="'.varset($this->var['item_id'], 0).'"';
 
 		if (!in_array('vstore-add', explode(' ', $class)))
@@ -692,19 +719,11 @@ class vstore_plugin_shortcodes extends e_shortcode
 		{
 			return "<a href='#' class='btn-out-of-stock ".$classo."'".$itemid.">".$this->captionOutOfStock."</a>";
 		}
-		// if(empty($this->var['item_inventory']))
-		// {
-		// 	return "<a href='#' class='btn-out-of-stock ".$classo."'".$itemid.">".$this->captionOutOfStock."</a>";
-		// }
 
-	
-		// $url = ($this->var['item_price'] == '0.00' || empty($this->var['item_inventory'])) ? $this->sc_item_url() :e107::url('vstore', 'addtocart', $this->var);
-		// $label =  ($this->var['item_price'] == '0.00' || empty($this->var['item_inventory'])) ? LAN_READ_MORE : 'Add to cart';
 		$label =  ($this->var['item_price'] == '0.00' || !$inStock) ? LAN_READ_MORE : 'Add to cart';
 
 
-		// return '<a class="'.$class.'" '.$itemid.' href="'.$url.'"><span class="glyphicon glyphicon-shopping-cart"></span> '.$label.'</a>';
-		return '<a class="'.$class.'" '.$itemid.' href="#"><span class="glyphicon glyphicon-shopping-cart"></span> '.$label.'</a>';
+		return '<a class="'.$class.'" '.$itemid.' href="#">'.e107::getParser()->toGlyph('fa-shopping-cart').' '.$label.'</a>';
 	}
 
 
@@ -775,8 +794,9 @@ class vstore_plugin_shortcodes extends e_shortcode
 	
 	function sc_cart_removebutton($parm=null)
 	{
-		return '<button type="submit" name="cartRemove['.$this->var['cart_id'].']" class="btn btn-default" title="Remove">
-			<span class="fa fa-trash"></span></button>';
+
+		return '<button type="submit" name="cartRemove['.$this->var['cart_id'].']" class="btn btn-default btn-secondary" title="Remove">
+			'.e107::getParser()->toGlyph('fa-trash').'</button>';
 		
 	}
 	
@@ -793,7 +813,7 @@ class vstore_plugin_shortcodes extends e_shortcode
 	function sc_cart_checkout_button()
 	{
 		$text = '<a href="'.e107::url('vstore','checkout').'" id="cart-checkout"  class="btn btn-success">
-		                            Checkout <span class="glyphicon glyphicon-play"></span>
+		                            Checkout '.e107::getParser()->toGlyph('fa-play').'
 		                        </a>
 		                        <button id="cart-qty-submit" style="display:none" type="submit" class="btn btn-warning">Re-Calculate</button>
 
@@ -811,8 +831,8 @@ class vstore_plugin_shortcodes extends e_shortcode
 		$link = e107::url('vstore','index');
 		
 		return '
-		<a href="'.$link.'" class="btn btn-default">
-			<span class="glyphicon glyphicon-shopping-cart"></span> Continue Shopping
+		<a href="'.$link.'" class="btn btn-default btn-secondary">
+		'.e107::getParser()->toGlyph('fa-shopping-cart').' Continue Shopping
 		</a>';
 	}
 
@@ -1253,14 +1273,14 @@ class vstore
 
 		$text = '<h3>Shipping Details</h3>
 			    			<div class="row">
-			    				<div class="col-xs-6 col-sm-6 col-md-6">
+			    				<div class="col-6 col-xs-6 col-sm-6 col-md-6">
 			    					<div class="form-group">
 			    					 <label for="firstname">First Name</label>
 			    					'.$frm->text('firstname', $this->post['firstname'], 100, array('placeholder'=>'First Name', 'required'=>1)).'
 
 			    					</div>
 			    				</div>
-			    				<div class="col-xs-6 col-sm-6 col-md-6">
+			    				<div class="col-6 col-xs-6 col-sm-6 col-md-6">
 			    					<div class="form-group">
 			    					<label for="lastname">Last Name</label>
 			    						'.$frm->text('lastname', $this->post['lastname'], 100, array('placeholder'=>'Last Name', 'required'=>1)).'
@@ -1279,13 +1299,13 @@ class vstore
 			    			</div>
 
 			    			<div class="row">
-			    				<div class="col-xs-6 col-sm-6 col-md-6">
+			    				<div class="col-6 col-xs-6 col-sm-6 col-md-6">
 			    					<div class="form-group">
 			    					<label for="city">Town/City</label>
 			    						'.$frm->text('city', $this->post['city'], 100, array('placeholder'=>'Town/City', 'required'=>1)).'
 			    					</div>
 			    				</div>
-			    				<div class="col-xs-6 col-sm-6 col-md-6">
+			    				<div class="col-6 col-xs-6 col-sm-6 col-md-6">
 			    					<div class="form-group">
 			    					<label for="state">State/Region</label>
 			    						'.$frm->text('state', $this->post['state'], 100, array('placeholder'=>'State/Region', 'required'=>1)).'
@@ -1295,13 +1315,13 @@ class vstore
 
 
 							<div class="row">
-			    				<div class="col-xs-6 col-sm-6 col-md-6">
+			    				<div class="col-6 col-xs-6 col-sm-6 col-md-6">
 			    					<div class="form-group">
 			    					<label for="zip">Zip/Postcode</label>
 			    						'.$frm->text('zip', $this->post['zip'], 15, array('placeholder'=>'Zip/Postcode', 'required'=>1)).'
 			    					</div>
 			    				</div>
-			    				<div class="col-xs-6 col-sm-6 col-md-6">
+			    				<div class="col-6 col-xs-6 col-sm-6 col-md-6">
 			    					<div class="form-group">
 			    					<label for="country">Country</label>
 			    						'.$frm->country('country', $this->post['country'], array('placeholder'=>'Select Country...', 'required'=>1)).'
@@ -1310,13 +1330,13 @@ class vstore
 			    			</div>
 
 						<div class="row">
-			    				<div class="col-xs-6 col-sm-6 col-md-6">
+			    				<div class="col-6 col-xs-6 col-sm-6 col-md-6">
 			    					<div class="form-group">
 			    					<label for="email">Email address</label>
 			    						'.$frm->email('email', $this->post['email'], 100, array('placeholder'=>'Email address', 'required'=>1)).'
 			    					</div>
 			    				</div>
-			    				<div class="col-xs-6 col-sm-6 col-md-6">
+			    				<div class="col-6 col-xs-6 col-sm-6 col-md-6">
 			    					<div class="form-group">
 			    					<label for="phone">Phone number</label>
 			    						'.$frm->text('phone', $this->post['phone'], 15, array('placeholder'=>'Phone number', 'required'=>1)).'
@@ -1324,10 +1344,10 @@ class vstore
 			    				</div>
 			    		</div>
 			    		<div class="row">
-			    		    <div class="col-md-12">
+			    		    <div class="col-12 col-md-12">
 								<div class="form-group">
 				                <label for="notes">Order Notes</label>
-				                    '.$frm->textarea('notes', $this->post['notes'], 4, null, array('placeholder'=>'Special notes for delivery.', 'required'=>0)).'
+				                    '.$frm->textarea('notes', $this->post['notes'], 4, null, array('placeholder'=>'Special notes for delivery.', 'required'=>0, 'size'=>'large')).'
 				                </div>
 			    			</div>
 						</div>
@@ -1351,6 +1371,7 @@ class vstore
 
 		if ($addFieldActive > 0)
 		{
+			$ns = e107::getParser();
 			// If any additional fields are enabled
 			// add active fields to form
 			$text .= '<br/><div class="row">';
@@ -1370,16 +1391,16 @@ class vstore
 						$field = '<div class="form-control">'.$frm->checkbox($fieldname, 1, $this->post[$fieldname], array('required'=>($v['required'] ? 1 : 0)));
 						if (vartrue($v['placeholder']))
 						{
-							$field .= ' <span class="text-muted">&nbsp;'.$v['placeholder'][e_LANGUAGE].'</span>';
+							$field .= ' <span class="text-muted">&nbsp;'.$ns->toHTML($v['placeholder'][e_LANGUAGE]).'</span>';
 						}
 						$field .= '</div>';
 					}
 
 					// Bootstrap wrapper for control
 					$text .= '
-						<div class="'.($addFieldActive == 1 ? 'col-md-12' : 'col-xs-6 col-sm-6 col-md-6').'">
+						<div class="'.($addFieldActive == 1 ? 'col-12 col-md-12' : 'col-6 col-xs-6 col-sm-6 col-md-6').'">
 							<div class="form-group">
-								<label for="'.$fieldname.'">'.varset($v['caption'][e_LANGUAGE], 'Additional field '.$k).'</label>
+								<label for="'.$fieldname.'">'.$ns->toHTML(varset($v['caption'][e_LANGUAGE], 'Additional field '.$k)).'</label>
 								'.$field.'
 							</div>
 						</div>
@@ -1396,12 +1417,12 @@ class vstore
 		if(!USER)
 		{
 			$text .= '<div class="row">
-			    				<div class="col-xs-6 col-sm-6 col-md-6">
+			    				<div class="col-6 col-xs-6 col-sm-6 col-md-6">
 			    					<div class="form-group">
 			    						<input type="password" name="password" id="password" class="form-control input-sm" placeholder="Password">
 			    					</div>
 			    				</div>
-			    				<div class="col-xs-6 col-sm-6 col-md-6">
+			    				<div class="col-6 col-xs-6 col-sm-6 col-md-6">
 			    					<div class="form-group">
 			    						<input type="password" name="password_confirmation" id="password_confirmation" class="form-control input-sm" placeholder="Confirm Password">
 			    					</div>
@@ -1419,100 +1440,51 @@ class vstore
 
 	}
 
+	/**
+	 * Render the confirm order page to review a summary of the order before confirming the order
+	 *
+	 * @return string
+	 */
 	private function renderConfirmOrder()
 	{
 
-		$shippingData = $this->getShippingData();
-		$cartData = $this->getCartData();
-
-		$gatewayType = $this->getGatewayType();
-		$gatewayIcon = $this->getGatewayIcon($gatewayType, '2x');
-		$gatewayIconSmall = $this->getGatewayIcon($gatewayType, '1x');
-		$gatewayTitle = $this->getGatewayTitle($gatewayType);
-
-		$sc = new vstore_plugin_shortcodes();
-
-		$frm = e107::getForm();
-
-		$text = '
-		<h3>Summary</h3>
-		<div class="row">
-			<div class="col-xs-12 col-sm-6 col-md-6">
-				<h4>Shipping address</h4>';
-		
-		$text .= $shippingData['order_ship_firstname'] . ' ' . $shippingData['order_ship_lastname'] . '<br/>';
-		$text .= $shippingData['order_ship_company'] . '<br/>';
-		$text .= $shippingData['order_ship_address'] . '<br/>';
-		$text .= $shippingData['order_ship_city'] . ', ' . $shippingData['order_ship_state'] . ' ' . $shippingData['order_ship_zip'] . '<br/>';
-		$text .= $frm->getCountry($shippingData['order_ship_country']) . '<br/>';
-
-		$text .= '
-			<br />
-			<h4>Selected payment method</h4>
-			<p>' . $gatewayIcon . ' ' . $gatewayTitle . '</p>
-		</div>
-			<div class="col-xs-12 col-sm-6 col-md-6">
-				<h4>Items</h4>';
-
-		$grandTotal = 0.0;
-		$shippingTotal = 0.0;
-		foreach($cartData as $row)
+		$data = $this->getShippingData();
+		$checkoutData = $this->getCheckoutData();
+		foreach($checkoutData['items'] as $var)
 		{
-			$subtotal = $row['item_price'] * $row['cart_qty'];
-			$itemvar = '';
-			if (!empty($row['cart_item_vars']))
+			$price = $var['item_price'];
+			$itemvarstring = '';
+			if (!empty($var['cart_item_vars']))
 			{
-				$itemprop = self::getItemVarProperties($row['cart_item_vars'], $row['item_price']);
+				$itemprop = self::getItemVarProperties($var['cart_item_vars'], $var['item_price']);
 
 				if ($itemprop)
 				{
-					$itemvar = $itemprop['variation'];
-					$subtotal = ($row['item_price'] + $itemprop['price']) * $row['cart_qty'];
+					$itemvarstring = $itemprop['variation'];
 				}
-				$itemvar = '<br/><span class="small">'.$itemvar.'</span>';
 			}
-			$grandTotal += $subtotal;
-			$shippingTotal += ($row['cart_qty'] * $row['item_shipping']);	
-
-			$text .= '
-				<div class="row">
-				<p>
-					<div class="col-xs-8">'.$row['item_name'].$itemvar.'</div>
-					<div class="col-xs-4 text-right">'.$sc->getCurrencySymbol().number_format($subtotal, 2).'</div>
-				</p>
-				</div>';
-
+				
+			$items[] = array(
+				'id'          => $var['item_id'],
+				'name'        => $var['item_code'],
+				'price'       => $price,
+				'description' => $var['item_name'],
+				'quantity'    => $var['cart_qty'],
+				'file'        => $var['item_download'],
+				'vars'		  => $itemvarstring,
+			);
 		}
 
-		$grandTotal += $shippingTotal;
+		$data['order_items'] 		  = $items;
+		$data['order_pay_gateway'] 	  = $this->getGatewayType();
+		$data['order_pay_amount']     = $checkoutData['totals']['cart_grandTotal'];
+		$data['order_pay_shipping']   = $checkoutData['totals']['cart_shippingTotal'];
 
-		$text .= '
-				<div class="row" style="border-top:1px solid #ccc;margin-top: 6px;">
-				<p>
-					<div class="col-xs-8">Shipping</div>
-					<div class="col-xs-4 text-right">'.$sc->getCurrencySymbol().number_format($shippingTotal, 2).'</div>
-				</p>
-				</div>
-				<div class="row" style="border-top:4px double #ccc;margin-top: 6px;">
-				<p>
-					<div class="col-xs-8"><b>Total</b></div>
-					<div class="col-xs-4 text-right"><b>'.$sc->getCurrencySymbol().number_format($grandTotal, 2).'</b></div>
-				</p>
-				</div>';
+		$template = e107::getTemplate('vstore', 'vstore', 'orderconfirm');
 
-		$text .= '
-			</div>
-		</div>
-		<hr />
-		<div class="row">
-			<div class="col-xs-12">
-				<a class="btn btn-default vstore-btn-back-confirm col-xs-5" href="'.e107::url('vstore', 'checkout', 'sef').'">&laquo; Back</a>
-				<button class="btn btn-primary vstore-btn-buy-now col-xs-5 pull-right" type="submit" name="mode" value="confirm">'.$gatewayIconSmall.' Buy now!</button>
-			</div>
-		</div>
-		
-		
-		';
+		$this->sc->setVars($data);
+
+		$text = e107::getParser()->parseTemplate($template, true, $this->sc);
 
 		return $text;
 	}
@@ -1538,15 +1510,27 @@ class vstore
 
 		$ns = e107::getRender();
 
+
 		if (!empty($this->get['download']))
 		{
 			if (!$this->downloadFile($this->get['download']))
 			{
-				echo e107::getMessage()->render('vstore');
+				$bread = $this->breadcrumb();
+				$msg = e107::getMessage()->render('vstore');
+	
+				$ns->tablerender($this->captionBase, $bread.$msg, 'vstore-download-failed');
+				return null;
+			}
+			else
+			{
+				// Not needed but ...
+				$bread = $this->breadcrumb();
+				$msg = e107::getMessage()->addSuccess('File successfully downloaded!')->render('vstore');
+
+				$ns->tablerender($this->captionBase, $bread.$msg, 'vstore-download-done');
 				return null;
 			}
 		}
-
 		
 		if($this->getMode() == 'return')
 		{
@@ -1554,8 +1538,6 @@ class vstore
 			$bread = $this->breadcrumb();
 			$text = $this->checkoutComplete();
 			$msg = e107::getMessage()->render('vstore');
-
-			//TODO Check for digital download purchase and render download button.
 
 			$ns->tablerender($this->captionBase, $bread.$msg.$text, 'vstore-cart-complete');
 			return null;
@@ -1678,7 +1660,14 @@ class vstore
 
 		if (!isset($this->get['mode']))
 		{
-			$array[] = array('url'=> e107::url('vstore','index'), 'text'=>$this->captionCategories);
+			if (!empty($this->get['download']))
+			{
+				$array[] = array('url'=> e107::url('vstore','index'), 'text'=>'Download');
+			}
+			else
+			{
+				$array[] = array('url'=> e107::url('vstore','index'), 'text'=>$this->captionCategories);
+			}
 		}
 		
 		if($this->get['cat'] || $this->get['item'])
@@ -1784,8 +1773,8 @@ class vstore
 			{
 
 				$text .= "
-						<div class='col-md-4'>
-							<label class='btn btn-default btn-block btn-".$gateway." ".($curGateway == $gateway ? 'active' : '')." vstore-gateway'>
+						<div class='col-6 col-xs-6 col-sm-4'>
+							<label class='btn btn-default btn-light btn-block btn-".$gateway." ".($curGateway == $gateway ? 'active' : '')." vstore-gateway'>
 								<input type='radio' name='gateway' value='".$gateway."' style='display:none;' class='vstore-gateway-radio' required ".($curGateway == $gateway ? 'checked' : '').">
 								".$icon."
 								<h4>".$this->getGatewayTitle($gateway)."</h4>
@@ -1798,32 +1787,14 @@ class vstore
 
 			$text .= '<br/>
 			<div class="row">
-				<div class="col-xs-12">
-					<a class="btn btn-default vstore-btn-back-confirm col-xs-5" href="'.e107::url('vstore', 'cart', 'sef').'">&laquo; Back</a>
-					<button class="btn btn-primary vstore-btn-buy-now col-xs-5 pull-right" type="submit" name="mode" value="gateway">Continue &raquo;</button>
+				<div class="col-12 col-xs-12">
+					<a class="btn btn-default btn-secondary vstore-btn-back-confirm" href="'.e107::url('vstore', 'cart', 'sef').'">&laquo; Back</a>
+					<button class="btn btn-primary vstore-btn-buy-now pull-right float-right" type="submit" name="mode" value="gateway">Continue &raquo;</button>
 				</div>
 			</div>';
 
 			$text .= e107::getForm()->close();
 
-			// if (vartrue(e107::pref('vstore', 'admin_confirm_order')))
-			// {
-			// 	// If the user has to confirm the order
-			// 	$text .= '
-			// 	<script type="text/javascript">
-			// 	$(function(){
-			// 		$("#gateway-select").submit(function(e){
-			// 			if(!confirm("By clicking on OK you confirm that you order the content of the shopping cart for the shown cost!"))
-			// 			{
-			// 				e.preventDefault();
-			// 				return false;
-			// 			}
-			// 			return true;
-			// 		});
-			// 	});
-			// 	</script>
-			// 	';
-			// }
 
 			return $text;
 		}
@@ -1846,25 +1817,6 @@ class vstore
 		$text .= $this->renderConfirmOrder();
 
 		$text .= e107::getForm()->close();
-
-		// if (vartrue(e107::pref('vstore', 'admin_confirm_order')))
-		// {
-		// 	// If the user has to confirm the order
-		// 	$text .= '
-		// 	<script type="text/javascript">
-		// 	$(function(){
-		// 		$("#gateway-select").submit(function(e){
-		// 			if(!confirm("By clicking on OK you confirm that you order the content of the shopping cart for the shown cost!"))
-		// 			{
-		// 				e.preventDefault();
-		// 				return false;
-		// 			}
-		// 			return true;
-		// 		});
-		// 	});
-		// 	</script>
-		// 	';
-		// }
 
 		return $text;
 	}
@@ -1945,8 +1897,11 @@ class vstore
 				$mode = 'halt';
 				$this->setMode('return');
 
-				$message = e107::getParser()->toHtml($this->pref['bank_transfer']['details'],true);
-
+				if (!empty($this->pref['bank_transfer']['details']))
+				{
+					$message = '<br />Use the following bank account information for your payment:<br />';
+					$message .= e107::getParser()->toHtml($this->pref['bank_transfer']['details'],true);
+				}
 
 				break;
 
@@ -2346,8 +2301,8 @@ class vstore
 
 		$insert['order_ref'] = $ref;
 
-		$sc = new vstore_plugin_shortcodes;
-		$sc->setVars($insert);
+		//$sc = new vstore_plugin_shortcodes;
+		$this->sc->setVars($insert);
 
 		$subject    = "Your Order #[x] at ".SITENAME; //todo add to template
 
@@ -2361,7 +2316,7 @@ class vstore
 			//		'replyto'		=> $email,
 					'html'			=> true,
 					'template'		=> 'default',
-					'body'			=> $tp->parseTemplate($template,true,$sc)
+					'body'			=> $tp->parseTemplate($template,true,$this->sc)
 		);
 
 	//	$debug = e107::getEmail()->preview($eml);
@@ -2415,6 +2370,11 @@ class vstore
 			}
 		}
 
+	}
+
+	public static function getGateways()
+	{
+		return self::$gateways;
 	}
 
 	/**
@@ -2626,7 +2586,7 @@ class vstore
 
 
 		$text = '
-			<div class="row">
+			<div clas s="row">
 		       ';
 
 			
@@ -2822,7 +2782,7 @@ class vstore
 			$tmp = e107::unserialize($data['item_files']);
 			if(!empty($tmp[0]['path']))
 			{
-				$tabData['files']		= array('caption'=>'Downloads', 'text'=> $tmpl['item']['files']);
+				$tabData['files']		= array('caption'=>'Files', 'text'=> $tmpl['item']['files']);
 			}
 		}
 		
@@ -3331,6 +3291,7 @@ class vstore
 		if (varset($filepath))
 		{
 			e107::getFile()->send($filepath); 
+			return true;
 		}
 		else
 		{
@@ -3369,8 +3330,10 @@ class vstore
 			return false;
 		}
 
+		$order_status = 'N';
 		while($order = $sql->fetch())
 		{
+			$order_status = $order['order_status'];
 			if ($order['order_status'] == 'C')
 			{
 				// Status Completed = Payment OK, regardless of the orde_pay_status (e.g. in case of banktransfer)
@@ -3383,7 +3346,7 @@ class vstore
 			}
 		}
 		// Order not completed or payment not complete + order_status = New 
-		e107::getMessage()->addError('Your order is still in a state ('.vstore::getStatus($order['order_status']).') which doesn\'t allow to download the file!', 'vstore');
+		e107::getMessage()->addError('Your order is still in a state ('.vstore::getStatus($order_status).') which doesn\'t allow to download the file!', 'vstore');
 		return false;
 	}
 

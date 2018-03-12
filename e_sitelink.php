@@ -89,13 +89,19 @@ class vstore_sitelink // include plugin-folder in the name.
 		//TODO Move into class.
 
 e107::getDebug()->log($data);
-		$text = '<div id="vstore-cart-dropdown" class="dropdown-menu">';
+
+		$text = '';
+		if (!e_AJAX_REQUEST)
+		{
+			$text = '<div id="vstore-cart-dropdown" class="dropdown-menu">';
+		}
 
 		if(empty($data))
 		{
 			$text .= '<div id="vstore-cart-dropdown-empty" class="alert alert-info">Your cart is empty.';
-			$text .= ' <a class="alert-link" href="'.e107::url('vstore','index').'">Start Shopping</a>';
-			$text .= '	</div></div>';
+			$text .= '<br/>  <a class="alert-link" href="'.e107::url('vstore','index').'">Start Shopping</a>';
+			$text .= '</div>';
+			if (!e_AJAX_REQUEST) $text .= '</div>';
 
 			return $text;
 		}
@@ -150,14 +156,15 @@ e107::getDebug()->log($data);
 
 						<li class="media text-right"><h4>Total: '.$sc->sc_cart_currency_symbol().' '.number_format($total,2).'</h4></li>
                             </ul>
-						<div id="vstore-item-count" class="hidden">'.$itemcount.'</div>
+						<input type="hidden" id="vstore-item-count" value="'.$itemcount.'"/>
                     </div>
 
 					<div>
 						 <a class="btn btn-block btn-danger" href="#" onclick="vstoreCartReset()"><i class="fa fa-trash-o" aria-hidden="true"></i> Clear cart</a>
 						 <a class="btn btn-block btn-primary col-xs-6" href="'.e107::url('vstore','cart').'"><i class="fa fa-shopping-cart" aria-hidden="true"></i> Checkout</a>
-					</div>
-				</div>			';
+					</div>';
+			if (!e_AJAX_REQUEST) $text .= '</div>';
+					
 
 		return $text;
 
