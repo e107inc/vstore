@@ -721,7 +721,79 @@ class vstore_plugin_shortcodes extends e_shortcode
 	
 	// -------------
 
-	function sc_cart_content($parm = null)
+	function sc_shipping_add_field_class($parm = null)
+	{
+		if ($this->var['fieldcount'] > 1)
+		{
+			return 'col-12 col-xs-12 col-sm-6';
+		}
+		else
+		{
+			return 'col-12 col-sm-12';
+		}
+	}
+
+	function sc_shipping_add_field_label($parm = null)
+	{
+		return '<label for="'.$this->var['fieldname'].'">'.$this->var['fieldcaption'].'</label>';
+	}
+
+	function sc_shipping_add_field_field($parm = null)
+	{
+		return $this->var['field'];
+	}
+
+	function sc_shipping_field($parm = null)
+	{
+		if (empty($parm)) return '';
+		
+		$key = array_keys($parm);
+		if ($key) $key = $key[0];
+		
+		$frm = e107::getForm();
+		$text = '';
+		
+		switch($key)
+		{
+			case 'firstname':
+				$text = $frm->text('firstname', $this->var['firstname'], 100, array('placeholder'=>'First Name', 'required'=>1));
+				break;
+			case 'lastname':
+				$text = $frm->text('lastname', $this->var['lastname'], 100, array('placeholder'=>'Last Name', 'required'=>1));
+				break;
+			case 'company':
+				$text = $frm->text('company', $this->var['company'], 200, array('placeholder'=>'Company'));
+				break;
+			case 'address':
+				$text = $frm->text('address', $this->var['address'], 200, array('placeholder'=>'Address', 'required'=>1));
+				break;
+			case 'city':
+				$text = $frm->text('city', $this->var['city'], 100, array('placeholder'=>'Town/City', 'required'=>1));
+				break;
+			case 'state':
+				$text = $frm->text('state', $this->var['state'], 100, array('placeholder'=>'State/Region', 'required'=>1));
+				break;
+			case 'zip':
+				$text = $frm->text('zip', $this->var['zip'], 15, array('placeholder'=>'Zip/Postcode', 'required'=>1));
+				break;
+			case 'country':
+				$text = $frm->country('country', $this->var['country'], array('placeholder'=>'Select Country...', 'required'=>1));
+				break;
+			case 'email':
+				$text = $frm->email('email', $this->var['email'], 100, array('placeholder'=>'Email address', 'required'=>1));
+				break;
+			case 'phone':
+				$text = $frm->text('phone', $this->var['phone'], 15, array('placeholder'=>'Phone number', 'required'=>1));
+				break;
+			case 'notes':
+				$text = $frm->textarea('notes', $this->var['notes'], 4, null, array('placeholder'=>'Special notes for delivery.', 'required'=>0, 'size'=>'large'));
+				break;
+		}
+		return $text;
+	}
+
+
+	function sc_cart_data($parm = null)
 	{
 		if (empty($parm)) return '';
 		$key = array_keys($parm);
@@ -749,6 +821,18 @@ class vstore_plugin_shortcodes extends e_shortcode
 				break;
 			case 'grand_total': 
 				$text = $this->curSymbol.number_format($this->var['order_pay_amount'], 2);
+				break;
+			case 'item_count': 
+				$text = $this->var['item_count'];
+				break;
+			case 'pic': 
+				$text = $this->var['pic'];
+				break;
+			case 'index_url': 
+				$text = e107::url('vstore','index');
+				break;
+			case 'cart_url': 
+				$text = e107::url('vstore','cart');
 				break;
 		}
 
@@ -1185,18 +1269,6 @@ class vstore
 			$this->resetCart();
 		}
 
-		// if(!empty($this->post['gateway']))
-		// {
-		// 	$this->setGatewayType($this->post['gateway']);
-
-		// 	if(!empty($this->post['firstname']))
-		// 	{
-		// 		$this->setShippingData($this->post);    // TODO Validate data before proceeding.
-		// 	}
-
-		// 	return $this->processGateway('init');
-		// }
-
 		if($this->post['mode'] == 'confirm')
 		{
 			$this->setMode($this->post['mode']);
@@ -1256,7 +1328,7 @@ class vstore
 	{
 
 		$frm = e107::getForm();
-
+		$tp = e107::getParser();
 		if (!isset($this->post['firstname']))
 		{
 			// load saved shipping data and assign to variables
@@ -1277,7 +1349,7 @@ class vstore
 				}
 			}
 		}
-
+/*
 		$text = '<h3>Shipping Details</h3>
 			    			<div class="row">
 			    				<div class="col-6 col-xs-6 col-sm-6 col-md-6">
@@ -1360,6 +1432,13 @@ class vstore
 						</div>
 			    		';
 
+*/
+
+		$template = e107::getTemplate('vstore', 'vstore', 'shipping');
+
+		$this->sc->setVars($this->post);
+
+		$text = $tp->parseTemplate($template['header'], true, $this->sc);
 
 		/**
 		 * Additional checkout fields
@@ -1378,10 +1457,11 @@ class vstore
 
 		if ($addFieldActive > 0)
 		{
-			$ns = e107::getParser();
 			// If any additional fields are enabled
 			// add active fields to form
-			$text .= '<br/><div class="row">';
+			//$text .= '<br/><div class="row">';
+			$text .= $tp->parseTemplate($template['additional']['start'], true, $this->sc);
+
 			foreach ($pref['additional_fields'] as $k => $v) 
 			{
 				if (vartrue($v['active'], false))
@@ -1398,23 +1478,36 @@ class vstore
 						$field = '<div class="form-control">'.$frm->checkbox($fieldname, 1, $this->post[$fieldname], array('required'=>($v['required'] ? 1 : 0)));
 						if (vartrue($v['placeholder']))
 						{
-							$field .= ' <span class="text-muted">&nbsp;'.$ns->toHTML($v['placeholder'][e_LANGUAGE]).'</span>';
+							$field .= ' <span class="text-muted">&nbsp;'.$tp->toHTML($v['placeholder'][e_LANGUAGE]).'</span>';
 						}
 						$field .= '</div>';
 					}
 
-					// Bootstrap wrapper for control
-					$text .= '
-						<div class="'.($addFieldActive == 1 ? 'col-12 col-md-12' : 'col-6 col-xs-6 col-sm-6 col-md-6').'">
-							<div class="form-group">
-								<label for="'.$fieldname.'">'.$ns->toHTML(varset($v['caption'][e_LANGUAGE], 'Additional field '.$k)).'</label>
-								'.$field.'
-							</div>
-						</div>
-					';			
+					$this->sc->addVars(array(
+						'fieldname' => $fieldname,
+						'fieldcaption' => $tp->toHTML(varset($v['caption'][e_LANGUAGE], 'Additional field '.$k)),
+						'field' => $field,
+						'fieldcount' => $addFieldActive
+					));
+
+					$text .= $tp->parseTemplate($template['additional']['item'], true, $this->sc);
+
+
+
+					// // Bootstrap wrapper for control
+					// $text .= '
+					// 	<div class="'.($addFieldActive == 1 ? 'col-12 col-md-12' : 'col-12 col-xs-12 col-sm-6').'">
+					// 		<div class="form-group">
+					// 			<label for="'.$fieldname.'">'.$ns->toHTML(varset($v['caption'][e_LANGUAGE], 'Additional field '.$k)).'</label>
+					// 			'.$field.'
+					// 		</div>
+					// 	</div>
+					// ';			
 				}
 			}
-			$text .= '</div>';
+			$text .= e107::getParser()->parseTemplate($template['additional']['end'], true, $this->sc);
+
+			// $text .= '</div>';
 		}
 		/**
 		 * Additional checkout fields
@@ -1423,19 +1516,20 @@ class vstore
 
 		if(!USER)
 		{
-			$text .= '<div class="row">
-			    				<div class="col-6 col-xs-6 col-sm-6 col-md-6">
-			    					<div class="form-group">
-			    						<input type="password" name="password" id="password" class="form-control input-sm" placeholder="Password">
-			    					</div>
-			    				</div>
-			    				<div class="col-6 col-xs-6 col-sm-6 col-md-6">
-			    					<div class="form-group">
-			    						<input type="password" name="password_confirmation" id="password_confirmation" class="form-control input-sm" placeholder="Confirm Password">
-			    					</div>
-			    				</div>
-			    			</div>';
+			// $text .= '<div class="row">
+			//     				<div class="col-6 col-xs-6 col-sm-6 col-md-6">
+			//     					<div class="form-group">
+			//     						<input type="password" name="password" id="password" class="form-control input-sm" placeholder="Password">
+			//     					</div>
+			//     				</div>
+			//     				<div class="col-6 col-xs-6 col-sm-6 col-md-6">
+			//     					<div class="form-group">
+			//     						<input type="password" name="password_confirmation" id="password_confirmation" class="form-control input-sm" placeholder="Confirm Password">
+			//     					</div>
+			//     				</div>
+			//     			</div>';
 
+			$text .= e107::getParser()->parseTemplate($template['additional']['guest'], true, $this->sc);
 
 		}
 

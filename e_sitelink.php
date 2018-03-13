@@ -84,33 +84,29 @@ class vstore_sitelink // include plugin-folder in the name.
 		$data = $vst->getCartData();
 		$frm = e107::getForm();
 		$tp = e107::getParser();
-
+		$template = e107::getTemplate('vstore', 'vstore', 'navcart');
 
 		//TODO Move into class.
 
-e107::getDebug()->log($data);
+		e107::getDebug()->log($data);
 
 		$text = '';
 		if (!e_AJAX_REQUEST)
 		{
-			$text = '<div id="vstore-cart-dropdown" class="dropdown-menu">';
+			$text = $tp->parseTemplate($template['start'], true, $sc);
 		}
 
 		if(empty($data))
 		{
-			$text .= '<div id="vstore-cart-dropdown-empty" class="alert alert-info">Your cart is empty.';
-			$text .= '<br/>  <a class="alert-link" href="'.e107::url('vstore','index').'">Start Shopping</a>';
-			$text .= '</div>';
-			if (!e_AJAX_REQUEST) $text .= '</div>';
-
+			$text .= $tp->parseTemplate($template['empty'], true, $sc); 
+			if (!e_AJAX_REQUEST) {
+				$text .= $tp->parseTemplate($template['end'], true, $sc);
+			}
 			return $text;
 		}
 
 
-		$text .= '
-                    <div class="form-group alert alert-info" style="max-height: 400px;overflow-y:auto;">
-                            <ul class="media-list list-unstyled">';
-
+		$text .= $tp->parseTemplate($template['header'], true, $sc); 
 		$total = 0;
 		$itemcount = 0;
 
@@ -139,32 +135,32 @@ e107::getDebug()->log($data);
 					$itemvarstring = '<br/><span class="vstore-cart-item-var small">' . $itemvarstring . '</span>';
 				}
 			}
-			$text .= '<li class="media">
-					<span class="media-object pull-left">'.$img.'</span>
-					<div class="media-body"><b>'.$item['item_name'].'</b>'.$itemvarstring.'<br />
-						<span class="pull-right">'.$item['cart_qty'].' &times; '.$sc->sc_cart_currency_symbol().' '.number_format($subtotal,2).'</span>
-					</div>
-					</li>';
+
+			$sc->setVars(array(
+				'item' => array(
+					'pic' => $img,
+					'item_total' => $subtotal,
+					'name' => '<span class="vstore-navcart-name">'.$item['item_name'].'</span>'.$itemvarstring,
+					'quantity' => $item['cart_qty']
+					)
+				)
+			);
+			$text .= $tp->parseTemplate($template['item'], true, $sc); 
 
 			$total = $total + $subtotal;
 
 		}
 
 
-
-           $text .= '
-
-						<li class="media text-right"><h4>Total: '.$sc->sc_cart_currency_symbol().' '.number_format($total,2).'</h4></li>
-                            </ul>
-						<input type="hidden" id="vstore-item-count" value="'.$itemcount.'"/>
-                    </div>
-
-					<div>
-						 <a class="btn btn-block btn-danger" href="#" onclick="vstoreCartReset()"><i class="fa fa-trash-o" aria-hidden="true"></i> Clear cart</a>
-						 <a class="btn btn-block btn-primary col-xs-6" href="'.e107::url('vstore','cart').'"><i class="fa fa-shopping-cart" aria-hidden="true"></i> Checkout</a>
-					</div>';
-			if (!e_AJAX_REQUEST) $text .= '</div>';
-					
+		$sc->setVars(array(
+			'order_pay_amount' => $total,
+			'item_count' => $itemcount,
+		));
+		$text .= $tp->parseTemplate($template['footer'], true, $sc); 
+	
+		if (!e_AJAX_REQUEST) {
+			$text .= $tp->parseTemplate($template['end'], true, $sc);
+		}		
 
 		return $text;
 
