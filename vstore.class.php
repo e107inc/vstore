@@ -98,7 +98,7 @@ class vstore_plugin_shortcodes extends e_shortcode
 			$items = e107::unserialize($items);
 		}
 		
-
+/*
 		$text  = "<table class='table table-bordered'>
 					<colgroup>	
 			            <col style='width:50%' />
@@ -160,6 +160,47 @@ class vstore_plugin_shortcodes extends e_shortcode
 
 		$text .= "
 		</table>";
+*/
+
+
+		$totals = array(
+			'order_pay_shipping' => $this->var['order_pay_shipping'], 
+			'order_pay_amount' => $this->var['order_pay_amount']
+		);
+
+		$template = e107::getTemplate('vstore', 'vstore', 'order_items');
+
+		$text = e107::getParser()->parseTemplate($template['header'], true, $this);
+
+		foreach($items as $key=>$item)
+		{
+			$desc = $item['description'];
+
+			if (!empty($item['vars']))
+			{
+				$desc .= '<br/>' . $item['vars'];
+			}
+			if ($item['id']>0 && varset($item['file']))
+			{
+				if ($this->var['order_status'] === 'C' || ($this->var['order_status'] === 'N' && $this->var['order_pay_status'] == 'complete'))
+				{
+					$linktext = 'Download';
+				}
+				else
+				{
+					$linktext = 'Download (will be available once the payment has been received)';
+				}
+				$desc .= '<br/><a href="'.e107::url('vstore', 'download', array('item_id' => $item['id']), array('mode'=>'full')).'">'.$linktext.'</a>';
+			}
+
+			$item['name'] = $desc;
+			$item['subtotal'] = $item['price'] * $item['quantity'];
+
+			$this->setVars($item);
+			$text .= e107::getParser()->parseTemplate($template['row'], true, $this);
+		}
+		$this->setVars($totals);		
+		$text .= e107::getParser()->parseTemplate($template['footer'], true, $this);
 
 		return $text;
 
@@ -748,6 +789,38 @@ class vstore_plugin_shortcodes extends e_shortcode
 	}
 	
 	// -------------
+
+	function sc_cart_content($parm = null)
+	{
+		if (empty($parm)) return '';
+		$key = array_keys($parm);
+		if ($key) $key = $key[0];
+		$text = '';
+		switch($key)
+		{
+			case 'name': 
+				$text = $this->var['name'];
+				break;
+			case 'price': 
+				$text = $this->curSymbol.number_format($this->var['price'], 2);
+				break;
+			case 'quantity': 
+				$text = $this->var['quantity'];
+				break;
+			case 'subtotal': 
+				$text = $this->curSymbol.number_format($this->var['subtotal'], 2);
+				break;
+			case 'shipping_total': 
+				$text = $this->curSymbol.number_format($this->var['order_pay_shipping'], 2);
+				break;
+			case 'grandtotal': 
+				$text = $this->curSymbol.number_format($this->var['order_pay_amount'], 2);
+				break;
+		}
+
+		return $text;
+	}
+
 	
 	function sc_cart_price($parm=null)
 	{
@@ -3023,47 +3096,54 @@ class vstore
 		
 		$text .= e107::getMessage()->render('vstore');
 
-		$text .= '
+		$template = e107::getTemplate('vstore', 'vstore', 'cart');
+
+		$text .= '<div class="row">
+		        <div class="col-sm-12 col-md-12">';
+
+		$text .= $tp->parseTemplate($template['header'], true, $this->sc);
+
+		// $text .= '
 		
 		
-		    <div class="row">
-		        <div class="col-sm-12 col-md-12">
-		            <table class="table table-hover cart">
-		                <thead>
-		                    <tr>
-		                        <th>Product</th>
-		                         <th> </th>
-		                        <th>Quantity</th>
-		                        <th class="text-right">Price</th>
-		                        <th class="text-right">Total</th>
+		//     <div class="row">
+		//         <div class="col-sm-12 col-md-12">
+		//             <table class="table table-hover cart">
+		//                 <thead>
+		//                     <tr>
+		//                         <th>Product</th>
+		//                          <th> </th>
+		//                         <th>Quantity</th>
+		//                         <th class="text-right">Price</th>
+		//                         <th class="text-right">Total</th>
 
-		                    </tr>
-		                </thead>
-		                <tbody>';
+		//                     </tr>
+		//                 </thead>
+		//                 <tbody>';
 			
 			
 			
-			$template = '
-						{SETIMAGE: w=72&h=72&crop=1}
-		                    <tr>
-		                        <td>
-		                        <div class="media">
-		                        	<div class="media-left">
-		                            <a href="{ITEM_URL}">{ITEM_PIC: class=media-object}</a>
-		                           </div>
-		                             <div class="media-body">
-		                                <h4 class="media-heading"><a href="{ITEM_URL}">{ITEM_NAME}</a></h4>
-		                                <h5 class="media-heading"> by <a href="{ITEM_BRAND_URL}">{ITEM_BRAND}</a></h5>
-		                                {ITEM_VAR_STRING}
-		                            </div>
-		                        </div></td>
-		                         <td class="col-sm-1 col-md-1 text-center">{CART_REMOVEBUTTON}</td>
-		                        <td class="col-sm-1 col-md-1 text-center">{CART_VARS}{CART_QTY=edit} </td>
-		                        <td class="col-sm-1 col-md-1 text-right">{CART_PRICE}</td>
-		                        <td class="col-sm-1 col-md-1 text-right"><strong>{CART_TOTAL}</strong></td>
+		// 	$template = '
+		// 				{SETIMAGE: w=72&h=72&crop=1}
+		//                     <tr>
+		//                         <td>
+		//                         <div class="media">
+		//                         	<div class="media-left">
+		//                             <a href="{ITEM_URL}">{ITEM_PIC: class=media-object}</a>
+		//                            </div>
+		//                              <div class="media-body">
+		//                                 <h4 class="media-heading"><a href="{ITEM_URL}">{ITEM_NAME}</a></h4>
+		//                                 <h5 class="media-heading"> by <a href="{ITEM_BRAND_URL}">{ITEM_BRAND}</a></h5>
+		//                                 {ITEM_VAR_STRING}
+		//                             </div>
+		//                         </div></td>
+		//                          <td class="col-sm-1 col-md-1 text-center">{CART_REMOVEBUTTON}</td>
+		//                         <td class="col-sm-1 col-md-1 text-center">{CART_VARS}{CART_QTY=edit} </td>
+		//                         <td class="col-sm-1 col-md-1 text-right">{CART_PRICE}</td>
+		//                         <td class="col-sm-1 col-md-1 text-right"><strong>{CART_TOTAL}</strong></td>
 
-		                    </tr>
-		           ';
+		//                     </tr>
+		//            ';
 			
 			
 			
@@ -3105,8 +3185,10 @@ class vstore
 						
 				$this->sc->setVars($row);
 				$checkoutData['items'][] = $row;
-				$text .= $tp->parseTemplate($template, true, $this->sc);	
+				// $text .= $tp->parseTemplate($template, true, $this->sc);	
+				$text .= $tp->parseTemplate($template['row'], true, $this->sc);	
 			}
+			// }
 
 			if ($count_active == 0)
 			{
@@ -3122,49 +3204,52 @@ class vstore
 			$checkoutData['totals'] = $totals;
 
 			
-			$footer = '     
-		                   <tr>
-		                   <td>   </td>
-		                        <td colspan="2"><div class="text-right" ></div></td>
-		                        <td><h5>Subtotal</h5></td>
-		                        <td class="text-right"><h5><strong>{CART_SUBTOTAL}</strong></h5></td>
+		// 	$footer = '     
+		//                    <tr>
+		//                    <td>   </td>
+		//                         <td colspan="2"><div class="text-right" ></div></td>
+		//                         <td><h5>Subtotal</h5></td>
+		//                         <td class="text-right"><h5><strong>{CART_SUBTOTAL}</strong></h5></td>
 
-		                    </tr>
-		                    <tr>
+		//                     </tr>
+		//                     <tr>
 
-								<td>   </td>
-		                        <td colspan="3" class="text-right"><h5>Estimated shipping</h5></td>
-		                        <td class="text-right"><h5><strong>{CART_SHIPPINGTOTAL}</strong></h5></td>
-
-
-		                    </tr>
-		                    <tr>
-		                        <td>   </td>
-		                        <td>   </td>
-								 <td>   </td>
-		                        <td><h3>Total</h3></td>
-		                        <td class="text-right"><h3><strong>{CART_GRANDTOTAL}</strong></h3></td>
+		// 						<td>   </td>
+		//                         <td colspan="3" class="text-right"><h5>Estimated shipping</h5></td>
+		//                         <td class="text-right"><h5><strong>{CART_SHIPPINGTOTAL}</strong></h5></td>
 
 
-		                    </tr>
-		                    <tr>
-		                        <td colspan="2">
-		                       {CART_CONTINUESHOP}</td>
-		                        <td colspan="3" class="text-right">
-		                        {CART_CHECKOUT_BUTTON}
-		                        </td>
+		//                     </tr>
+		//                     <tr>
+		//                         <td>   </td>
+		//                         <td>   </td>
+		// 						 <td>   </td>
+		//                         <td><h3>Total</h3></td>
+		//                         <td class="text-right"><h3><strong>{CART_GRANDTOTAL}</strong></h3></td>
 
-		                    </tr>
-		                </tbody>
-		            </table>
-		        </div>
-		    </div>
+
+		//                     </tr>
+		//                     <tr>
+		//                         <td colspan="2">
+		//                        {CART_CONTINUESHOP}</td>
+		//                         <td colspan="3" class="text-right">
+		//                         {CART_CHECKOUT_BUTTON}
+		//                         </td>
+
+		//                     </tr>
+		//                 </tbody>
+		//             </table>
+		//         </div>
+		//     </div>
 	
-		';
+		// ';
 		
 		
-		$text .= $tp->parseTemplate($footer, true, $this->sc);	
+		// $text .= $tp->parseTemplate($footer, true, $this->sc);	
 		
+		$text .= $tp->parseTemplate($template['footer'], true, $this->sc);		
+		$text .= '</div></div>';
+
 		$text .= $frm->close();
 
 		$this->setCheckoutData($checkoutData);
