@@ -98,75 +98,6 @@ class vstore_plugin_shortcodes extends e_shortcode
 			$items = e107::unserialize($items);
 		}
 		
-/*
-		$text  = "<table class='table table-bordered'>
-					<colgroup>	
-			            <col style='width:50%' />
-			            <col  />
-			            <col  />
-			            <col  />
-				    </colgroup>
-				<tr>
-					<th>Description</th>
-					<th class='text-right'>Unit Price</th>
-					<th class='text-right'>Qty</th>
-					<th class='text-right'>Amount</th>
-				
-				</tr>";
-
-		foreach($items as $key=>$item)
-		{
-			$desc = $item['description'];
-
-			if (!empty($item['vars']))
-			{
-				$desc .= '<br/>' . $item['vars'];
-			}
-
-			if ($item['id']>0 && varset($item['file']))
-			{
-				if ($this->var['order_status'] === 'C' || ($this->var['order_status'] === 'N' && $this->var['order_pay_status'] == 'complete'))
-				{
-					$linktext = 'Download';
-				}
-				else
-				{
-					$linktext = 'Download (will be available once the payment has been received)';
-				}
-				$desc .= '<br/><a href="'.e107::url('vstore', 'download', array('item_id' => $item['id']), array('mode'=>'full')).'">'.$linktext.'</a>';
-			}
-
-			$text .= "
-					<tr>
-						<td>".$desc."</td>
-						<td class='text-right'>".$this->curSymbol.number_format($item['price'], 2)."</td>
-						<td class='text-right'>".$item['quantity']."</td>
-						<td class='text-right'>".$this->curSymbol.number_format($item['price'] * $item['quantity'], 2)."</tdclass>
-					</tr>";
-		}
-
-		$text .= "
-				<tr>
-					<td colspan='3' class='text-right'><b>Shipping</b></td>
-					<td class='text-right'>".$this->curSymbol.number_format($this->var['order_pay_shipping'], 2)."</td>
-				</tr>";
-
-		$text .= "
-				<tr>
-					<td colspan='3' class='text-right'><b>Total</b></td>
-					<td class='text-right'>".$this->curSymbol.number_format($this->var['order_pay_amount'], 2)."</td>
-				</tr>";
-
-
-		$text .= "
-		</table>";
-*/
-
-
-		$totals = array(
-			'order_pay_shipping' => $this->var['order_pay_shipping'], 
-			'order_pay_amount' => $this->var['order_pay_amount']
-		);
 
 		$template = e107::getTemplate('vstore', 'vstore', 'order_items');
 
@@ -194,12 +125,12 @@ class vstore_plugin_shortcodes extends e_shortcode
 			}
 
 			$item['name'] = $desc;
-			$item['subtotal'] = $item['price'] * $item['quantity'];
+			$item['item_total'] = $item['price'] * $item['quantity'];
 
-			$this->setVars($item);
+			$this->addVars(array('item' => $item));
 			$text .= e107::getParser()->parseTemplate($template['row'], true, $this);
 		}
-		$this->setVars($totals);		
+
 		$text .= e107::getParser()->parseTemplate($template['footer'], true, $this);
 
 		return $text;
@@ -799,21 +730,24 @@ class vstore_plugin_shortcodes extends e_shortcode
 		switch($key)
 		{
 			case 'name': 
-				$text = $this->var['name'];
+				$text = $this->var['item']['name'];
 				break;
 			case 'price': 
-				$text = $this->curSymbol.number_format($this->var['price'], 2);
+				$text = $this->curSymbol.number_format($this->var['item']['price'], 2);
 				break;
 			case 'quantity': 
-				$text = $this->var['quantity'];
+				$text = $this->var['item']['quantity'];
 				break;
-			case 'subtotal': 
-				$text = $this->curSymbol.number_format($this->var['subtotal'], 2);
+			case 'item_total': 
+				$text = $this->curSymbol.number_format($this->var['item']['item_total'], 2);
+				break;
+			case 'sub_total': 
+				$text = $this->curSymbol.number_format($this->var['order_pay_amount']-$this->var['order_pay_shipping'], 2);
 				break;
 			case 'shipping_total': 
 				$text = $this->curSymbol.number_format($this->var['order_pay_shipping'], 2);
 				break;
-			case 'grandtotal': 
+			case 'grand_total': 
 				$text = $this->curSymbol.number_format($this->var['order_pay_amount'], 2);
 				break;
 		}
@@ -3102,150 +3036,61 @@ class vstore
 		        <div class="col-sm-12 col-md-12">';
 
 		$text .= $tp->parseTemplate($template['header'], true, $this->sc);
+			
+			
+		$subTotal 		= 0;
+		$shippingTotal 	= 0;
+		$checkoutData = array();
 
-		// $text .= '
-		
-		
-		//     <div class="row">
-		//         <div class="col-sm-12 col-md-12">
-		//             <table class="table table-hover cart">
-		//                 <thead>
-		//                     <tr>
-		//                         <th>Product</th>
-		//                          <th> </th>
-		//                         <th>Quantity</th>
-		//                         <th class="text-right">Price</th>
-		//                         <th class="text-right">Total</th>
+		$checkoutData['id'] = $this->getCartId();
 
-		//                     </tr>
-		//                 </thead>
-		//                 <tbody>';
-			
-			
-			
-		// 	$template = '
-		// 				{SETIMAGE: w=72&h=72&crop=1}
-		//                     <tr>
-		//                         <td>
-		//                         <div class="media">
-		//                         	<div class="media-left">
-		//                             <a href="{ITEM_URL}">{ITEM_PIC: class=media-object}</a>
-		//                            </div>
-		//                              <div class="media-body">
-		//                                 <h4 class="media-heading"><a href="{ITEM_URL}">{ITEM_NAME}</a></h4>
-		//                                 <h5 class="media-heading"> by <a href="{ITEM_BRAND_URL}">{ITEM_BRAND}</a></h5>
-		//                                 {ITEM_VAR_STRING}
-		//                             </div>
-		//                         </div></td>
-		//                          <td class="col-sm-1 col-md-1 text-center">{CART_REMOVEBUTTON}</td>
-		//                         <td class="col-sm-1 col-md-1 text-center">{CART_VARS}{CART_QTY=edit} </td>
-		//                         <td class="col-sm-1 col-md-1 text-right">{CART_PRICE}</td>
-		//                         <td class="col-sm-1 col-md-1 text-right"><strong>{CART_TOTAL}</strong></td>
+		$count_active = 0;
+		foreach($data as $row)
+		{
 
-		//                     </tr>
-		//            ';
-			
-			
-			
-			
-			
-			$subTotal 		= 0;
-			$shippingTotal 	= 0;
-			$checkoutData = array();
-
-			$checkoutData['id'] = $this->getCartId();
-
-			$count_active = 0;
-			foreach($data as $row)
+			if (!$this->isItemActive($row['cart_item']))
 			{
-
-				if (!$this->isItemActive($row['cart_item']))
-				{
-					e107::getMessage()->addWarning('We\'re sorry, but the item "'.$row['item_name'].'" is missing or not longer active and has been removed from the cart!', 'vstore');
-					e107::getDb()->delete('vstore_cart', 'cart_id='.$row['cart_id'].' AND cart_item='.$row['cart_item']);
-					continue;
-				}
-
-				$count_active++;
-				$price = $row['item_price'];
-				$row['itemvarstring'] = '';
-				if (!empty($row['cart_item_vars']))
-				{
-					$varinfo = self::getItemVarProperties($row['cart_item_vars'], $row['item_price']);
-					if ($varinfo)
-					{
-						$price += $varinfo['price'];
-						$row['item_price'] = $price;
-						$row['itemvarstring'] = $varinfo['variation'];
-					}
-				}
-
-				$subTotal += ($row['cart_qty'] * $price);	
-				$shippingTotal	+= ($row['cart_qty'] * $row['item_shipping']);	
-						
-				$this->sc->setVars($row);
-				$checkoutData['items'][] = $row;
-				// $text .= $tp->parseTemplate($template, true, $this->sc);	
-				$text .= $tp->parseTemplate($template['row'], true, $this->sc);	
-			}
-			// }
-
-			if ($count_active == 0)
-			{
-				return e107::getMessage()->addInfo("Your cart is empty.",'vstore')->render('vstore');
+				e107::getMessage()->addWarning('We\'re sorry, but the item "'.$row['item_name'].'" is missing or not longer active and has been removed from the cart!', 'vstore');
+				e107::getDb()->delete('vstore_cart', 'cart_id='.$row['cart_id'].' AND cart_item='.$row['cart_item']);
+				continue;
 			}
 
+			$count_active++;
+			$price = $row['item_price'];
+			$row['itemvarstring'] = '';
+			if (!empty($row['cart_item_vars']))
+			{
+				$varinfo = self::getItemVarProperties($row['cart_item_vars'], $row['item_price']);
+				if ($varinfo)
+				{
+					$price += $varinfo['price'];
+					$row['item_price'] = $price;
+					$row['itemvarstring'] = $varinfo['variation'];
+				}
+			}
 
-			$grandTotal = $subTotal + $shippingTotal;
-			$totals = array('cart_subTotal' => $subTotal, 'cart_shippingTotal'=>$shippingTotal, 'cart_grandTotal'=>$grandTotal);
+			$subTotal += ($row['cart_qty'] * $price);	
+			$shippingTotal	+= ($row['cart_qty'] * $row['item_shipping']);	
+					
+			$this->sc->setVars($row);
+			$checkoutData['items'][] = $row;
 
-			$this->sc->setVars($totals);
+			$text .= $tp->parseTemplate($template['row'], true, $this->sc);	
+		}
 
-			$checkoutData['totals'] = $totals;
-
-			
-		// 	$footer = '     
-		//                    <tr>
-		//                    <td>   </td>
-		//                         <td colspan="2"><div class="text-right" ></div></td>
-		//                         <td><h5>Subtotal</h5></td>
-		//                         <td class="text-right"><h5><strong>{CART_SUBTOTAL}</strong></h5></td>
-
-		//                     </tr>
-		//                     <tr>
-
-		// 						<td>   </td>
-		//                         <td colspan="3" class="text-right"><h5>Estimated shipping</h5></td>
-		//                         <td class="text-right"><h5><strong>{CART_SHIPPINGTOTAL}</strong></h5></td>
-
-
-		//                     </tr>
-		//                     <tr>
-		//                         <td>   </td>
-		//                         <td>   </td>
-		// 						 <td>   </td>
-		//                         <td><h3>Total</h3></td>
-		//                         <td class="text-right"><h3><strong>{CART_GRANDTOTAL}</strong></h3></td>
-
-
-		//                     </tr>
-		//                     <tr>
-		//                         <td colspan="2">
-		//                        {CART_CONTINUESHOP}</td>
-		//                         <td colspan="3" class="text-right">
-		//                         {CART_CHECKOUT_BUTTON}
-		//                         </td>
-
-		//                     </tr>
-		//                 </tbody>
-		//             </table>
-		//         </div>
-		//     </div>
-	
-		// ';
 		
-		
-		// $text .= $tp->parseTemplate($footer, true, $this->sc);	
+		if ($count_active == 0)
+		{
+			return e107::getMessage()->addInfo("Your cart is empty.",'vstore')->render('vstore');
+		}
+
+
+		$grandTotal = $subTotal + $shippingTotal;
+		$totals = array('cart_subTotal' => $subTotal, 'cart_shippingTotal'=>$shippingTotal, 'cart_grandTotal'=>$grandTotal);
+
+		$this->sc->setVars($totals);
+
+		$checkoutData['totals'] = $totals;
 		
 		$text .= $tp->parseTemplate($template['footer'], true, $this->sc);		
 		$text .= '</div></div>';
