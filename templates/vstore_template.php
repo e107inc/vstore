@@ -2,7 +2,36 @@
 
 $VSTORE_TEMPLATE = array();
 
-// List View.
+
+/**
+ * Category list
+ */
+$VSTORE_TEMPLATE['cat']['start']   = '
+	<div class="row">
+';
+
+$VSTORE_TEMPLATE['cat']['item']   = '
+		{SETIMAGE: w=320&h=250&crop=1}
+		<div class="vstore-category-list col-sm-4 col-lg-4 col-md-4">
+			<div class="thumbnail">
+				<a href="{CAT_URL}">{CAT_PIC}</a>
+				<div class="caption text-center">
+					<h4><a href="{CAT_URL}">{CAT_NAME}</a></h4>
+					<p class="cat-description"><small>{CAT_DESCRIPTION}</small></p>
+					
+				</div>
+			</div>
+		</div>
+';
+
+$VSTORE_TEMPLATE['cat']['end']   = '
+	</div>
+';
+
+
+/**
+ * Product list
+ */
 $VSTORE_TEMPLATE['list']['start']   = '<div class="row"><div class="col-md-12">{CAT_INFO}</div>';
 $VSTORE_TEMPLATE['list']['item']    =  '
 										{SETIMAGE: w=320&h=320&crop=1}

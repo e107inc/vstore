@@ -1349,90 +1349,6 @@ class vstore
 				}
 			}
 		}
-/*
-		$text = '<h3>Shipping Details</h3>
-			    			<div class="row">
-			    				<div class="col-6 col-xs-6 col-sm-6 col-md-6">
-			    					<div class="form-group">
-			    					 <label for="firstname">First Name</label>
-			    					'.$frm->text('firstname', $this->post['firstname'], 100, array('placeholder'=>'First Name', 'required'=>1)).'
-
-			    					</div>
-			    				</div>
-			    				<div class="col-6 col-xs-6 col-sm-6 col-md-6">
-			    					<div class="form-group">
-			    					<label for="lastname">Last Name</label>
-			    						'.$frm->text('lastname', $this->post['lastname'], 100, array('placeholder'=>'Last Name', 'required'=>1)).'
-			    					</div>
-			    				</div>
-			    			</div>
-
-			    			<div class="form-group">
-			    			<label for="company">Company</label>
-			    				'.$frm->text('company', $this->post['company'], 200, array('placeholder'=>'Company')).'
-			    			</div>
-
-			    			<div class="form-group">
-			    			<label for="address">Address</label>
-			    				'.$frm->text('address', $this->post['address'], 200, array('placeholder'=>'Address', 'required'=>1)).'
-			    			</div>
-
-			    			<div class="row">
-			    				<div class="col-6 col-xs-6 col-sm-6 col-md-6">
-			    					<div class="form-group">
-			    					<label for="city">Town/City</label>
-			    						'.$frm->text('city', $this->post['city'], 100, array('placeholder'=>'Town/City', 'required'=>1)).'
-			    					</div>
-			    				</div>
-			    				<div class="col-6 col-xs-6 col-sm-6 col-md-6">
-			    					<div class="form-group">
-			    					<label for="state">State/Region</label>
-			    						'.$frm->text('state', $this->post['state'], 100, array('placeholder'=>'State/Region', 'required'=>1)).'
-			    					</div>
-			    				</div>
-			    			</div>
-
-
-							<div class="row">
-			    				<div class="col-6 col-xs-6 col-sm-6 col-md-6">
-			    					<div class="form-group">
-			    					<label for="zip">Zip/Postcode</label>
-			    						'.$frm->text('zip', $this->post['zip'], 15, array('placeholder'=>'Zip/Postcode', 'required'=>1)).'
-			    					</div>
-			    				</div>
-			    				<div class="col-6 col-xs-6 col-sm-6 col-md-6">
-			    					<div class="form-group">
-			    					<label for="country">Country</label>
-			    						'.$frm->country('country', $this->post['country'], array('placeholder'=>'Select Country...', 'required'=>1)).'
-			    					</div>
-			    				</div>
-			    			</div>
-
-						<div class="row">
-			    				<div class="col-6 col-xs-6 col-sm-6 col-md-6">
-			    					<div class="form-group">
-			    					<label for="email">Email address</label>
-			    						'.$frm->email('email', $this->post['email'], 100, array('placeholder'=>'Email address', 'required'=>1)).'
-			    					</div>
-			    				</div>
-			    				<div class="col-6 col-xs-6 col-sm-6 col-md-6">
-			    					<div class="form-group">
-			    					<label for="phone">Phone number</label>
-			    						'.$frm->text('phone', $this->post['phone'], 15, array('placeholder'=>'Phone number', 'required'=>1)).'
-			    					</div>
-			    				</div>
-			    		</div>
-			    		<div class="row">
-			    		    <div class="col-12 col-md-12">
-								<div class="form-group">
-				                <label for="notes">Order Notes</label>
-				                    '.$frm->textarea('notes', $this->post['notes'], 4, null, array('placeholder'=>'Special notes for delivery.', 'required'=>0, 'size'=>'large')).'
-				                </div>
-			    			</div>
-						</div>
-			    		';
-
-*/
 
 		$template = e107::getTemplate('vstore', 'vstore', 'shipping');
 
@@ -1459,7 +1375,6 @@ class vstore
 		{
 			// If any additional fields are enabled
 			// add active fields to form
-			//$text .= '<br/><div class="row">';
 			$text .= $tp->parseTemplate($template['additional']['start'], true, $this->sc);
 
 			foreach ($pref['additional_fields'] as $k => $v) 
@@ -1492,22 +1407,11 @@ class vstore
 
 					$text .= $tp->parseTemplate($template['additional']['item'], true, $this->sc);
 
-
-
-					// // Bootstrap wrapper for control
-					// $text .= '
-					// 	<div class="'.($addFieldActive == 1 ? 'col-12 col-md-12' : 'col-12 col-xs-12 col-sm-6').'">
-					// 		<div class="form-group">
-					// 			<label for="'.$fieldname.'">'.$ns->toHTML(varset($v['caption'][e_LANGUAGE], 'Additional field '.$k)).'</label>
-					// 			'.$field.'
-					// 		</div>
-					// 	</div>
-					// ';			
 				}
 			}
+
 			$text .= e107::getParser()->parseTemplate($template['additional']['end'], true, $this->sc);
 
-			// $text .= '</div>';
 		}
 		/**
 		 * Additional checkout fields
@@ -1516,18 +1420,6 @@ class vstore
 
 		if(!USER)
 		{
-			// $text .= '<div class="row">
-			//     				<div class="col-6 col-xs-6 col-sm-6 col-md-6">
-			//     					<div class="form-group">
-			//     						<input type="password" name="password" id="password" class="form-control input-sm" placeholder="Password">
-			//     					</div>
-			//     				</div>
-			//     				<div class="col-6 col-xs-6 col-sm-6 col-md-6">
-			//     					<div class="form-group">
-			//     						<input type="password" name="password_confirmation" id="password_confirmation" class="form-control input-sm" placeholder="Confirm Password">
-			//     					</div>
-			//     				</div>
-			//     			</div>';
 
 			$text .= e107::getParser()->parseTemplate($template['additional']['guest'], true, $this->sc);
 
@@ -2685,39 +2577,38 @@ class vstore
 		
 		$tp = e107::getParser();
 
+		$template = e107::getTemplate('vstore', 'vstore', 'cat');
+		// $text = '
+		// 	<div clas s="row">
+		//        ';
 
-		$text = '
-			<div clas s="row">
-		       ';
-
+		$text = $tp->parseTemplate($template['start'], true, $this->sc);
 			
-		$template = '
-		{SETIMAGE: w=320&h=250&crop=1}
-		<div class="vstore-category-list col-sm-4 col-lg-4 col-md-4">
-			<div class="thumbnail">
-				<a href="{CAT_URL}">{CAT_PIC}</a>
-				<div class="caption text-center">
-					<h4><a href="{CAT_URL}">{CAT_NAME}</a></h4>
-					<p class="cat-description"><small>{CAT_DESCRIPTION}</small></p>
+		// $template = '
+		// {SETIMAGE: w=320&h=250&crop=1}
+		// <div class="vstore-category-list col-sm-4 col-lg-4 col-md-4">
+		// 	<div class="thumbnail">
+		// 		<a href="{CAT_URL}">{CAT_PIC}</a>
+		// 		<div class="caption text-center">
+		// 			<h4><a href="{CAT_URL}">{CAT_NAME}</a></h4>
+		// 			<p class="cat-description"><small>{CAT_DESCRIPTION}</small></p>
 					
-				</div>
-			</div>
-		</div>';
+		// 		</div>
+		// 	</div>
+		// </div>';
 					
 		$this->sc->setCategories($this->categories);
 		
 		foreach($data as $row)
 		{
 			$this->sc->setVars($row);
-			$text .= $tp->parseTemplate($template, true, $this->sc);		
+			$text .= $tp->parseTemplate($template['item'], true, $this->sc);		
 		}
 		
-		
-		
-		$text .= '		
-			</div>
-		';
-
+		// $text .= '		
+		// 	</div>
+		// ';
+		$text .= $tp->parseTemplate($template['end'], true, $this->sc);
 
 		if($np === true)
 		{
@@ -2731,16 +2622,13 @@ class vstore
 	
 			global $nextprev_parms;
 		
-			$nextprev_parms  = http_build_query($nextprev,false,'&'); // 'tmpl_prefix='.deftrue('NEWS_NEXTPREV_TMPL', 'default').'&total='. $total_downloads.'&amount='.$amount.'&current='.$newsfrom.$nitems.'&url='.$url;
+			$nextprev_parms = http_build_query($nextprev, false, '&');
 	
-			$text .= $tp->parseTemplate("{NEXTPREV: ".$nextprev_parms."}",true);
+			$text .= $tp->parseTemplate("{NEXTPREV: ".$nextprev_parms."}", true);
 		}
-
-
 
 		return $text;
 		
-
 	}
 		
 	
