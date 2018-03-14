@@ -846,34 +846,37 @@ Secret Key 	secret_key 	Default : null
 Region 	region
  */
 		// optional
-		protected $preftabs = array(LAN_GENERAL, "Emails", "How to Order", "Admin Area", "Check-Out", "Custom CSS");
+		protected $preftabs = array(LAN_GENERAL, "Shipping", "Emails", "How to Order", "Admin Area", "Check-Out", "Custom CSS");
 
 
 		protected $prefs = array(
-			'caption'                  => array('title'=> 'Store Caption', 'tab'=>0, 'type'=>'text', 'help'=>'','writeParms'=>array('placeholder'=>'Vstore'),'multilan'=>true),
-			'caption_categories'       => array('title'=> 'Category Caption', 'tab'=>0, 'type'=>'text', 'writeParms'=>array('placeholder'=>'Product Brands'),'multilan'=>true),
-			'caption_outofstock'       => array('title'=> 'Out-of-Stock Caption', 'tab'=>0, 'type'=>'text', 'writeParms'=>array('placeholder'=>'Out of Stock'),'multilan'=>true),
+			'caption'                   => array('title'=> 'Store Caption', 'tab'=>0, 'type'=>'text', 'help'=>'','writeParms'=>array('placeholder'=>'Vstore'),'multilan'=>true),
+			'caption_categories'        => array('title'=> 'Category Caption', 'tab'=>0, 'type'=>'text', 'writeParms'=>array('placeholder'=>'Product Brands'),'multilan'=>true),
+			'caption_outofstock'        => array('title'=> 'Out-of-Stock Caption', 'tab'=>0, 'type'=>'text', 'writeParms'=>array('placeholder'=>'Out of Stock'),'multilan'=>true),
 
-			'currency'		            => array('title'=> 'Currency', 'type'=>'dropdown', 'data' => 'string','help'=>'Select a currency'),
-			'shipping'		            => array('title'=> 'Calculate Shipping', 'type'=>'boolean', 'data' => 'int','help'=>'Including shipping calculation at checkout.'),
-		    'customer_userclass'        => array('title' => 'Assign userclass', 'type' => 'method', 'help' => 'Assign userclass to customer on purchase'),
-			'howtoorder'	            => array('title'=> 'How to order', 'tab'=>2,'type'=>'bbarea', 'help'=>'Enter how-to-order info.'),
+			'currency'		            => array('title'=> 'Currency', 'tab'=>0, 'type'=>'dropdown', 'data' => 'string','help'=>'Select a currency'),
+			'customer_userclass'        => array('title'=> 'Assign userclass', 'tab'=>0, 'type' => 'method', 'help' => 'Assign userclass to customer on purchase'),
+			
+			'shipping'		            => array('title'=> 'Calculate Shipping', 'tab'=>1, 'type'=>'boolean', 'data' => 'int','help'=>'Including shipping calculation at checkout.'),
+			'shipping_method'	        => array('title'=> 'Calculation method', 'tab'=>1, 'type'=>'dropdown', 'data' => 'string', 'help'=>'Define a method to calculate the shipping cost.'),
+			'shipping_cost'				=> array('title'=> 'Shipping values', 'tab'=>1, 'type'=>'method'),
 
-			'sender_name'               => array('title'=> 'Sender Name', 'tab'=>1, 'type'=>'text', 'writeParms'=>array('placeholder'=>'Sales Department'), 'help'=>'Leave blank to use system default','multilan'=>false),
-			'sender_email'              => array('title'=> LAN_EMAIL, 'tab'=>1, 'type'=>'text', 'writeParms'=>array('placeholder'=>'orders@mysite.com'), 'help'=>'Leave blank to use system default', 'multilan'=>false),
-			'merchant_info'             => array('title'=> "Merchant Name/Address", 'tab'=>1, 'type'=>'textarea', 'writeParms'=>array('placeholder'=>'My Store Inc. etc.'), 'help'=>'Will be displayed on customer email.', 'multilan'=>false),
-			'email_templates'           => array('title'=> "Email templates", 'tab'=>1, 'type'=>'method'),
+			'sender_name'               => array('title'=> 'Sender Name', 'tab'=>2, 'type'=>'text', 'writeParms'=>array('placeholder'=>'Sales Department'), 'help'=>'Leave blank to use system default','multilan'=>false),
+			'sender_email'              => array('title'=> LAN_EMAIL, 'tab'=>2, 'type'=>'text', 'writeParms'=>array('placeholder'=>'orders@mysite.com'), 'help'=>'Leave blank to use system default', 'multilan'=>false),
+			'merchant_info'             => array('title'=> "Merchant Name/Address", 'tab'=>2, 'type'=>'textarea', 'writeParms'=>array('placeholder'=>'My Store Inc. etc.'), 'help'=>'Will be displayed on customer email.', 'multilan'=>false),
+			'email_templates'           => array('title'=> "Email templates", 'tab'=>2, 'type'=>'method'),
+			
+			'howtoorder'	            => array('title'=> 'How to order', 'tab'=>3,'type'=>'bbarea', 'help'=>'Enter how-to-order info.'),
 
+			'admin_items_perpage'	    => array('title'=> 'Products per page', 'tab'=>4, 'type'=>'number', 'help'=>''),
+			'admin_categories_perpage'	=> array('title'=> 'Categories per page', 'tab'=>4, 'type'=>'number', 'help'=>''),
 
-			'admin_items_perpage'	    => array('title'=> 'Products per page', 'tab'=>3, 'type'=>'number', 'help'=>''),
-			'admin_categories_perpage'	=> array('title'=> 'Categories per page', 'tab'=>3, 'type'=>'number', 'help'=>''),
-
-			'additional_fields'         => array('title'=>'Additional Fields', 'tab'=>4, 'type'=>'method'),
+			'additional_fields'         => array('title'=>'Additional Fields', 'tab'=>5, 'type'=>'method'),
 			
 			// Not used anymore, because of the redisigned checkout process (Summary and order confirmation page)
 			//'admin_confirm_order'		=> array('title'=> 'Confirm order', 'tab'=>4, 'type'=>'bool', 'help'=>'If ON, the customer has to confirm his order after selecting the payment method on the checkout page!'),
 
-			'custom_css'	            => array('title'=> 'Custom CSS', 'tab'=>5, 'type' => 'textarea', 'data' => 'str', 'width' => '100%', 'readParms' => '', 'writeParms' => array('cols'=> 80, 'rows' => 10, 'size'=>'block-level'), 'help'=>'Use this field to enter any vstore related custom css, without the need to edit any source files.'),
+			'custom_css'	            => array('title'=> 'Custom CSS', 'tab'=>6, 'type' => 'textarea', 'data' => 'str', 'width' => '100%', 'readParms' => '', 'writeParms' => array('cols'=> 80, 'rows' => 10, 'size'=>'block-level'), 'help'=>'Use this field to enter any vstore related custom css, without the need to edit any source files.'),
 		);
 
 
@@ -882,6 +885,17 @@ Region 	region
 		public function init()
 		{
 			$this->prefs['currency']['writeParms'] = array('USD'=>'US Dollars', 'EUR'=>'Euros', 'CAN'=>'Canadian Dollars');
+
+			$this->prefs['shipping_method']['writeParms'] = array(
+				'sum_simple'	=> 'Sum shipping cost for all items', 
+				'sum_unique'	=> 'Sum shipping cost once for each unique item', 
+				'limit_simple'	=> 'Limit max. shipping cost to a certain amount',
+				'limit_list'	=> 'Limit max. shipping cost depending on cart subtotal',
+				'limit_free'	=> 'Limit max. shipping cost to a certain value, but will be free if cart subtotal exceeds certain amount',
+				'fixed_simple'	=> 'Fixed shipping cost regardless of # of items or cart subtotal',
+				'fixed_list'	=> 'Fixed shipping cost depending on cart subtotal',
+				'fixed_free'	=> 'Fixed, but free if the cart subtotal exceeds a certain amount'
+			);
 
 			$email_fields = array(
 				'{ORDER_REF}'			=> 'The order reference number',
