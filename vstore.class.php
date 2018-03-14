@@ -99,20 +99,9 @@ class vstore_plugin_shortcodes extends e_shortcode
 		}
 		
 
-		$text  = "<table class='table table-bordered'>
-					<colgroup>	
-			            <col style='width:50%' />
-			            <col  />
-			            <col  />
-			            <col  />
-				    </colgroup>
-				<tr>
-					<th>Description</th>
-					<th class='text-right'>Unit Price</th>
-					<th class='text-right'>Qty</th>
-					<th class='text-right'>Amount</th>
-				
-				</tr>";
+		$template = e107::getTemplate('vstore', 'vstore', 'order_items');
+
+		$text = e107::getParser()->parseTemplate($template['header'], true, $this);
 
 		foreach($items as $key=>$item)
 		{
@@ -122,7 +111,6 @@ class vstore_plugin_shortcodes extends e_shortcode
 			{
 				$desc .= '<br/>' . $item['vars'];
 			}
-
 			if ($item['id']>0 && varset($item['file']))
 			{
 				if ($this->var['order_status'] === 'C' || ($this->var['order_status'] === 'N' && $this->var['order_pay_status'] == 'complete'))
@@ -136,30 +124,14 @@ class vstore_plugin_shortcodes extends e_shortcode
 				$desc .= '<br/><a href="'.e107::url('vstore', 'download', array('item_id' => $item['id']), array('mode'=>'full')).'">'.$linktext.'</a>';
 			}
 
-			$text .= "
-					<tr>
-						<td>".$desc."</td>
-						<td class='text-right'>".$this->curSymbol.number_format($item['price'], 2)."</td>
-						<td class='text-right'>".$item['quantity']."</td>
-						<td class='text-right'>".$this->curSymbol.number_format($item['price'] * $item['quantity'], 2)."</tdclass>
-					</tr>";
+			$item['name'] = $desc;
+			$item['item_total'] = $item['price'] * $item['quantity'];
+
+			$this->addVars(array('item' => $item));
+			$text .= e107::getParser()->parseTemplate($template['row'], true, $this);
 		}
 
-		$text .= "
-				<tr>
-					<td colspan='3' class='text-right'><b>Shipping</b></td>
-					<td class='text-right'>".$this->curSymbol.number_format($this->var['order_pay_shipping'], 2)."</td>
-				</tr>";
-
-		$text .= "
-				<tr>
-					<td colspan='3' class='text-right'><b>Total</b></td>
-					<td class='text-right'>".$this->curSymbol.number_format($this->var['order_pay_amount'], 2)."</td>
-				</tr>";
-
-
-		$text .= "
-		</table>";
+		$text .= e107::getParser()->parseTemplate($template['footer'], true, $this);
 
 		return $text;
 
@@ -748,6 +720,125 @@ class vstore_plugin_shortcodes extends e_shortcode
 	}
 	
 	// -------------
+
+	function sc_shipping_add_field_class($parm = null)
+	{
+		if ($this->var['fieldcount'] > 1)
+		{
+			return 'col-12 col-xs-12 col-sm-6';
+		}
+		else
+		{
+			return 'col-12 col-sm-12';
+		}
+	}
+
+	function sc_shipping_add_field_label($parm = null)
+	{
+		return '<label for="'.$this->var['fieldname'].'">'.$this->var['fieldcaption'].'</label>';
+	}
+
+	function sc_shipping_add_field_field($parm = null)
+	{
+		return $this->var['field'];
+	}
+
+	function sc_shipping_field($parm = null)
+	{
+		if (empty($parm)) return '';
+		
+		$key = array_keys($parm);
+		if ($key) $key = $key[0];
+		
+		$frm = e107::getForm();
+		$text = '';
+		
+		switch($key)
+		{
+			case 'firstname':
+				$text = $frm->text('firstname', $this->var['firstname'], 100, array('placeholder'=>'First Name', 'required'=>1));
+				break;
+			case 'lastname':
+				$text = $frm->text('lastname', $this->var['lastname'], 100, array('placeholder'=>'Last Name', 'required'=>1));
+				break;
+			case 'company':
+				$text = $frm->text('company', $this->var['company'], 200, array('placeholder'=>'Company'));
+				break;
+			case 'address':
+				$text = $frm->text('address', $this->var['address'], 200, array('placeholder'=>'Address', 'required'=>1));
+				break;
+			case 'city':
+				$text = $frm->text('city', $this->var['city'], 100, array('placeholder'=>'Town/City', 'required'=>1));
+				break;
+			case 'state':
+				$text = $frm->text('state', $this->var['state'], 100, array('placeholder'=>'State/Region', 'required'=>1));
+				break;
+			case 'zip':
+				$text = $frm->text('zip', $this->var['zip'], 15, array('placeholder'=>'Zip/Postcode', 'required'=>1));
+				break;
+			case 'country':
+				$text = $frm->country('country', $this->var['country'], array('placeholder'=>'Select Country...', 'required'=>1));
+				break;
+			case 'email':
+				$text = $frm->email('email', $this->var['email'], 100, array('placeholder'=>'Email address', 'required'=>1));
+				break;
+			case 'phone':
+				$text = $frm->text('phone', $this->var['phone'], 15, array('placeholder'=>'Phone number', 'required'=>1));
+				break;
+			case 'notes':
+				$text = $frm->textarea('notes', $this->var['notes'], 4, null, array('placeholder'=>'Special notes for delivery.', 'required'=>0, 'size'=>'large'));
+				break;
+		}
+		return $text;
+	}
+
+
+	function sc_cart_data($parm = null)
+	{
+		if (empty($parm)) return '';
+		$key = array_keys($parm);
+		if ($key) $key = $key[0];
+		$text = '';
+		switch($key)
+		{
+			case 'name': 
+				$text = $this->var['item']['name'];
+				break;
+			case 'price': 
+				$text = $this->curSymbol.number_format($this->var['item']['price'], 2);
+				break;
+			case 'quantity': 
+				$text = $this->var['item']['quantity'];
+				break;
+			case 'item_total': 
+				$text = $this->curSymbol.number_format($this->var['item']['item_total'], 2);
+				break;
+			case 'sub_total': 
+				$text = $this->curSymbol.number_format($this->var['order_pay_amount']-$this->var['order_pay_shipping'], 2);
+				break;
+			case 'shipping_total': 
+				$text = $this->curSymbol.number_format($this->var['order_pay_shipping'], 2);
+				break;
+			case 'grand_total': 
+				$text = $this->curSymbol.number_format($this->var['order_pay_amount'], 2);
+				break;
+			case 'item_count': 
+				$text = $this->var['item_count'];
+				break;
+			case 'pic': 
+				$text = $this->var['pic'];
+				break;
+			case 'index_url': 
+				$text = e107::url('vstore','index');
+				break;
+			case 'cart_url': 
+				$text = e107::url('vstore','cart');
+				break;
+		}
+
+		return $text;
+	}
+
 	
 	function sc_cart_price($parm=null)
 	{
@@ -1178,18 +1269,6 @@ class vstore
 			$this->resetCart();
 		}
 
-		// if(!empty($this->post['gateway']))
-		// {
-		// 	$this->setGatewayType($this->post['gateway']);
-
-		// 	if(!empty($this->post['firstname']))
-		// 	{
-		// 		$this->setShippingData($this->post);    // TODO Validate data before proceeding.
-		// 	}
-
-		// 	return $this->processGateway('init');
-		// }
-
 		if($this->post['mode'] == 'confirm')
 		{
 			$this->setMode($this->post['mode']);
@@ -1249,7 +1328,7 @@ class vstore
 	{
 
 		$frm = e107::getForm();
-
+		$tp = e107::getParser();
 		if (!isset($this->post['firstname']))
 		{
 			// load saved shipping data and assign to variables
@@ -1271,88 +1350,11 @@ class vstore
 			}
 		}
 
-		$text = '<h3>Shipping Details</h3>
-			    			<div class="row">
-			    				<div class="col-6 col-xs-6 col-sm-6 col-md-6">
-			    					<div class="form-group">
-			    					 <label for="firstname">First Name</label>
-			    					'.$frm->text('firstname', $this->post['firstname'], 100, array('placeholder'=>'First Name', 'required'=>1)).'
+		$template = e107::getTemplate('vstore', 'vstore', 'shipping');
 
-			    					</div>
-			    				</div>
-			    				<div class="col-6 col-xs-6 col-sm-6 col-md-6">
-			    					<div class="form-group">
-			    					<label for="lastname">Last Name</label>
-			    						'.$frm->text('lastname', $this->post['lastname'], 100, array('placeholder'=>'Last Name', 'required'=>1)).'
-			    					</div>
-			    				</div>
-			    			</div>
+		$this->sc->setVars($this->post);
 
-			    			<div class="form-group">
-			    			<label for="company">Company</label>
-			    				'.$frm->text('company', $this->post['company'], 200, array('placeholder'=>'Company')).'
-			    			</div>
-
-			    			<div class="form-group">
-			    			<label for="address">Address</label>
-			    				'.$frm->text('address', $this->post['address'], 200, array('placeholder'=>'Address', 'required'=>1)).'
-			    			</div>
-
-			    			<div class="row">
-			    				<div class="col-6 col-xs-6 col-sm-6 col-md-6">
-			    					<div class="form-group">
-			    					<label for="city">Town/City</label>
-			    						'.$frm->text('city', $this->post['city'], 100, array('placeholder'=>'Town/City', 'required'=>1)).'
-			    					</div>
-			    				</div>
-			    				<div class="col-6 col-xs-6 col-sm-6 col-md-6">
-			    					<div class="form-group">
-			    					<label for="state">State/Region</label>
-			    						'.$frm->text('state', $this->post['state'], 100, array('placeholder'=>'State/Region', 'required'=>1)).'
-			    					</div>
-			    				</div>
-			    			</div>
-
-
-							<div class="row">
-			    				<div class="col-6 col-xs-6 col-sm-6 col-md-6">
-			    					<div class="form-group">
-			    					<label for="zip">Zip/Postcode</label>
-			    						'.$frm->text('zip', $this->post['zip'], 15, array('placeholder'=>'Zip/Postcode', 'required'=>1)).'
-			    					</div>
-			    				</div>
-			    				<div class="col-6 col-xs-6 col-sm-6 col-md-6">
-			    					<div class="form-group">
-			    					<label for="country">Country</label>
-			    						'.$frm->country('country', $this->post['country'], array('placeholder'=>'Select Country...', 'required'=>1)).'
-			    					</div>
-			    				</div>
-			    			</div>
-
-						<div class="row">
-			    				<div class="col-6 col-xs-6 col-sm-6 col-md-6">
-			    					<div class="form-group">
-			    					<label for="email">Email address</label>
-			    						'.$frm->email('email', $this->post['email'], 100, array('placeholder'=>'Email address', 'required'=>1)).'
-			    					</div>
-			    				</div>
-			    				<div class="col-6 col-xs-6 col-sm-6 col-md-6">
-			    					<div class="form-group">
-			    					<label for="phone">Phone number</label>
-			    						'.$frm->text('phone', $this->post['phone'], 15, array('placeholder'=>'Phone number', 'required'=>1)).'
-			    					</div>
-			    				</div>
-			    		</div>
-			    		<div class="row">
-			    		    <div class="col-12 col-md-12">
-								<div class="form-group">
-				                <label for="notes">Order Notes</label>
-				                    '.$frm->textarea('notes', $this->post['notes'], 4, null, array('placeholder'=>'Special notes for delivery.', 'required'=>0, 'size'=>'large')).'
-				                </div>
-			    			</div>
-						</div>
-			    		';
-
+		$text = $tp->parseTemplate($template['header'], true, $this->sc);
 
 		/**
 		 * Additional checkout fields
@@ -1371,10 +1373,10 @@ class vstore
 
 		if ($addFieldActive > 0)
 		{
-			$ns = e107::getParser();
 			// If any additional fields are enabled
 			// add active fields to form
-			$text .= '<br/><div class="row">';
+			$text .= $tp->parseTemplate($template['additional']['start'], true, $this->sc);
+
 			foreach ($pref['additional_fields'] as $k => $v) 
 			{
 				if (vartrue($v['active'], false))
@@ -1391,23 +1393,25 @@ class vstore
 						$field = '<div class="form-control">'.$frm->checkbox($fieldname, 1, $this->post[$fieldname], array('required'=>($v['required'] ? 1 : 0)));
 						if (vartrue($v['placeholder']))
 						{
-							$field .= ' <span class="text-muted">&nbsp;'.$ns->toHTML($v['placeholder'][e_LANGUAGE]).'</span>';
+							$field .= ' <span class="text-muted">&nbsp;'.$tp->toHTML($v['placeholder'][e_LANGUAGE]).'</span>';
 						}
 						$field .= '</div>';
 					}
 
-					// Bootstrap wrapper for control
-					$text .= '
-						<div class="'.($addFieldActive == 1 ? 'col-12 col-md-12' : 'col-6 col-xs-6 col-sm-6 col-md-6').'">
-							<div class="form-group">
-								<label for="'.$fieldname.'">'.$ns->toHTML(varset($v['caption'][e_LANGUAGE], 'Additional field '.$k)).'</label>
-								'.$field.'
-							</div>
-						</div>
-					';			
+					$this->sc->addVars(array(
+						'fieldname' => $fieldname,
+						'fieldcaption' => $tp->toHTML(varset($v['caption'][e_LANGUAGE], 'Additional field '.$k)),
+						'field' => $field,
+						'fieldcount' => $addFieldActive
+					));
+
+					$text .= $tp->parseTemplate($template['additional']['item'], true, $this->sc);
+
 				}
 			}
-			$text .= '</div>';
+
+			$text .= e107::getParser()->parseTemplate($template['additional']['end'], true, $this->sc);
+
 		}
 		/**
 		 * Additional checkout fields
@@ -1416,19 +1420,8 @@ class vstore
 
 		if(!USER)
 		{
-			$text .= '<div class="row">
-			    				<div class="col-6 col-xs-6 col-sm-6 col-md-6">
-			    					<div class="form-group">
-			    						<input type="password" name="password" id="password" class="form-control input-sm" placeholder="Password">
-			    					</div>
-			    				</div>
-			    				<div class="col-6 col-xs-6 col-sm-6 col-md-6">
-			    					<div class="form-group">
-			    						<input type="password" name="password_confirmation" id="password_confirmation" class="form-control input-sm" placeholder="Confirm Password">
-			    					</div>
-			    				</div>
-			    			</div>';
 
+			$text .= e107::getParser()->parseTemplate($template['additional']['guest'], true, $this->sc);
 
 		}
 
@@ -2584,39 +2577,38 @@ class vstore
 		
 		$tp = e107::getParser();
 
+		$template = e107::getTemplate('vstore', 'vstore', 'cat');
+		// $text = '
+		// 	<div clas s="row">
+		//        ';
 
-		$text = '
-			<div clas s="row">
-		       ';
-
+		$text = $tp->parseTemplate($template['start'], true, $this->sc);
 			
-		$template = '
-		{SETIMAGE: w=320&h=250&crop=1}
-		<div class="vstore-category-list col-sm-4 col-lg-4 col-md-4">
-			<div class="thumbnail">
-				<a href="{CAT_URL}">{CAT_PIC}</a>
-				<div class="caption text-center">
-					<h4><a href="{CAT_URL}">{CAT_NAME}</a></h4>
-					<p class="cat-description"><small>{CAT_DESCRIPTION}</small></p>
+		// $template = '
+		// {SETIMAGE: w=320&h=250&crop=1}
+		// <div class="vstore-category-list col-sm-4 col-lg-4 col-md-4">
+		// 	<div class="thumbnail">
+		// 		<a href="{CAT_URL}">{CAT_PIC}</a>
+		// 		<div class="caption text-center">
+		// 			<h4><a href="{CAT_URL}">{CAT_NAME}</a></h4>
+		// 			<p class="cat-description"><small>{CAT_DESCRIPTION}</small></p>
 					
-				</div>
-			</div>
-		</div>';
+		// 		</div>
+		// 	</div>
+		// </div>';
 					
 		$this->sc->setCategories($this->categories);
 		
 		foreach($data as $row)
 		{
 			$this->sc->setVars($row);
-			$text .= $tp->parseTemplate($template, true, $this->sc);		
+			$text .= $tp->parseTemplate($template['item'], true, $this->sc);		
 		}
 		
-		
-		
-		$text .= '		
-			</div>
-		';
-
+		// $text .= '		
+		// 	</div>
+		// ';
+		$text .= $tp->parseTemplate($template['end'], true, $this->sc);
 
 		if($np === true)
 		{
@@ -2630,16 +2622,13 @@ class vstore
 	
 			global $nextprev_parms;
 		
-			$nextprev_parms  = http_build_query($nextprev,false,'&'); // 'tmpl_prefix='.deftrue('NEWS_NEXTPREV_TMPL', 'default').'&total='. $total_downloads.'&amount='.$amount.'&current='.$newsfrom.$nitems.'&url='.$url;
+			$nextprev_parms = http_build_query($nextprev, false, '&');
 	
-			$text .= $tp->parseTemplate("{NEXTPREV: ".$nextprev_parms."}",true);
+			$text .= $tp->parseTemplate("{NEXTPREV: ".$nextprev_parms."}", true);
 		}
-
-
 
 		return $text;
 		
-
 	}
 		
 	
@@ -3023,148 +3012,71 @@ class vstore
 		
 		$text .= e107::getMessage()->render('vstore');
 
-		$text .= '
-		
-		
-		    <div class="row">
-		        <div class="col-sm-12 col-md-12">
-		            <table class="table table-hover cart">
-		                <thead>
-		                    <tr>
-		                        <th>Product</th>
-		                         <th> </th>
-		                        <th>Quantity</th>
-		                        <th class="text-right">Price</th>
-		                        <th class="text-right">Total</th>
+		$template = e107::getTemplate('vstore', 'vstore', 'cart');
 
-		                    </tr>
-		                </thead>
-		                <tbody>';
-			
-			
-			
-			$template = '
-						{SETIMAGE: w=72&h=72&crop=1}
-		                    <tr>
-		                        <td>
-		                        <div class="media">
-		                        	<div class="media-left">
-		                            <a href="{ITEM_URL}">{ITEM_PIC: class=media-object}</a>
-		                           </div>
-		                             <div class="media-body">
-		                                <h4 class="media-heading"><a href="{ITEM_URL}">{ITEM_NAME}</a></h4>
-		                                <h5 class="media-heading"> by <a href="{ITEM_BRAND_URL}">{ITEM_BRAND}</a></h5>
-		                                {ITEM_VAR_STRING}
-		                            </div>
-		                        </div></td>
-		                         <td class="col-sm-1 col-md-1 text-center">{CART_REMOVEBUTTON}</td>
-		                        <td class="col-sm-1 col-md-1 text-center">{CART_VARS}{CART_QTY=edit} </td>
-		                        <td class="col-sm-1 col-md-1 text-right">{CART_PRICE}</td>
-		                        <td class="col-sm-1 col-md-1 text-right"><strong>{CART_TOTAL}</strong></td>
+		$text .= '<div class="row">
+		        <div class="col-sm-12 col-md-12">';
 
-		                    </tr>
-		           ';
+		$text .= $tp->parseTemplate($template['header'], true, $this->sc);
 			
 			
-			
-			
-			
-			$subTotal 		= 0;
-			$shippingTotal 	= 0;
-			$checkoutData = array();
+		$subTotal 		= 0;
+		$shippingTotal 	= 0;
+		$checkoutData = array();
 
-			$checkoutData['id'] = $this->getCartId();
+		$checkoutData['id'] = $this->getCartId();
 
-			$count_active = 0;
-			foreach($data as $row)
+		$count_active = 0;
+		foreach($data as $row)
+		{
+
+			if (!$this->isItemActive($row['cart_item']))
 			{
-
-				if (!$this->isItemActive($row['cart_item']))
-				{
-					e107::getMessage()->addWarning('We\'re sorry, but the item "'.$row['item_name'].'" is missing or not longer active and has been removed from the cart!', 'vstore');
-					e107::getDb()->delete('vstore_cart', 'cart_id='.$row['cart_id'].' AND cart_item='.$row['cart_item']);
-					continue;
-				}
-
-				$count_active++;
-				$price = $row['item_price'];
-				$row['itemvarstring'] = '';
-				if (!empty($row['cart_item_vars']))
-				{
-					$varinfo = self::getItemVarProperties($row['cart_item_vars'], $row['item_price']);
-					if ($varinfo)
-					{
-						$price += $varinfo['price'];
-						$row['item_price'] = $price;
-						$row['itemvarstring'] = $varinfo['variation'];
-					}
-				}
-
-				$subTotal += ($row['cart_qty'] * $price);	
-				$shippingTotal	+= ($row['cart_qty'] * $row['item_shipping']);	
-						
-				$this->sc->setVars($row);
-				$checkoutData['items'][] = $row;
-				$text .= $tp->parseTemplate($template, true, $this->sc);	
+				e107::getMessage()->addWarning('We\'re sorry, but the item "'.$row['item_name'].'" is missing or not longer active and has been removed from the cart!', 'vstore');
+				e107::getDb()->delete('vstore_cart', 'cart_id='.$row['cart_id'].' AND cart_item='.$row['cart_item']);
+				continue;
 			}
 
-			if ($count_active == 0)
+			$count_active++;
+			$price = $row['item_price'];
+			$row['itemvarstring'] = '';
+			if (!empty($row['cart_item_vars']))
 			{
-				return e107::getMessage()->addInfo("Your cart is empty.",'vstore')->render('vstore');
+				$varinfo = self::getItemVarProperties($row['cart_item_vars'], $row['item_price']);
+				if ($varinfo)
+				{
+					$price += $varinfo['price'];
+					$row['item_price'] = $price;
+					$row['itemvarstring'] = $varinfo['variation'];
+				}
 			}
 
+			$subTotal += ($row['cart_qty'] * $price);	
+			$shippingTotal	+= ($row['cart_qty'] * $row['item_shipping']);	
+					
+			$this->sc->setVars($row);
+			$checkoutData['items'][] = $row;
 
-			$grandTotal = $subTotal + $shippingTotal;
-			$totals = array('cart_subTotal' => $subTotal, 'cart_shippingTotal'=>$shippingTotal, 'cart_grandTotal'=>$grandTotal);
+			$text .= $tp->parseTemplate($template['row'], true, $this->sc);	
+		}
 
-			$this->sc->setVars($totals);
-
-			$checkoutData['totals'] = $totals;
-
-			
-			$footer = '     
-		                   <tr>
-		                   <td>   </td>
-		                        <td colspan="2"><div class="text-right" ></div></td>
-		                        <td><h5>Subtotal</h5></td>
-		                        <td class="text-right"><h5><strong>{CART_SUBTOTAL}</strong></h5></td>
-
-		                    </tr>
-		                    <tr>
-
-								<td>   </td>
-		                        <td colspan="3" class="text-right"><h5>Estimated shipping</h5></td>
-		                        <td class="text-right"><h5><strong>{CART_SHIPPINGTOTAL}</strong></h5></td>
-
-
-		                    </tr>
-		                    <tr>
-		                        <td>   </td>
-		                        <td>   </td>
-								 <td>   </td>
-		                        <td><h3>Total</h3></td>
-		                        <td class="text-right"><h3><strong>{CART_GRANDTOTAL}</strong></h3></td>
-
-
-		                    </tr>
-		                    <tr>
-		                        <td colspan="2">
-		                       {CART_CONTINUESHOP}</td>
-		                        <td colspan="3" class="text-right">
-		                        {CART_CHECKOUT_BUTTON}
-		                        </td>
-
-		                    </tr>
-		                </tbody>
-		            </table>
-		        </div>
-		    </div>
-	
-		';
 		
+		if ($count_active == 0)
+		{
+			return e107::getMessage()->addInfo("Your cart is empty.",'vstore')->render('vstore');
+		}
+
+
+		$grandTotal = $subTotal + $shippingTotal;
+		$totals = array('cart_subTotal' => $subTotal, 'cart_shippingTotal'=>$shippingTotal, 'cart_grandTotal'=>$grandTotal);
+
+		$this->sc->setVars($totals);
+
+		$checkoutData['totals'] = $totals;
 		
-		$text .= $tp->parseTemplate($footer, true, $this->sc);	
-		
+		$text .= $tp->parseTemplate($template['footer'], true, $this->sc);		
+		$text .= '</div></div>';
+
 		$text .= $frm->close();
 
 		$this->setCheckoutData($checkoutData);

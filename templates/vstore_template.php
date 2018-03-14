@@ -2,7 +2,36 @@
 
 $VSTORE_TEMPLATE = array();
 
-// List View.
+
+/**
+ * Category list
+ */
+$VSTORE_TEMPLATE['cat']['start']   = '
+	<div class="row">
+';
+
+$VSTORE_TEMPLATE['cat']['item']   = '
+		{SETIMAGE: w=320&h=250&crop=1}
+		<div class="vstore-category-list col-sm-4 col-lg-4 col-md-4">
+			<div class="thumbnail">
+				<a href="{CAT_URL}">{CAT_PIC}</a>
+				<div class="caption text-center">
+					<h4><a href="{CAT_URL}">{CAT_NAME}</a></h4>
+					<p class="cat-description"><small>{CAT_DESCRIPTION}</small></p>
+					
+				</div>
+			</div>
+		</div>
+';
+
+$VSTORE_TEMPLATE['cat']['end']   = '
+	</div>
+';
+
+
+/**
+ * Product list
+ */
 $VSTORE_TEMPLATE['list']['start']   = '<div class="row"><div class="col-md-12">{CAT_INFO}</div>';
 $VSTORE_TEMPLATE['list']['item']    =  '
 										{SETIMAGE: w=320&h=320&crop=1}
@@ -46,26 +75,6 @@ $VSTORE_TEMPLATE['list']['end']         = '</div>';
 
 
 $VSTORE_TEMPLATE['menu']['start'] =  '';
-// $VSTORE_TEMPLATE['menu']['item'] =  '
-// 			{SETIMAGE: w=320&h=250&crop=1}
-// 			<div class="vstore-product-list col-sm-12 col-lg-12 col-md-12">
-// 	                        <div class="thumbnail">
-//                             <a href="{ITEM_URL}">{ITEM_PIC}</a>
-//                             <div class="caption">
-//                                 <h4><a href="{ITEM_URL}">{ITEM_NAME}</a></h4>
-//                                 <p class="item-description">{ITEM_DESCRIPTION}</p>
-//                                 <div class="row">
-// 								<div class="col-xs-12 col-sm-6 col-md-6 col-lg-6">
-// 									<p class="lead">{ITEM_PRICE}</p>
-// 								</div>
-// 								<div class="col-xs-12 col-sm-6 col-md-6 col-lg-6">
-// 									{ITEM_ADDTOCART}
-// 								</div>
-// 							</div>
-//                             </div>
-
-//                         </div>
-//                     </div>';
 
 $VSTORE_TEMPLATE['menu']['item'] =  '
 			{SETIMAGE: w=100&h=100&crop=1}
@@ -162,6 +171,10 @@ $VSTORE_WRAPPER['item']['ITEM_PIC: w=200&h=200&crop=1&item=5&link=1&class=thumbn
 $VSTORE_WRAPPER['item']['ITEM_PIC: w=200&h=200&crop=1&item=6&link=1&class=thumbnail img-responsive'] = "<div class='col-xs-3'><p>{---}</p></div>";
 $VSTORE_WRAPPER['item']['ITEM_PIC: w=200&h=200&crop=1&item=7&link=1&class=thumbnail img-responsive'] = "<div class='col-xs-3'><p>{---}</p></div>";
 
+
+/**
+ * Order summary and confirmation page
+ */
 $VSTORE_TEMPLATE['orderconfirm'] = '
 		<h3>Summary</h3>
 		<div class="row">
@@ -191,3 +204,283 @@ $VSTORE_TEMPLATE['orderconfirm'] = '
 			</div>
 		</div>
 		';
+
+
+/**
+ * Order items list
+ * Used in emails and on order summary and confirmation
+ */		
+
+$VSTORE_TEMPLATE['order_items']['header'] = '
+<table class="table table-bordered">
+<colgroup>	
+	<col style="width:50%" />
+	<col  />
+	<col  />
+	<col  />
+</colgroup>
+<tr>
+	<th>Description</th>
+	<th class="text-right">Unit Price</th>
+	<th class="text-right">Qty</th>
+	<th class="text-right">Amount</th>
+</tr>
+';
+
+$VSTORE_TEMPLATE['order_items']['row'] = '
+<tr>
+	<td>{CART_DATA: name}</td>
+	<td class="text-right">{CART_DATA: price}</td>
+	<td class="text-right">{CART_DATA: quantity}</td>
+	<td class="text-right">{CART_DATA: item_total}</tdclass>
+</tr>';
+
+$VSTORE_TEMPLATE['order_items']['footer'] = '
+<tr>
+	<td colspan="3" class="text-right"><b>Subtotal</b></td>
+	<td class="text-right">{CART_DATA: sub_total}</td>
+</tr>
+<tr>
+	<td colspan="3" class="text-right"><b>Shipping</b></td>
+	<td class="text-right">{CART_DATA: shipping_total}</td>
+</tr>
+<tr>
+	<td colspan="3" class="text-right"><b>Total</b></td>
+	<td class="text-right">{CART_DATA: grand_total}</td>
+</tr>
+</table>
+';
+
+
+/**
+ * Shopping cart page
+ */
+$VSTORE_TEMPLATE['cart']['header'] = '
+<table class="table table-hover cart">
+<thead>
+	<tr>
+		<th>Product</th>
+		<th> </th>
+		<th>Quantity</th>
+		<th class="text-right">Price</th>
+		<th class="text-right">Total</th>
+
+	</tr>
+</thead>
+<tbody>';
+
+$VSTORE_TEMPLATE['cart']['row'] = '
+{SETIMAGE: w=72&h=72&crop=1}
+	<tr>
+		<td>
+			<div class="media">
+				<div class="media-left">
+					<a href="{ITEM_URL}">{ITEM_PIC: class=media-object}</a>
+				</div>
+				<div class="media-body">
+					<h4 class="media-heading"><a href="{ITEM_URL}">{ITEM_NAME}</a></h4>
+					<h5 class="media-heading"> by <a href="{ITEM_BRAND_URL}">{ITEM_BRAND}</a></h5>
+					{ITEM_VAR_STRING}
+				</div>
+			</div>
+		</td>
+		<td class="col-sm-1 col-md-1 text-center">{CART_REMOVEBUTTON}</td>
+		<td class="col-sm-1 col-md-1 text-center">{CART_VARS}{CART_QTY=edit} </td>
+		<td class="col-sm-1 col-md-1 text-right">{CART_PRICE}</td>
+		<td class="col-sm-1 col-md-1 text-right"><strong>{CART_TOTAL}</strong></td>
+
+	</tr>
+	';
+
+$VSTORE_TEMPLATE['cart']['footer'] = '     
+	<tr>
+		<td colspan="4" class="text-right"><h5>Subtotal</h5></td>
+		<td class="text-right"><h5><strong>{CART_SUBTOTAL}</strong></h5></td>
+	</tr>
+	<tr>
+		<td colspan="4" class="text-right"><h5>Estimated shipping</h5></td>
+		<td class="text-right"><h5><strong>{CART_SHIPPINGTOTAL}</strong></h5></td>
+	</tr>
+	<tr>
+		<td colspan="4" class="text-right"><h3>Total</h3></td>
+		<td class="text-right"><h3><strong>{CART_GRANDTOTAL}</strong></h3></td>
+	</tr>
+	<tr>
+		<td colspan="2">{CART_CONTINUESHOP}</td>
+		<td colspan="3" class="text-right">{CART_CHECKOUT_BUTTON}</td>
+	</tr>
+	</tbody>
+	</table>
+';
+
+
+/**
+ * Shipping details form
+ */
+$VSTORE_TEMPLATE['shipping']['header'] = '
+	<h3>Shipping Details</h3>
+	<div class="row">
+		<div class="col-12 col-xs-12 col-sm-6">
+			<div class="form-group">
+				<label for="firstname">First Name</label>
+				{SHIPPING_FIELD: firstname}
+			</div>
+		</div>
+		<div class="col-12 col-xs-12 col-sm-6">
+			<div class="form-group">
+				<label for="lastname">Last Name</label>
+				{SHIPPING_FIELD: lastname}
+			</div>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col col-xs-12">
+			<div class="form-group">
+				<label for="company">Company</label>
+				{SHIPPING_FIELD: company}
+			</div>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col col-xs-12">
+			<div class="form-group">
+				<label for="address">Address</label>
+				{SHIPPING_FIELD: address}
+			</div>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-12 col-xs-12 col-sm-6">
+			<div class="form-group">
+				<label for="city">Town/City</label>
+				{SHIPPING_FIELD: city}
+			</div>
+		</div>
+		<div class="col-12 col-xs-12 col-sm-6">
+			<div class="form-group">
+				<label for="state">State/Region</label>
+				{SHIPPING_FIELD: state}
+			</div>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-12 col-xs-12 col-sm-6">
+			<div class="form-group">
+				<label for="zip">Zip/Postcode</label>
+				{SHIPPING_FIELD: zip}
+			</div>
+		</div>
+		<div class="col-12 col-xs-12 col-sm-6">
+			<div class="form-group">
+				<label for="country">Country</label>
+				{SHIPPING_FIELD: country}
+			</div>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-12 col-xs-12 col-sm-6">
+			<div class="form-group">
+				<label for="email">Email address</label>
+				{SHIPPING_FIELD: email}
+			</div>
+		</div>
+		<div class="col-12 col-xs-12 col-sm-6">
+			<div class="form-group">
+				<label for="phone">Phone number</label>
+				{SHIPPING_FIELD: phone}
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-12 col-md-12">
+			<div class="form-group">
+				<label for="notes">Order Notes</label>
+				{SHIPPING_FIELD: notes}
+			</div>
+		</div>
+	</div>
+';
+
+$VSTORE_TEMPLATE['shipping']['additional']['start'] = '
+	<br/>
+	<div class="row">
+';
+
+$VSTORE_TEMPLATE['shipping']['additional']['item'] = '
+		<div class="{SHIPPING_ADD_FIELD_CLASS}">
+			<div class="form-group">
+				{SHIPPING_ADD_FIELD_LABEL}
+				{SHIPPING_ADD_FIELD_FIELD}
+			</div>
+		</div>
+';
+
+$VSTORE_TEMPLATE['shipping']['additional']['end'] = '
+	</div>
+';
+
+$VSTORE_TEMPLATE['shipping']['guest'] = '
+	<div class="row">
+		<div class="col-12 col-xs-12 col-sm-6">
+			<div class="form-group">
+				<input type="password" name="password" id="password" class="form-control input-sm" placeholder="Password">
+			</div>
+		</div>
+		<div class="col-12 col-xs-12 col-sm-6">
+			<div class="form-group">
+				<input type="password" name="password_confirmation" id="password_confirmation" class="form-control input-sm" placeholder="Confirm Password">
+			</div>
+		</div>
+	</div>
+';
+
+
+/**
+ * Nav menu shopping cart
+ */
+$VSTORE_TEMPLATE['navcart']['empty'] = '
+		<div id="vstore-cart-dropdown-empty" class="alert alert-info">
+			Your cart is empty.
+			<br/>
+			<a class="alert-link" href="{CART_DATA: index_url}">Start Shopping</a>
+		</div>
+';
+
+$VSTORE_TEMPLATE['navcart']['header'] = '
+		<div class="form-group alert alert-info" style="max-height: 400px;overflow-y:auto;">
+        	<ul class="media-list list-unstyled">
+';
+
+$VSTORE_TEMPLATE['navcart']['item'] = '
+				<li class="media">
+					<span class="media-object pull-left">{CART_DATA: pic}</span>
+					<div class="media-body">{CART_DATA: name}<br />
+						<span class="pull-right">{CART_DATA: quantity} &times; {CART_DATA: item_total}</span>
+					</div>
+				</li>
+			';
+
+$VSTORE_TEMPLATE['navcart']['footer'] = '
+				<li class="media text-right float-right"><h4>Total: {CART_DATA: grand_total}</h4></li>
+			</ul>
+			<input type="hidden" id="vstore-item-count" value="{CART_DATA: item_count}"/>
+		</div>
+
+		<div>
+			<a class="btn btn-block btn-danger" href="#" onclick="vstoreCartReset()"><i class="fa fa-trash-o" aria-hidden="true"></i> Clear cart</a>
+			<a class="btn btn-block btn-primary col-xs-6" href="{CART_DATA: cart_url}"><i class="fa fa-shopping-cart" aria-hidden="true"></i> Checkout</a>
+		</div>
+';
+
+$VSTORE_TEMPLATE['navcart']['start'] = '
+	<div id="vstore-cart-dropdown" class="dropdown-menu">
+';
+
+$VSTORE_TEMPLATE['navcart']['end'] = '
+	</div>
+';

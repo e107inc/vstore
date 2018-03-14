@@ -1285,7 +1285,7 @@ class vstore_cat_ui extends e_admin_ui
 			
 			if (isset($new_data['cat_sef']))
 			{
-				$new_data['cat_sef'] = vstore::fix_sef($new_data['cat_sef'], $this->table, 'cat_sef');
+				$new_data['cat_sef'] = $this->fix_sef($new_data['cat_sef'], $this->table, 'cat_sef');
 			}
 
 			return $new_data;
