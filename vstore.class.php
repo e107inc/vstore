@@ -2265,7 +2265,7 @@ class vstore
 		}
 		else
 		{
-			$template = str_ireplace(array('[html]', '[/html'), '', $template[$type]);
+			$template = str_ireplace(array('[html]', '[/html'), '', $template[$type]['template']);
 		}
 		return $template;
 	}
