@@ -858,8 +858,10 @@ Region 	region
 			'customer_userclass'        => array('title'=> 'Assign userclass', 'tab'=>0, 'type' => 'method', 'help' => 'Assign userclass to customer on purchase'),
 			
 			'shipping'		            => array('title'=> 'Calculate Shipping', 'tab'=>1, 'type'=>'boolean', 'data' => 'int','help'=>'Including shipping calculation at checkout.'),
-			'shipping_method'	        => array('title'=> 'Calculation method', 'tab'=>1, 'type'=>'dropdown', 'data' => 'string', 'help'=>'Define a method to calculate the shipping cost.'),
-			'shipping_cost'				=> array('title'=> 'Shipping values', 'tab'=>1, 'type'=>'method'),
+			'shipping_method'	        => array('title'=> 'Calculation method', 'tab'=>1, 'type'=>'dropdown', 'data' => 'string', 'help'=>'Define a method to calculate the shipping cost.', 'writeParms' => array('size' => 'xxlarge')),
+			'shipping_unit'	        	=> array('title'=> 'Value based on', 'tab'=>1, 'type'=>'dropdown', 'data' => 'string', 'help'=>'Define which value (subtotal or weight) will be used to calculate shipping costs.', 'writeParms' => array('money'=>'Cart subtotal', 'weight'=>'Cart total weight')),
+			'shipping_limit'        	=> array('title'=> 'Cost are', 'tab'=>1, 'type'=>'dropdown', 'data' => 'string', 'help'=>'Define if the shipping cost are fixed to the spcified cost or limited to that value', 'writeParms' => array('fixed'=>'Fixed shipping costs', 'max'=>'Up to (max.) shipping costs')),
+			'shipping_data'				=> array('title'=> 'Staggered shipping costs', 'tab'=>1, 'type'=>'method', 'data' => 'json'),
 
 			'sender_name'               => array('title'=> 'Sender Name', 'tab'=>2, 'type'=>'text', 'writeParms'=>array('placeholder'=>'Sales Department'), 'help'=>'Leave blank to use system default','multilan'=>false),
 			'sender_email'              => array('title'=> LAN_EMAIL, 'tab'=>2, 'type'=>'text', 'writeParms'=>array('placeholder'=>'orders@mysite.com'), 'help'=>'Leave blank to use system default', 'multilan'=>false),
@@ -887,16 +889,9 @@ Region 	region
 			$this->prefs['currency']['writeParms'] = array('USD'=>'US Dollars', 'EUR'=>'Euros', 'CAN'=>'Canadian Dollars');
 
 			$this->prefs['shipping_method']['writeParms'] = array(
-				'sum_simple'	=> 'Sum shipping cost for all items', 
-				'sum_unique'	=> 'Sum shipping cost once for each unique item', 
-				'limit_simple'	=> 'Limit max. shipping cost to a certain amount',
-				'limit_list'	=> 'Limit max. shipping cost depending on cart subtotal',
-				'limit_free'	=> 'Limit max. shipping cost to a certain value, but will be free if cart subtotal exceeds certain amount',
-				'limit_weight'	=> 'Limit max. shipping cost depending on sum of item weight',
-				'fixed_simple'	=> 'Fixed shipping cost regardless of # of items or cart subtotal',
-				'fixed_list'	=> 'Fixed shipping cost depending on cart subtotal',
-				'fixed_free'	=> 'Fixed, but free if the cart subtotal exceeds a certain amount',
-				'fixed_weight'	=> 'Fixed shipping cost depending on sum of item weight',
+				'sum_simple'	=> 'Sum up shipping cost for all items', 
+				'sum_unique'	=> 'Sum up shipping cost only for unique items', 
+				'staggered'		=> 'Use settings from staggered shipping costs table',
 			);
 
 			$email_fields = array(
@@ -941,7 +936,7 @@ Region 	region
 class vstore_cart_form_ui extends e_admin_form_ui
 {
 
-	public function varempty($val, $default=0)
+	private function varempty($val, $default=0)
 	{
 		if (!empty($val)) return $val;
 		return $default;
@@ -949,7 +944,30 @@ class vstore_cart_form_ui extends e_admin_form_ui
 
 	public function init()
 	{
+		$prefs = e107::pref('vstore');
+
+		$sd = $prefs['shipping_data'];
+		if (!is_array($sd))
+		{
+			$sd = e107::unserialize($sd);
+		}
+
+		unset($sd['%ROW%']);
+
+		// Make sure that the array is correctly indexed
+		$tmp = array();
+		foreach ($sd as $key => $value) {
+			$tmp[] = array('cost' => floatval($value['cost']), 'unit' => floatval($value['unit']));
+		}
+		$sd = e107::serialize($tmp, 'json');
+
+		e107::getConfig('vstore')->update('shipping_data', e107::serialize($tmp, 'json'))->save(false, false, false);
+
+		$max = (int) max(array_keys($tmp));
+		$max++;
+
 		$js = "
+		var rowcount = $max;
 		$(function(){
 			$('.vstore-email-reset').click(function(){
 				var type = $(this).data('type');
@@ -959,140 +977,97 @@ class vstore_cart_form_ui extends e_admin_form_ui
 				$('#'+id).val(template);
 				$(tinymce.get(id).getBody()).html(template);
 			});
+
+			$('.vstore-shipping-add').click(function(){
+				rowcount++;
+				var row = $('#vstore-shipping-data-template').html();
+				row = row.replace(new RegExp('%ROW%', 'g'), rowcount);
+				row = row.replace(new RegExp('xxx>', 'g'), 'td>');
+				row = '<tr>' + row + '</tr>';
+				$('#vstore-shipping-data').append(row);
+			});
+
+			$('body').on('click', '.vstore-shipping-remove', function(){
+				var rows = $('#vstore-shipping-data tr').length;
+				if (rows > 2)
+				{
+					var row = $(this).parent().parent();
+					row.remove();
+				}
+			});
 		});
 		";
 		e107::js('footer-inline', $js);
 	}
 
 
-	function shipping_cost($curVal, $mode)
+	function shipping_data($curVal, $mode)
 	{
 		$frm = e107::getForm();
 
-		$text .= '
-		<table class="table table-striped table-bordered">
+		if (!empty($curVal) && !is_array($curVal))
+		{
+			$curVal = e107::unserialize($curVal);
+		}elseif(!is_array($curVal)){
+			$curVal = array();
+		}
+
+		$text = '
+		<div class="row">
+		<table class="table table-striped table-bordered" id="vstore-shipping-data">
 		<tr>
-			<td>Limit: '.$frm->select('shipping_cost[cost_type]', array('fixed'=>'Fixed shipping costs', 'max'=>'Up to (max.) shipping costs'), $curVal['cost_type']).'</td>
-			<td>Unit: '.$frm->select('shipping_cost[unit]', array('money'=>'€', 'weight'=>'kg'), $curVal['limit_type']).'</td>
+			<td>Value</td>
+			<td>Cost</td>
+			<td> </td>
 		</tr>
 		';
 
-		
-		$tmp = range(0, max(count($curVal['table']), 0));
-		foreach ($tmp as $i) {
+		unset($curVal['%ROW%']);
+
+		$i = 0;
+		if (count($curVal) == 0)
+		{
 			$text .= '
 			<tr>
-				<td>'.$frm->text('shipping_cost[table]['.$i.'][cost]', $this->varempty($curVal['table'][$i]['cost'], '0.00'), 8, array('pattern' => '^(\d+(\.\d{1,2}){0,1})$', 'min' => '0')).'</td>
-				<td>'.$frm->text('shipping_cost[table]['.$i.'][total]', $this->varempty($curVal['table'][$i]['total'], '0.00'), 8, array('pattern' => '^(\d+(\.\d{1,2}){0,1})$', 'min' => '0')).'</td>
+				<td>'.$frm->text('shipping_data['.$i.'][unit]', '0.00', 8, array('pattern' => '^(\d+(\.\d{1,2}){0,1})$', 'min' => '0')).'</td>
+				<td>'.$frm->text('shipping_data['.$i.'][cost]', '0.00', 8, array('pattern' => '^(\d+(\.\d{1,2}){0,1})$', 'min' => '0')).'</td>
+				<td><button class="vstore-shipping-remove btn btn-danger" type="button"><i class="fa fa-times"></i> Remove</button></td>
 			</tr>
 			';
+			
 		}
+		else
+		{
+			foreach ($curVal as $x => $val) {
+				$text .= '
+				<tr>
+					<td>'.$frm->text('shipping_data['.$i.'][unit]', number_format($val['unit'], 2), 8, array('pattern' => '^(\d+(\.\d{1,2}){0,1})$', 'min' => '0')).'</td>
+					<td>'.$frm->text('shipping_data['.$i.'][cost]', number_format($val['cost'], 2), 8, array('pattern' => '^(\d+(\.\d{1,2}){0,1})$', 'min' => '0')).'</td>
+					<td><button class="vstore-shipping-remove btn btn-danger" type="button"><i class="fa fa-times"></i> Remove</button></td>
+				</tr>
+				';
+				$i++;
+			}
+		}
+		
 		$text .= '
 		</table>
+		</div>
+
+		<button class="vstore-shipping-add btn btn-success" type="button"><i class="fa fa-plus"></i> Add</button>
 		';
 
+		$text .= '
+		<div id="vstore-shipping-data-template" style="display:none;">
+			<xxx>'.$frm->text('shipping_data[%ROW%][unit]', '0.00', 8, array('pattern' => '^(\d+(\.\d{1,2}){0,1})$', 'min' => '0')).'</xxx>
+			<xxx>'.$frm->text('shipping_data[%ROW%][cost]', '0.00', 8, array('pattern' => '^(\d+(\.\d{1,2}){0,1})$', 'min' => '0')).'</xxx>
+			<xxx><button class="vstore-shipping-remove btn btn-danger" type="button"><i class="fa fa-times"></i> Remove</button></xxx>
+		</div>
+		';
+
+
+
 		return $text;
-
-
-		// $prefs = $this->_controller->getPrefs();
-		// $shippingKeys = array_keys($prefs['shipping_method']['writeParms']);
-
-		// $tab = array();
-		// foreach ($shippingKeys as $key) {
-		// 	$val = $curVal[$key]['cost'];
-
-		// 	switch($key)
-		// 	{
-		// 		case 'sum_simple':
-		// 			$tab[] = array('caption' => $key, 'text' => 'Will use the individual shipping cost defined in each item');
-		// 			break;
-
-		// 		case 'sum_unique':
-		// 			$tab[] = array('caption' => $key, 'text' => 'Will use the individual shipping cost defined in each item');
-		// 			break;
-
-		// 		case 'limit_simple':
-		// 			$text = 'Will use the individual shipping cost defined in each item';
-
-		// 			$text .= '
-		// 			<table class="table table-striped table-bordered">
-		// 			<tr>
-		// 				<td>Max. shipping cost</td>
-		// 			</tr>
-		// 			<tr>
-		// 				<td>'.$frm->text('shipping_cost['.$key.'][cost]', $this->varempty($val[0]['cost']), 10, array('pattern' => '^(\d+(\.\d{1,2}){0,1})$', 'min' => '0')).'</td>
-		// 			</tr>
-		// 			</table>
-		// 			';
-		// 			$tab[] = array('caption' => $key, 'text' => $text);
-		// 			break;
-
-		// 		case 'limit_list':
-		// 			$text = 'Will use the individual shipping cost defined in each item';
-
-		// 			$text .= '
-		// 			<table class="table table-striped table-bordered">
-		// 			<tr>
-		// 				<td>Max. shipping cost</td>
-		// 				<td>Cart subtotal</td>
-		// 			</tr>
-		// 			';
-
-		// 			$tmp = range(0, 4);
-		// 			foreach ($tmp as $i) {
-		// 				$text .= '
-		// 				<tr>
-		// 					<td>'.$frm->text('shipping_cost['.$key.']['.$i.'][cost]', $this->varempty($val[$i]['cost']), 10, array('pattern' => '^(\d+(\.\d{1,2}){0,1})$', 'min' => '0')).'</td>
-		// 					<td>'.$frm->text('shipping_cost['.$key.']['.$i.'][total]', $this->varempty($val[$i]['total']), 10, array('pattern' => '^(\d+(\.\d{1,2}){0,1})$', 'min' => '0')).'</td>
-		// 				</tr>
-		// 				';
-		// 			}
-		// 			$text .= '
-		// 			</table>
-		// 			';
-		// 			$tab[] = array('caption' => $key, 'text' => $text);
-		// 			break;
-
-		// 		case 'limit_free':
-		// 			$text = 'Will use the individual shipping cost defined in each item';
-
-		// 			$text .= '
-		// 			<table class="table table-striped table-bordered">
-		// 			<tr>
-		// 				<td>Max. shipping cost</td>
-		// 			</tr>
-		// 			<tr>
-		// 				<td>'.$frm->text('shipping_cost['.$key.'][cost]', $this->varempty($val[0]['cost']), 10, array('pattern' => '^(\d+(\.\d{1,2}){0,1})$', 'min' => '0')).'</td>
-		// 			</tr>
-		// 			</table>
-		// 			';
-		// 			$tab[] = array('caption' => $key, 'text' => $text);
-		// 			break;
-
-		// 		case 'limit_weight':
-		// 			$text = 'Will use the individual shipping cost defined in each item';
-
-		// 			$text .= '
-		// 			<table class="table table-striped table-bordered">
-		// 			<tr>
-		// 				<td>Max. shipping cost</td>
-		// 				<td>Max. weight</td>
-		// 			</tr>
-		// 			<tr>
-		// 				<td>'.$frm->text('shipping_cost['.$key.'][cost]', $this->varempty($val[0]['cost']), 10, array('pattern' => '^(\d+(\.\d{1,2}){0,1})$', 'min' => '0')).'</td>
-		// 				<td>'.$frm->text('shipping_cost['.$key.'][weight]', $this->varempty($val[0]['weight']), 10, array('pattern' => '^(\d+(\.\d{1,2}){0,1})$', 'min' => '0')).'</td>
-		// 			</tr>
-		// 			</table>
-		// 			';
-		// 			$tab[] = array('caption' => $key, 'text' => $text);
-		// 			break;
-
-
-		// 	}
-			
-		// }
-
-		// return $this->tabs($tab);
 
 	}
 
@@ -1113,6 +1088,16 @@ class vstore_cart_form_ui extends e_admin_form_ui
 
 			$opts = array('text'=>"Text Box",'checkbox'=> "Check box");
 
+		$text .= "
+			<tr>
+				<td>".LAN_ACTIVE."</td>
+				<td>".LAN_CAPTION."</td>
+				<td>Placeholder</span></td>
+				<td>Fieldtype</td>
+				<td>Required</td>
+			</tr>
+		";
+			
 		foreach($tmp as $i)
 		{
 
@@ -1706,6 +1691,7 @@ class vstore_items_ui extends e_admin_ui
 	 	  'item_files' 			=>   array ( 'title' => 'Files', 			'type' => 'files', 'tab'=>3, 'data' => 'array', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => 'media=vstore_file_2', 'class' => 'center', 'thclass' => 'center',  ),
 		  'item_price' 			=>   array ( 'title' => 'Price', 			'type' => 'text', 'data' => 'str', 'width' => 'auto', 'inline'=>true, 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'right', 'thclass' => 'right',  ),
 		  'item_shipping' 		=>   array ( 'title' => 'Shipping', 		'type' => 'text', 'data' => 'str', 'width' => 'auto',  'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'center', 'thclass' => 'center',  ),
+		  'item_weight' 		=>   array ( 'title' => 'Weight', 			'type' => 'text', 'data' => 'str', 'width' => 'auto',  'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'center', 'thclass' => 'center',  ),
 		  'item_details' 		=>   array ( 'title' => 'Details', 			'type' => 'bbarea', 'tab'=>1, 'data' => 'str', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'center', 'thclass' => 'center',  ),
 	 
 		  'item_reviews' 		=>   array ( 'title' => 'Reviews', 			'type' => 'textarea', 'tab'=>2, 'data' => 'str', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => 'size=xxlarge', 'class' => 'center', 'thclass' => 'center',  ),

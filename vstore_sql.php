@@ -75,6 +75,7 @@ CREATE TABLE vstore_items (
   `item_files` text NOT NULL,
   `item_price` decimal(10,2) DEFAULT NULL,
   `item_shipping` decimal(10,2) DEFAULT NULL,
+  `item_weight` decimal(10,2) DEFAULT NULL,
   `item_details` text,
   `item_reviews` text,
   `item_order` tinyint(3) DEFAULT NULL,
