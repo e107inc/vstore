@@ -3021,7 +3021,7 @@ class vstore
 			
 			
 		$subTotal 		= 0;
-		$shippingTotal 	= 0;
+		// $shippingTotal 	= 0;
 		$checkoutData = array();
 
 		$checkoutData['id'] = $this->getCartId();
@@ -3052,7 +3052,7 @@ class vstore
 			}
 
 			$subTotal += ($row['cart_qty'] * $price);	
-			$shippingTotal	+= ($row['cart_qty'] * $row['item_shipping']);	
+			// $shippingTotal	+= ($row['cart_qty'] * $row['item_shipping']);	
 					
 			$this->sc->setVars($row);
 			$checkoutData['items'][] = $row;
@@ -3066,6 +3066,8 @@ class vstore
 			return e107::getMessage()->addInfo("Your cart is empty.",'vstore')->render('vstore');
 		}
 
+
+		$shippingTotal = vstore::calcShippingCost($data);
 
 		$grandTotal = $subTotal + $shippingTotal;
 		$totals = array('cart_subTotal' => $subTotal, 'cart_shippingTotal'=>$shippingTotal, 'cart_grandTotal'=>$grandTotal);
@@ -3283,45 +3285,6 @@ class vstore
 		return false;
 	}
 
-	// /**
-	//  * Get the item variation string from the given id and value
-	//  *
-	//  * @param int $itemvarid
-	//  * @param string $itemvarvalue
-	//  * @return string
-	//  */
-	// public static function getItemVarString($itemvarid, $itemvarvalue)
-	// {
-	// 	if ($itemvarid == null || $itemvarid <= 0)
-	// 	{
-	// 		return '';
-	// 	}
-	// 	$itemvar = e107::getDb()->retrieve('vstore_items_vars', 'item_var_name, item_var_attributes', 'item_var_id='.$itemvarid);
-
-	// 	if (!$itemvar)
-	// 	{
-	// 		return '';
-	// 	}
-
-	// 	$attr = e107::unserialize($itemvar['item_var_attributes']);
-
-	// 	$text = $itemvar['item_var_name'];
-
-	// 	$value = $itemvarvalue;
-
-	// 	if (is_array($attr))
-	// 	{
-	// 		$frm = e107::getForm();
-	// 		foreach ($attr as $row) {
-	// 			if ($frm->name2id($row['name']) == $itemvarvalue)
-	// 			{
-	// 				$value = $row['name'];
-	// 			}
-	// 		}
-	// 	}
-
-	// 	return "{$text}: {$value}";
-	// }
 	
 	/**
 	 * Return an array containing the variatons string and the pricemodified
@@ -3394,4 +3357,70 @@ class vstore
 		return $result;
 
 	}
+
+	/**
+	 * calculate the shipping cost depending on the current cart items
+	 *
+	 * @param array $items
+	 * @return double
+	 */
+	public static function calcShippingCost($items)
+	{
+		$prefs = e107::pref('vstore');
+		// No shipping
+		if (!vartrue($prefs['shipping']))
+		{
+			return 0.0;
+		}
+
+		$shipping = 0.0;
+		$subtotal = 0.0;
+		$weight = 0.0;
+		foreach ($items as $item) {
+			if (varset($prefs['shipping_method']) == 'sum_unique') // sum_unique, sum_simple or staggered
+			{
+				$shipping += (double) $item['item_shipping'];
+			}
+			else
+			{
+				$shipping += (double) ($item['item_shipping'] * $item['cart_qty']);
+			}
+			$subtotal += (double) ($item['item_price'] * $item['cart_qty']);
+			$weight += (double) ($item['item_weight'] * $item['cart_qty']);
+		}
+
+		if (varset($prefs['shipping_method']) == 'staggered' && varset($prefs['shipping_limit']) && varset($prefs['shipping_data']))
+		{
+			$data = e107::unserialize($prefs['shipping_data']);
+			unset($data['%ROW%']);
+			$val = $subtotal;
+			if (varset($prefs['shipping_unit']) == 'weight') // weight or subtotal
+			{
+				$val = $weight;
+			}
+			$found = false;
+			foreach ($data as $v) {
+				if ($val <= floatval($v['unit']))
+				{
+					if ($prefs['shipping_limit'] == 'limit') // limit or money
+					{
+						$shipping = (double) (floatval($v['cost']) > $shipping ? $shipping : $v['cost']);
+					}
+					else
+					{
+						$shipping = (double) $v['cost'];
+					}
+					$found = true;
+					break;
+				}
+			}
+			if (!$found)
+			{
+				$shipping = 0.0;
+			}
+		}
+		
+		return $shipping;
+	}
+
 }
