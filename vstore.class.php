@@ -664,6 +664,13 @@ class vstore_plugin_shortcodes extends e_shortcode
 		// return ($this->var['item_price'] == '0.00') ? "" : $this->currency.$this->curSymbol.' '.$this->var['item_price'];	
 	}	
 	
+	function sc_item_weight($parm=null)
+	{
+		$weight = $this->var['item_weight'];
+		if ($weight <= 0) return '';
+		return 'Weight: ' . $weight . $this->vpref['weight_unit'];
+	}	
+	
 	
 	function sc_item_addtocart($parm=null)
 	{

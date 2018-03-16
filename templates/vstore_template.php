@@ -126,7 +126,10 @@ $VSTORE_TEMPLATE['item']['main']        = '{SETIMAGE: w=600&h=600}
 													<p>{ITEM_DESCRIPTION}</p>
 
 													<p>{ITEM_VARS}</p>
-										            <p>
+												
+													<p>{ITEM_WEIGHT}</p>
+												
+													<p>
 										            Product Code: {ITEM_CODE}<br />
 										            Availability: {ITEM_AVAILABILITY}<br /><br />
 										            <small class="text-muted">Price may change due to exchange rate.</small>
