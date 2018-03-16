@@ -855,6 +855,7 @@ Region 	region
 			'caption_outofstock'        => array('title'=> 'Out-of-Stock Caption', 'tab'=>0, 'type'=>'text', 'writeParms'=>array('placeholder'=>'Out of Stock'),'multilan'=>true),
 
 			'currency'		            => array('title'=> 'Currency', 'tab'=>0, 'type'=>'dropdown', 'data' => 'string','help'=>'Select a currency'),
+			'weight_unit'		        => array('title'=> 'Weight unit', 'tab'=>0, 'type'=>'dropdown', 'data' => 'string','help'=>'Select a weight unit'),
 			'customer_userclass'        => array('title'=> 'Assign userclass', 'tab'=>0, 'type' => 'method', 'help' => 'Assign userclass to customer on purchase'),
 			
 			'shipping'		            => array('title'=> 'Calculate Shipping', 'tab'=>1, 'type'=>'boolean', 'data' => 'int','help'=>'Including shipping calculation at checkout.'),
@@ -887,6 +888,8 @@ Region 	region
 		public function init()
 		{
 			$this->prefs['currency']['writeParms'] = array('USD'=>'US Dollars', 'EUR'=>'Euros', 'CAN'=>'Canadian Dollars');
+
+			$this->prefs['weight_unit']['writeParms'] = array('g' => 'Gram', 'kg'=>'Kilogram', 'lb'=>'Pound', 'oz'=>'Ounce', 'carat' => 'Carat');
 
 			$this->prefs['shipping_method']['writeParms'] = array(
 				'sum_simple'	=> 'Sum up shipping cost for all items', 
