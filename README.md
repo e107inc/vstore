@@ -6,12 +6,15 @@ A simple shopping cart solution for e107 v2.x Bootstrap CMS.
 ## Features
 * Paypal (CreditCard) payments
 * "Check Out" menu with shopping cart items
+* Item variations
+* Customer email templates
+* Flexible shipping cost calculation
+* Coupon codes
 
 ## TODO
 * Add more payment gateways. 
 * Graphs/Charts of sales for the admin area. 
 * Localization (LANS)
-* Customer email template
 
 ## Requirements
 * The very latest version of e107 v2.x available on Github. 
