@@ -138,6 +138,20 @@ class vstore_plugin_shortcodes extends e_shortcode
 
 	}
 
+
+	function sc_order_coupon()
+	{
+		if (empty($this->var['cart_coupon']['code']))
+		{
+			return '';
+		}
+		
+		$template = e107::getTemplate('vstore', 'vstore', 'order_items');
+
+		$text = e107::getParser()->parseTemplate($template['coupon'], true, $this);
+		return $text;
+	}
+	
 	function sc_order_merchant_info()
 	{
 		$info = e107::pref('vstore', 'merchant_info');
@@ -821,7 +835,7 @@ class vstore_plugin_shortcodes extends e_shortcode
 				$text = $this->curSymbol.number_format($this->var['item']['item_total'], 2);
 				break;
 			case 'sub_total': 
-				$text = $this->curSymbol.number_format($this->var['order_pay_amount']-$this->var['order_pay_shipping'], 2);
+				$text = $this->curSymbol.number_format($this->var['order_pay_amount']-$this->var['order_pay_shipping']-$this->var['cart_coupon']['amount'], 2);
 				break;
 			case 'shipping_total': 
 				$text = $this->curSymbol.number_format($this->var['order_pay_shipping'], 2);
@@ -840,6 +854,12 @@ class vstore_plugin_shortcodes extends e_shortcode
 				break;
 			case 'cart_url': 
 				$text = e107::url('vstore','cart');
+				break;
+			case 'coupon':
+				$text = $this->var['cart_coupon']['code'];
+				break;
+			case 'coupon_amount':
+				$text = $this->curSymbol.number_format($this->var['cart_coupon']['amount'], 2);
 				break;
 		}
 
@@ -921,8 +941,6 @@ class vstore_plugin_shortcodes extends e_shortcode
 
 	}
 
-
-
 	static function sc_cart_continueshop()
 	{
 		
@@ -933,6 +951,31 @@ class vstore_plugin_shortcodes extends e_shortcode
 		'.e107::getParser()->toGlyph('fa-shopping-cart').' Continue Shopping
 		</a>';
 	}
+
+	function sc_cart_coupon()
+	{
+		$template = e107::getTemplate('vstore', 'vstore', 'cart');
+
+		$text = e107::getParser()->parseTemplate($template['coupon'], true, $this);
+		return $text;
+	}
+
+	function sc_cart_coupon_field()
+	{
+		$frm = e107::getForm();
+		$text = '<div class="form-inline">';
+		$text .= $frm->label('Coupon code:', 'cart_coupon_code');
+		$text .= '&nbsp;' . $frm->text('cart_coupon_code', $this->var['cart_coupon']['code'], 50, array('placeholder' => 'Enter the coupon code if available', 'size' => 'large'));
+		#$text .= '&nbsp;' . $frm->button('cart_coupon_submit', 'add_coupon_code', 'submit', 'Apply', array());
+		$text .= '</div>';
+		return $text;
+	}
+
+	function sc_cart_coupon_value()
+	{
+		return $this->curSymbol.number_format($this->var['cart_coupon']['amount'], 2);
+	}
+
 
 	function sc_item_availability()
 	{
@@ -1479,6 +1522,7 @@ class vstore
 		$data['order_pay_gateway'] 	  = $this->getGatewayType();
 		$data['order_pay_amount']     = $checkoutData['totals']['cart_grandTotal'];
 		$data['order_pay_shipping']   = $checkoutData['totals']['cart_shippingTotal'];
+		$data['cart_coupon']   		  = $checkoutData['totals']['cart_coupon'];
 
 		$template = e107::getTemplate('vstore', 'vstore', 'orderconfirm');
 
@@ -1757,6 +1801,7 @@ class vstore
 		$curGateway = $this->getGatewayType();
 		if(!empty($active))
 		{
+			//$checkoutData = $this->getCheckoutData();
 			//$text = e107::getForm()->open('gateway-select','post', null, array('class'=>'form'));
 			$text = e107::getForm()->open('gateway-select','post', e107::url('vstore', 'confirm', 'sef'), array('class'=>'form'));
 
@@ -2107,6 +2152,8 @@ class vstore
 		$insert['order_pay_transid']    = $id;
 		$insert['order_pay_amount']     = $cartData['totals']['cart_grandTotal'];
 		$insert['order_pay_shipping']   = $cartData['totals']['cart_shippingTotal'];
+		$insert['order_pay_coupon_code']= $cartData['totals']['cart_coupon']['code'];
+		$insert['order_pay_coupon_amount']= $cartData['totals']['cart_coupon']['amount'];
 		$insert['order_pay_rawdata']    = json_encode($transData,JSON_PRETTY_PRINT);
 
 		$mes = e107::getMessage();
@@ -3008,8 +3055,6 @@ class vstore
 		if(!$data = $this->getCartData() )
 		{
 			return e107::getMessage()->addInfo("Your cart is empty.",'vstore')->render('vstore');
-
-
 		}
 
 		$tp = e107::getParser();
@@ -3073,11 +3118,33 @@ class vstore
 			return e107::getMessage()->addInfo("Your cart is empty.",'vstore')->render('vstore');
 		}
 
+		$checkoutData['coupon'] = array('code' => '', 'amount' => 0.0);
+		if (!empty($this->post['cart_coupon_code']))
+		{
+			$coupon = e107::getDb()->retrieve('vstore_coupons', '*', sprintf('coupon_code="%s"', trim($this->post['cart_coupon_code'])));
+
+			if ($coupon)
+			{
+				$checkoutData['coupon']['code'] = strtoupper(trim($this->post['cart_coupon_code']));
+				$checkoutData['coupon']['amount'] = $this->calcCouponAmount($coupon, $checkoutData['items']);
+			}
+		}
+		elseif (!isset($this->post['cart_coupon_code']))
+		{
+			$chk = $this->getCheckoutData();
+			$coupon = e107::getDb()->retrieve('vstore_coupons', '*', sprintf('coupon_code="%s"', trim($chk['coupon']['code'])));
+
+			if ($coupon)
+			{
+				$checkoutData['coupon']['code'] = $chk['coupon']['code'];
+				$checkoutData['coupon']['amount'] = $this->calcCouponAmount($coupon, $checkoutData['items']);
+			}
+		}
 
 		$shippingTotal = vstore::calcShippingCost($data);
 
-		$grandTotal = $subTotal + $shippingTotal;
-		$totals = array('cart_subTotal' => $subTotal, 'cart_shippingTotal'=>$shippingTotal, 'cart_grandTotal'=>$grandTotal);
+		$grandTotal = $subTotal + $shippingTotal + $checkoutData['coupon']['amount'];
+		$totals = array('cart_subTotal' => $subTotal, 'cart_shippingTotal'=>$shippingTotal, 'cart_grandTotal'=>$grandTotal, 'cart_coupon' => $checkoutData['coupon']);
 
 		$this->sc->setVars($totals);
 
@@ -3430,4 +3497,53 @@ class vstore
 		return $shipping;
 	}
 
+	public function calcCouponAmount($coupon, $items)
+	{
+		if (empty($coupon) || empty($items))
+		{
+			return 0.0;
+		}
+
+		$coupon['coupon_items'] 	= array_filter(explode(',', $coupon['coupon_items']));
+		$coupon['coupon_items_ex'] 	= array_filter(explode(',', $coupon['coupon_items_ex']));
+		$coupon['coupon_cats'] 		= array_filter(explode(',', $coupon['coupon_cats']));
+		$coupon['coupon_cats_ex'] 	= array_filter(explode(',', $coupon['coupon_cats_ex']));
+
+		$amount = 0.0;
+
+		foreach ($items as $item) {
+			if (!in_array($item['item_id'], $coupon['coupon_items']))
+			{
+				// Item not explicitly assigned to coupon
+				if (in_array($item['item_id'], $coupon['coupon_items_ex']))
+				{
+					// Item explicitly excluded from coupon
+					continue;
+				}
+				if (!in_array($item['item_cat'], $coupon['coupon_cats']))
+				{
+					// Item category not explicitly assigned to coupon
+					if (in_array($item['item_cat'], $coupon['coupon_cats_ex']))
+					{
+						// Item category explicitly excluded from coupon
+						continue;
+					}
+				}			
+			}		
+			
+			// Item included or not explicitly excluded = Apply coupon
+			if ($coupon['coupon_type'] == '%')
+			{
+				$amount += (double) ($item['item_price'] * $item['cart_qty']) * $coupon['coupon_amount'] / 100;
+			}
+			elseif ($coupon['coupon_type'] == 'F')
+			{
+				$amount += (double) ($item['item_price'] * $item['cart_qty']) - $coupon['coupon_amount'];
+			}
+
+
+		}
+
+		return ($amount * -1);
+	}
 }

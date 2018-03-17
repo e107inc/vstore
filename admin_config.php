@@ -2486,7 +2486,7 @@ class vstore_coupons_ui extends e_admin_ui
 		  'coupon_id'         	=>   array ( 'title' => LAN_ID, 'data' => 'int', 'width' => '5%', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 		  'coupon_active' 		=>   array ( 'title' => LAN_ACTIVE, 'tab' => 0, 'type'=>'boolean', 'data' => 'int', 'inline'=>true, 'width' => '5%', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 		  'coupon_code'       	=>   array ( 'title' => 'Coupon code', 'tab' => 0, 'type' => 'text', 'data' => 'str', 'width' => 'auto', 'inline' => false, 'help' => 'Enter a unique code for this coupon', 'readParms' => '', 'writeParms'  => array('placeholder' => 'Enter coupon code without spaces', 'size'=>'xxlarge', 'required' => 1), 'class' => 'left', 'thclass' => 'left',  ),
-		  'coupon_type'     	=>   array ( 'title' => 'Discount type', 'tab' => 0, 'type' => 'dropdown', 'data' => 'str', 'width' => 'auto', 'inline' => false, 'help' => 'What kind of discount type will be used for this discount', 'readParms' => '', 'writeParms'  => array('%' => 'Percentage', 'C' => 'Fixed cart', 'I' => 'Fixed item'), 'class' => 'left', 'thclass' => 'left',  ),
+		  'coupon_type'     	=>   array ( 'title' => 'Discount type', 'tab' => 0, 'type' => 'dropdown', 'data' => 'str', 'width' => 'auto', 'inline' => false, 'help' => 'What kind of discount type will be used for this discount', 'readParms' => '', 'writeParms'  => array('%' => 'Percentage', 'F' => 'Fixed'/* cart', 'I' => 'Fixed item'*/), 'class' => 'left', 'thclass' => 'left',  ),
 		  'coupon_amount'     	=>   array ( 'title' => 'Discount amount', 'tab' => 0, 'type' => 'method', 'data' => 'str', 'width' => 'auto', 'inline' => false, 'help' => 'Define the discount amount', 'readParms' => '', 'writeParms'  => '', 'class' => 'left', 'thclass' => 'left',  ),
 		  'coupon_start'     	=>   array ( 'title' => 'Start', 'tab' => 1, 'type' => 'datestamp', 'data' => 'int', 'inline' => false, 'help' => 'When should the coupon become available?', 'readParms' => '', 'writeParms'  => '', 'class' => 'left', 'thclass' => 'left',  ),
 		  'coupon_end'     		=>   array ( 'title' => 'Ends', 'tab' => 1, 'type' => 'datestamp', 'data' => 'int', 'width' => 'auto', 'inline' => false, 'help' => 'When will the coupon become unavailable?', 'readParms' => '', 'writeParms'  => '', 'class' => 'left', 'thclass' => 'left',  ),
@@ -2532,6 +2532,11 @@ class vstore_coupons_ui extends e_admin_ui
 				return false;
 			}
 
+			$new_data['coupon_items'] = implode(',', $new_data['coupon_items']);
+			$new_data['coupon_items_ex'] = implode(',', $new_data['coupon_items_ex']);
+			$new_data['coupon_cats'] = implode(',', $new_data['coupon_cats']);
+			$new_data['coupon_cats_ex'] = implode(',', $new_data['coupon_cats_ex']);
+
 			return $new_data;
 		}
 
@@ -2565,6 +2570,12 @@ class vstore_coupons_ui extends e_admin_ui
 					return false;
 				}
 			}
+
+			$new_data['coupon_items'] = implode(',', $new_data['coupon_items']);
+			$new_data['coupon_items_ex'] = implode(',', $new_data['coupon_items_ex']);
+			$new_data['coupon_cats'] = implode(',', $new_data['coupon_cats']);
+			$new_data['coupon_cats_ex'] = implode(',', $new_data['coupon_cats_ex']);
+
 			return $new_data;
 		}
 

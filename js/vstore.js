@@ -99,7 +99,7 @@ var e107 = e107 || {'settings': {}, 'behaviors': {}};
 	e107.behaviors.vstoreCartQty = {
 		attach: function (context, settings)
 		{
-			$(context).find('.cart-qty').once('vstore-cart-qty').each(function ()
+			$(context).find('.cart-qty, #cart-coupon-code').once('vstore-cart-qty').each(function ()
 			{
 				var $this = $(this);
 
