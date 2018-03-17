@@ -2484,9 +2484,9 @@ class vstore_coupons_ui extends e_admin_ui
 
 		protected $fields 		= 	array (  'checkboxes' =>   array ( 'title' => '', 'type' => null, 'data' => null, 'width' => '5%', 'thclass' => 'center', 'forced' => '1', 'class' => 'center', 'toggle' => 'e-multiselect',  ),
 		  'coupon_id'         	=>   array ( 'title' => LAN_ID, 'data' => 'int', 'width' => '5%', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
-		  'coupon_active'       =>   array ( 'title' => LAN_ACTIVE, 'tab' => 0, 'data' => 'boolean', 'inline' => true, 'width' => '5%', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
-		  'coupon_code'       	=>   array ( 'title' => 'Coupon code', 'tab' => 0, 'type' => 'text', 'data' => 'str', 'width' => 'auto', 'inline' => false, 'help' => 'Enter a unique code for this coupon', 'readParms' => '', 'writeParms'  => array('placeholder' => 'Enter coupon code without spaces', 'size'=>'xxlarge'), 'class' => 'left', 'thclass' => 'left',  ),
-		  'coupon_type'     	=>   array ( 'title' => 'Discount type', 'tab' => 0, 'type' => 'dropdown', 'data' => 'str', 'width' => 'auto', 'inline' => false, 'help' => 'What kind of type will be used for this discount', 'readParms' => '', 'writeParms'  => array('%' => 'Percentage', 'C' => 'Fixed cart', 'I' => 'Fixed item'), 'class' => 'left', 'thclass' => 'left',  ),
+		  'coupon_active' 		=>   array ( 'title' => LAN_ACTIVE, 'tab' => 0, 'type'=>'boolean', 'data' => 'int', 'inline'=>true, 'width' => '5%', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+		  'coupon_code'       	=>   array ( 'title' => 'Coupon code', 'tab' => 0, 'type' => 'text', 'data' => 'str', 'width' => 'auto', 'inline' => false, 'help' => 'Enter a unique code for this coupon', 'readParms' => '', 'writeParms'  => array('placeholder' => 'Enter coupon code without spaces', 'size'=>'xxlarge', 'required' => 1), 'class' => 'left', 'thclass' => 'left',  ),
+		  'coupon_type'     	=>   array ( 'title' => 'Discount type', 'tab' => 0, 'type' => 'dropdown', 'data' => 'str', 'width' => 'auto', 'inline' => false, 'help' => 'What kind of discount type will be used for this discount', 'readParms' => '', 'writeParms'  => array('%' => 'Percentage', 'C' => 'Fixed cart', 'I' => 'Fixed item'), 'class' => 'left', 'thclass' => 'left',  ),
 		  'coupon_amount'     	=>   array ( 'title' => 'Discount amount', 'tab' => 0, 'type' => 'method', 'data' => 'str', 'width' => 'auto', 'inline' => false, 'help' => 'Define the discount amount', 'readParms' => '', 'writeParms'  => '', 'class' => 'left', 'thclass' => 'left',  ),
 		  'coupon_start'     	=>   array ( 'title' => 'Start', 'tab' => 1, 'type' => 'datestamp', 'data' => 'int', 'inline' => false, 'help' => 'When should the coupon become available?', 'readParms' => '', 'writeParms'  => '', 'class' => 'left', 'thclass' => 'left',  ),
 		  'coupon_end'     		=>   array ( 'title' => 'Ends', 'tab' => 1, 'type' => 'datestamp', 'data' => 'int', 'width' => 'auto', 'inline' => false, 'help' => 'When will the coupon become unavailable?', 'readParms' => '', 'writeParms'  => '', 'class' => 'left', 'thclass' => 'left',  ),
@@ -2519,15 +2519,20 @@ class vstore_coupons_ui extends e_admin_ui
 
 		public function beforeCreate($new_data,$old_data)
 		{
-			if (array_key_exists('coupon_code', $new_data))
+			if (trim($new_data['coupon_code']) == '') 
 			{
-				if (trim($new_data['coupon_code']) == '') 
-				{
-					e107::getMessage()->addError('Invalid coupon code!', 'vstore');
-					return false;
-				}
-				$new_data['coupon_code'] = strtoupper(str_replace(' ', '-', trim($new_data['coupon_code'])));
+				e107::getMessage()->addError('Invalid coupon code!');
+				return false;
 			}
+			$new_data['coupon_code'] = strtoupper(str_replace(' ', '-', trim($new_data['coupon_code'])));
+
+			if(e107::getDb()->select('vstore_coupons', 'coupon_id', 'coupon_code = "'.$new_data['coupon_code'].'"'))
+			{
+				e107::getMessage()->addError('Coupon code already exists!');
+				return false;
+			}
+
+			return $new_data;
 		}
 
 		public function afterCreate($new_data, $old_data, $id)
@@ -2549,11 +2554,18 @@ class vstore_coupons_ui extends e_admin_ui
 			{
 				if (trim($new_data['coupon_code']) == '') 
 				{
-					e107::getMessage()->addError('Invalid coupon code!', 'vstore');
+					e107::getMessage()->addError('Invalid coupon code!');
 					return false;
 				}
 				$new_data['coupon_code'] = strtoupper(str_replace(' ', '-', trim($new_data['coupon_code'])));
+
+				if(e107::getDb()->select('vstore_coupons', 'coupon_id', 'coupon_code = "'.$new_data['coupon_code'].'" AND coupon_id != '.$old_data['coupon_id']))
+				{
+					e107::getMessage()->addError('Coupon code already exists!');
+					return false;
+				}
 			}
+			return $new_data;
 		}
 
 		public function afterUpdate($new_data, $old_data, $id)
@@ -2608,8 +2620,12 @@ class vstore_coupons_form_ui extends e_admin_form_ui
 			$options .= " required='required'";
 		}
 
+		if (!is_numeric($val))
+		{
+			$val = $default;
+		}
 
-		$text = e107::getForm()->text($name, varset($val, $default), 10);
+		$text = e107::getForm()->text($name, $val, 10);
 
 		$text = str_replace("type='text'", "type='number'", $text);
 		if ($options != '')
