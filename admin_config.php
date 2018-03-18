@@ -68,6 +68,13 @@ class vstore_admin extends e_admin_dispatcher
 			'uipath' 		=> null
 		),
 		
+		'statistics'	=> array(
+			'controller' 	=> 'vstore_statistics_ui',
+			'path' 			=> null,
+			'ui' 			=> 'vstore_statistics_form_ui',
+			'uipath' 		=> null
+		),
+		
 
 	);	
 	
@@ -108,6 +115,8 @@ class vstore_admin extends e_admin_dispatcher
 
 		'orders/prefs'		=> array('caption'=> "Payment Gateways", 'perm' => 'P'),
 
+		'statistics/custom'		=> array('caption'=> "Statistics", 'perm' => 'P'),
+
 		// 'main/custom'		=> array('caption'=> 'Custom Page', 'perm' => 'P')
 	);
 
@@ -115,7 +124,8 @@ class vstore_admin extends e_admin_dispatcher
 		'products/edit'	=> 'products/list',
 		'vars/edit'     => 'vars/list',
 		'products/grid' => 'products/list',
-		'orders/edit'	=> 'orders/list'
+		'orders/edit'	=> 'orders/list',
+		'coupons/edit'	=> 'coupons/list'
 	);	
 	
 	protected $menuTitle = 'Vstore';
@@ -2822,6 +2832,417 @@ class vstore_coupons_form_ui extends e_admin_form_ui
 		}
 	}
 }
+
+class vstore_statistics_ui extends e_admin_ui
+{
+
+		protected $pluginTitle		= 'Vstore';
+		protected $pluginName		= 'vstore';
+	//	protected $eventName		= 'vstore-vstore_items_vars'; // remove comment to enable event triggers in admin.
+		// protected $table			= 'vstore_coupons';
+		// protected $pid				= 'coupon_id';
+		// protected $perPage			= 10;
+		// protected $batchDelete		= true;
+		// protected $batchExport      = true;
+		// protected $batchCopy		= true;
+
+	//	protected $sortField		= 'somefield_order';
+	//	protected $sortParent      = 'somefield_parent';
+	//	protected $treePrefix      = 'somefield_title';
+
+		// protected $tabs				= array('General', 'Restrictions', 'Limits'); // Use 'tab'=>0  OR 'tab'=>1 in the $fields below to enable.
+
+	//	protected $listQry      	= "SELECT * FROM `#tableName` WHERE field != '' "; // Example Custom Query. LEFT JOINS allowed. Should be without any Order or Limit.
+
+		// protected $listOrder		= 'coupon_id DESC';
+
+		// protected $fields 		= 	array (  'checkboxes' =>   array ( 'title' => '', 'type' => null, 'data' => null, 'width' => '5%', 'thclass' => 'center', 'forced' => '1', 'class' => 'center', 'toggle' => 'e-multiselect',  ),
+		//   'coupon_id'         	=>   array ( 'title' => LAN_ID, 'data' => 'int', 'width' => '5%', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+		//   'coupon_active' 		=>   array ( 'title' => LAN_ACTIVE, 'tab' => 0, 'type'=>'boolean', 'data' => 'int', 'inline'=>true, 'width' => '5%', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+		//   'coupon_code'       	=>   array ( 'title' => 'Coupon code', 'tab' => 0, 'type' => 'text', 'data' => 'str', 'width' => 'auto', 'inline' => false, 'help' => 'Enter a unique code for this coupon', 'readParms' => '', 'writeParms'  => array('placeholder' => 'Enter coupon code without spaces', 'size'=>'xxlarge', 'required' => 1), 'class' => 'left', 'thclass' => 'left',  ),
+		//   'coupon_type'     	=>   array ( 'title' => 'Discount type', 'tab' => 0, 'type' => 'dropdown', 'data' => 'str', 'width' => 'auto', 'inline' => false, 'help' => 'What kind of discount type will be used for this discount', 'readParms' => '', 'writeParms'  => array('%' => 'Percentage', 'F' => 'Fixed'/* cart', 'I' => 'Fixed item'*/), 'class' => 'left', 'thclass' => 'left',  ),
+		//   'coupon_amount'     	=>   array ( 'title' => 'Discount amount', 'tab' => 0, 'type' => 'method', 'data' => 'str', 'width' => 'auto', 'inline' => false, 'help' => 'Define the discount amount', 'readParms' => '', 'writeParms'  => '', 'class' => 'left', 'thclass' => 'left',  ),
+		//   'coupon_start'     	=>   array ( 'title' => 'Start', 'tab' => 1, 'type' => 'datestamp', 'data' => 'int', 'inline' => false, 'help' => 'When should the coupon become available?', 'readParms' => '', 'writeParms'  => array('type'=>'datetime'), 'class' => 'left', 'thclass' => 'left',  ),
+		//   'coupon_end'     		=>   array ( 'title' => 'Ends', 'tab' => 1, 'type' => 'datestamp', 'data' => 'int', 'width' => 'auto', 'inline' => false, 'help' => 'When will the coupon become unavailable?', 'readParms' => '', 'writeParms'  => array('type'=>'datetime'), 'class' => 'left', 'thclass' => 'left',  ),
+		//   'coupon_items'     	=>   array ( 'title' => 'Items', 'tab' => 1, 'type' => 'method', 'data' => 'str', 'width' => 'auto', 'inline' => false, 'help' => 'Items this coupon will make use of.', 'readParms' => '', 'writeParms'  => '', 'class' => 'left', 'thclass' => 'left',  ),
+		//   'coupon_items_ex'    	=>   array ( 'title' => 'Exclude items', 'tab' => 1, 'type' => 'method', 'data' => 'str', 'width' => 'auto', 'inline' => false, 'help' => 'Items this coupon will never make use of', 'readParms' => '', 'writeParms'  => '', 'class' => 'left', 'thclass' => 'left',  ),
+		//   'coupon_cats'     	=>   array ( 'title' => 'Categories', 'tab' => 1, 'type' => 'method', 'data' => 'str', 'width' => 'auto', 'inline' => false, 'help' => 'Categories this coupon will be assigned to', 'readParms' => '', 'writeParms'  => '', 'class' => 'left', 'thclass' => 'left',  ),
+		//   'coupon_cats_ex'     	=>   array ( 'title' => 'Exclude categories', 'tab' => 1, 'type' => 'method', 'data' => 'str', 'width' => 'auto', 'inline' => false, 'help' => 'Categories this coupon will never be assigned to', 'readParms' => '', 'writeParms'  => '', 'class' => 'left', 'thclass' => 'left',  ),
+		//   'coupon_limit_coupon'	=>   array ( 'title' => 'Usage limit per coupon', 'tab' => 2, 'type' => 'method', 'data' => 'str', 'width' => 'auto', 'inline' => false, 'help' => 'How many times this coupon can be used before it is void. Enter -1 for unlimited usage.', 'readParms' => '', 'writeParms'  => '', 'class' => 'left', 'thclass' => 'left',  ),
+		//   'coupon_limit_user'	=>   array ( 'title' => 'Usage limit per user', 'tab' => 2, 'type' => 'method', 'data' => 'str', 'width' => 'auto', 'inline' => false, 'help' => 'How many times this coupon can be used by an individual user. Enter -1 for unlimited usage.', 'readParms' => '', 'writeParms'  => '', 'class' => 'left', 'thclass' => 'left',  ),
+		//   'coupon_limit_item'	=>   array ( 'title' => 'Limit usage to X items', 'tab' => 2, 'type' => 'method', 'data' => 'str', 'width' => 'auto', 'inline' => false, 'help' => 'The max number of individual items this coupon can apply to when using product discounts. Enter -1 to apply to all qualifying items in cart.', 'readParms' => '', 'writeParms'  => '', 'class' => 'left', 'thclass' => 'left',  ),
+	
+		//   'options'             =>   array ( 'title' => LAN_OPTIONS, 'type' => null, 'data' => null, 'width' => '10%', 'thclass' => 'center last', 'class' => 'center last', 'forced' => '1',  ),
+		// );
+
+		// protected $fieldpref = array('coupon_active', 'coupon_code', 'coupon_operator', 'coupon_value', 'coupon_start', 'coupon_end');
+
+
+		// protected $prefs = array(
+		// );
+
+		// public function init()
+		// {
+		// 	// Set drop-down values (if any).
+
+		// }
+
+
+		// // ------- Customize Create --------
+
+		// public function beforeCreate($new_data,$old_data)
+		// {
+		// 	if (trim($new_data['coupon_code']) == '') 
+		// 	{
+		// 		e107::getMessage()->addError('Invalid coupon code!');
+		// 		return false;
+		// 	}
+		// 	$new_data['coupon_code'] = strtoupper(str_replace(' ', '-', trim($new_data['coupon_code'])));
+
+		// 	if(e107::getDb()->select('vstore_coupons', 'coupon_id', 'coupon_code = "'.$new_data['coupon_code'].'"'))
+		// 	{
+		// 		e107::getMessage()->addError('Coupon code already exists!');
+		// 		return false;
+		// 	}
+
+		// 	$new_data['coupon_items'] = implode(',', $new_data['coupon_items']);
+		// 	$new_data['coupon_items_ex'] = implode(',', $new_data['coupon_items_ex']);
+		// 	$new_data['coupon_cats'] = implode(',', $new_data['coupon_cats']);
+		// 	$new_data['coupon_cats_ex'] = implode(',', $new_data['coupon_cats_ex']);
+
+		// 	return $new_data;
+		// }
+
+		// public function afterCreate($new_data, $old_data, $id)
+		// {
+		// 	// do something
+		// }
+
+		// public function onCreateError($new_data, $old_data)
+		// {
+		// 	// do something
+		// }
+
+
+		// // ------- Customize Update --------
+
+		// public function beforeUpdate($new_data, $old_data, $id)
+		// {
+		// 	if (array_key_exists('coupon_code', $new_data))
+		// 	{
+		// 		if (trim($new_data['coupon_code']) == '') 
+		// 		{
+		// 			e107::getMessage()->addError('Invalid coupon code!');
+		// 			return false;
+		// 		}
+		// 		$new_data['coupon_code'] = strtoupper(str_replace(' ', '-', trim($new_data['coupon_code'])));
+
+		// 		if(e107::getDb()->select('vstore_coupons', 'coupon_id', 'coupon_code = "'.$new_data['coupon_code'].'" AND coupon_id != '.$old_data['coupon_id']))
+		// 		{
+		// 			e107::getMessage()->addError('Coupon code already exists!');
+		// 			return false;
+		// 		}
+		// 	}
+
+		// 	$new_data['coupon_items'] = implode(',', $new_data['coupon_items']);
+		// 	$new_data['coupon_items_ex'] = implode(',', $new_data['coupon_items_ex']);
+		// 	$new_data['coupon_cats'] = implode(',', $new_data['coupon_cats']);
+		// 	$new_data['coupon_cats_ex'] = implode(',', $new_data['coupon_cats_ex']);
+
+		// 	return $new_data;
+		// }
+
+		// public function afterUpdate($new_data, $old_data, $id)
+		// {
+		// 	// do something
+		// }
+
+		// public function onUpdateError($new_data, $old_data, $id)
+		// {
+		// 	// do something
+		// }
+
+
+		public function init()
+		{
+			$this->getRequest()->setAction('custom');
+		}
+
+		public function customPage()
+		{
+			$ns = e107::getRender();
+			$sql = e107::getDb();
+			$frm = e107::getForm();
+			$dt = e107::getDate();
+
+			require_once(e_PLUGIN.'vstore/vstore.class.php');
+			$sc = new vstore_plugin_shortcodes();
+
+			$posted = $this->getPosted();
+
+			$date_0 = gmmktime(0,0,0, date('m'), date('d'), date('Y'));
+			$date_7 = gmmktime(0,0,0, date('m'), date('d')-7, date('Y'));
+			$date_31 = gmmktime(0,0,0, date('m'), date('d')-31, date('Y'));
+
+			// correct start & end date
+			if (isset($posted['chart_start']))
+			{
+				$h = date("H", $posted['chart_start']);
+				$add = ($h > 0 ? 24-$h : 0) * 60 * 60;
+				$posted['chart_start'] = strtotime(gmdate('Y-m-d', $posted['chart_start']+$add));
+			}
+			else
+			{
+				$posted['chart_start'] = $date_7;
+			}
+			
+			if (isset($posted['chart_end']))
+			{
+				$h = date("H", $posted['chart_end']);
+				$add = ($h > 0 ? 24-$h : 0) * 60 * 60;
+				$posted['chart_end'] = strtotime(gmdate('Y-m-d', $posted['chart_end']+$add));
+			}
+			else
+			{
+				$posted['chart_end'] = $date_0;
+			}
+
+			if ($posted['chart_start'] > $posted['chart_end'])
+			{
+				$h = $posted['chart_start'];
+				$posted['chart_start'] = $posted['chart_end'];
+				$posted['chart_end'] = $h;
+			}
+			unset($h);
+
+
+			$count_open = (int) $sql->retrieve('vstore_orders', 'count(order_id)', 'order_status != "C"');
+			$count_orders_7 = (int) $sql->retrieve('vstore_orders', 'count(order_id)', sprintf('order_date >= %d', $date_7));
+			$gross_7 = (double) $sql->retrieve('vstore_orders', 'SUM(order_pay_amount)', sprintf('order_status = "C" AND order_date >= %d', $date_7));
+			$gross_31 = (double) $sql->retrieve('vstore_orders', 'SUM(order_pay_amount)', sprintf('order_status = "C" AND order_date >= %d', $date_31));
+
+			$opt_types = array(
+				'amount' => 'Payed & Open orders',
+			);
+
+			$fields = '';
+			$posted['chart_type'] = varset($posted['chart_type'], 'amount');
+
+			if ($posted['chart_type'] == 'amount')
+			{
+				$fields = 'SUM(IF(order_status="C", order_pay_amount, 0)) AS A, SUM(IF(order_status!="C", order_pay_amount, 0)) AS B'; 
+				$legend = array('A' => 'Payed', 'B' => 'Open');
+			}
+
+
+			$data = array('labels' => array());
+			$start = $posted['chart_start'];
+			$diff = $posted['chart_end'] - $posted['chart_start'];
+
+			$where = 'order_date >= '.$posted['chart_start'] . ' AND order_date <= ' . ($posted['chart_end'] + (24 * 60 * 60));
+
+
+			if ($diff <= (7 * 24 * 60 * 60)) // <= 7 days
+			{
+				do
+				{
+					$data['labels'][]  = date('d', $start);
+					$start = mktime(0,0,0, date('m', $start), date('d', $start)+1, date('Y', $start));
+				} while($start < $posted['chart_end']);
+				$data['labels'][]  = date('d', $start);
+				$fields .= ', DAY(FROM_UNIXTIME(order_date)) AS C';
+				$groupby = ' GROUP BY DATE(FROM_UNIXTIME(order_date))';
+				$xAxis = 'Day';
+			}
+			elseif ($diff <= (31 * 24 * 60 * 60)) // <= 31 days
+			{
+				do
+				{
+					$data['labels'][] = date('W', $start);
+					$start = mktime(0,0,0, date('m', $start), date('d', $start)+7, date('Y', $start));
+				} while($start < $posted['chart_end']);
+				$data['labels'][] = date('W', $start);
+				$fields .= ', WEEK(FROM_UNIXTIME(order_date), 1) AS C';
+				$groupby = ' GROUP BY WEEK(FROM_UNIXTIME(order_date), 1)';
+				$xAxis = 'Week';
+			}
+			elseif ($diff <= (365 * 24 * 60 * 60)) // <= 1 year
+			{
+				do
+				{
+					$data['labels'][]  = date('n', $start);
+					$start = mktime(0,0,0, date('m', $start)+1, date('d', $start), date('Y', $start));
+				} while($start < $posted['chart_end']);
+				$data['labels'][]  = date('n', $start);
+				$fields .= ', MONTH(FROM_UNIXTIME(order_date)) AS C';
+				$groupby = ' GROUP BY MONTH(FROM_UNIXTIME(order_date))';
+				$xAxis = 'Month';
+			}
+			else // > 1 year
+			{
+				do
+				{
+					$data['labels'][]  = date('Y', $start);
+					$start = mktime(0,0,0, date('m', $start), date('d', $start), date('Y', $start)+1);
+				} while($start < $posted['chart_end']);
+				$data['labels'][]  = date('Y', $start);
+				$fields .= ', YEAR(FROM_UNIXTIME(order_date)) AS C';
+				$groupby = ' GROUP BY YEAR(FROM_UNIXTIME(order_date))';
+				$xAxis = 'Year';
+			}
+
+			$data['labels'] = array_unique($data['labels']);
+
+			$dbdata = $sql->retrieve('vstore_orders', $fields, $where.' '.$groupby, true);
+
+			$sets = array('A' => array(), 'B' => array());
+
+			if ($dbdata)
+			{
+				$i = 0;
+				foreach ($dbdata as $value) {
+					$k = $data['labels'][$i];
+					if ($value['C'] > $k)
+					{
+						do
+						{
+							$sets['A'][] = null;
+							$sets['B'][] = null;
+							$i++;
+							$k = $data['labels'][$i];
+						} while(!empty($k) && $value['C'] != $k);
+					}
+
+					if ($value['C'] == $k)
+					{
+						$sets['A'][] = $value['A'];
+						$sets['B'][] = $value['B'];
+					}
+
+					$i++;
+				}
+
+				if (count($data['labels']) > count($sets[0]))
+				{
+					for($x = count($sets[0]); $x < count($data['labels']); $x++)
+					{
+						$sets['A'][] = null;
+						$sets['B'][] = null;
+					}
+				}
+
+				$colA = '88,255,88';
+				$colB = '255,88,88';
+			
+				// CHART
+				$cht = e107::getChart();
+			
+				$data['datasets'][]	= array(
+									'fillColor' 		=> "rgba(".$colA.",0.3)",
+									'strokeColor'  		=>  "rgba(".$colA.",1)",
+									'pointColor '  		=>  "#fff",
+									'pointStrokeColor'  =>  "rgba(".$colA.",1)",
+									'data'				=> $sets['A']	
+					
+				);
+				
+				$data['datasets'][]	= array(
+									'fillColor' 		=> "rgba(".$colB.",0.3)",
+									'strokeColor'  		=>  "rgba(".$colB.",1)",
+									'pointColor '  		=>  "#fff",
+									'pointStrokeColor'  =>  "rgba(".$colB.",1)",
+									'data'				=> $sets['B']		
+				);
+		
+				$options = array(
+					//'title' => $opt_types[$posted['chart_type']],
+					'canvasBorders' => false,
+					'bezierCurve' => false,
+					'inGraphDataShow' => true,
+					'pointDotRadius' => 5,
+					// 'legendBorders' => true,
+					'yAxisLabel' => $sc->getCurrencySymbol(),
+					'xAxisLabel' => $xAxis,
+				);
+				$cht = e107::getChart();
+				$cht->setType('line');
+				$cht->setOptions($options);
+				$cht->setData($data,'canvas');
+				$chart = $cht->render('canvas');
+				
+
+				$chart .= '<div class="dwell text-center"><i class="fa fa-line-chart"  style="color: rgb('.$colB.')"></i> '.$legend['A'];
+				$chart .= '&nbsp;&nbsp;&nbsp;<i class="fa fa-line-chart"  style="color: rgb('.$colA.')"></i> '.$legend['B'].'</div>';
+
+				e107::css('inline','canvas.e-graph {  width: 100% !important;  max-width: 100% !important;  height: auto !important; 	}');
+			}
+			else
+			{
+				$chart = e107::getMessage()->addWarning('No data for chart awailable!')->render();
+			}
+
+
+
+			$text = $frm->open('vstore-statistics','post', null, array('class'=>'form')) . '
+			<div>
+				<div class="row">
+					<div class="panel panel-default col-6 col-xs-6 col-md-3">
+						<div class="panel-body">
+							Open orders
+							<h4>'.number_format($count_open).'</h4>
+						</div>
+					</div>				
+					<div class="panel panel-default col-6 col-xs-6 col-md-3">
+						<div class="panel-body">
+							Orders last 7 days
+							<h4>'.number_format($count_completed).'</h4>
+						</div>
+					</div>				
+					<div class="panel panel-default col-6 col-xs-6 col-md-3">
+						<div class="panel-body">
+							Gross sales last 7 days
+							<h4>'.$sc->getCurrencySymbol() . number_format($gross_7, 2).'</h4>
+						</div>
+					</div>				
+					<div class="panel panel-default col-6 col-xs-6 col-md-3">
+						<div class="panel-body">
+							Gross sales last 31 days
+							<h4>'.$sc->getCurrencySymbol() . number_format($gross_31, 2).'</h4>
+						</div>
+					</div>				
+				</div>				
+
+				<div class="row" style="margin-top: 10px;">
+					<div class="col-sm-3">Type:</div>
+					<div class="col-sm-9">'.$frm->select('chart_type', $opt_types, $posted['chart_type']).'</div>
+				</div>
+				<div class="row">
+					<div class="col-sm-3">From:</div>
+					<div class="col-sm-9">'.$frm->datepicker('chart_start', $posted['chart_start']).'</div>
+				</div>
+				<div class="row">
+					<div class="col-sm-3">To:</div>
+					<div class="col-sm-9">'.$frm->datepicker('chart_end', $posted['chart_end']).'</div>
+				</div>
+
+				<div class="row" style="margin-top: 10px;">
+					<div class="text-center">'.$frm->button('chart_update', 'Update').'</div>
+				</div>
+
+				<div class="row chart">
+					'.$chart.'
+				</div>
+			</div>
+			'.$frm->close();
+
+			return $ns->tablerender(null, $text);
+		}
+}
+
+class vstore_statistics_form_ui extends e_admin_form_ui
+{
+}
+
 
 new vstore_admin();
 
