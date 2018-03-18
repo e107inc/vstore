@@ -98,3 +98,22 @@ CREATE TABLE vstore_items_vars (
  `item_var_userclass` int(4) NOT NULL,
  PRIMARY KEY (`item_var_id`)
 ) ENGINE=MyISAM;
+
+CREATE TABLE `vstore_coupons` (
+	`coupon_id` INT(11) NOT NULL AUTO_INCREMENT,
+	`coupon_active` TINYINT(1) UNSIGNED NOT NULL DEFAULT '0',
+	`coupon_code` VARCHAR(50) NULL DEFAULT NULL,
+	`coupon_type` CHAR(1) NULL DEFAULT NULL,
+	`coupon_amount` DECIMAL(10,2) NULL DEFAULT NULL,
+	`coupon_start` INT(10) NULL DEFAULT NULL,
+	`coupon_end` INT(10) NULL DEFAULT NULL,
+	`coupon_items` TEXT NULL,
+	`coupon_items_ex` TEXT NULL,
+	`coupon_cats` TEXT NULL,
+	`coupon_cats_ex` TEXT NULL,
+	`coupon_limit_coupon` INT(10) NULL DEFAULT NULL,
+	`coupon_limit_item` INT(10) NULL DEFAULT NULL,
+	`coupon_limit_user` INT(10) NULL DEFAULT NULL,
+	PRIMARY KEY (`coupon_id`),
+	UNIQUE INDEX `coupon_code` (`coupon_code`)
+) ENGINE=MyISAM;
