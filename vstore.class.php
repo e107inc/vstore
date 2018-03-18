@@ -913,7 +913,7 @@ class vstore_plugin_shortcodes extends e_shortcode
 	function sc_cart_removebutton($parm=null)
 	{
 
-		return '<button type="submit" name="cartRemove['.$this->var['cart_id'].']" class="btn btn-default btn-secondary" title="Remove">
+		return '<button type="submit" name="cartRemove['.$this->var['cart_id'].']" class="btn btn-default btn-secondary vstore-cart-remove-item" title="Remove">
 			'.e107::getParser()->toGlyph('fa-trash').'</button>';
 		
 	}
@@ -3128,6 +3128,10 @@ class vstore
 				$checkoutData['coupon']['code'] = strtoupper(trim($this->post['cart_coupon_code']));
 				$checkoutData['coupon']['amount'] = $this->calcCouponAmount($coupon, $checkoutData['items']);
 			}
+			else
+			{
+				e107::getMessage()->addError('Invalid coupon-code!', 'vstore');
+			}
 		}
 		elseif (!isset($this->post['cart_coupon_code']))
 		{
@@ -3138,6 +3142,10 @@ class vstore
 			{
 				$checkoutData['coupon']['code'] = $chk['coupon']['code'];
 				$checkoutData['coupon']['amount'] = $this->calcCouponAmount($coupon, $checkoutData['items']);
+			}
+			else
+			{
+				e107::getMessage()->addError('Invalid coupon-code!', 'vstore');
 			}
 		}
 
@@ -3497,11 +3505,65 @@ class vstore
 		return $shipping;
 	}
 
+	/**
+	 * Calculate the amount of the current coupon code
+	 * will be 0.0 in case of missing data or if the coupon code isn't valid for some reason
+	 * If the coupon is valid, the result is always <= 0.0
+	 *
+	 * @param array $coupon
+	 * @param array $items
+	 * @return double
+	 */
 	public function calcCouponAmount($coupon, $items)
 	{
 		if (empty($coupon) || empty($items))
 		{
 			return 0.0;
+		}
+
+		// Coupon active?
+		if (!vartrue($coupon['coupon_active']))
+		{
+			e107::getMessage()->addError('Coupon is not available!', 'vstore');
+			return 0.0;
+		}
+
+		// Coupon started
+		if (vartrue($coupon['coupon_start']) && time() < $coupon['coupon_start'])
+		{
+			e107::getMessage()->addError('Coupon is not yet available!', 'vstore');
+			return 0.0;
+		}
+
+		// Coupon expired
+		if (vartrue($coupon['coupon_end']) && time() > $coupon['coupon_end'])
+		{
+			e107::getMessage()->addError('Coupon is no longer available!', 'vstore');
+			return 0.0;
+		}
+
+		// Check limits
+		$sql = e107::getDb();
+		// Check how often this code was used so far
+		if ($coupon['coupon_limit_coupon'] > -1)
+		{
+			$usage = $sql->retrieve('vstore_orders', 'count(order_id) AS count_coupon', sprintf('order_pay_coupon_code="%s"', $coupon['coupon_code']));
+			if ($usage >= $coupon['coupon_limit_coupon'])
+			{
+				e107::getMessage()->addError('Coupon is no longer available!<br />It has exceeded it\'s allowed number of usage!', 'vstore');
+				return 0.0;
+			}
+		}
+
+		// Check how often the current user has used this code
+		if ($coupon['coupon_limit_user'] > -1)
+		{
+			$usage = $sql->retrieve('vstore_orders', 'count(order_id) AS count_coupon', sprintf('order_e107_user="%s" AND order_pay_coupon_code="%s"', USERID, $coupon['coupon_code']));
+			if ($usage >= $coupon['coupon_limit_user'])
+			{
+				e107::getMessage()->addError('Coupon is no longer available!<br />It has exceeded it\'s allowed number of usage!', 'vstore');
+				return 0.0;
+			}
 		}
 
 		$coupon['coupon_items'] 	= array_filter(explode(',', $coupon['coupon_items']));
@@ -3511,36 +3573,100 @@ class vstore
 
 		$amount = 0.0;
 
+		// Holds the usage data for the current items
+		$usage = array();
+
 		foreach ($items as $item) {
-			if (!in_array($item['item_id'], $coupon['coupon_items']))
+			// Check if items are defined
+			if (count($coupon['coupon_items']) > 0)
 			{
-				// Item not explicitly assigned to coupon
-				if (in_array($item['item_id'], $coupon['coupon_items_ex']))
+				if (!in_array($item['item_id'], $coupon['coupon_items']))
 				{
-					// Item explicitly excluded from coupon
+					// Item not included!
 					continue;
 				}
+			}
+			elseif (count($coupon['coupon_items_ex']) > 0 && in_array($item['item_id'], $coupon['coupon_items_ex']))
+			{
+				// item excluded
+				continue;
+			}
+			// Check if categories are defined
+			elseif (count($coupon['coupon_cats']) > 0)
+			{
 				if (!in_array($item['item_cat'], $coupon['coupon_cats']))
 				{
-					// Item category not explicitly assigned to coupon
-					if (in_array($item['item_cat'], $coupon['coupon_cats_ex']))
-					{
-						// Item category explicitly excluded from coupon
-						continue;
-					}
-				}			
-			}		
+					// Category not included!
+					continue;
+				}
+			}
+			elseif (count($coupon['coupon_cats_ex']) > 0 && !in_array($item['item_cat'], $coupon['coupon_cats_ex']))
+			{
+				// Category excluded!
+				continue;
+			}
 			
-			// Item included or not explicitly excluded = Apply coupon
-			if ($coupon['coupon_type'] == '%')
+			$max_usage = 0;
+			// Check how often this code has been used on this specific item
+			if ($coupon['coupon_limit_item'] > -1)
 			{
-				$amount += (double) ($item['item_price'] * $item['cart_qty']) * $coupon['coupon_amount'] / 100;
-			}
-			elseif ($coupon['coupon_type'] == 'F')
-			{
-				$amount += (double) ($item['item_price'] * $item['cart_qty']) - $coupon['coupon_amount'];
-			}
+				// Query database only the first time for this item (item_id can be duplicate due to item_variations)
+				if (!isset($usage[$item['item_id']]))
+				{
+					$data = $sql->retrieve('vstore_orders', 'order_items', sprintf('order_items LIKE \'%%"id": "%d"%%\' AND order_pay_coupon_code="%s"', $item['item_id'], $coupon['coupon_code']), true);
+					if ($data)
+					{
+						foreach ($data as $row) {
+							$item_info = e107::unserialize($row['order_items']);
+							foreach ($item_info as $info)
+							{
+								if ($info['id'] == $item['item_id'])
+								{
+									$usage[$item['item_id']] += varsettrue($info['quantity'], 0);
+								}
+							}
+						}
+					}
+				}
 
+				// Add items from this cart
+				$usage[$item['item_id']] += $item['cart_qty'];
+
+				// Check if quantity exceeds limit
+				if ($usage[$item['item_id']] > $coupon['coupon_limit_item'])
+				{
+					if (($usage[$item['item_id']] - $item['cart_qty']) < $coupon['coupon_limit_item'])
+					{
+						$max_usage = $coupon['coupon_limit_item'] - ($usage[$item['item_id']] - $item['cart_qty']);
+						e107::getMessage()->addWarning('Item quantity exceeds the allowed number of coupon code usage for this item "'.$item['item_name'].'"!<br />The coupon will only used for remaining number of usages ('.$max_usage.'x).', 'vstore');
+					}
+					else
+					{
+						e107::getMessage()->addError('Coupon exceeds the allowed number of usage for this item "'.$item['item_name'].'"!', 'vstore');
+						return 0.0;
+					}
+				}
+			}
+	
+
+			$qty = $item['cart_qty'];
+			if ($max_usage > 0)
+			{
+				// Apply code amount only to the remaining items
+				$qty = $max_usage;
+			}
+			// Item included or not explicitly excluded = Apply coupon
+			if ($qty > 0)
+			{
+				if ($coupon['coupon_type'] == '%')
+				{
+					$amount += (double) ($item['item_price'] * $qty) * $coupon['coupon_amount'] / 100;
+				}
+				elseif ($coupon['coupon_type'] == 'F')
+				{
+					$amount += (double) ($item['item_price'] * $qty) - $coupon['coupon_amount'];
+				}
+			}
 
 		}
 
