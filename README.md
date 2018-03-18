@@ -20,6 +20,7 @@ A simple shopping cart solution for e107 v2.x Bootstrap CMS.
 * The very latest version of e107 v2.x available on Github. 
 
 ## Contributing
+Testing of all (new) features is really appreciated
 Pull-requests are very welcome. 
 Please note that localization (language files/LANS) should occur only after the plugin is fully functional and tested. 
 
