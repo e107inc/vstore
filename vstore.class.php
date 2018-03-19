@@ -3119,7 +3119,7 @@ class vstore
 		}
 
 		$checkoutData['coupon'] = array('code' => '', 'amount' => 0.0);
-		if (!empty($this->post['cart_coupon_code']))
+		if (!empty(trim($this->post['cart_coupon_code'])))
 		{
 			$coupon = e107::getDb()->retrieve('vstore_coupons', '*', sprintf('coupon_code="%s"', trim($this->post['cart_coupon_code'])));
 
@@ -3136,16 +3136,19 @@ class vstore
 		elseif (!isset($this->post['cart_coupon_code']))
 		{
 			$chk = $this->getCheckoutData();
-			$coupon = e107::getDb()->retrieve('vstore_coupons', '*', sprintf('coupon_code="%s"', trim($chk['coupon']['code'])));
+			if (!empty(trim($chk['coupon']['code'])))
+			{
+				$coupon = e107::getDb()->retrieve('vstore_coupons', '*', sprintf('coupon_code="%s"', trim($chk['coupon']['code'])));
 
-			if ($coupon)
-			{
-				$checkoutData['coupon']['code'] = $chk['coupon']['code'];
-				$checkoutData['coupon']['amount'] = $this->calcCouponAmount($coupon, $checkoutData['items']);
-			}
-			else
-			{
-				e107::getMessage()->addError('Invalid coupon-code!', 'vstore');
+				if ($coupon)
+				{
+					$checkoutData['coupon']['code'] = $chk['coupon']['code'];
+					$checkoutData['coupon']['amount'] = $this->calcCouponAmount($coupon, $checkoutData['items']);
+				}
+				else
+				{
+					e107::getMessage()->addError('Invalid coupon-code!', 'vstore');
+				}
 			}
 		}
 
