@@ -266,8 +266,8 @@ class vstore_statistics_ui extends e_admin_ui
 				foreach(array_keys($legend) as $col)
 				{
 					$chart .= '
-					<span stype="padding-left: 5px; padding-right: 5px;">
-						<i class="fa fa-line-chart" style="color: rgb('.$colors[$col].')"></i> '.$legend[$col].'
+					<span>&nbsp;
+						<i class="fa fa-line-chart" style="color: rgb('.$colors[$col].')"></i> '.$legend[$col].'&nbsp;
 					</span>
 					';
 				}
@@ -349,16 +349,47 @@ class vstore_statistics_ui extends e_admin_ui
 			e107::js('footer-inline', '
 
 			$(".vstore-range").click(function(e){
-				//e.preventDefault();
+				e.preventDefault();
 				var multiplier = parseInt($(this).data("value"), 10);
 				if (!isNaN(multiplier))
 				{
-					var end = start = '.strtotime(date('Y-m-d')).';
+					var from = new Date('.strtotime(date('Y-m-d')).' * 1000);
+					var to = new Date('.strtotime(date('Y-m-d')).' * 1000);
 					if (multiplier > 0)
 					{
-						start = end - (multiplier * 24 * 60 * 60);
-						$("#chart-start").val(start);
-						$("#chart-end").val(end);
+						switch (multiplier)
+						{
+							case 1:
+								from.setDate(from.getDate()-1);
+								break;
+							case 7:
+								from.setDate(from.getDate()-7);
+								break;
+							case 31:
+								from.setMonth(from.getMonth()-1);
+								break;
+							case 365:
+								from.setFullYear(from.getFullYear()-1);
+								break;
+						}
+
+						$("#chart-start").val(from.getTime() / 1000);
+						$("#chart-end").val(to.getTime() / 1000);
+						var format = $("#e-datepicker-chart-start").data("date-format");
+						format = format.replace("yyyy", "yy");
+						$("#e-datepicker-chart-start").val($.datepicker.formatDate(format, from));
+						$("#e-datepicker-chart-end").val($.datepicker.formatDate(format, to));
+
+
+						// from = to - (multiplier * 24 * 60 * 60);
+						// $("#chart-start").val(from;
+						// $("#chart-end").val(to);
+						// var format = $("#e-datepicker-chart-start").data("date-format");
+						// format = format.replace("yyyy", "yy");
+						// from = new Date(from * 1000);
+						// to = new Date(to * 1000);
+						// $("#e-datepicker-chart-start").val($.datepicker.formatDate(format, from));
+						// $("#e-datepicker-chart-end").val($.datepicker.formatDate(format, to));
 					}
 				}
 			});
