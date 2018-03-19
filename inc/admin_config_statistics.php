@@ -21,6 +21,26 @@ class vstore_statistics_ui extends e_admin_ui
 			$frm = e107::getForm();
 			$dt = e107::getDate();
 
+			// Define colors for the chart
+			$colors = array(
+				'A' => '255,0,0',
+				'B' => '0,255,0',
+				'C' => '0,0,255',
+				'D' => '50,50,50',
+				'E' => '255,255,0',
+				'F' => '0,255,255',
+				'G' => '255,0,255',
+				'H' => '200,200,0',
+				'I' => '0,200,200',
+				'J' => '200,0,200',
+			);
+
+			// Define the chart types
+			$opt_types = array(
+				'amount' => 'Payed & Open orders',
+			);
+			
+
 			require_once(e_PLUGIN.'vstore/vstore.class.php');
 			$sc = new vstore_plugin_shortcodes();
 
@@ -61,34 +81,44 @@ class vstore_statistics_ui extends e_admin_ui
 			}
 			unset($h);
 
-
+			// Get data for the top summary boxes
 			$count_open = (int) $sql->retrieve('vstore_orders', 'count(order_id)', 'order_status != "C"');
 			$count_orders_7 = (int) $sql->retrieve('vstore_orders', 'count(order_id)', sprintf('order_date >= %d', $date_7));
-			$gross_7 = (double) $sql->retrieve('vstore_orders', 'SUM(order_pay_amount)', sprintf('order_status = "C" AND order_date >= %d', $date_7));
-			$gross_31 = (double) $sql->retrieve('vstore_orders', 'SUM(order_pay_amount)', sprintf('order_status = "C" AND order_date >= %d', $date_31));
+			$gross_7 = (double) $sql->retrieve('vstore_orders', 'SUM(order_pay_amount)', sprintf('order_date >= %d', $date_7));
+			$gross_31 = (double) $sql->retrieve('vstore_orders', 'SUM(order_pay_amount)', sprintf('order_date >= %d', $date_31));
 
-			$opt_types = array(
-				'amount' => 'Payed & Open orders',
-			);
+
 
 			$fields = '';
+			// Make sure a chart type is defined (default = amount)
 			$posted['chart_type'] = varset($posted['chart_type'], 'amount');
 
+			// Configure chart type depending settings
 			if ($posted['chart_type'] == 'amount')
 			{
+				// The data fields (must be named A, B, C, and so on)
 				$fields = 'SUM(IF(order_status="C", order_pay_amount, 0)) AS A, SUM(IF(order_status!="C", order_pay_amount, 0)) AS B'; 
+				// The legend references the fieldnames and their "readable name"
 				$legend = array('A' => 'Payed', 'B' => 'Open');
+				// Type of chart to display
+				$chart_type = 'line';
+				// Set y axis caption (value unit)
+				$yAxis = $sc->getCurrencySymbol();
 			}
 
 
+			// Init labels and other vars
 			$data = array('labels' => array());
 			$start = $posted['chart_start'];
 			$diff = $posted['chart_end'] - $posted['chart_start'];
 
+			// define WHERE clause for sql query (date range)
 			$where = 'order_date >= '.$posted['chart_start'] . ' AND order_date <= ' . ($posted['chart_end'] + (24 * 60 * 60));
 
-
-			if ($diff <= (7 * 24 * 60 * 60)) // <= 7 days
+			// Define the labels
+			// Define GROUP BY and group column depending on the date range to display
+			// Define the x axis caption
+			if ($diff <= (7 * 24 * 60 * 60)) // <= 7 days (show days)
 			{
 				do
 				{
@@ -96,11 +126,11 @@ class vstore_statistics_ui extends e_admin_ui
 					$start = mktime(0,0,0, date('m', $start), date('d', $start)+1, date('Y', $start));
 				} while($start < $posted['chart_end']);
 				$data['labels'][]  = date('d', $start);
-				$fields .= ', DAY(FROM_UNIXTIME(order_date)) AS C';
-				$groupby = ' GROUP BY DATE(FROM_UNIXTIME(order_date))';
+				$fields .= ', DAY(FROM_UNIXTIME(order_date)) AS `COL`';
+				$groupby = ' GROUP BY DAY(FROM_UNIXTIME(order_date))';
 				$xAxis = 'Day';
 			}
-			elseif ($diff <= (31 * 24 * 60 * 60)) // <= 31 days
+			elseif ($diff <= (31 * 24 * 60 * 60)) // <= 31 days (show weeks)
 			{
 				do
 				{
@@ -108,11 +138,11 @@ class vstore_statistics_ui extends e_admin_ui
 					$start = mktime(0,0,0, date('m', $start), date('d', $start)+7, date('Y', $start));
 				} while($start < $posted['chart_end']);
 				$data['labels'][] = date('W', $start);
-				$fields .= ', WEEK(FROM_UNIXTIME(order_date), 1) AS C';
+				$fields .= ', WEEK(FROM_UNIXTIME(order_date), 1) AS COL';
 				$groupby = ' GROUP BY WEEK(FROM_UNIXTIME(order_date), 1)';
 				$xAxis = 'Week';
 			}
-			elseif ($diff <= (365 * 24 * 60 * 60)) // <= 1 year
+			elseif ($diff <= (365 * 24 * 60 * 60)) // <= 1 year (show month)
 			{
 				do
 				{
@@ -120,11 +150,11 @@ class vstore_statistics_ui extends e_admin_ui
 					$start = mktime(0,0,0, date('m', $start)+1, date('d', $start), date('Y', $start));
 				} while($start < $posted['chart_end']);
 				$data['labels'][]  = date('n', $start);
-				$fields .= ', MONTH(FROM_UNIXTIME(order_date)) AS C';
+				$fields .= ', MONTH(FROM_UNIXTIME(order_date)) AS COL';
 				$groupby = ' GROUP BY MONTH(FROM_UNIXTIME(order_date))';
 				$xAxis = 'Month';
 			}
-			else // > 1 year
+			else // > 1 year (show years)
 			{
 				do
 				{
@@ -132,103 +162,129 @@ class vstore_statistics_ui extends e_admin_ui
 					$start = mktime(0,0,0, date('m', $start), date('d', $start), date('Y', $start)+1);
 				} while($start < $posted['chart_end']);
 				$data['labels'][]  = date('Y', $start);
-				$fields .= ', YEAR(FROM_UNIXTIME(order_date)) AS C';
+				$fields .= ', YEAR(FROM_UNIXTIME(order_date)) AS COL';
 				$groupby = ' GROUP BY YEAR(FROM_UNIXTIME(order_date))';
 				$xAxis = 'Year';
 			}
 
+			// Make sure the labels array contains unique values
 			$data['labels'] = array_unique($data['labels']);
 
+			// Fetch data from the database
 			$dbdata = $sql->retrieve('vstore_orders', $fields, $where.' '.$groupby, true);
 
-			$sets = array('A' => array(), 'B' => array());
-
+			// If data found in database
 			if ($dbdata)
 			{
+
+				// Prepare dataset arary
+				foreach(array_keys($legend) as $col)
+				{
+					$sets[$col] = array();
+				}
+				
 				$i = 0;
 				foreach ($dbdata as $value) {
 					$k = $data['labels'][$i];
-					if ($value['C'] > $k)
+					if ($value['COL'] > $k)
 					{
+						// if this "column" is empty in the database
+						// fill dataset with null values
 						do
 						{
-							$sets['A'][] = null;
-							$sets['B'][] = null;
+							foreach(array_keys($legend) as $col)
+							{
+								$sets[$col][] = null;
+							}
 							$i++;
 							$k = $data['labels'][$i];
-						} while(!empty($k) && $value['C'] != $k);
+						} while(!empty($k) && $value['COL'] != $k);
 					}
 
-					if ($value['C'] == $k)
+					if ($value['COL'] == $k)
 					{
-						$sets['A'][] = $value['A'];
-						$sets['B'][] = $value['B'];
+						// add data for this colum to dataset
+						foreach(array_keys($legend) as $col)
+						{
+							$sets[$col][] = $value[$col];
+						}
 					}
 
 					$i++;
 				}
 
-				if (count($data['labels']) > count($sets[0]))
+				// If the number of labels and number of datasets do not match
+				if (count($data['labels']) > count($sets['A']))
 				{
+					// Fill up the dataset with null values
 					for($x = count($sets[0]); $x < count($data['labels']); $x++)
 					{
-						$sets['A'][] = null;
-						$sets['B'][] = null;
+						foreach(array_keys($legend) as $col)
+						{
+							$sets[$col][] = null;
+						}
 					}
 				}
 
-				$colA = '88,255,88';
-				$colB = '255,88,88';
-			
-				// CHART
-				$cht = e107::getChart();
-			
-				$data['datasets'][]	= array(
-									'fillColor' 		=> "rgba(".$colA.",0.3)",
-									'strokeColor'  		=>  "rgba(".$colA.",1)",
-									'pointColor '  		=>  "#fff",
-									'pointStrokeColor'  =>  "rgba(".$colA.",1)",
-									'data'				=> $sets['A']	
-					
-				);
-				
-				$data['datasets'][]	= array(
-									'fillColor' 		=> "rgba(".$colB.",0.3)",
-									'strokeColor'  		=>  "rgba(".$colB.",1)",
-									'pointColor '  		=>  "#fff",
-									'pointStrokeColor'  =>  "rgba(".$colB.",1)",
-									'data'				=> $sets['B']		
-				);
+				// Define the chart dataset: colors, data
+				foreach(array_keys($legend) as $col)
+				{
+					$data['datasets'][]	= array(
+						'fillColor' 		=> "rgba(".$colors[$col].",0.3)",
+						'strokeColor'  		=>  "rgba(".$colors[$col].",1)",
+						'pointColor '  		=>  "#fff",
+						'pointStrokeColor'  =>  "rgba(".$colors[$col].",1)",
+						'data'				=> $sets[$col]	
+					);
 		
+				}
+		
+				// CHART
+
+				// Define chart options
 				$options = array(
-					//'title' => $opt_types[$posted['chart_type']],
 					'canvasBorders' => false,
 					'bezierCurve' => false,
 					'inGraphDataShow' => true,
 					'pointDotRadius' => 5,
-					// 'legendBorders' => true,
-					'yAxisLabel' => $sc->getCurrencySymbol(),
+					'yAxisLabel' => $yAxis,
 					'xAxisLabel' => $xAxis,
 				);
+
+				// Define chart and render it
 				$cht = e107::getChart();
-				$cht->setType('line');
+				$cht->setType(varset($chart_type, 'line'));
 				$cht->setOptions($options);
 				$cht->setData($data,'canvas');
 				$chart = $cht->render('canvas');
 				
 
-				$chart .= '<div class="dwell text-center"><i class="fa fa-line-chart"  style="color: rgb('.$colB.')"></i> '.$legend['A'];
-				$chart .= '&nbsp;&nbsp;&nbsp;<i class="fa fa-line-chart"  style="color: rgb('.$colA.')"></i> '.$legend['B'].'</div>';
+				// Create a legend
+				$chart .= '
+				<div class="dwell text-center">
+				';
+				foreach(array_keys($legend) as $col)
+				{
+					$chart .= '
+					<span stype="padding-left: 5px; padding-right: 5px;">
+						<i class="fa fa-line-chart" style="color: rgb('.$colors[$col].')"></i> '.$legend[$col].'
+					</span>
+					';
+				}
+				$chart .= '
+				</div>
+				';
 
+				// Make sure the chart uses the whole space (width)
 				e107::css('inline','canvas.e-graph {  width: 100% !important;  max-width: 100% !important;  height: auto !important; 	}');
 			}
 			else
 			{
-				$chart = e107::getMessage()->addWarning('No data for chart awailable!')->render();
+				$chart = e107::getMessage()->addWarning('No data for chart available!')->render();
 			}
 
 
-
+			// render page
 			$text = $frm->open('vstore-statistics','post', null, array('class'=>'form')) . '
 			<div>
 				<div class="row">
@@ -241,7 +297,7 @@ class vstore_statistics_ui extends e_admin_ui
 					<div class="panel panel-default col-6 col-xs-6 col-md-3">
 						<div class="panel-body">
 							Orders last 7 days
-							<h4>'.number_format($count_completed).'</h4>
+							<h4>'.number_format($count_orders_7).'</h4>
 						</div>
 					</div>				
 					<div class="panel panel-default col-6 col-xs-6 col-md-3">
@@ -272,10 +328,10 @@ class vstore_statistics_ui extends e_admin_ui
 				</div>
 
 				<div class="row" style="margin-top: 10px;">
-					<div class="text-center">'.$frm->button('chart_update', 'Update').'</div>
+					<div class="text-center">'.$frm->button('chart_update', '<i class="fa fa-refresh" aria-hidden="true"></i> Update').'</div>
 				</div>
 
-				<div class="row chart">
+				<div class="row vstore-chart" style="margin-top: 10px;">
 					'.$chart.'
 				</div>
 			</div>
