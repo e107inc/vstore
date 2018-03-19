@@ -43,6 +43,8 @@ CREATE TABLE vstore_orders (
   `order_pay_transid` varchar(250) DEFAULT NULL,
   `order_pay_amount` decimal(10,2) NOT NULL DEFAULT '0.00',
   `order_pay_shipping` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `order_pay_coupon_code` varchar(50) DEFAULT NULL,
+  `order_pay_coupon_amount` decimal(10,2) NOT NULL DEFAULT '0.00',
   `order_pay_rawdata` text NOT NULL,
   PRIMARY KEY (`order_id`)
 ) ENGINE=MyISAM;
@@ -75,6 +77,7 @@ CREATE TABLE vstore_items (
   `item_files` text NOT NULL,
   `item_price` decimal(10,2) DEFAULT NULL,
   `item_shipping` decimal(10,2) DEFAULT NULL,
+  `item_weight` decimal(10,2) DEFAULT NULL,
   `item_details` text,
   `item_reviews` text,
   `item_order` tinyint(3) DEFAULT NULL,
@@ -96,4 +99,23 @@ CREATE TABLE vstore_items_vars (
  `item_var_compulsory` int(2) NOT NULL DEFAULT '0',
  `item_var_userclass` int(4) NOT NULL,
  PRIMARY KEY (`item_var_id`)
+) ENGINE=MyISAM;
+
+CREATE TABLE `vstore_coupons` (
+	`coupon_id` INT(11) NOT NULL AUTO_INCREMENT,
+	`coupon_active` TINYINT(1) UNSIGNED NOT NULL DEFAULT '0',
+	`coupon_code` VARCHAR(50) NULL DEFAULT NULL,
+	`coupon_type` CHAR(1) NULL DEFAULT NULL,
+	`coupon_amount` DECIMAL(10,2) NULL DEFAULT NULL,
+	`coupon_start` INT(10) NULL DEFAULT NULL,
+	`coupon_end` INT(10) NULL DEFAULT NULL,
+	`coupon_items` TEXT NULL,
+	`coupon_items_ex` TEXT NULL,
+	`coupon_cats` TEXT NULL,
+	`coupon_cats_ex` TEXT NULL,
+	`coupon_limit_coupon` INT(10) NULL DEFAULT NULL,
+	`coupon_limit_item` INT(10) NULL DEFAULT NULL,
+	`coupon_limit_user` INT(10) NULL DEFAULT NULL,
+	PRIMARY KEY (`coupon_id`),
+	UNIQUE INDEX `coupon_code` (`coupon_code`)
 ) ENGINE=MyISAM;

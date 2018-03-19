@@ -126,7 +126,10 @@ $VSTORE_TEMPLATE['item']['main']        = '{SETIMAGE: w=600&h=600}
 													<p>{ITEM_DESCRIPTION}</p>
 
 													<p>{ITEM_VARS}</p>
-										            <p>
+												
+													<p>{ITEM_WEIGHT}</p>
+												
+													<p>
 										            Product Code: {ITEM_CODE}<br />
 										            Availability: {ITEM_AVAILABILITY}<br /><br />
 										            <small class="text-muted">Price may change due to exchange rate.</small>
@@ -244,6 +247,7 @@ $VSTORE_TEMPLATE['order_items']['footer'] = '
 	<td colspan="3" class="text-right"><b>Shipping</b></td>
 	<td class="text-right">{CART_DATA: shipping_total}</td>
 </tr>
+{ORDER_COUPON}
 <tr>
 	<td colspan="3" class="text-right"><b>Total</b></td>
 	<td class="text-right">{CART_DATA: grand_total}</td>
@@ -251,6 +255,12 @@ $VSTORE_TEMPLATE['order_items']['footer'] = '
 </table>
 ';
 
+$VSTORE_TEMPLATE['order_items']['coupon'] = '
+<tr>
+	<td colspan="3" class="text-right">Coupon: <b>{CART_DATA: coupon}</b></td>
+	<td class="text-right">{CART_DATA: coupon_amount}</td>
+</tr>
+';
 
 /**
  * Shopping cart page
@@ -301,6 +311,7 @@ $VSTORE_TEMPLATE['cart']['footer'] = '
 		<td colspan="4" class="text-right"><h5>Estimated shipping</h5></td>
 		<td class="text-right"><h5><strong>{CART_SHIPPINGTOTAL}</strong></h5></td>
 	</tr>
+	{CART_COUPON}
 	<tr>
 		<td colspan="4" class="text-right"><h3>Total</h3></td>
 		<td class="text-right"><h3><strong>{CART_GRANDTOTAL}</strong></h3></td>
@@ -313,6 +324,13 @@ $VSTORE_TEMPLATE['cart']['footer'] = '
 	</table>
 ';
 
+
+$VSTORE_TEMPLATE['cart']['coupon'] = '
+	<tr>
+		<td colspan="4"><div class="pull-right float-right">{CART_COUPON_FIELD}</div></td>
+		<td class="text-right"><h5><strong>{CART_COUPON_VALUE}</strong></h5></td>
+	</tr>
+';
 
 /**
  * Shipping details form
@@ -466,7 +484,7 @@ $VSTORE_TEMPLATE['navcart']['item'] = '
 			';
 
 $VSTORE_TEMPLATE['navcart']['footer'] = '
-				<li class="media text-right float-right"><h4>Total: {CART_DATA: grand_total}</h4></li>
+				<li class="media text-right float-right"><h5>Subtotal: {CART_DATA: grand_total}</h5></li>
 			</ul>
 			<input type="hidden" id="vstore-item-count" value="{CART_DATA: item_count}"/>
 		</div>

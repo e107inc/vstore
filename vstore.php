@@ -27,12 +27,6 @@ if (!empty($vstore_prefs['custom_css']))
 {
 	// Add any custom css to the page
 	e107::css('inline', "
-	/* Fix for Boostrap 4 */
-	.s-message.fade {
-		opacity: 1;
-		visibility: inherit;
-	}
-	
 	/* vstore custom css */
 	" . $vstore_prefs['custom_css']);
 }
