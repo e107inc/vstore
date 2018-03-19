@@ -1048,7 +1048,7 @@ class vstore
 		'refunded' => 'Order refunded'
 	);
 
-
+	
 	protected static $shippingFields = array(
 		 'firstname',
 		 'lastname',
@@ -1978,7 +1978,6 @@ class vstore
 					if ($itemprop)
 					{
 						$itemvarstring = $itemprop['variation'];
-						$price = ($var['item_price'] + $itemprop['price']);
 					}
 				}
 					
@@ -2038,7 +2037,11 @@ class vstore
 
 			if ($gateway->supportsAuthorize() && $gateway->supportsCompleteAuthorize())
 			{
-				$method = 'completeAuthorize';
+				// Workaround to make sure the payment is complete and not in pending state
+				if ($type != 'paypal')
+				{
+					$method = 'completeAuthorize';
+				}
 			}
 
 			// Get stored data.
@@ -2072,13 +2075,19 @@ class vstore
 		}
 		elseif($response->isSuccessful())
 		{
+			$order_status = 'P';
+			if ($response->isPending())
+			{
+				// is pending => set order status to a new different status
+				//$order_status = 'P';
+			}
 			$transData = $response->getData();
 			$transID = $response->getTransactionReference();
 			$message = $response->getMessage();
 
 			e107::getMessage()->addSuccess($message,'vstore');
 
-			$this->saveTransaction($transID, $transData, $items);
+			$this->saveTransaction($transID, $transData, $items, $order_status); // Order payed > save as Processing
 			$this->resetCart();
 
 			unset($_SESSION['vstore']['_data']);
@@ -2118,7 +2127,7 @@ class vstore
 	 * @param array $items purchased item
 	 * @return void
 	 */
-	private function saveTransaction($id, $transData, $items)
+	private function saveTransaction($id, $transData, $items, $order_status = 'N')
 	{
 
 		if(intval($transData['L_ERRORCODE0']) == 11607) // Duplicate REquest.
@@ -2136,7 +2145,7 @@ class vstore
 		    'order_session'       => $cartData['id'],
 		    'order_e107_user'     => USERID,
 		    'order_cust_id'       => '',
-			'order_status'        => 'N' // New
+			'order_status'        => varset($order_status, 'N') // New
 		);
 
 		$insert['order_items'] = json_encode($items, JSON_PRETTY_PRINT);
