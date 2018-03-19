@@ -146,12 +146,12 @@ class vstore_statistics_ui extends e_admin_ui
 			{
 				do
 				{
-					$data['labels'][]  = date('n', $start);
+					$data['labels'][]  = date('n/Y', $start);
 					$start = mktime(0,0,0, date('m', $start)+1, date('d', $start), date('Y', $start));
 				} while($start < $posted['chart_end']);
-				$data['labels'][]  = date('n', $start);
-				$fields .= ', MONTH(FROM_UNIXTIME(order_date)) AS COL';
-				$groupby = ' GROUP BY MONTH(FROM_UNIXTIME(order_date))';
+				$data['labels'][]  = date('n/Y', $start);
+				$fields .= ', CONCAT(MONTH(FROM_UNIXTIME(order_date)), "/", YEAR(FROM_UNIXTIME(order_date))) AS COL';
+				$groupby = ' GROUP BY MONTH(FROM_UNIXTIME(order_date)), YEAR(FROM_UNIXTIME(order_date)) ORDER BY YEAR(FROM_UNIXTIME(order_date)), MONTH(FROM_UNIXTIME(order_date))';
 				$xAxis = 'Month';
 			}
 			else // > 1 year (show years)
@@ -186,7 +186,7 @@ class vstore_statistics_ui extends e_admin_ui
 				$i = 0;
 				foreach ($dbdata as $value) {
 					$k = $data['labels'][$i];
-					if ($value['COL'] > $k)
+					if ($value['COL'] != $k)
 					{
 						// if this "column" is empty in the database
 						// fill dataset with null values
@@ -319,6 +319,15 @@ class vstore_statistics_ui extends e_admin_ui
 					<div class="col-sm-9">'.$frm->select('chart_type', $opt_types, $posted['chart_type']).'</div>
 				</div>
 				<div class="row">
+					<div class="col-sm-3">Range:</div>
+					<div class="col-sm-9">'
+					.' '.$frm->button('plus1', 'Yesterday', 'button', '', array('class' => 'btn-default vstore-range', 'data-value' => '1'))
+					.' '.$frm->button('plus7', 'Week', 'button', '', array('class' => 'btn-default vstore-range', 'data-value' => '7'))
+					.' '.$frm->button('plus31', 'Month', 'button', '', array('class' => 'btn-default vstore-range', 'data-value' => '31'))
+					.' '.$frm->button('plus365', 'Year', 'button', '', array('class' => 'btn-default vstore-range', 'data-value' => '365'))
+					.'</div>
+				</div>
+				<div class="row">
 					<div class="col-sm-3">From:</div>
 					<div class="col-sm-9">'.$frm->datepicker('chart_start', $posted['chart_start']).'</div>
 				</div>
@@ -336,6 +345,25 @@ class vstore_statistics_ui extends e_admin_ui
 				</div>
 			</div>
 			'.$frm->close();
+
+			e107::js('footer-inline', '
+
+			$(".vstore-range").click(function(e){
+				//e.preventDefault();
+				var multiplier = parseInt($(this).data("value"), 10);
+				if (!isNaN(multiplier))
+				{
+					var end = start = '.strtotime(date('Y-m-d')).';
+					if (multiplier > 0)
+					{
+						start = end - (multiplier * 24 * 60 * 60);
+						$("#chart-start").val(start);
+						$("#chart-end").val(end);
+					}
+				}
+			});
+
+			');
 
 			return $ns->tablerender(null, $text);
 		}
