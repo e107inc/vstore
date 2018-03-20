@@ -23,7 +23,7 @@ CREATE TABLE vstore_orders (
   `order_id` int(11) NOT NULL AUTO_INCREMENT,
   `order_date` int(10) DEFAULT NULL,
   `order_session` varchar(250) DEFAULT NULL,
-  `order_user_id` int(6) DEFAULT NULL,
+  `order_e107_user` int(6) DEFAULT NULL,
   `order_cust_id` int(6) DEFAULT NULL,
   `order_status` varchar(1) DEFAULT NULL,
   `order_items` text NOT NULL,
@@ -123,9 +123,8 @@ CREATE TABLE vstore_coupons (
 
 CREATE TABLE vstore_customer (
     `cust_id` INT(11) NOT NULL AUTO_INCREMENT,
-    `cust_userid` INT(6) NULL DEFAULT NULL,
+    `cust_e107_user` INT(6) NULL DEFAULT NULL,
     `cust_datestamp` INT(10) NULL DEFAULT NULL,
-    <!-- `cust_prename` VARCHAR(50) NULL DEFAULT NULL, -->
     `cust_title` VARCHAR(50) NULL DEFAULT NULL,
     `cust_firstname` VARCHAR(100) NULL DEFAULT NULL,
     `cust_lastname` VARCHAR(100) NULL DEFAULT NULL,
@@ -135,15 +134,8 @@ CREATE TABLE vstore_customer (
     `cust_state` VARCHAR(100) NULL DEFAULT NULL,
     `cust_postcode` VARCHAR(20) NULL DEFAULT NULL,
     `cust_country` VARCHAR(100) NULL DEFAULT NULL,
-    `cust_billing_address` TEXT NULL,
     `cust_shipping_address` TEXT NULL,
-    <!-- `cust_email` VARCHAR(100) NULL DEFAULT NULL, -->
-    <!-- `cust_email2` VARCHAR(100) NULL DEFAULT NULL, -->
-    <!-- `cust_phone_day` VARCHAR(50) NULL DEFAULT NULL, -->
-    <!-- `cust_phone_night` VARCHAR(50) NULL DEFAULT NULL, -->
-    <!-- `cust_comments` TEXT NULL, -->
-    <!-- `cust_website` VARCHAR(250) NULL DEFAULT NULL, -->
-    <!-- `cust_ip` VARCHAR(45) NULL DEFAULT NULL, -->
+    `cust_email` VARCHAR(100) NULL DEFAULT NULL,
     `cust_notes` TEXT NULL,
     `cust_refcode` VARCHAR(50) NULL DEFAULT NULL,
     PRIMARY KEY (`cust_id`),
