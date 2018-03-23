@@ -75,6 +75,14 @@ class vstore_admin extends e_admin_dispatcher
 			'uipath' 		=> 'inc/admin_config_statistics.php'
 		),
 		
+		
+		'customer'	=> array(
+			'controller' 	=> 'vstore_customer_ui',
+			'path' 			=> 'inc/admin_config_customer.php',
+			'ui' 			=> 'vstore_customer_form_ui',
+			'uipath' 		=> 'inc/admin_config_customer.php'
+		),
+		
 
 	);	
 	
@@ -100,7 +108,7 @@ class vstore_admin extends e_admin_dispatcher
 		'orders/list'		=> array('caption'=> "Sales", 'perm' => 'P'),
 		'orders/div'        => array('divider'=>true),
 
-		//	'customer/list'	=> array('caption'=> "Customers", 'perm' => 'P'),
+		'customer/list'		=> array('caption'=> "Customers", 'perm' => 'P'),
 	
 		'main/prefs' 		=> array('caption'=> LAN_PREFS, 'perm' => 'P'),
 
