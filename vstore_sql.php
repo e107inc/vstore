@@ -101,7 +101,7 @@ CREATE TABLE vstore_items_vars (
  PRIMARY KEY (`item_var_id`)
 ) ENGINE=MyISAM;
 
-CREATE TABLE `vstore_coupons` (
+CREATE TABLE vstore_coupons (
 	`coupon_id` INT(11) NOT NULL AUTO_INCREMENT,
 	`coupon_active` TINYINT(1) UNSIGNED NOT NULL DEFAULT '0',
 	`coupon_code` VARCHAR(50) NULL DEFAULT NULL,
@@ -119,3 +119,26 @@ CREATE TABLE `vstore_coupons` (
 	PRIMARY KEY (`coupon_id`),
 	UNIQUE INDEX `coupon_code` (`coupon_code`)
 ) ENGINE=MyISAM;
+
+
+CREATE TABLE vstore_customer (
+    `cust_id` INT(11) NOT NULL AUTO_INCREMENT,
+    `cust_e107_user` INT(6) NULL DEFAULT NULL,
+    `cust_datestamp` INT(10) NULL DEFAULT NULL,
+    `cust_title` VARCHAR(50) NULL DEFAULT NULL,
+    `cust_firstname` VARCHAR(100) NULL DEFAULT NULL,
+    `cust_lastname` VARCHAR(100) NULL DEFAULT NULL,
+    `cust_company` VARCHAR(100) NULL DEFAULT NULL,
+    `cust_address` VARCHAR(255) NULL DEFAULT NULL,
+    `cust_city` VARCHAR(100) NULL DEFAULT NULL,
+    `cust_state` VARCHAR(100) NULL DEFAULT NULL,
+    `cust_postcode` VARCHAR(20) NULL DEFAULT NULL,
+    `cust_country` VARCHAR(100) NULL DEFAULT NULL,
+    `cust_shipping_address` TEXT NULL,
+    `cust_email` VARCHAR(100) NULL DEFAULT NULL,
+    `cust_notes` TEXT NULL,
+    `cust_refcode` VARCHAR(50) NULL DEFAULT NULL,
+    PRIMARY KEY (`cust_id`),
+    UNIQUE INDEX `cust_userid` (`cust_userid`)
+)
+ENGINE=MyISAM;
