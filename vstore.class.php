@@ -1638,16 +1638,18 @@ class vstore
 		$tp = e107::getParser();
 		if (!isset($this->post['ship']['firstname']))
 		{
+			$prefix = '';
 			// load saved shipping data and assign to variables
 			$data = $this->getShippingData();
-			if ($data && isset($data['firstname']) && empty($data['firstname']))
+			if (empty($data) || empty($data['firstname']))
 			{
 				$data = $this->getCustomerData(true);
+				$prefix = isset($data['cust_firstname']) ? 'cust_' : '';
 			}
 			$fields = $this->getShippingFields();
 			foreach ($fields as $field) 
 			{
-				$this->post['ship'][$field] = varset($data[$field], null);
+				$this->post['ship'][$field] = varset($data[$prefix . $field], null);
 			}
 
 		}
@@ -2696,11 +2698,26 @@ class vstore
 			return;
 		}
 
+		$sender_name = e107::pref('vstore','sender_name');
+		$sender_email = e107::pref('vstore','sender_email');
+		if (empty($sender_email))
+		{
+			e107::getMessage()->addDebug('No explizit shop email defined!<br/>Will use siteadmin email!', 'vstore');
+			$sender_email = e107::pref('core', 'siteadminemail');
+		}
+
+		if (empty($sender_name))
+		{
+			e107::getMessage()->addDebug('No explizit shop email name defined!<br/>Will use siteadmin name!', 'vstore');
+			$sender_name = e107::pref('core', 'siteadmin');
+		}
+
+
 		$prefs = e107::pref('vstore','email_templates');
 		$cc = '';
 		if (varsettrue($prefs[$templateKey]['cc']))
 		{
-			$cc = e107::pref('vstore','sender_email');
+			$cc = $sender_email;
 		}
 
 
@@ -2711,13 +2728,16 @@ class vstore
 
 		$subject    = "Your Order #[x] at ".SITENAME; //todo add to template
 
-		$email      = $insert['order_ship_email'];
-		$name       = $insert['order_ship_firstname']." ".$insert['order_ship_lastname'];;
+		$receiver = e107::unserialize($insert['order_billing']);
+
+
+		$email      = $receiver['email'];
+		$name       = $receiver['firstname']." ".$receiver['lastname'];;
 
 		$eml = array(
 					'subject' 		=> $tp->lanVars($subject, array('x'=>$ref)),
-					'sender_email'	=> e107::pref('vstore','sender_email'),
-					'sender_name'	=> e107::pref('vstore','sender_name'),
+					'sender_email'	=> $sender_email,
+					'sender_name'	=> $sender_name,
 			//		'replyto'		=> $email,
 					'html'			=> true,
 					'template'		=> 'default',
