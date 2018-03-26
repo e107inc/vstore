@@ -29,7 +29,8 @@ class vstore_order_ui extends e_admin_ui
 			'order_status'          => array ( 'title' => 'Status', 'type'=>'dropdown', 'data'=>'str', 'inline'=>true, 'filter'=>true, 'batch'=>true,'width'=>'5%'),
 			'order_date'          	=> array ( 'title' => LAN_DATESTAMP, 'type' => 'datestamp', 'data' => 'str',  'readonly'=>true, 'width' => 'auto', 'filter' => true, 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 
-			'order_ship_to'      	=> array ( 'title' => 'Ship to', 'type'=>'method', 'data'=>false, 'width'=>'20%'),
+			'order_billing'      	=> array ( 'title' => 'Billing to', 'type'=>'method', 'data'=>false, 'width'=>'20%'),
+			'order_shipping'      	=> array ( 'title' => 'Ship to', 'type'=>'method', 'data'=>false, 'width'=>'20%'),
 			'order_items'     		=> array ( 'title' => "Items", 'type' => 'method', 'data' => false, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'right', 'thclass' => 'right',  ),
 			'order_e107_user'     	=> array ( 'title' => LAN_AUTHOR, 'type' => 'method', 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 			'order_pay_gateway'     => array ( 'title' => 'Gateway', 'type' => 'text', 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
@@ -294,33 +295,50 @@ class vstore_order_form_ui extends e_admin_form_ui
 	}
 
 
-	function order_ship_to($curVal,$mode)
+	function order_billing($curVal,$mode)
 	{
-
 
 		switch($mode)
 		{
 
 			case 'read': // List Page
 			case 'write': // Edit Page
+				$val = e107::unserialize($curVal);
 
-				$fname      = $this->getController()->getFieldVar('order_ship_firstname');
-				$lname      = $this->getController()->getFieldVar('order_ship_lastname');
-				$address    = $this->getController()->getFieldVar('order_ship_address');
-				$city       = $this->getController()->getFieldVar('order_ship_city');
-				$state      = $this->getController()->getFieldVar('order_ship_state');
-				$zip        = $this->getController()->getFieldVar('order_ship_zip');
-				$country    = $this->getController()->getFieldVar('order_ship_country');
+				if (count($val) == 0) return 'No billing address set';
 
-				return $fname." ".$lname."<br />".$address."<br />".$city.", ".$state."  ".$zip."<br />".$this->getCountry($country);
+				return varset($val['firstname']) . ' ' . varset($val['lastname']).'<br />'
+					.varset($val['company']).'<br />'
+					.varset($val['address']).'<br />'
+					.varset($val['city']) . ', ' . varset($val['state']) . ' ' . varset($val['zip']).'<br />'
+					.(empty($val['country']) ? '' : $this->getCountry($val['country']) . '<br />')
+					.varset($val['phone']);
 
-			break;
-
-
-
+				break;
+			}
 		}
 
+	function order_shipping($curVal,$mode)
+	{
 
+		switch($mode)
+		{
+
+			case 'read': // List Page
+			case 'write': // Edit Page
+				$val = e107::unserialize($curVal);
+
+				if (count($val) == 0) return 'No shipping address set';
+		
+				return varset($val['firstname']) . ' ' . varset($val['lastname']).'<br />'
+					.varset($val['company']).'<br />'
+					.varset($val['address']).'<br />'
+					.varset($val['city']) . ', ' . varset($val['state']) . ' ' . varset($val['zip']).'<br />'
+					.(empty($val['country']) ? '' : $this->getCountry($val['country']) . '<br />')
+					.varset($val['phone']);
+
+			break;
+		}
 	}
 
 	function order_ship_notes($curVal, $mode)
@@ -329,7 +347,8 @@ class vstore_order_form_ui extends e_admin_form_ui
 		{
 			case 'read':
 			case 'write':
-				$notes = nl2br($this->getController()->getFieldVar('order_ship_notes'));
+				$notes = e107::unserialize($this->getController()->getFieldVar('order_shipping'));
+				$notes = nl2br($notes['notes']);
 				return $notes;
 				break;
 		}

@@ -206,7 +206,9 @@ class vstore_customer_form_ui extends e_admin_form_ui
 		.varset($val['address']).'<br />'
 		.varset($val['city']) . ', ' . varset($val['state']) . ' ' . varset($val['zip']).'<br />'
 		.(empty($val['country']) ? '' : $this->getCountry($val['country']) . '<br />')
-		.varset($val['phone']);
+		.varset($val['phone']).'<br />'
+		.'Notes:<br />'
+		.varset($val['notes']);
 
 	}
 
