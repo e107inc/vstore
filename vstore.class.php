@@ -43,52 +43,96 @@ class vstore_plugin_shortcodes extends e_shortcode
 	}
 
 
-	function sc_order_ship_firstname()
+	function sc_order_data($parm = null)
 	{
-		return $this->var['order_ship_firstname'];
+		if (empty($parm)) return '';
+		
+		$key = array_keys($parm);
+		if ($key) $key = $key[0];
+		$area = '';
+
+		if (substr($key, 0, 5) == 'ship_' || substr($key, 0, 5) == 'cust_')
+		{
+			if(substr($key, 0, 5) == 'ship_') $area = 'order_shipping';
+			if(substr($key, 0, 5) == 'cust_') $area = 'order_billing';
+			if(is_string($this->var[$area])){
+				$this->var[$area] = e107::unserialize($this->var[$area]);
+			}
+			$key = substr($key, 5);
+		}
+
+
+		$frm = e107::getForm();
+		$text = '';
+		
+		switch($key)
+		{
+			case 'order_date':
+				$text = e107::getDateConvert()->convert_date($this->var[$key], 'long');
+				break;
+
+			case 'country':
+				$text =  e107::getForm()->getCountry($this->var[$area][$key]);
+				break;
+
+			default:
+				if ($area != '')
+				{
+					$text = $this->var[$area][$key];
+				}
+				else
+				{
+					$text = $this->var[$key];
+				}
+				break;
+		}
+		return $text;
 	}
 
-	function sc_order_ship_lastname()
-	{
-		return $this->var['order_ship_lastname'];
-	}
+	// function sc_order_ship_firstname()
+	// {
+	// 	return $this->var['order_ship_firstname'];
+	// }
 
-	function sc_order_ship_country()
-	{
-		return e107::getForm()->getCountry($this->var['order_ship_country']);
-	}
+	// function sc_order_ship_lastname()
+	// {
+	// 	return $this->var['order_ship_lastname'];
+	// }
+
+	// function sc_order_ship_country()
+	// {
+	// 	return e107::getForm()->getCountry($this->var['order_ship_country']);
+	// }
 
 	function sc_order_date()
 	{
 		return e107::getParser()->toDate($this->var['order_date']);
 	}
 
-	function sc_order_ref()
-	{
-		return $this->var['order_ref'];
-	}
+	// function sc_order_ref()
+	// {
+	// 	return $this->var['order_ref'];
+	// }
 
-	function sc_order_ship_address()
-	{
-		return $this->var['order_ship_address'];
-	}
+	// function sc_order_ship_address()
+	// {
+	// 	return $this->var['order_ship_address'];
+	// }
 
-	function sc_order_ship_city()
-	{
-		return $this->var['order_ship_city'];
-	}
+	// function sc_order_ship_city()
+	// {
+	// 	return $this->var['order_ship_city'];
+	// }
 
-	function sc_order_ship_state()
-	{
-		return $this->var['order_ship_state'];
-	}
+	// function sc_order_ship_state()
+	// {
+	// 	return $this->var['order_ship_state'];
+	// }
 
-
-
-	function sc_order_ship_zip()
-	{
-		return $this->var['order_ship_zip'];
-	}
+	// function sc_order_ship_zip()
+	// {
+	// 	return $this->var['order_ship_zip'];
+	// }
 
 	function sc_order_items()
 	{
@@ -205,7 +249,7 @@ class vstore_plugin_shortcodes extends e_shortcode
 
 		if(empty($info))
 		{
-			return null;
+			return e107::getParser()->toHtml(e107::pref('core', 'siteadmin'), true);;
 		}
 
 		return e107::getParser()->toHtml($info, true);
@@ -2497,7 +2541,7 @@ class vstore
 				$mes->addError('Unable to save/Update customer data!', 'vstore');
 			}
 
-			$refId = $this->getOrderRef($nid, $insert['order_ship_firstname'], $insert['order_ship_lastname']);
+			$refId = $this->getOrderRef($nid, $customerData['firstname'], $customerData['lastname']);
 			e107::getDb()->update('vstore_orders', array('data' => array('order_refcode' => $ref), 'WHERE' => 'order_id='.$nid));
 		
 			$mes->addSuccess("Your order <b>#".$refId."</b> is complete and you will receive a order confirmation with all details within the next few minutes!",'vstore');
@@ -2556,7 +2600,7 @@ class vstore
 			$result = $sql->insert('vstore_customer', $data);
 			if ($result)
 			{
-				$ref = $this->getOrderRef($result, $data['firstname'], $data['lastname']);	
+				$ref = $this->getOrderRef($result, $customerData['firstname'], $customerData['lastname']);	
 				$result = $sql->update('vstore_customer', array('data' => array('cust_refcode' => $ref), 'WHERE' => 'cust_e107_user='.USERID));
 			}
 		}
@@ -2587,7 +2631,8 @@ class vstore
 		if ($order && is_array($order))
 		{
 			$order['order_items'] = json_decode($order['order_items'], true);
-			$refId = $this->getOrderRef($order['order_id'], $order['order_ship_firstname'], $order['order_ship_lastname']);
+			$receiver = json_decode($order['order_billing'], true);
+			$refId = $this->getOrderRef($order['order_id'], $receiver['firstname'], $receiver['lastname']);
 
 			$this->emailCustomer(strtolower($this->getStatus($order['order_status'])), $refId, $order);
 		}
@@ -2700,7 +2745,7 @@ class vstore
 		}
 		else
 		{
-			$template = str_ireplace(array('[html]', '[/html'), '', $template[$type]['template']);
+			$template = str_ireplace(array('[html]', '[/html]'), '', $template[$type]['template']);
 		}
 		return $template;
 	}
@@ -2777,6 +2822,9 @@ class vstore
 		{
 			$eml['cc'] = $cc;
 		}
+
+		// die($tp->parseTemplate($template,true,$this->sc));
+
 	//	$debug = e107::getEmail()->preview($eml);
 	//	e107::getDebug()->log($debug);
 
@@ -3615,43 +3663,6 @@ class vstore
 		{
 			$_SESSION['vstore']['shipping'][$fld] = trim(strip_tags($data[$fld]));
 		}
-
-		// $order_ship_add_fields = array();
-		// $order_tmp = array();
-		// foreach($fields as $fld)
-		// {
-		// 	if (substr($fld, 0, strlen('add_field')) == 'add_field')
-		// 	{
-		// 		$fieldid = intval(substr($fld, strlen('add_field')));
-		// 		$caption = strip_tags(varset($pref['additional_fields'][$fieldid]['caption'][e_LANGUAGE], 'Field '.$fieldid));
-		// 		if ($pref['additional_fields'][$fieldid]['type'] == 'text')
-		// 		{
-		// 			$order_ship_add_fields[] = $caption . ': ' . trim(strip_tags($data[$fld]));
-		// 			$order_tmp[$fieldid] = trim(strip_tags($data[$fld]));
-		// 		}
-		// 		elseif ($pref['additional_fields'][$fieldid]['type'] == 'checkbox')
-		// 		{
-		// 			$order_ship_add_fields[] = $caption . ': ' . (vartrue($data[$fld], false) ? 'Checked' : 'Unchecked');
-		// 		}
-		// 	}
-		// 	else
-		// 	{
-		// 		$_SESSION['vstore']['shipping']['order_ship_'.$fld] = trim(strip_tags($data[$fld]));
-		// 	}
-		// }
-		// if (varset($order_ship_add_fields))
-		// {
-		// 	$_SESSION['vstore']['shipping']['additional']['notes'] = $_SESSION['vstore']['shipping']['order_ship_notes'];
-		// 	$_SESSION['vstore']['shipping']['additional']['fields'] = json_encode($order_tmp);
-		// 	if ($_SESSION['vstore']['shipping']['order_ship_notes'] != '')
-		// 	{
-		// 		$_SESSION['vstore']['shipping']['order_ship_notes'] .= "\n\n";
-		// 	}
-		// 	$_SESSION['vstore']['shipping']['order_ship_notes'] .= "Additional fields:\n";
-		// 	$_SESSION['vstore']['shipping']['order_ship_notes'] .= implode("\n", $order_ship_add_fields);
-		// }
-
-
 	}
 
 	/**

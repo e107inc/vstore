@@ -99,18 +99,27 @@ Region 	region
 			);
 
 			$email_fields = array(
-				'{ORDER_REF}'			=> 'The order reference number',
-				'{ORDER_MERCHANT_INFO}'	=> 'Merchant name & adress',
-				'{ORDER_SHIP_FIRSTNAME}'=> 'The customers firstname',
-				'{ORDER_SHIP_LASTNAME}' => 'The customers lastname',
-				'{ORDER_SHIP_ADDRESS}'	=> 'The customers shipping to street',
-				'{ORDER_SHIP_CITY}'		=> 'The customers shipping to city',
-				'{ORDER_SHIP_STATE}'	=> 'The customers shipping to state',
-				'{ORDER_SHIP_ZIP}'		=> 'The customers shipping to zip code',
-				'{ORDER_SHIP_COUNTRY}'	=> 'The customers shipping to country',
-				'{ORDER_ITEMS}'			=> 'The ordered items',
-				'{ORDER_PAYMENT_INSTRUCTIONS}' => 'In case of payment method "bank transfer", the bank transfer details',
-				'{SENDER_NAME}'			=> 'Sender name es defined in the vstore prefs'
+				'{ORDER_DATA: order_ref}'		=> 'The order reference number',
+				'{ORDER_DATA: cust_firstname}'	=> 'The billing firstname',
+				'{ORDER_DATA: cust_lastname}' 	=> 'The billing lastname',
+				'{ORDER_DATA: cust_company}'	=> 'The billing company name',
+				'{ORDER_DATA: cust_address}'	=> 'The billing street',
+				'{ORDER_DATA: cust_city}'		=> 'The billing city',
+				'{ORDER_DATA: cust_state}'		=> 'The billing state',
+				'{ORDER_DATA: cust_zip}'		=> 'The billing zip code',
+				'{ORDER_DATA: cust_country}'	=> 'The billing country',
+				'{ORDER_DATA: ship_firstname}'	=> 'The shipping firstname',
+				'{ORDER_DATA: ship_lastname}' 	=> 'The shipping lastname',
+				'{ORDER_DATA: ship_company}'	=> 'The shipping company name',
+				'{ORDER_DATA: ship_address}'	=> 'The shipping street',
+				'{ORDER_DATA: ship_city}'		=> 'The shipping city',
+				'{ORDER_DATA: ship_state}'		=> 'The shipping state',
+				'{ORDER_DATA: ship_zip}'		=> 'The shipping zip code',
+				'{ORDER_DATA: ship_country}'	=> 'The shipping country',
+				'{ORDER_ITEMS}'					=> 'The ordered items',
+				'{ORDER_PAYMENT_INSTRUCTIONS}' 	=> 'In case of payment method "bank transfer", the bank transfer details',
+				'{ORDER_MERCHANT_INFO}'			=> 'Merchant name & adress',
+				'{SENDER_NAME}'					=> 'Sender name es defined in the vstore prefs'
 			);
 	
 			foreach ($email_fields as $key => $value) {
