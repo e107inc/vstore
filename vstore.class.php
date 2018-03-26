@@ -1491,6 +1491,13 @@ class vstore
 			}
 			else
 			{
+				if (!empty(trim($this->post['ship']['notes'])))
+				{
+					$tmp = $this->getShippingData(true);
+					$tmp['notes'] = trim(strip_tags($this->post['ship']['notes']));
+					$this->setShippingData($tmp);
+				}
+
 				return $this->processGateway('init');
 			}
 		}

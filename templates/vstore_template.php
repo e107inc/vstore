@@ -194,6 +194,9 @@ $VSTORE_TEMPLATE['orderconfirm']['main'] = '
 			<div class="col-6 col-xs-12 col-sm-6 col-md-6">
 				<h4>Items</h4>
 				{ORDER_ITEMS}
+
+				<h4>Order notes</h4>
+				{SHIPPING_FIELD: ship_notes}
 			</div>
 		</div>
 		<hr />
