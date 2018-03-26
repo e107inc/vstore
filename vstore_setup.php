@@ -47,6 +47,7 @@ class vstore_setup
 		}
 
 	}
+
 	
 	function uninstall_options()
 	{
@@ -58,6 +59,72 @@ class vstore_setup
 		// print_a($var);
 	}
 
+	
+	/*
+	 * Call During Upgrade Check. May be used to check for existance of tables etc and if not found return TRUE to call for an upgrade. 
+	 * 
+	 */
+	function upgrade_required()
+	{
+		if(!e107::getDb()->isTable('vstore_customer'))
+		{
+			return true;
+		}
+
+
+		if(!e107::getDb()->field('vstore_orders', 'order_shipping'))
+		{
+			return true;	 // true to trigger an upgrade alert, and false to not. 	
+		}
+
+
+		// Move all data from the old order_ship_* columns into the new order_shipping field
+		$sql = e107::getDb();
+		$sql2 = e107::getDb();
+		if(e107::getDb()->field('vstore_orders','order_ship_firstname'))
+		{
+			if ($sql->select('vstore_orders', 'order_id, order_ship_firstname, order_ship_lastname, order_ship_company, order_ship_email, order_ship_phone, order_ship_address,order_ship_city, order_ship_state, order_ship_zip, order_ship_country, order_ship_notes', 'order_ship_firstname != "" AND order_shipping = ""'))
+			{
+				while($row = $sql->fetch())
+				{
+					$data = array();
+					$id = $row['order_id'];
+					if ($id)
+					{
+						unset($row['order_id']);
+						foreach($row as $k => $v)
+						{
+							$data['order_shipping'][str_replace('order_ship_', '', $k)] = $v;
+							$data['order_billing'][str_replace('order_ship_', '', $k)] = $v;
+							$data['order_use_shipping'] = 1;
+						}
+
+						if ($data && count($data))
+						{
+							$data['order_billing'] = e107::serialize($data['order_billing'], 'json');
+							$data['order_shipping'] = e107::serialize($data['order_shipping'], 'json');
+							$sql2->update('vstore_orders', array('data' => $data, 'WHERE' => 'order_id='.$id));
+						}
+					}
+				}
+
+			}
+			else
+			{
+				$dropFields = array('order_ship_firstname', 'order_ship_lastname', 'order_ship_company', 'order_ship_email', 'order_ship_phone', 'order_ship_address', 'order_ship_city', 'order_ship_state', 'order_ship_zip', 'order_ship_country', 'order_ship_notes');
+
+				foreach($dropFields as $field)
+				{
+					if (e107::getDb()->field('vstore_orders', $field))
+					{
+						// remove old fields only after all old data has been moved to the new columns
+						e107::getDb()->gen("ALTER TABLE `#vstore_orders` DROP `{$field}`");
+					}
+				}
+			}
+		}
+		return false;
+	}	
 	function upgrade_post($var)
 	{
 		// $sql = e107::getDb();
