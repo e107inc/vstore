@@ -1640,11 +1640,10 @@ class vstore
 					elseif ($v['type'] == 'checkbox')
 					{
 						// Checkboxes
-						//$field = '<div class="form-control">'.$frm->checkbox($fieldname, 1, $this->post['cust'][$fieldid], array('required'=>($v['required'] ? 1 : 0)));
 						$field = '<div class="form-control">'.$frm->checkbox($fieldname, 1, 0, array('required'=>($v['required'] ? 1 : 0)));
 						if (vartrue($v['placeholder']))
 						{
-							$field .= ' <span class="text-muted">&nbsp;'.$tp->toHTML($v['placeholder'][e_LANGUAGE]).'</span>';
+							$field .= ' <label for="'.$frm->name2id($fieldname).'-1" class="text-muted">&nbsp;'.$tp->toHTML($v['placeholder'][e_LANGUAGE]).'</label>';
 						}
 						$field .= '</div>';
 					}
