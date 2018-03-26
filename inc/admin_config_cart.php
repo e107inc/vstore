@@ -349,13 +349,33 @@ class vstore_cart_form_ui extends e_admin_form_ui
 				$curVal[$type]['template'] = $orig_template;
 			}
 			$isActive = isset($curVal[$type]['active']) ? $curVal[$type]['active'] : true;
+			$isCC = isset($curVal[$type]['cc']) ? $curVal[$type]['cc'] : true;
 
 		//	$text = '<div><label><b>'.$label.'</b>';
-			$text = '<div><label>'.LAN_ACTIVE.'? '. $this->flipswitch('email_templates['.$type.'][active]', $isActive, null, array('switch'=>'small', 'title' => LAN_ACTIVE)).'</label>';
-			$text .= $this->button('', '<span class="fa fa-undo"></span> '. 'Reset template', 'action', '', array('data-template' => rawurlencode($orig_template), 'data-type' => $type, 'class' => 'vstore-email-reset pull-right btn-sm', 'title' => 'Click & save to reset this template to the default template.'));
-			$text .= '</div>';
-			$text .= $this->textarea('email_templates['.$type.'][template]', $curVal[$type]['template'], 10, 80, array('class' => 'tbox form-control input-block-level e-autoheight e-wysiwyg'));		
-			$text .= '</label>'; // </div><br/>
+			$text = '
+			<div class="row">
+				<div class="form-group">
+					<label class="control-label col-3 col-xs-3">'.LAN_ACTIVE.'?</label>
+					<div class="text-right col-3 col-xs-3">
+					'.$this->flipswitch('email_templates['.$type.'][active]', $isActive, null, array('switch'=>'small', 'title' => LAN_ACTIVE)).'
+					</div>
+					<div class="text-right col-6 col-xs-6">
+						'.$this->button('', '<span class="fa fa-undo"></span> '. 'Reset template', 'action', '', array('data-template' => rawurlencode($orig_template), 'data-type' => $type, 'class' => 'vstore-email-reset pull-right btn-sm', 'title' => 'Click & save to reset this template to the default template.')).'
+					</div>
+				</div>
+			</div>
+			<div class="row">
+				<div class="form-group">
+					<label class="control-label col-3 col-xs-3">Receive email in CC?</label>
+					<div class="text-right col-3 col-xs-3">
+					'.$this->flipswitch('email_templates['.$type.'][cc]', $isCC, null, array('switch'=>'small', 'title' => 'Receive this email in CC?')).'
+					</div>
+				</div>
+			</div>
+			<div class="row">
+				'.$this->textarea('email_templates['.$type.'][template]', $curVal[$type]['template'], 10, 80, array('class' => 'tbox form-control input-block-level e-autoheight e-wysiwyg')).'
+			</div>
+			';
 			
 
 			$tab[] = array('caption'=>$label,'text' => $text);

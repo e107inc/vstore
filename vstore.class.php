@@ -2355,6 +2355,14 @@ class vstore
 			return;
 		}
 
+		$prefs = e107::pref('vstore','email_templates');
+		$cc = '';
+		if (varsettrue($prefs[$templateKey]['cc']))
+		{
+			$cc = e107::pref('vstore','sender_email');
+		}
+
+
 		$insert['order_ref'] = $ref;
 
 		//$sc = new vstore_plugin_shortcodes;
@@ -2375,6 +2383,10 @@ class vstore
 					'body'			=> $tp->parseTemplate($template,true,$this->sc)
 		);
 
+		if ($cc != '')
+		{
+			$eml['cc'] = $cc;
+		}
 	//	$debug = e107::getEmail()->preview($eml);
 	//	e107::getDebug()->log($debug);
 
