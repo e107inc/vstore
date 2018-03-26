@@ -178,18 +178,15 @@ $VSTORE_WRAPPER['item']['ITEM_PIC: w=200&h=200&crop=1&item=7&link=1&class=thumbn
 /**
  * Order summary and confirmation page
  */
-$VSTORE_TEMPLATE['orderconfirm'] = '
+$VSTORE_TEMPLATE['orderconfirm']['main'] = '
 		<h3>Summary</h3>
 		<div class="row">
 			<div class="col-12 col-xs-12 col-sm-6 col-md-6">
-				<h4>Shipping address</h4>
+				
+				{CONFIRM_FIELD: billing_address}
+				
+				{CONFIRM_FIELD: shipping_address}
 
-				<p>{ORDER_SHIP_FIRSTNAME} {ORDER_SHIP_LASTNAME}</p>
-				<p>{ORDER_SHIP_COMPANY}</p>
-				<p>{ORDER_SHIP_ADDRESS}</p>
-				<p>{ORDER_SHIP_CITY}, {ORDER_SHIP_STATE} {ORDER_SHIP_ZIP}</p>
-				<p>{ORDER_SHIP_COUNTRY}</p>
-				<br />
 				<h4>Selected payment method</h4>
 				<p>{ORDER_GATEWAY_ICON} {ORDER_GATEWAY_TITLE}</p>
 			</div>
@@ -203,11 +200,34 @@ $VSTORE_TEMPLATE['orderconfirm'] = '
 		<div class="row">
 			<div class="col-12 col-xs-12">
 				<a class="btn btn-default btn-secondary vstore-btn-back-confirm" href="{ORDER_CHECKOUT_URL}">&laquo; Back</a>
-				<button class="btn btn-primary vstore-btn-buy-now pull-right float-right" type="submit" name="mode" value="confirm">{ORDER_GATEWAY_ICON: size=1x} Buy now!</button>
+				<button class="btn btn-primary vstore-btn-buy-now pull-right float-right" type="submit" name="mode" value="confirmed">{ORDER_GATEWAY_ICON: size=1x} Buy now!</button>
 			</div>
 		</div>
 		';
 
+$VSTORE_TEMPLATE['orderconfirm']['billing'] = '
+			<h4>{CONFIRM_FIELD: billing_title}</h4>
+
+			<p>{CONFIRM_FIELD: cust_title} {CONFIRM_FIELD: cust_firstname} {CONFIRM_FIELD: cust_lastname}</p>
+			<p>{CONFIRM_FIELD: cust_company}</p>
+			<p>{CONFIRM_FIELD: cust_vat_id}</p>
+			<p>{CONFIRM_FIELD: cust_taxcode}</p>
+			<p>{CONFIRM_FIELD: cust_address}</p>
+			<p>{CONFIRM_FIELD: cust_city}, {CONFIRM_FIELD: cust_state} {CONFIRM_FIELD: cust_zip}</p>
+			<p>{CONFIRM_FIELD: cust_country}</p>
+			<br />
+			';
+
+$VSTORE_TEMPLATE['orderconfirm']['shipping'] = '
+			<h4>Shipping address</h4>
+
+			<p>{CONFIRM_FIELD: ship_firstname} {CONFIRM_FIELD: ship_lastname}</p>
+			<p>{CONFIRM_FIELD: ship_company}</p>
+			<p>{CONFIRM_FIELD: ship_address}</p>
+			<p>{CONFIRM_FIELD: ship_city}, {CONFIRM_FIELD: ship_state} {CONFIRM_FIELD: ship_zip}</p>
+			<p>{CONFIRM_FIELD: ship_country}</p>
+			<br />
+			';
 
 /**
  * Order items list
@@ -337,17 +357,18 @@ $VSTORE_TEMPLATE['cart']['coupon'] = '
  */
 $VSTORE_TEMPLATE['shipping']['header'] = '
 	<h3>Shipping Details</h3>
+
 	<div class="row">
 		<div class="col-12 col-xs-12 col-sm-6">
 			<div class="form-group">
-				<label for="firstname">First Name</label>
-				{SHIPPING_FIELD: firstname}
+				<label for="ship_firstname" class="required">First Name</label>
+				{SHIPPING_FIELD: ship_firstname}
 			</div>
 		</div>
 		<div class="col-12 col-xs-12 col-sm-6">
 			<div class="form-group">
-				<label for="lastname">Last Name</label>
-				{SHIPPING_FIELD: lastname}
+				<label for="ship_lastname" class="required">Last Name</label>
+				{SHIPPING_FIELD: ship_lastname}
 			</div>
 		</div>
 	</div>
@@ -355,8 +376,8 @@ $VSTORE_TEMPLATE['shipping']['header'] = '
 	<div class="row">
 		<div class="col col-xs-12">
 			<div class="form-group">
-				<label for="company">Company</label>
-				{SHIPPING_FIELD: company}
+				<label for="ship_company">Company</label>
+				{SHIPPING_FIELD: ship_company}
 			</div>
 		</div>
 	</div>
@@ -364,8 +385,8 @@ $VSTORE_TEMPLATE['shipping']['header'] = '
 	<div class="row">
 		<div class="col col-xs-12">
 			<div class="form-group">
-				<label for="address">Address</label>
-				{SHIPPING_FIELD: address}
+				<label for="ship_address" class="required">Address</label>
+				{SHIPPING_FIELD: ship_address}
 			</div>
 		</div>
 	</div>
@@ -373,14 +394,14 @@ $VSTORE_TEMPLATE['shipping']['header'] = '
 	<div class="row">
 		<div class="col-12 col-xs-12 col-sm-6">
 			<div class="form-group">
-				<label for="city">Town/City</label>
-				{SHIPPING_FIELD: city}
+				<label for="ship_city" class="required">Town/City</label>
+				{SHIPPING_FIELD: ship_city}
 			</div>
 		</div>
 		<div class="col-12 col-xs-12 col-sm-6">
 			<div class="form-group">
-				<label for="state">State/Region</label>
-				{SHIPPING_FIELD: state}
+				<label for="ship_state" class="required">State/Region</label>
+				{SHIPPING_FIELD: ship_state}
 			</div>
 		</div>
 	</div>
@@ -388,14 +409,92 @@ $VSTORE_TEMPLATE['shipping']['header'] = '
 	<div class="row">
 		<div class="col-12 col-xs-12 col-sm-6">
 			<div class="form-group">
-				<label for="zip">Zip/Postcode</label>
-				{SHIPPING_FIELD: zip}
+				<label for="ship_zip" class="required">Zip/Postcode</label>
+				{SHIPPING_FIELD: ship_zip}
 			</div>
 		</div>
 		<div class="col-12 col-xs-12 col-sm-6">
 			<div class="form-group">
-				<label for="country">Country</label>
-				{SHIPPING_FIELD: country}
+				<label for="ship_country" class="required">Country</label>
+				{SHIPPING_FIELD: ship_country}
+			</div>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col col-xs-12">
+			<div class="form-group">
+				<label for="ship_phone">Phone number</label>
+				{SHIPPING_FIELD: ship_phone}
+			</div>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-12 col-xs-12">
+			<div class="form-group">
+				<label class="required"></label> Required field
+			</div>
+		</div>
+	</div>
+	';
+
+	
+// $VSTORE_TEMPLATE['shipping']['additional']['item'] = '
+// 	<div class="row">
+// 		<div class="{SHIPPING_ADD_FIELD_CLASS}">
+// 			<div class="form-group">
+// 				{SHIPPING_ADD_FIELD_LABEL}
+// 				{SHIPPING_ADD_FIELD_FIELD}
+// 			</div>
+// 		</div>
+// 	</div>
+// ';
+
+
+// $VSTORE_TEMPLATE['shipping']['guest'] = '
+// 	<div class="row">
+// 		<div class="col-12 col-xs-12 col-sm-6">
+// 			<div class="form-group">
+// 				<input type="password" name="password" id="password" class="form-control input-sm" placeholder="Password">
+// 			</div>
+// 		</div>
+// 		<div class="col-12 col-xs-12 col-sm-6">
+// 			<div class="form-group">
+// 				<input type="password" name="password_confirmation" id="password_confirmation" class="form-control input-sm" placeholder="Confirm Password">
+// 			</div>
+// 		</div>
+// 	</div>
+// ';
+
+
+
+/**
+ * Customer details form
+ */
+$VSTORE_TEMPLATE['customer']['header'] = '
+	<h3>Billing address</h3>
+
+	<div class="row">
+		<div class="col-12 col-xs-12 col-sm-6">
+			<div class="form-group">
+				<label for="cust_firstname" class="required">First Name</label>
+				{CUSTOMER_FIELD: cust_firstname}
+			</div>
+		</div>
+		<div class="col-12 col-xs-12 col-sm-6">
+			<div class="form-group">
+				<label for="cust_lastname" class="required">Last Name</label>
+				{CUSTOMER_FIELD: cust_lastname}
+			</div>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col col-xs-12">
+			<div class="form-group">
+				<label for="cust_company">Company</label>
+				{CUSTOMER_FIELD: cust_company}
 			</div>
 		</div>
 	</div>
@@ -403,46 +502,110 @@ $VSTORE_TEMPLATE['shipping']['header'] = '
 	<div class="row">
 		<div class="col-12 col-xs-12 col-sm-6">
 			<div class="form-group">
-				<label for="email">Email address</label>
-				{SHIPPING_FIELD: email}
+				<label for="cust_vat_id">VAT ID</label>
+				{CUSTOMER_FIELD: cust_vat_id}
 			</div>
 		</div>
 		<div class="col-12 col-xs-12 col-sm-6">
 			<div class="form-group">
-				<label for="phone">Phone number</label>
-				{SHIPPING_FIELD: phone}
+				<label for="cust_taxcode">Tax code</label>
+				{CUSTOMER_FIELD: cust_taxcode}
 			</div>
 		</div>
 	</div>
+
+	<div class="row">
+		<div class="col col-xs-12">
+			<div class="form-group">
+				<label for="cust_address" class="required">Address</label>
+				{CUSTOMER_FIELD: cust_address}
+			</div>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-12 col-xs-12 col-sm-6">
+			<div class="form-group">
+				<label for="cust_city" class="required">Town/City</label>
+				{CUSTOMER_FIELD: cust_city}
+			</div>
+		</div>
+		<div class="col-12 col-xs-12 col-sm-6">
+			<div class="form-group">
+				<label for="cust_state">State/Region</label>
+				{CUSTOMER_FIELD: cust_state}
+			</div>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-12 col-xs-12 col-sm-6">
+			<div class="form-group">
+				<label for="cust_zip" class="required">Zip/Postcode</label>
+				{CUSTOMER_FIELD: cust_zip}
+			</div>
+		</div>
+		<div class="col-12 col-xs-12 col-sm-6">
+			<div class="form-group">
+				<label for="cust_country" class="required">Country</label>
+				{CUSTOMER_FIELD: cust_country}
+			</div>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-12 col-xs-12">
+			<div class="form-group">
+				<label for="cust_email" class="required">Email address</label>
+				{CUSTOMER_FIELD: cust_email}
+			</div>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-12 col-xs-12 col-sm-6">
+			<div class="form-group">
+				<label for="cust_phone">Phone number</label>
+				{CUSTOMER_FIELD: cust_phone}
+			</div>
+		</div>
+		<div class="col-12 col-xs-12 col-sm-6">
+			<div class="form-group">
+				<label for="cust_email">Fax number</label>
+				{CUSTOMER_FIELD: cust_fax}
+			</div>
+		</div>
+	</div>
+
+	{CUSTOMER_FIELD: add_field0}
+
+	{CUSTOMER_FIELD: add_field1}
+	
+	{CUSTOMER_FIELD: add_field2}
+	
+	{CUSTOMER_FIELD: add_field3}
+
+	<div class="row">
+		<div class="col-12 col-xs-12">
+			<div class="form-group">
+				<label class="required"></label> Required field
+			</div>
+		</div>
+	</div>
+';
+
+$VSTORE_TEMPLATE['customer']['additional']['item'] = '
 	<div class="row">
 		<div class="col-12 col-md-12">
 			<div class="form-group">
-				<label for="notes">Order Notes</label>
-				{SHIPPING_FIELD: notes}
+				{CUSTOMER_ADD_LABEL}
+				{CUSTOMER_ADD_FIELD}
 			</div>
 		</div>
 	</div>
 ';
 
-$VSTORE_TEMPLATE['shipping']['additional']['start'] = '
-	<br/>
-	<div class="row">
-';
-
-$VSTORE_TEMPLATE['shipping']['additional']['item'] = '
-		<div class="{SHIPPING_ADD_FIELD_CLASS}">
-			<div class="form-group">
-				{SHIPPING_ADD_FIELD_LABEL}
-				{SHIPPING_ADD_FIELD_FIELD}
-			</div>
-		</div>
-';
-
-$VSTORE_TEMPLATE['shipping']['additional']['end'] = '
-	</div>
-';
-
-$VSTORE_TEMPLATE['shipping']['guest'] = '
+$VSTORE_TEMPLATE['customer']['guest'] = '
 	<div class="row">
 		<div class="col-12 col-xs-12 col-sm-6">
 			<div class="form-group">
@@ -456,6 +619,7 @@ $VSTORE_TEMPLATE['shipping']['guest'] = '
 		</div>
 	</div>
 ';
+
 
 
 /**

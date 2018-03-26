@@ -47,12 +47,12 @@ class vstore_url // plugin-folder + '_url'
 			'sef'			=>  '{alias}/checkout/',
 		);
 
-		
-		$config['confirm'] = array(
-			'regex'			=> '^{alias}/confirm/?$',
-			'redirect'		=> '{e_PLUGIN}vstore/vstore.php?mode=confirm',
-			'sef'			=>  '{alias}/confirm/',
-		);
+
+		// $config['confirm'] = array(
+		// 	'regex'			=> '^{alias}/confirm/?$',
+		// 	'redirect'		=> '{e_PLUGIN}vstore/vstore.php?mode=confirm',
+		// 	'sef'			=>  '{alias}/confirm/',
+		// );
 
 
 		$config['addtocart'] = array(
