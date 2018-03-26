@@ -219,7 +219,7 @@ class vstore_customer_form_ui extends e_admin_form_ui
 
 		$text = '';
 		foreach ($val as $k => $v) {
-			$text .= $k . ' = ' . $v . '<br/>';
+			$text .= sprintf('%s (%s): %s<br/>', $v['caption'], $k, $v['value']) ;
 		}
 
 		return $text;

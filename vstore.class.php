@@ -1580,15 +1580,24 @@ class vstore
 				{
 					$fieldid = 'add_field'.$k;
 					$fieldname = 'cust['.$fieldid.']';
+					if (isset($this->post['cust'][$fieldid]))
+					{
+						$fieldvalue = $this->post['cust'][$fieldid];
+					}
+					else
+					{
+						$fieldvalue = $this->post['cust']['additional_fields']['value'][$fieldid];
+					}
 					if ($v['type'] == 'text')
 					{
 						// Textboxes
-						$field = $frm->text($fieldname, $this->post['cust'][$fieldid], 100, array('placeholder'=>varset($v['placeholder'][e_LANGUAGE], ''), 'required'=>($v['required'] ? 1 : 0)));
+						$field = $frm->text($fieldname, $fieldvalue, 100, array('placeholder'=>varset($v['placeholder'][e_LANGUAGE], ''), 'required'=>($v['required'] ? 1 : 0)));
 					}
 					elseif ($v['type'] == 'checkbox')
 					{
 						// Checkboxes
-						$field = '<div class="form-control">'.$frm->checkbox($fieldname, 1, $this->post['cust'][$fieldid], array('required'=>($v['required'] ? 1 : 0)));
+						//$field = '<div class="form-control">'.$frm->checkbox($fieldname, 1, $this->post['cust'][$fieldid], array('required'=>($v['required'] ? 1 : 0)));
+						$field = '<div class="form-control">'.$frm->checkbox($fieldname, 1, 0, array('required'=>($v['required'] ? 1 : 0)));
 						if (vartrue($v['placeholder']))
 						{
 							$field .= ' <span class="text-muted">&nbsp;'.$tp->toHTML($v['placeholder'][e_LANGUAGE]).'</span>';
@@ -2425,6 +2434,19 @@ class vstore
 
 
 		$customerData = $this->getCustomerData();
+
+		$prefs = e107::getPlugPref('vstore', 'additional_fields');
+		$add = array();
+		foreach ($prefs as $key => $value) {
+			if (isset($customerData['add_field'.$key]))
+			{
+				$add['add_field'.$key] = array('caption' => strip_tags($value['caption'][e_LANGUAGE]), 'value' => ($value['type'] == 'text'  ? $customerData['add_field'.$key] : ($customerData['add_field'.$key]?'X':'-')));
+				unset($customerData['add_field'.$key]);
+			}
+		}
+		$customerData['additional_fields'] = json_encode($add, JSON_PRETTY_PRINT);
+
+
 		if (!$this->getShippingType())
 		{
 			$this->setShippingData($customerData);
@@ -2500,16 +2522,16 @@ class vstore
 
 	private function saveCustomer($customerData, $shippingData, $use_shipping, $gateway)
 	{
-		$prefs = e107::getPlugPref('vstore', 'additional_fields');
-		$add = array();
-		foreach ($prefs as $key => $value) {
-			if (isset($customerData['add_field'.$key]))
-			{
-				$add[strip_tags($value['caption'][e_LANGUAGE])] = ($value['type'] == 'text'  ? $customerData['add_field'.$key] : ($customerData['add_field'.$key]?'X':'-'));
-				unset($customerData['add_field'.$key]);
-			}
-		}
-		$customerData['additional_fields'] = json_encode($add, JSON_PRETTY_PRINT);
+		// $prefs = e107::getPlugPref('vstore', 'additional_fields');
+		// $add = array();
+		// foreach ($prefs as $key => $value) {
+		// 	if (isset($customerData['add_field'.$key]))
+		// 	{
+		// 		$add['add_field'.$key] = array('caption' => strip_tags($value['caption'][e_LANGUAGE]), 'value' => ($value['type'] == 'text'  ? $customerData['add_field'.$key] : ($customerData['add_field'.$key]?'X':'-')));
+		// 		unset($customerData['add_field'.$key]);
+		// 	}
+		// }
+		// $customerData['additional_fields'] = json_encode($add, JSON_PRETTY_PRINT);
 		$data = array();
 
 		foreach ($customerData as $key => $value) {
@@ -2517,7 +2539,7 @@ class vstore
 		}
 
 
-		$data['cust_shipping'] = $shippingData;
+		$data['cust_shipping'] = json_encode($shippingData, JSON_PRETTY_PRINT);
 		$data['cust_use_shipping'] = ($use_shipping ? 1 : 0);
 		$data['cust_gateway'] = $gateway;
 		$data['cust_datestamp'] = time();
