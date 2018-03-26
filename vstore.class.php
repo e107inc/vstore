@@ -2448,7 +2448,7 @@ class vstore
 	 * @param string $lastname
 	 * @return string
 	 */
-	private function getOrderRef($id,$firstname,$lastname)
+	public function getOrderRef($id,$firstname,$lastname)
 	{
 		$text = substr($firstname,0,2);
 		$text .= substr($lastname,0,2);
