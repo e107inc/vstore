@@ -2823,7 +2823,7 @@ class vstore
 			$eml['cc'] = $cc;
 		}
 
-		// die($tp->parseTemplate($template,true,$this->sc));
+		//  die(e107::getEmail()->preview($eml));
 
 	//	$debug = e107::getEmail()->preview($eml);
 	//	e107::getDebug()->log($debug);
