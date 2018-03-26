@@ -2542,7 +2542,7 @@ class vstore
 			}
 
 			$refId = $this->getOrderRef($nid, $customerData['firstname'], $customerData['lastname']);
-			e107::getDb()->update('vstore_orders', array('data' => array('order_refcode' => $ref), 'WHERE' => 'order_id='.$nid));
+			e107::getDb()->update('vstore_orders', array('data' => array('order_refcode' => $refId), 'WHERE' => 'order_id='.$nid));
 		
 			$mes->addSuccess("Your order <b>#".$refId."</b> is complete and you will receive a order confirmation with all details within the next few minutes!",'vstore');
 			$this->updateInventory($insert['order_items']);
@@ -2566,16 +2566,6 @@ class vstore
 
 	private function saveCustomer($customerData, $shippingData, $use_shipping, $gateway)
 	{
-		// $prefs = e107::getPlugPref('vstore', 'additional_fields');
-		// $add = array();
-		// foreach ($prefs as $key => $value) {
-		// 	if (isset($customerData['add_field'.$key]))
-		// 	{
-		// 		$add['add_field'.$key] = array('caption' => strip_tags($value['caption'][e_LANGUAGE]), 'value' => ($value['type'] == 'text'  ? $customerData['add_field'.$key] : ($customerData['add_field'.$key]?'X':'-')));
-		// 		unset($customerData['add_field'.$key]);
-		// 	}
-		// }
-		// $customerData['additional_fields'] = json_encode($add, JSON_PRETTY_PRINT);
 		$data = array();
 
 		foreach ($customerData as $key => $value) {
@@ -2632,7 +2622,8 @@ class vstore
 		{
 			$order['order_items'] = json_decode($order['order_items'], true);
 			$receiver = json_decode($order['order_billing'], true);
-			$refId = $this->getOrderRef($order['order_id'], $receiver['firstname'], $receiver['lastname']);
+			//$refId = $this->getOrderRef($order['order_id'], $receiver['firstname'], $receiver['lastname']);
+			$refId = $order['order_refcode'];
 
 			$this->emailCustomer(strtolower($this->getStatus($order['order_status'])), $refId, $order);
 		}
