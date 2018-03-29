@@ -29,13 +29,20 @@ class vstore_admin extends e_admin_dispatcher
 			'ui' 			=> 'vstore_pref_form_ui',
 			'uipath' 		=> 'inc/admin_config_pref.php'
 		),
-		
+	
 		// 'cart'	=> array(
 		// 	'controller' 	=> 'vstore_cart_ui',
 		// 	'path' 			=> 'inc/admin_config_cart.php',
 		// 	'ui' 			=> 'vstore_cart_form_ui',
 		// 	'uipath' 		=> 'inc/admin_config_cart.php'
 		// ),
+		
+		'gateways'	=> array(
+			'controller' 	=> 'vstore_gateways_ui',
+			'path' 			=> 'inc/admin_config_gateways.php',
+			'ui' 			=> 'vstore_gateways_form_ui',
+			'uipath' 		=> 'inc/admin_config_gateways.php'
+		),
 		
 		'orders'	=> array(
 			'controller' 	=> 'vstore_order_ui',
@@ -119,7 +126,7 @@ class vstore_admin extends e_admin_dispatcher
 	
 		'main/prefs' 		=> array('caption'=> LAN_PREFS, 'perm' => 'P'),
 
-		'orders/prefs'		=> array('caption'=> "Payment Gateways", 'perm' => 'P'),
+		'gateways/prefs'	=> array('caption'=> "Payment Gateways", 'perm' => 'P'),
 
 		'statistics/custom'	=> array('caption'=> "Statistics", 'perm' => 'P'),
 
