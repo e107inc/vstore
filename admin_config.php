@@ -24,13 +24,19 @@ class vstore_admin extends e_admin_dispatcher
 	protected $modes = array(	
 	
 		'main'	=> array(
-			'controller' 	=> 'vstore_cart_ui',
-			'path' 			=> 'inc/admin_config_cart.php',
-			'ui' 			=> 'vstore_cart_form_ui',
-			'uipath' 		=> 'inc/admin_config_cart.php'
+			'controller' 	=> 'vstore_pref_ui',
+			'path' 			=> 'inc/admin_config_pref.php',
+			'ui' 			=> 'vstore_pref_form_ui',
+			'uipath' 		=> 'inc/admin_config_pref.php'
 		),
 		
-
+		// 'cart'	=> array(
+		// 	'controller' 	=> 'vstore_cart_ui',
+		// 	'path' 			=> 'inc/admin_config_cart.php',
+		// 	'ui' 			=> 'vstore_cart_form_ui',
+		// 	'uipath' 		=> 'inc/admin_config_cart.php'
+		// ),
+		
 		'orders'	=> array(
 			'controller' 	=> 'vstore_order_ui',
 			'path' 			=> 'inc/admin_config_orders.php',
@@ -106,6 +112,7 @@ class vstore_admin extends e_admin_dispatcher
 		'coupons/div'      	=> array('divider'=>true),
 
 		'orders/list'		=> array('caption'=> "Sales", 'perm' => 'P'),
+		// 'cart/list' 		=> array('caption'=> 'Cart', 'perm' => 'P'),
 		'orders/div'        => array('divider'=>true),
 
 		'customer/list'		=> array('caption'=> "Customers", 'perm' => 'P'),
