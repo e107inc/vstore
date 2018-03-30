@@ -15,10 +15,10 @@
 
 	$VSTORE_EMAIL_TEMPLATE['default'] = "
 	
-	Hello {ORDER_SHIP_FIRSTNAME} {ORDER_SHIP_LASTNAME},<br />
+	Hello {ORDER_DATA: cust_firstname} {ORDER_DATA: cust_lastname},<br />
 	<br />
 	Thank you for your purchase.<br />
-	Your order reference number is: #{ORDER_REF}<br />
+	Your order reference number is: #{ORDER_DATA: order_ref}<br />
 	<br />
 	<table class='table'>
 	<colgroup>	
@@ -32,10 +32,19 @@
 	<tr>
 		<td>{ORDER_MERCHANT_INFO}</td>
 		<td class='text-right'>
-			{ORDER_SHIP_FIRSTNAME} {ORDER_SHIP_LASTNAME}<br />
-			{ORDER_SHIP_ADDRESS}<br />
-			{ORDER_SHIP_CITY} &nbsp;{ORDER_SHIP_STATE} &nbsp;{ORDER_SHIP_ZIP}<br />
-			{ORDER_SHIP_COUNTRY}
+			<h4>Billing address</h4>
+			{ORDER_DATA: cust_firstname} {ORDER_DATA: cust_lastname}<br />
+			{ORDER_DATA: cust_company}<br />
+			{ORDER_DATA: cust_address}<br />
+			{ORDER_DATA: cust_city} &nbsp;{ORDER_DATA: cust_state} &nbsp;{ORDER_DATA: cust_zip}<br />
+			{ORDER_DATA: cust_country}
+
+			<h4>Shipping address</h4>
+			{ORDER_DATA: ship_firstname} {ORDER_DATA: ship_lastname}<br />
+			{ORDER_DATA: ship_company}<br />
+			{ORDER_DATA: ship_address}<br />
+			{ORDER_DATA: ship_city} &nbsp;{ORDER_DATA: ship_state} &nbsp;{ORDER_DATA: ship_zip}<br />
+			{ORDER_DATA: ship_country}
 		</td>
 	</tr>
 	</table>
@@ -55,9 +64,9 @@
 
 	$VSTORE_EMAIL_TEMPLATE['completed'] = "
 	
-	Hello {ORDER_SHIP_FIRSTNAME} {ORDER_SHIP_LASTNAME},<br />
+	Hello {ORDER_DATA: cust_firstname} {ORDER_DATA: cust_lastname},<br />
 	<br />
-	your order #{ORDER_REF} has just been completed and will be shipped to you soon.<br />
+	your order #{ORDER_DATA: order_ref} from {ORDER_DATA: order_date} has just been completed and will be shipped to you soon.<br />
 	<br />
 	<table class='table'>
 	<colgroup>	
@@ -71,10 +80,19 @@
 	<tr>
 		<td>{ORDER_MERCHANT_INFO}</td>
 		<td class='text-right'>
-			{ORDER_SHIP_FIRSTNAME} {ORDER_SHIP_LASTNAME}<br />
-			{ORDER_SHIP_ADDRESS}<br />
-			{ORDER_SHIP_CITY} &nbsp;{ORDER_SHIP_STATE} &nbsp;{ORDER_SHIP_ZIP}<br />
-			{ORDER_SHIP_COUNTRY}
+			<h4>Billing address</h4>
+			{ORDER_DATA: cust_firstname} {ORDER_DATA: cust_lastname}<br />
+			{ORDER_DATA: cust_company}<br />
+			{ORDER_DATA: cust_address}<br />
+			{ORDER_DATA: cust_city} &nbsp;{ORDER_DATA: cust_state} &nbsp;{ORDER_DATA: cust_zip}<br />
+			{ORDER_DATA: cust_country}
+
+			<h4>Shipping address</h4>
+			{ORDER_DATA: ship_firstname} {ORDER_DATA: ship_lastname}<br />
+			{ORDER_DATA: ship_company}<br />
+			{ORDER_DATA: ship_address}<br />
+			{ORDER_DATA: ship_city} &nbsp;{ORDER_DATA: ship_state} &nbsp;{ORDER_DATA: ship_zip}<br />
+			{ORDER_DATA: ship_country}
 		</td>
 	</tr>
 	</table>
@@ -91,9 +109,9 @@
 
 	$VSTORE_EMAIL_TEMPLATE['cancelled'] = "
 	
-	Hello {ORDER_SHIP_FIRSTNAME} {ORDER_SHIP_LASTNAME},<br />
+	Hello {ORDER_DATA: cust_firstname} {ORDER_DATA: cust_lastname},<br />
 	<br />
-	your order #{ORDER_REF} has just been cancelled.<br />
+	your order #{ORDER_DATA: order_ref} from {ORDER_DATA: order_date} has just been cancelled.<br />
 	<br />
 	Any payment we received from you on this order will be refunded.<br />
 	<br />
@@ -104,9 +122,9 @@
 
 	$VSTORE_EMAIL_TEMPLATE['refunded'] = "
 	
-	Hello {ORDER_SHIP_FIRSTNAME} {ORDER_SHIP_LASTNAME},<br />
+	Hello {ORDER_DATA: cust_firstname} {ORDER_DATA: cust_lastname},<br />
 	<br />
-	the payment for your order #{ORDER_REF} has just been refunded.<br />
+	the payment for your order #{ORDER_DATA: order_ref} from {ORDER_DATA: order_date} has just been refunded.<br />
 	<br />
 	Kind regards,<br />
 	{SENDER_NAME}

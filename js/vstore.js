@@ -169,6 +169,7 @@ var e107 = e107 || {'settings': {}, 'behaviors': {}};
 							{
 								$('#vstore-cart-icon .badge-pill').html(itemcount);
 							}
+							$('li.dropdown.vstore-storecart').addClass('open');
 							return;
 						}
 						// Print our any (error) message 

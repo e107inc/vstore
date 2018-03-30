@@ -24,13 +24,26 @@ class vstore_admin extends e_admin_dispatcher
 	protected $modes = array(	
 	
 		'main'	=> array(
-			'controller' 	=> 'vstore_cart_ui',
-			'path' 			=> 'inc/admin_config_cart.php',
-			'ui' 			=> 'vstore_cart_form_ui',
-			'uipath' 		=> 'inc/admin_config_cart.php'
+			'controller' 	=> 'vstore_pref_ui',
+			'path' 			=> 'inc/admin_config_pref.php',
+			'ui' 			=> 'vstore_pref_form_ui',
+			'uipath' 		=> 'inc/admin_config_pref.php'
+		),
+	
+		// 'cart'	=> array(
+		// 	'controller' 	=> 'vstore_cart_ui',
+		// 	'path' 			=> 'inc/admin_config_cart.php',
+		// 	'ui' 			=> 'vstore_cart_form_ui',
+		// 	'uipath' 		=> 'inc/admin_config_cart.php'
+		// ),
+		
+		'gateways'	=> array(
+			'controller' 	=> 'vstore_gateways_ui',
+			'path' 			=> 'inc/admin_config_gateways.php',
+			'ui' 			=> 'vstore_gateways_form_ui',
+			'uipath' 		=> 'inc/admin_config_gateways.php'
 		),
 		
-
 		'orders'	=> array(
 			'controller' 	=> 'vstore_order_ui',
 			'path' 			=> 'inc/admin_config_orders.php',
@@ -75,6 +88,14 @@ class vstore_admin extends e_admin_dispatcher
 			'uipath' 		=> 'inc/admin_config_statistics.php'
 		),
 		
+		
+		'customer'	=> array(
+			'controller' 	=> 'vstore_customer_ui',
+			'path' 			=> 'inc/admin_config_customer.php',
+			'ui' 			=> 'vstore_customer_form_ui',
+			'uipath' 		=> 'inc/admin_config_customer.php'
+		),
+		
 
 	);	
 	
@@ -98,13 +119,14 @@ class vstore_admin extends e_admin_dispatcher
 		'coupons/div'      	=> array('divider'=>true),
 
 		'orders/list'		=> array('caption'=> "Sales", 'perm' => 'P'),
+		// 'cart/list' 		=> array('caption'=> 'Cart', 'perm' => 'P'),
 		'orders/div'        => array('divider'=>true),
 
-		//	'customer/list'	=> array('caption'=> "Customers", 'perm' => 'P'),
+		'customer/list'		=> array('caption'=> "Customers", 'perm' => 'P'),
 	
 		'main/prefs' 		=> array('caption'=> LAN_PREFS, 'perm' => 'P'),
 
-		'orders/prefs'		=> array('caption'=> "Payment Gateways", 'perm' => 'P'),
+		'gateways/prefs'	=> array('caption'=> "Payment Gateways", 'perm' => 'P'),
 
 		'statistics/custom'	=> array('caption'=> "Statistics", 'perm' => 'P'),
 

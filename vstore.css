@@ -27,5 +27,7 @@
 
 .cart h3, .cart h5                          { color: black; }
 
+.required:after                             { content:"*";color:red; }
+
 /* Fix for Boostrap 4 */
 .s-message.fade                             { opacity: 1 !important; visibility: inherit; }

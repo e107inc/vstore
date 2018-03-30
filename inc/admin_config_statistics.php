@@ -23,16 +23,16 @@ class vstore_statistics_ui extends e_admin_ui
 
 			// Define colors for the chart
 			$colors = array(
-				'A' => '255,0,0',
-				'B' => '0,255,0',
-				'C' => '0,0,255',
-				'D' => '50,50,50',
-				'E' => '255,255,0',
-				'F' => '0,255,255',
-				'G' => '255,0,255',
-				'H' => '200,200,0',
-				'I' => '0,200,200',
-				'J' => '200,0,200',
+				'A' => '255,0,0',	// Red
+				'B' => '0,255,0',	// Blue
+				'C' => '0,0,255',	// Green
+				'D' => '50,50,50',	// Gray
+				'E' => '255,255,0', // Yellow
+				'F' => '0,255,255',	// Cyan
+				'G' => '255,0,255',	// Magenta
+				'H' => '255,215,0',	// Gold
+				'I' => '0,206,209', // Dark Turquoise
+				'J' => '148,0,211',	// Dark Violet
 			);
 
 			// Define the chart types
