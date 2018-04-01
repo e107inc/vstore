@@ -32,10 +32,12 @@ class vstore_items_ui extends e_admin_ui
 		  'item_desc' 			=>   array ( 'title' => 'Description', 		'type' => 'textarea', 	'data' => 'str', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => array('size'=>'xxlarge','maxlength'=>250), 'class' => 'center', 'thclass' => 'center',  ),
 		  'item_cat' 			=>   array ( 'title' => 'Category', 		'type' => 'dropdown', 'data' => 'int', 'width' => 'auto', 'filter'=>true, 'batch'=>true, 'inline' => true, 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 		  'item_pic' 			=>   array ( 'title' => 'Images/Videos', 	'type' => 'images', 'data' => 'array', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => 'media=vstore&video=1&max=8', 'class' => 'center', 'thclass' => 'center',  ),
-	 	  'item_files' 			=>   array ( 'title' => 'Files', 			'type' => 'files', 'tab'=>3, 'data' => 'array', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => 'media=vstore_file_2', 'class' => 'center', 'thclass' => 'center',  ),
-		  'item_price' 			=>   array ( 'title' => 'Price', 			'type' => 'text', 'data' => 'str', 'width' => 'auto', 'inline'=>true, 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'right', 'thclass' => 'right',  ),
+		  'item_files' 			=>   array ( 'title' => 'Files', 			'type' => 'files', 'tab'=>3, 'data' => 'array', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => 'media=vstore_file_2', 'class' => 'center', 'thclass' => 'center',  ),
+		  'item_price' 			=>   array ( 'title' => 'Price', 			'type' => 'text', 'data' => 'str', 'width' => 'auto', 'inline'=>true, 'help' => 'Price is always the gross price incl. tax!', 'readParms' => '', 'writeParms' => '', 'class' => 'right', 'thclass' => 'right',  ),
+		  'item_tax_class' 		=>   array ( 'title' => 'Tax class', 		'type' => 'dropdown', 'data' => 'str', 'width' => 'auto', 'filter'=>true, 'batch'=>true, 'inline' => true, 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 		  'item_shipping' 		=>   array ( 'title' => 'Shipping', 		'type' => 'text', 'data' => 'str', 'width' => 'auto',  'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'center', 'thclass' => 'center',  ),
 		  'item_weight' 		=>   array ( 'title' => 'Weight', 			'type' => 'text', 'data' => 'str', 'width' => 'auto',  'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'center', 'thclass' => 'center',  ),
+
 		  'item_details' 		=>   array ( 'title' => 'Details', 			'type' => 'bbarea', 'tab'=>1, 'data' => 'str', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'center', 'thclass' => 'center',  ),
 	 
 		  'item_reviews' 		=>   array ( 'title' => 'Reviews', 			'type' => 'textarea', 'tab'=>2, 'data' => 'str', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => 'size=xxlarge', 'class' => 'center', 'thclass' => 'center',  ),
@@ -97,12 +99,27 @@ class vstore_items_ui extends e_admin_ui
 			$this->fields['item_cat']['writeParms'] = ($this->getAction() == 'list') ? $this->categories : $this->categoriesTree;
 		//	print_a($this->categories);
 			
+			$tc = e107::pref('vstore', 'tax_classes');
+			if (!is_array($tc))
+			{
+				$tc = e107::unserialize($tc);
+			}
+				foreach($tc as $tclass)
+			{
+				$this->fields['item_tax_class']['writeParms'][$tclass['name']] = sprintf('%s (%s%%)', $tclass['description'], ($tclass['value'] * 100.0));
+			}
+
 			e107::css('inline', 'table input.form-control{ width: 80px; }');
 		}
 
 
 		public function beforeCreate($new_data,$old_data)
 		{
+			if (!varsettrue($new_data['item_tax_class']))
+			{
+				// set tax class to "standard" if not defined
+				$new_data['item_tax_class'] = 'standard';
+			}
 			return $new_data;
 		}
 
@@ -138,6 +155,12 @@ class vstore_items_ui extends e_admin_ui
 					}
 				}
 				$new_data['item_vars'] = implode(',', $new_data['item_vars']);
+			}
+
+			if (array_key_exists('item_vars', $new_data) && !varsettrue($new_data['item_tax_class']))
+			{
+				// set tax class to "standard" if not defined
+				$new_data['item_tax_class'] = 'standard';
 			}
 			return $new_data;
 		}

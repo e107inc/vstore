@@ -9,6 +9,7 @@ require_once('vendor/autoload.php');
 
 
 use Omnipay\Omnipay;
+use DvK\Vat\Rates\Exceptions\Exception;
 
 
 class vstore_plugin_shortcodes extends e_shortcode
@@ -42,6 +43,19 @@ class vstore_plugin_shortcodes extends e_shortcode
 		return $this->curSymbol;
 	}
 
+	function format_amount($amount)
+	{
+		$format = varset($this->vpref['amount_format'], 0);
+		$amount = floatval($amount);
+		if ($format == 1)
+		{
+			return number_format($amount, 2).'&nbsp;'.$this->curSymbol.$this->currency;
+		}
+		else
+		{
+			return $this->currency.$this->curSymbol.'&nbsp;'.number_format($amount, 2);
+		}
+	}
 
 	function sc_order_data($parm = null)
 	{
@@ -89,50 +103,10 @@ class vstore_plugin_shortcodes extends e_shortcode
 		return $text;
 	}
 
-	// function sc_order_ship_firstname()
-	// {
-	// 	return $this->var['order_ship_firstname'];
-	// }
-
-	// function sc_order_ship_lastname()
-	// {
-	// 	return $this->var['order_ship_lastname'];
-	// }
-
-	// function sc_order_ship_country()
-	// {
-	// 	return e107::getForm()->getCountry($this->var['order_ship_country']);
-	// }
-
 	function sc_order_date()
 	{
 		return e107::getParser()->toDate($this->var['order_date']);
 	}
-
-	// function sc_order_ref()
-	// {
-	// 	return $this->var['order_ref'];
-	// }
-
-	// function sc_order_ship_address()
-	// {
-	// 	return $this->var['order_ship_address'];
-	// }
-
-	// function sc_order_ship_city()
-	// {
-	// 	return $this->var['order_ship_city'];
-	// }
-
-	// function sc_order_ship_state()
-	// {
-	// 	return $this->var['order_ship_state'];
-	// }
-
-	// function sc_order_ship_zip()
-	// {
-	// 	return $this->var['order_ship_zip'];
-	// }
 
 	function sc_order_items()
 	{
@@ -155,7 +129,7 @@ class vstore_plugin_shortcodes extends e_shortcode
 			{
 				$desc .= '<br/>' . $item['vars'];
 			}
-			if ($item['id']>0 && varset($item['file']))
+			if ($item['id']>0 && varset($item['file']) && isset($this->var['order_status']))
 			{
 				if ($this->var['order_status'] === 'C' || ($this->var['order_status'] === 'N' && $this->var['order_pay_status'] == 'complete'))
 				{
@@ -182,7 +156,6 @@ class vstore_plugin_shortcodes extends e_shortcode
 
 	}
 
-
 	function sc_order_coupon()
 	{
 		if (empty($this->var['cart_coupon']['code']))
@@ -193,6 +166,34 @@ class vstore_plugin_shortcodes extends e_shortcode
 		$template = e107::getTemplate('vstore', 'vstore', 'order_items');
 
 		$text = e107::getParser()->parseTemplate($template['coupon'], true, $this);
+		return $text;
+	}
+	
+	
+	function sc_order_tax($parm=null)
+	{
+		if ($this->var['is_business'] && !$this->var['is_local'])
+		{
+			return '';
+		}		
+		if (!is_array($this->var['order_pay_tax']))
+		{
+			$this->var['order_pay_tax'] = e107::unserialize($this->var['order_pay_tax']);
+		}
+		$template = e107::getTemplate('vstore', 'vstore', 'order_items');
+		$text = $x = $y = '';
+		foreach($this->var['order_pay_tax'] as $tax_rate => $value)
+		{
+			if (floatval($tax_rate) <= 0) continue;
+			$x .= ($x != '' ? '<br />' : '').($tax_rate * 100).'%';
+			$y .= ($y != '' ? '<br />' : '').$this->format_amount($value);
+		}
+
+		if ($x != '')
+		{			
+			$text .= e107::getParser()->lanVars($template['tax'], array('x' => $x, 'y' => $y));
+		}
+
 		return $text;
 	}
 	
@@ -384,11 +385,11 @@ class vstore_plugin_shortcodes extends e_shortcode
 								break;
 							case '+':
 								if ($selected) $this->var['item_var_price'] = $baseprice + floatval($var['value']);
-								$varname .= ' (+ '.$this->currency.$this->curSymbol.number_format(floatval($var['value']), 2).')';
+								$varname .= ' (+ '.$this->format_amount($var['value']).')';
 								break;
 							case '-':
 								if ($selected) $this->var['item_var_price'] = $baseprice - floatval($var['value']);
-								$varname .= ' (- '.$this->currency.$this->curSymbol.number_format(floatval($var['value']), 2).')';
+								$varname .= ' (- '.$this->format_amount($var['value']).')';
 								break;
 							}
 						}
@@ -718,8 +719,8 @@ class vstore_plugin_shortcodes extends e_shortcode
 		{
 			$price = $varprice;
 		}
-		return $this->currency.$this->curSymbol.' <span class="vstore-item-price-'.$itemid.'">'.number_format($price, 2).'</span><input type="hidden" class="vstore-item-baseprice-'.$itemid.'" value="'.$baseprice.'"/>'; 
-		// return ($this->var['item_price'] == '0.00') ? "" : $this->currency.$this->curSymbol.' '.$this->var['item_price'];	
+		// return $this->currency.$this->curSymbol.' <span class="vstore-item-price-'.$itemid.'">'.number_format($price, 2).'</span><input type="hidden" class="vstore-item-baseprice-'.$itemid.'" value="'.$baseprice.'"/>'; 
+		return ' <span class="vstore-item-price-'.$itemid.'">'.$this->format_amount($price).'</span><input type="hidden" class="vstore-item-baseprice-'.$itemid.'" value="'.$baseprice.'"/>'; 
 	}	
 	
 	function sc_item_weight($parm=null)
@@ -971,11 +972,145 @@ class vstore_plugin_shortcodes extends e_shortcode
 					$key = substr($key, 5);
 					$text = varset($this->var['cust'][$key]);
 				}
+				else
+				{
+					$text = varset($this->var[$key]);
+				}
 	
 		}
 		return $text;
 	}
 
+	function sc_confirm_data($parm = null)
+	{
+		if (empty($parm)) return '';
+		
+		$key = array_keys($parm);
+		if ($key) $key = $key[0];
+		
+		$text = '';
+
+		switch($key)
+		{
+			case 'name':
+				$text = $this->var['item']['item_name'];
+				if (varsettrue($this->var['item']['itemvarstring']))
+				{
+					$text .= '<br />'.$this->var['item']['itemvarstring'];
+				}
+				break;
+
+			case 'price':
+				$key = 'item_'.$key.($this->var['item']['is_business'] && !$this->var['item']['is_local'] ? '_net' : '');
+				$text = $this->format_amount($this->var['item'][$key]);
+				break;
+
+			case 'quantity':
+				$text = $this->var['item']['cart_qty'];
+				break;
+
+			case 'item_total':
+				$key .= ($this->var['item']['is_business'] && !$this->var['item']['is_local'] ? '_net' : '');
+				$text = $this->format_amount($this->var['item'][$key]);
+				break;
+
+			case 'sub_total':
+				$key = ($this->var['totals']['is_business'] && !$this->var['totals']['is_local'] ? 'cart_subNet' : 'cart_subTotal');
+				$text = $this->format_amount($this->var['totals'][$key]);
+				break;
+
+			case 'shipping_total':
+				$key = ($this->var['totals']['is_business'] && !$this->var['totals']['is_local'] ? 'cart_shippingNet' : 'cart_shippingTotal');
+				$text = $this->format_amount($this->var['totals'][$key]);
+				break;
+
+			case 'grand_total':
+				$key = ($this->var['totals']['is_business'] && !$this->var['totals']['is_local'] ? 'cart_grandNet' : 'cart_grandTotal');
+				$text = $this->format_amount($this->var['totals'][$key]);
+				break;
+
+			case 'coupon':
+				$text = $this->var['coupon']['code'];
+				break;
+
+			case 'coupon_amount':
+				$key = ($this->var['totals']['is_business'] && !$this->var['totals']['is_local'] ? 'amount_net' : 'amount');
+				$text = $this->format_amount($this->var['coupon'][$key]);
+				break;
+
+			default:
+				$text = varset($this->var[$key]);
+		}
+
+		return $text;
+	}
+
+
+	function sc_confirm_items()
+	{
+		$items = $this->var['items'];
+		if (!is_array($items))
+		{
+			$items = e107::unserialize($items);
+		}
+		
+
+		$template = e107::getTemplate('vstore', 'vstore', 'confirm_items');
+
+		$text = e107::getParser()->parseTemplate($template['header'], true, $this);
+
+		foreach($items as $key=>$item)
+		{
+			$this->addVars(array('item' => $item));
+			$text .= e107::getParser()->parseTemplate($template['row'], true, $this);
+		}
+
+		$text .= e107::getParser()->parseTemplate($template['footer'], true, $this);
+
+		return $text;
+
+
+	}
+	
+	
+	function sc_confirm_tax($parm=null)
+	{
+		if ($this->var['is_business'] && !$this->var['is_local'])
+		{
+			return '';
+		}		
+		$template = e107::getTemplate('vstore', 'vstore', 'confirm_items');
+		$text = $x = $y = '';
+		foreach($this->var['totals']['cart_taxTotal'] as $tax_rate => $value)
+		{
+			if (floatval($tax_rate) <= 0) continue;
+			$x .= ($x != '' ? '<br />' : '').($tax_rate * 100).'%';
+			$y .= ($y != '' ? '<br />' : '').$this->format_amount($value);
+		}
+
+		if ($x != '')
+		{			
+			$text .= e107::getParser()->lanVars($template['tax'], array('x' => $x, 'y' => $y));
+		}
+
+		return $text;
+	}
+
+	
+	function sc_confirm_coupon()
+	{
+		if (empty($this->var['coupon']['code']))
+		{
+			return '';
+		}
+		
+		$template = e107::getTemplate('vstore', 'vstore', 'confirm_items');
+
+		$text = e107::getParser()->parseTemplate($template['coupon'], true, $this);
+		return $text;
+	}
+
+	
 	function sc_cart_data($parm = null)
 	{
 		if (empty($parm)) return '';
@@ -988,22 +1123,26 @@ class vstore_plugin_shortcodes extends e_shortcode
 				$text = $this->var['item']['name'];
 				break;
 			case 'price': 
-				$text = $this->curSymbol.number_format($this->var['item']['price'], 2);
+				$field = ($this->var['is_business'] && !$this->var['is_local'] ? 'net_'.$key : $key);
+				$text = $this->format_amount($this->var['item'][$field]);
 				break;
 			case 'quantity': 
 				$text = $this->var['item']['quantity'];
 				break;
 			case 'item_total': 
-				$text = $this->curSymbol.number_format($this->var['item']['item_total'], 2);
+				$field = ($this->var['is_business'] && !$this->var['is_local'] ? 'item_total_net' : 'item_total');
+				$value = $this->var['item'][$field];
+				$text = $this->format_amount($value);
+				//$text = $this->format_amount($this->var['item']['item_total']);
 				break;
 			case 'sub_total': 
-				$text = $this->curSymbol.number_format($this->var['order_pay_amount']-$this->var['order_pay_shipping']-$this->var['cart_coupon']['amount'], 2);
+				$text = $this->format_amount($this->var['order_pay_amount']-$this->var['order_pay_shipping']-$this->var['cart_coupon']['amount']);
 				break;
 			case 'shipping_total': 
-				$text = $this->curSymbol.number_format($this->var['order_pay_shipping'], 2);
+				$text = $this->format_amount($this->var['order_pay_shipping']);
 				break;
 			case 'grand_total': 
-				$text = $this->curSymbol.number_format($this->var['order_pay_amount'], 2);
+				$text = $this->format_amount($this->var['order_pay_amount']);
 				break;
 			case 'item_count': 
 				$text = $this->var['item_count'];
@@ -1021,7 +1160,7 @@ class vstore_plugin_shortcodes extends e_shortcode
 				$text = $this->var['cart_coupon']['code'];
 				break;
 			case 'coupon_amount':
-				$text = $this->curSymbol.number_format($this->var['cart_coupon']['amount'], 2);
+				$text = $this->format_amount($this->var['cart_coupon']['amount']);
 				break;
 		}
 
@@ -1031,13 +1170,27 @@ class vstore_plugin_shortcodes extends e_shortcode
 	
 	function sc_cart_price($parm=null)
 	{
-		return $this->curSymbol.number_format($this->var['item_price'], 2);
+		if ($this->var['is_business'] && !$this->var['is_local'])
+		{
+			return $this->format_amount($this->var['item_price_net']);
+		}
+		else
+		{
+			return $this->format_amount($this->var['item_price']);
+		}
 	}
 	
 	function sc_cart_total($parm=null)
 	{
-		$total = ($this->var['item_price'] * $this->var['cart_qty']);
-		return number_format($total,2);
+		if ($this->var['is_business'] && !$this->var['is_local'])
+		{
+			$total = $this->var['item_total_net'];
+		}
+		else
+		{
+			$total = $this->var['item_total'];
+		}
+		return $this->format_amount($total);
 	}
 	
 	function sc_cart_qty($parm=null)
@@ -1045,16 +1198,6 @@ class vstore_plugin_shortcodes extends e_shortcode
 		if($parm == 'edit')
 		{
 			$readonly = '';
-
-			/*
-			 * Commented it out, because i think it doesn't matter if it's a dgital download or not
-			 * Selling 3 t-shirts or 3 licenses should not make a difference
-			 */
-			// if(!empty($this->var['item_download'])) // digital download so set to 1.
-			// {
-			// 	$this->var['cart_qty'] = 1;
-			// 	$readonly = 'readonly';
-			// }
 
 			return '<input type="input" '.$readonly.' name="cartQty['.$this->var['cart_id'].'][qty]" class="form-control text-right cart-qty" id="cart-'.$this->var['cart_id'].'" value="'.intval($this->var['cart_qty']).'">';
 		}
@@ -1082,12 +1225,26 @@ class vstore_plugin_shortcodes extends e_shortcode
 	
 	function sc_cart_subtotal($parm=null)
 	{
-		return $this->curSymbol.number_format($this->var['cart_subTotal'], 2);
+		if ($this->var['is_business'] && !$this->var['is_local'])
+		{
+			return $this->format_amount($this->var['cart_subNet']);
+		}
+		else
+		{
+			return $this->format_amount($this->var['cart_subTotal']);
+		}
 	}
 	
 	function sc_cart_shippingtotal($parm=null)
 	{
-		return $this->curSymbol.number_format($this->var['cart_shippingTotal'], 2);
+		if ($this->var['is_business'] && !$this->var['is_local'])
+		{
+			return $this->format_amount($this->var['cart_shippingNet']);
+		}
+		else
+		{
+			return $this->format_amount($this->var['cart_shippingTotal']);
+		}
 	}
 
 	function sc_cart_checkout_button()
@@ -1128,20 +1285,25 @@ class vstore_plugin_shortcodes extends e_shortcode
 		$text = '<div class="form-inline">';
 		$text .= $frm->label('Coupon code:', 'cart_coupon_code');
 		$text .= '&nbsp;' . $frm->text('cart_coupon_code', $this->var['cart_coupon']['code'], 50, array('placeholder' => 'Enter the coupon code if available', 'size' => 'large'));
-		#$text .= '&nbsp;' . $frm->button('cart_coupon_submit', 'add_coupon_code', 'submit', 'Apply', array());
 		$text .= '</div>';
 		return $text;
 	}
 
 	function sc_cart_coupon_value()
 	{
-		return $this->curSymbol.number_format($this->var['cart_coupon']['amount'], 2);
+		if ($this->var['is_business'] && !$this->var['is_local'])
+		{
+			return $this->format_amount($this->var['cart_coupon']['amount_net']);
+		}
+		else
+		{
+			return $this->format_amount($this->var['cart_coupon']['amount']);
+		}
 	}
 
 
 	function sc_item_availability()
 	{
-		//if(empty($this->var['item_inventory']))
 		if (!$this->inStock())
 		{
 			return "<span class='label label-danger vstore-item-avail-".$this->var['item_id']."'>".$this->captionOutOfStock."</span>";
@@ -1151,9 +1313,40 @@ class vstore_plugin_shortcodes extends e_shortcode
 	}
 	
 	
+	function sc_cart_taxtotal($parm=null)
+	{
+		if ($this->var['is_business'] && !$this->var['is_local'])
+		{
+			return '';
+		}		
+		$template = e107::getTemplate('vstore', 'vstore', 'cart');
+		$text = $x = $y = '';
+		foreach($this->var['cart_taxTotal'] as $tax_rate => $value)
+		{
+			if (floatval($tax_rate) <= 0) continue;
+			$x .= ($x != '' ? '<br />' : '').($tax_rate * 100).'%';
+			$y .= ($y != '' ? '<br />' : '').$this->format_amount($value);
+		}
+
+		if ($x != '')
+		{			
+			$text .= e107::getParser()->lanVars($template['tax'], array('x' => $x, 'y' => $y));
+		}
+
+		return $text;
+	}
+	
+	
 	function sc_cart_grandtotal($parm=null)
 	{
-		return $this->curSymbol.number_format( $this->var['cart_grandTotal'], 2);
+		if ($this->var['is_business'] && !$this->var['is_local'])
+		{
+			return $this->format_amount( $this->var['cart_grandNet']);
+		}
+		else
+		{
+			return $this->format_amount( $this->var['cart_grandTotal']);
+		}
 	}
 		
 	public function sc_cart_currency_symbol($parm=null)
@@ -1186,7 +1379,7 @@ class vstore
 	protected   $parentData         = array();
 	protected   $currency           = 'USD';
 
-	protected   static $gateways    = array(
+	protected static $gateways    = array(
 		'paypal'        => array('title'=>'Paypal', 'icon'=>'fa-paypal'),
 		'paypal_rest'   => array('title'=>'Paypal', 'icon'=>'fa-paypal'),
 		'amazon'        => array('title'=> 'Amazon', 'icon'=>'fa-amazon'),
@@ -1243,8 +1436,6 @@ class vstore
 		 'additional_fields',
 		//  'notes' // Customer notes are for internal use only
 	);
-
-
 
 	public function __construct()
 	{
@@ -1733,48 +1924,20 @@ class vstore
 	{
 
 		$cust = $this->getCustomerData(true);
+		$isBusiness = !empty($cust['vat_id']);
+		$isLocal = (varset($cust['country'], e107::pref('vstore', 'tax_business_country')) == e107::pref('vstore', 'tax_business_country'));
+
 		$ship = $this->getShippingData(true);
-		$checkoutData = $this->getCheckoutData();
-
-		foreach($checkoutData['items'] as $var)
-		{
-			$price = $var['item_price'];
-			$itemvarstring = '';
-			if (!empty($var['cart_item_vars']))
-			{
-				$itemprop = self::getItemVarProperties($var['cart_item_vars'], $var['item_price']);
-
-				if ($itemprop)
-				{
-					$itemvarstring = $itemprop['variation'];
-				}
-			}
-				
-			$items[] = array(
-				'id'          => $var['item_id'],
-				'name'        => $var['item_code'],
-				'price'       => $price,
-				'description' => $var['item_name'],
-				'quantity'    => $var['cart_qty'],
-				'file'        => $var['item_download'],
-				'vars'		  => $itemvarstring,
-			);
-		}
-
-		$data['cust'] 				  = $cust;
-		$data['ship'] 				  = $ship;
-		$data['order_use_shipping']	  = $this->getShippingType();
-
-		$data['order_items'] 		  = $items;
-		$data['order_pay_gateway'] 	  = $this->getGatewayType(true);
-		$data['order_pay_amount']     = $checkoutData['totals']['cart_grandTotal'];
-		$data['order_pay_shipping']   = $checkoutData['totals']['cart_shippingTotal'];
-		$data['cart_coupon']   		  = $checkoutData['totals']['cart_coupon'];
+		
+		$data = $this->prepareCheckoutData($this->getCheckoutData(), true);
 
 		$template = e107::getTemplate('vstore', 'vstore', 'orderconfirm');
 
-		$this->sc->setVars($data);
+		$data['cust'] = $cust;
+		$data['ship'] = $ship;
+		$data['order_pay_gateway'] = $this->getGatewayType(true);
 
+		$this->sc->setVars($data);
 		$data['billing_address'] = e107::getParser()->parseTemplate($template['billing'], true, $this->sc);
 		if ($data['order_use_shipping'] == 1)
 		{
@@ -1785,6 +1948,7 @@ class vstore
 		$text = e107::getParser()->parseTemplate($template['main'], true, $this->sc);
 
 		return $text;
+		
 	}
 
 
@@ -2509,12 +2673,6 @@ class vstore
 
 		$insert['order_items'] = json_encode($items, JSON_PRETTY_PRINT);
 
-		// unset($shippingData['additional']); // remove temporary data before save
-		// foreach($shippingData as $fld=>$val)
-		// {
-		// 	$insert[$fld]    = $val;
-		// }
-
 		$insert['order_use_shipping']    = $this->getShippingType();
 		$insert['order_billing']    	= json_encode($customerData, JSON_PRETTY_PRINT);
 		$insert['order_shipping']    	= json_encode($shippingData, JSON_PRETTY_PRINT);
@@ -2523,6 +2681,7 @@ class vstore
 		$insert['order_pay_status']     = empty($transData) ? 'incomplete' : 'complete';
 		$insert['order_pay_transid']    = $id;
 		$insert['order_pay_amount']     = $cartData['totals']['cart_grandTotal'];
+		$insert['order_pay_tax']     	= e107::serialize($cartData['totals']['cart_taxTotal'], 'json');
 		$insert['order_pay_shipping']   = $cartData['totals']['cart_shippingTotal'];
 		$insert['order_pay_coupon_code']= $cartData['totals']['cart_coupon']['code'];
 		$insert['order_pay_coupon_amount']= $cartData['totals']['cart_coupon']['amount'];
@@ -2766,13 +2925,13 @@ class vstore
 		$sender_email = e107::pref('vstore','sender_email');
 		if (empty($sender_email))
 		{
-			e107::getMessage()->addDebug('No explizit shop email defined!<br/>Will use siteadmin email!', 'vstore');
+			e107::getMessage()->addDebug('No explicit shop email defined!<br/>Will use siteadmin email!', 'vstore');
 			$sender_email = e107::pref('core', 'siteadminemail');
 		}
 
 		if (empty($sender_name))
 		{
-			e107::getMessage()->addDebug('No explizit shop email name defined!<br/>Will use siteadmin name!', 'vstore');
+			e107::getMessage()->addDebug('No explicit shop email name defined!<br/>Will use siteadmin name!', 'vstore');
 			$sender_name = e107::pref('core', 'siteadmin');
 		}
 
@@ -2784,25 +2943,24 @@ class vstore
 			$cc = $sender_email;
 		}
 
+		$receiver = e107::unserialize($insert['order_billing']);
 
-		$insert['order_ref'] = $ref;
+		$insert['is_business'] = !empty($receiver['vat_id']);
+		$insert['is_local'] = (varset($receiver['country'], $prefs['tax_business_country']) == $prefs['tax_business_country']);
 
-		//$sc = new vstore_plugin_shortcodes;
+		$insert['order_ref'] = (empty($ref) ? $insert['order_refcode'] : $ref);
+
 		$this->sc->setVars($insert);
 
 		$subject    = "Your Order #[x] at ".SITENAME; //todo add to template
-
-		$receiver = e107::unserialize($insert['order_billing']);
-
 
 		$email      = $receiver['email'];
 		$name       = $receiver['firstname']." ".$receiver['lastname'];;
 
 		$eml = array(
-					'subject' 		=> $tp->lanVars($subject, array('x'=>$ref)),
+					'subject' 		=> $tp->lanVars($subject, array('x'=>$insert['order_ref'])),
 					'sender_email'	=> $sender_email,
 					'sender_name'	=> $sender_name,
-			//		'replyto'		=> $email,
 					'html'			=> true,
 					'template'		=> 'default',
 					'body'			=> $tp->parseTemplate($template,true,$this->sc)
@@ -2813,7 +2971,7 @@ class vstore
 			$eml['cc'] = $cc;
 		}
 
-		//  die(e107::getEmail()->preview($eml));
+		die(e107::getEmail()->preview($eml));
 
 	//	$debug = e107::getEmail()->preview($eml);
 	//	e107::getDebug()->log($debug);
@@ -3079,31 +3237,13 @@ class vstore
 		{
 			return '';
 		}
-
-	//	$data = $this->categories;
 		
 		$tp = e107::getParser();
 
 		$template = e107::getTemplate('vstore', 'vstore', 'cat');
-		// $text = '
-		// 	<div clas s="row">
-		//        ';
 
 		$text = $tp->parseTemplate($template['start'], true, $this->sc);
-			
-		// $template = '
-		// {SETIMAGE: w=320&h=250&crop=1}
-		// <div class="vstore-category-list col-sm-4 col-lg-4 col-md-4">
-		// 	<div class="thumbnail">
-		// 		<a href="{CAT_URL}">{CAT_PIC}</a>
-		// 		<div class="caption text-center">
-		// 			<h4><a href="{CAT_URL}">{CAT_NAME}</a></h4>
-		// 			<p class="cat-description"><small>{CAT_DESCRIPTION}</small></p>
-					
-		// 		</div>
-		// 	</div>
-		// </div>';
-					
+								
 		$this->sc->setCategories($this->categories);
 		
 		foreach($data as $row)
@@ -3112,9 +3252,6 @@ class vstore
 			$text .= $tp->parseTemplate($template['item'], true, $this->sc);		
 		}
 		
-		// $text .= '		
-		// 	</div>
-		// ';
 		$text .= $tp->parseTemplate($template['end'], true, $this->sc);
 
 		if($np === true)
@@ -3317,8 +3454,10 @@ class vstore
 		$itemvars = $this->fixItemVarArray($itemvars);
 		$sql = e107::getDb();
 
-		$isActive = $sql->retrieve('vstore_items', 'item_active', 'item_id='.intval($id));
-		if (!$isActive)
+		// $isActive = $sql->retrieve('vstore_items', 'item_active', 'item_id='.intval($id));
+		$iteminfo = $sql->retrieve('vstore_items', 'item_active, item_tax_class', 'item_id='.intval($id));
+		// if (!$isActive)
+		if (!$iteminfo['item_active'])
 		{
 			e107::getMessage()->addWarning('We\'re sorry, but this item is not longer available!', 'vstore');
 			$sql->delete('vstore_cart', 'cart_session="'.$this->cartId.'" AND cart_item='.intval($id));
@@ -3358,6 +3497,7 @@ class vstore
 	  		'cart_status'		=> '',
 			'cart_item'			=> intval($id),
 			'cart_item_vars'	=> $itemvars ? self::item_vars_toDB($itemvars) : '',
+			'cart_item_tax_class'=> varsettrue($iteminfo['item_tax_class'], 'standard'),
 	  		'cart_qty'			=> 1
   		);
 
@@ -3510,110 +3650,34 @@ class vstore
 			return e107::getMessage()->addInfo("Your cart is empty.",'vstore')->render('vstore');
 		}
 
+		$checkoutData = $this->prepareCheckoutData($data, false);
+		
+		if (!is_array($checkoutData))
+		{
+			return $checkoutData;
+		}
+		
 		$tp = e107::getParser();
 		$frm = e107::getForm();
+		$template = e107::getTemplate('vstore', 'vstore', 'cart');
 		
 		$text = $frm->open('cart','post', e107::url('vstore','cart'));
 		
 		$text .= e107::getMessage()->render('vstore');
-
-		$template = e107::getTemplate('vstore', 'vstore', 'cart');
 
 		$text .= '<div class="row">
 		        <div class="col-sm-12 col-md-12">';
 
 		$text .= $tp->parseTemplate($template['header'], true, $this->sc);
 			
-			
-		$subTotal 		= 0;
-		// $shippingTotal 	= 0;
-		$checkoutData = array();
-
-		$checkoutData['id'] = $this->getCartId();
-
-		$count_active = 0;
-		foreach($data as $row)
+		foreach($checkoutData['items'] as $row)
 		{
-
-			if (!$this->isItemActive($row['cart_item']))
-			{
-				e107::getMessage()->addWarning('We\'re sorry, but the item "'.$row['item_name'].'" is missing or not longer active and has been removed from the cart!', 'vstore');
-				e107::getDb()->delete('vstore_cart', 'cart_id='.$row['cart_id'].' AND cart_item='.$row['cart_item']);
-				continue;
-			}
-
-			$count_active++;
-			$price = $row['item_price'];
-			$row['itemvarstring'] = '';
-			if (!empty($row['cart_item_vars']))
-			{
-				$varinfo = self::getItemVarProperties($row['cart_item_vars'], $row['item_price']);
-				if ($varinfo)
-				{
-					$price += $varinfo['price'];
-					$row['item_price'] = $price;
-					$row['itemvarstring'] = $varinfo['variation'];
-				}
-			}
-
-			$subTotal += ($row['cart_qty'] * $price);	
-			// $shippingTotal	+= ($row['cart_qty'] * $row['item_shipping']);	
-					
 			$this->sc->setVars($row);
-			$checkoutData['items'][] = $row;
-
 			$text .= $tp->parseTemplate($template['row'], true, $this->sc);	
 		}
 
-		
-		if ($count_active == 0)
-		{
-			return e107::getMessage()->addInfo("Your cart is empty.",'vstore')->render('vstore');
-		}
+		$this->sc->setVars($checkoutData['totals']);
 
-		$checkoutData['coupon'] = array('code' => '', 'amount' => 0.0);
-		if (!empty(trim($this->post['cart_coupon_code'])))
-		{
-			$coupon = e107::getDb()->retrieve('vstore_coupons', '*', sprintf('coupon_code="%s"', trim($this->post['cart_coupon_code'])));
-
-			if ($coupon)
-			{
-				$checkoutData['coupon']['code'] = strtoupper(trim($this->post['cart_coupon_code']));
-				$checkoutData['coupon']['amount'] = $this->calcCouponAmount($coupon, $checkoutData['items']);
-			}
-			else
-			{
-				e107::getMessage()->addError('Invalid coupon-code!', 'vstore');
-			}
-		}
-		elseif (!isset($this->post['cart_coupon_code']))
-		{
-			$chk = $this->getCheckoutData();
-			if (!empty(trim($chk['coupon']['code'])))
-			{
-				$coupon = e107::getDb()->retrieve('vstore_coupons', '*', sprintf('coupon_code="%s"', trim($chk['coupon']['code'])));
-
-				if ($coupon)
-				{
-					$checkoutData['coupon']['code'] = $chk['coupon']['code'];
-					$checkoutData['coupon']['amount'] = $this->calcCouponAmount($coupon, $checkoutData['items']);
-				}
-				else
-				{
-					e107::getMessage()->addError('Invalid coupon-code!', 'vstore');
-				}
-			}
-		}
-
-		$shippingTotal = vstore::calcShippingCost($data);
-
-		$grandTotal = $subTotal + $shippingTotal + $checkoutData['coupon']['amount'];
-		$totals = array('cart_subTotal' => $subTotal, 'cart_shippingTotal'=>$shippingTotal, 'cart_grandTotal'=>$grandTotal, 'cart_coupon' => $checkoutData['coupon']);
-
-		$this->sc->setVars($totals);
-
-		$checkoutData['totals'] = $totals;
-		
 		$text .= $tp->parseTemplate($template['footer'], true, $this->sc);		
 		$text .= '</div></div>';
 
@@ -3625,6 +3689,181 @@ class vstore
 
 	}
 	
+
+	/**
+	 * Prepare the checkout data
+	 * calc item price, coupon reduction, tax, totals
+	 *
+	 * @param array $data item list or the checkoutdata array
+	 * @param boolean $isCheckoutData true if $data is of type checkout data
+	 * @return array
+	 */
+	public function prepareCheckoutData($data, $isCheckoutData=false)
+	{
+		$sql = e107::getDb();
+		$cust = $this->getCustomerData();
+		$isBusiness = !empty($cust['vat_id']);
+		$isLocal = (varset($cust['country'], e107::pref('vstore', 'tax_business_country')) == e107::pref('vstore', 'tax_business_country'));
+
+		$coupon = '';
+		$checkoutData['coupon'] = array('code' => '', 'amount' => 0.0, 'amount_net' => 0.0);
+
+		$hasCoupon = false;
+		if (!$isCheckoutData && !empty(trim($this->post['cart_coupon_code'])))
+		{
+			// coupon code was posted
+			$coupon = e107::getDb()->retrieve('vstore_coupons', '*', sprintf('coupon_code="%s"', trim($this->post['cart_coupon_code'])));
+			$hasCoupon = true;
+		}
+		elseif ($isCheckoutData || !isset($this->post['cart_coupon_code']))
+		{
+			// data is cart data 
+			// or
+			// reuse saved coupon code
+			if ($isCheckoutData)
+			{
+				$coupon = trim($data['coupon']['code']);
+			}
+			else
+			{
+				$chk = $this->getCheckoutData();
+				$coupon = trim($chk['coupon']['code']);
+				unset($chk);
+			}
+			if ($coupon)
+			{
+				$coupon = e107::getDb()->retrieve('vstore_coupons', '*', sprintf('coupon_code="%s"', $coupon));
+				$hasCoupon = true;
+			}
+		}
+
+		if ($coupon)
+		{
+			// assign coupon code
+			$checkoutData['coupon']['code'] = strtoupper(trim($coupon['coupon_code']));
+		}
+		elseif ($hasCoupon)
+		{
+			e107::getMessage()->addError('Invalid coupon-code!', 'vstore');
+		}
+
+		$subTotal 		= 0;
+		$subTotalNet	= 0;
+		$couponTotal	= 0;
+		$netTotal	 	= array();
+		$taxTotal	 	= array();
+
+		$checkoutData['id'] = ($isCheckoutData ? $data['id'] :  $this->getCartId());
+
+		$count_active = 0;
+		$items = $data;
+		if ($isCheckoutData)
+		{
+			$items = $data['items'];
+		}
+		unset($data);
+
+		foreach($items as $row)
+		{
+
+			if (!$this->isItemActive($row['cart_item']))
+			{
+				e107::getMessage()->addWarning('We\'re sorry, but the item "'.$row['item_name'].'" is missing or not longer active and has been removed from the cart!', 'vstore');
+				$sql->delete('vstore_cart', 'cart_id='.$row['cart_id'].' AND cart_item='.$row['cart_item']);
+				continue;
+			}
+
+			$count_active++;
+
+			// Handle item variations
+			$price = $row['item_price'];
+			$row['itemvarstring'] = '';
+			if (!empty($row['cart_item_vars']))
+			{
+				$varinfo = self::getItemVarProperties($row['cart_item_vars'], $row['item_price']);
+				if ($varinfo)
+				{
+					if (!$isCheckoutData)
+					{
+						$price += $varinfo['price'];
+						$row['item_price'] = $price;
+					}
+					$row['itemvarstring'] = $varinfo['variation'];
+				}
+			}
+
+			$item_total = $price * $row['cart_qty'];
+
+			// Calc coupon amount for this item
+			$coupon_amount = $this->calcCouponAmount($coupon, $row);
+			$checkoutData['coupon']['amount'] += $coupon_amount;
+
+			$row['is_business'] = $isBusiness;
+			$row['is_local'] = $isLocal;
+			$row['tax_rate'] = vstore::getTaxRate($row['cart_item_tax_class'], varset($cust['country']));
+			$row['tax_amount'] = vstore::calcTaxAmount($item_total, $row['tax_rate']);
+			$row['item_price_net'] = vstore::calcNetPrice($price, $row['tax_rate']);
+
+			$row['item_total'] = $item_total;
+			$row['item_total_net'] = vstore::calcNetPrice($item_total, $row['tax_rate']);
+
+			$taxTotal[''.$row['tax_rate']] += vstore::calcTaxAmount($coupon_amount, $row['tax_rate']);
+			$checkoutData['coupon']['amount_net'] += vstore::calcNetPrice($coupon_amount, $row['tax_rate']);
+
+			$netTotal[''.$row['tax_rate']] += $row['item_total_net'];
+			$taxTotal[''.$row['tax_rate']] += $row['tax_amount'];
+
+			$subTotal += $item_total;	
+			$subTotalNet += $row['item_total_net'];
+
+			$checkoutData['items'][] = $row;
+		}
+
+		
+		if ($count_active == 0)
+		{
+			return e107::getMessage()->addInfo("Your cart is empty.",'vstore')->render('vstore');
+		}
+
+
+		$shippingTotal = vstore::calcShippingCost($checkoutData['items']);
+		$shippingNet = 0.0;
+
+		// calc shipping tax
+		if (count($netTotal)>0)
+		{
+			$sum = array_sum($netTotal);
+			foreach ($netTotal as $tax_rate => $value) 
+			{
+				$gross = ($value / $sum) * $shippingTotal;
+				$taxTotal[''.$tax_rate] += vstore::calcTaxAmount($gross, $tax_rate);
+				$shippingNet += vstore::calcNetPrice($gross, $tax_rate);
+			}
+		}
+
+		$grandTotal = $subTotal + $shippingTotal + $checkoutData['coupon']['amount']; 
+		$grandNet = $subTotalNet + $shippingNet + $checkoutData['coupon']['amount_net']; 
+		
+		$totals = array(
+			'is_business' 		=> $isBusiness,
+			'is_local'			=> $isLocal,
+			'cart_taxTotal'		=> $taxTotal,
+			'cart_subTotal' 	=> $subTotal, 
+			'cart_shippingTotal'=> $shippingTotal, 
+			'cart_grandTotal'	=> $grandTotal, 
+
+			'cart_subNet'		=> $subTotalNet,
+			'cart_shippingNet'	=> $shippingNet, 
+			'cart_grandNet'		=> $grandNet, 
+
+			'cart_coupon' 		=> $checkoutData['coupon']
+		);
+
+
+		$checkoutData['totals'] = $totals;
+
+		return $checkoutData;
+	}
 
 	/**
 	 * Store checkout data in session variable
@@ -3704,13 +3943,23 @@ class vstore
 	 *
 	 * @return array
 	 */
-	private function getCustomerData($forceSession=false)
+	public function getCustomerData($forceSession=false)
 	{
 		if (!empty($_SESSION['vstore']['customer']) || $forceSession)
 		{
 			return $_SESSION['vstore']['customer'];
 		}
-		return e107::getDb()->retrieve('vstore_customer', '*', 'cust_e107_user='.USERID);
+		$row = e107::getDb()->retrieve('vstore_customer', '*', 'cust_e107_user='.USERID);
+		$result = false;
+		if ($row)
+		{
+			$result = array();
+			foreach($row as $k => $v)
+			{
+				$result[substr($k, 5)] = $v;
+			}
+		}
+		return $result;
 	}
 	
 
@@ -3720,7 +3969,7 @@ class vstore
 	 * @param int $id  
 	 * @return array
 	 */
-	private function getCheckoutData($id=null)
+	public function getCheckoutData($id=null)
 	{
 		if(!empty($id))
 		{
@@ -3983,12 +4232,12 @@ class vstore
 	 * If the coupon is valid, the result is always <= 0.0
 	 *
 	 * @param array $coupon
-	 * @param array $items
+	 * @param array $item (should have the columns item_id, item_cat, item_price, cart_qty, item_name)
 	 * @return double
 	 */
-	public function calcCouponAmount($coupon, $items)
+	public function calcCouponAmount($coupon, $item)
 	{
-		if (empty($coupon) || empty($items))
+		if (empty($coupon) || empty($item))
 		{
 			return 0.0;
 		}
@@ -4048,100 +4297,251 @@ class vstore
 		// Holds the usage data for the current items
 		$usage = array();
 
-		foreach ($items as $item) {
-			// Check if items are defined
-			if (count($coupon['coupon_items']) > 0)
+		// Check if items are defined
+		if (count($coupon['coupon_items']) > 0)
+		{
+			if (!in_array($item['item_id'], $coupon['coupon_items']))
 			{
-				if (!in_array($item['item_id'], $coupon['coupon_items']))
+				// Item not included!
+				return $amount;
+			}
+		}
+		elseif (count($coupon['coupon_items_ex']) > 0 && in_array($item['item_id'], $coupon['coupon_items_ex']))
+		{
+			// item excluded
+			return $amount;
+		}
+		// Check if categories are defined
+		elseif (count($coupon['coupon_cats']) > 0)
+		{
+			if (!in_array($item['item_cat'], $coupon['coupon_cats']))
+			{
+				// Category not included!
+				return $amount;
+			}
+		}
+		elseif (count($coupon['coupon_cats_ex']) > 0 && !in_array($item['item_cat'], $coupon['coupon_cats_ex']))
+		{
+			// Category excluded!
+			return $amount;
+		}
+		
+		$max_usage = 0;
+		// Check how often this code has been used on this specific item
+		if ($coupon['coupon_limit_item'] > -1)
+		{
+			// Query database only the first time for this item (item_id can be duplicate due to item_variations)
+			if (!isset($usage[$item['item_id']]))
+			{
+				$data = $sql->retrieve('vstore_orders', 'order_items', sprintf('order_items LIKE \'%%"id": "%d"%%\' AND order_pay_coupon_code="%s"', $item['item_id'], $coupon['coupon_code']), true);
+				if ($data)
 				{
-					// Item not included!
-					continue;
-				}
-			}
-			elseif (count($coupon['coupon_items_ex']) > 0 && in_array($item['item_id'], $coupon['coupon_items_ex']))
-			{
-				// item excluded
-				continue;
-			}
-			// Check if categories are defined
-			elseif (count($coupon['coupon_cats']) > 0)
-			{
-				if (!in_array($item['item_cat'], $coupon['coupon_cats']))
-				{
-					// Category not included!
-					continue;
-				}
-			}
-			elseif (count($coupon['coupon_cats_ex']) > 0 && !in_array($item['item_cat'], $coupon['coupon_cats_ex']))
-			{
-				// Category excluded!
-				continue;
-			}
-			
-			$max_usage = 0;
-			// Check how often this code has been used on this specific item
-			if ($coupon['coupon_limit_item'] > -1)
-			{
-				// Query database only the first time for this item (item_id can be duplicate due to item_variations)
-				if (!isset($usage[$item['item_id']]))
-				{
-					$data = $sql->retrieve('vstore_orders', 'order_items', sprintf('order_items LIKE \'%%"id": "%d"%%\' AND order_pay_coupon_code="%s"', $item['item_id'], $coupon['coupon_code']), true);
-					if ($data)
-					{
-						foreach ($data as $row) {
-							$item_info = e107::unserialize($row['order_items']);
-							foreach ($item_info as $info)
+					foreach ($data as $row) {
+						$item_info = e107::unserialize($row['order_items']);
+						foreach ($item_info as $info)
+						{
+							if ($info['id'] == $item['item_id'])
 							{
-								if ($info['id'] == $item['item_id'])
-								{
-									$usage[$item['item_id']] += varsettrue($info['quantity'], 0);
-								}
+								$usage[$item['item_id']] += varsettrue($info['quantity'], 0);
 							}
 						}
 					}
 				}
+			}
 
-				// Add items from this cart
-				$usage[$item['item_id']] += $item['cart_qty'];
+			// Add items from this cart
+			$usage[$item['item_id']] += $item['cart_qty'];
 
-				// Check if quantity exceeds limit
-				if ($usage[$item['item_id']] > $coupon['coupon_limit_item'])
+			// Check if quantity exceeds limit
+			if ($usage[$item['item_id']] > $coupon['coupon_limit_item'])
+			{
+				if (($usage[$item['item_id']] - $item['cart_qty']) < $coupon['coupon_limit_item'])
 				{
-					if (($usage[$item['item_id']] - $item['cart_qty']) < $coupon['coupon_limit_item'])
-					{
-						$max_usage = $coupon['coupon_limit_item'] - ($usage[$item['item_id']] - $item['cart_qty']);
-						e107::getMessage()->addWarning('Item quantity exceeds the allowed number of coupon code usage for this item "'.$item['item_name'].'"!<br />The coupon will only used for remaining number of usages ('.$max_usage.'x).', 'vstore');
-					}
-					else
-					{
-						e107::getMessage()->addError('Coupon exceeds the allowed number of usage for this item "'.$item['item_name'].'"!', 'vstore');
-						return 0.0;
-					}
+					$max_usage = $coupon['coupon_limit_item'] - ($usage[$item['item_id']] - $item['cart_qty']);
+					e107::getMessage()->addWarning('Item quantity exceeds the allowed number of coupon code usage for this item "'.$item['item_name'].'"!<br />The coupon will only used for remaining number of usages ('.$max_usage.'x).', 'vstore');
+				}
+				else
+				{
+					e107::getMessage()->addError('Coupon exceeds the allowed number of usage for this item "'.$item['item_name'].'"!', 'vstore');
+					return 0.0;
 				}
 			}
-	
+		}
 
-			$qty = $item['cart_qty'];
-			if ($max_usage > 0)
+
+		$qty = $item['cart_qty'];
+		if ($max_usage > 0)
+		{
+			// Apply code amount only to the remaining items
+			$qty = $max_usage;
+		}
+		// Item included or not explicitly excluded = Apply coupon
+		if ($qty > 0)
+		{
+			if ($coupon['coupon_type'] == '%')
 			{
-				// Apply code amount only to the remaining items
-				$qty = $max_usage;
+				$amount += (double) ($item['item_price'] * $qty) * $coupon['coupon_amount'] / 100;
 			}
-			// Item included or not explicitly excluded = Apply coupon
-			if ($qty > 0)
+			elseif ($coupon['coupon_type'] == 'F')
 			{
-				if ($coupon['coupon_type'] == '%')
+				$amount += (double) ($item['item_price'] * $qty) - $coupon['coupon_amount'];
+			}
+		}
+
+		return ($amount * -1);
+	}
+
+	/**
+	 * return the tax rate depending on the items tax class and the customer country
+	 *
+	 * @param string $tax_class should be 'none', 'reduced', 'standard'
+	 * @param string $customer_country should be the ISO 3166-1 alpha-2 country code of the customers (billing) country
+	 * @return number
+	 */
+	public static function getTaxRate($tax_class, $customer_country=null)
+	{
+		$result = 0.0;
+		static $prefs;
+		if (empty($prefs))
+		{
+			$prefs = e107::pref('vstore');
+		}
+
+		if (!varsettrue($prefs['tax_calculate']))
+		{
+			// Tax calculation is deactivated
+			return $result;
+		}
+
+		if (varset($tax_class, 'standard') == 'none')
+		{
+			// Tax class is set to 'none' = no tax
+			return $result;
+		}
+		$tax_class = strtolower($tax_class);
+
+		$countries = new DvK\Vat\Countries();
+
+		if (empty($customer_country))
+		{
+			$customer_ip = e107::getIPHandler()->getIP();
+			$customerCountry = $countries->ip($customer_ip);
+		}
+		else
+		{
+			$customerCountry = $customer_country;
+		}
+
+		$businessCountry = $prefs['tax_business_country'];
+		
+
+		if ($customerCountry == $businessCountry)
+		{
+			// customer is from the same country as the business
+			$tax_classes = e107::unserialize($prefs['tax_classes']);
+			foreach ($tax_classes as $tclass) {
+				// lookup tax value
+				if ($tclass['name'] == $tax_class)
 				{
-					$amount += (double) ($item['item_price'] * $qty) * $coupon['coupon_amount'] / 100;
-				}
-				elseif ($coupon['coupon_type'] == 'F')
-				{
-					$amount += (double) ($item['item_price'] * $qty) - $coupon['coupon_amount'];
+					$result = floatval($tclass['value']);
+					break;
 				}
 			}
 
 		}
+		elseif ($countries->inEurope($businessCountry))
+		{
+			if (!$countries->inEurope($customerCountry))
+			{
+				// Customer is not in the EU
+				// means no tax value
+				return $result;
+			}
+			// Calc EU tax
+			$rates = new DvK\Vat\Rates\Rates();
+			$check_rate = true;
+			$tax_class1 = $tax_class;
+			$i = 0;
+			while($check_rate)
+			{
+				try{
+					$result = $rates->country($customerCountry, $tax_class1); 
+					$check_rate = false;
+				}catch(Exception $ex) {
+					$i++;
+					if ($ex->getMessage() == 'Invalid rate.')
+					{
+						$tax_class1 = $tax_class.$i;
+						if ($i > 3)
+						{
+							$check_rate = false;
+						}
+					}
+				}
+			}
+			if ($result) $result /= 100.0;
+		}
+		else
+		{
+			// customer is a foreign customer = no tax
+		}
 
-		return ($amount * -1);
+		return $result;
+	}
+
+
+	/**
+	 * calc the net price of the item depending on the tax_rate for this item
+	 *
+	 * e.g.
+	 * grossprice: 120€
+	 * tax_rate: 0.2
+	 * net price: 100€
+	 *
+	 * @param number $grossprice
+	 * @param number $tax_rate
+	 * @return number
+	 */
+	public static function calcNetPrice($grossprice, $tax_rate)
+	{
+		return round($grossprice / (1 + $tax_rate), 2);
+	}
+
+	/**
+	 * calc the tax amount of the item depending on the tax_rate for this item
+	 * 
+	 * e.g.
+	 * grossprice: 120€
+	 * tax_rate: 0.2
+	 * tax amount: 20€
+	 *
+	 * @param number $grossprice
+	 * @param number $tax_rate
+	 * @return number
+	 */
+	public static function calcTaxAmount($grossprice, $tax_rate)
+	{
+		return round(($grossprice * $tax_rate) / (1 + $tax_rate), 2);
+	}
+
+	/**
+	 * Check if the given VAT ID exists in the EU and is in the correct format
+	 *
+	 * @param string $vat_id the VAT ID to check
+	 * @return bool true if exists, $vat_id is empty or checking is disabled; false otherwise
+	 */
+	public function checkVAT_ID($vat_id)
+	{
+		if (empty(trim($vat_id)))
+		{
+			return true;
+		}
+
+		if ($this->pref['tax_check_vat'])
+		{
+			$validator = new DvK\Vat\Validator();
+			return $validator->validate($vat_id); // false (checks format + existence)
+		}
+		return true;
 	}
 }

@@ -24,8 +24,9 @@ class vstore_pref_ui extends e_admin_ui
 		
 		// protected $fieldpref = array();
 
+
 		// optional
-		protected $preftabs = array(LAN_GENERAL, "Shipping", "Emails", "How to Order", "Admin Area", "Check-Out", "Custom CSS");
+		protected $preftabs = array(LAN_GENERAL, "Shipping", "Emails", "How to Order", "Admin Area", "Check-Out", "Custom CSS", "Tax");
 
 
 		protected $prefs = array(
@@ -34,6 +35,7 @@ class vstore_pref_ui extends e_admin_ui
 			'caption_outofstock'        => array('title'=> 'Out-of-Stock Caption', 'tab'=>0, 'type'=>'text', 'writeParms'=>array('placeholder'=>'Out of Stock'),'multilan'=>true),
 
 			'currency'		            => array('title'=> 'Currency', 'tab'=>0, 'type'=>'dropdown', 'data' => 'string','help'=>'Select a currency'),
+			'amount_format'	            => array('title'=> 'Amount format', 'tab'=>0, 'type'=>'dropdown', 'data' => 'string','help'=>'Select a format to be used to format the amount'),
 			'weight_unit'		        => array('title'=> 'Weight unit', 'tab'=>0, 'type'=>'dropdown', 'data' => 'string','help'=>'Select a weight unit'),
 			'customer_userclass'        => array('title'=> 'Assign userclass', 'tab'=>0, 'type' => 'method', 'help' => 'Assign userclass to customer on purchase'),
 			
@@ -59,6 +61,11 @@ class vstore_pref_ui extends e_admin_ui
 			//'admin_confirm_order'		=> array('title'=> 'Confirm order', 'tab'=>4, 'type'=>'bool', 'help'=>'If ON, the customer has to confirm his order after selecting the payment method on the checkout page!'),
 
 			'custom_css'	            => array('title'=> 'Custom CSS', 'tab'=>6, 'type' => 'textarea', 'data' => 'str', 'width' => '100%', 'readParms' => '', 'writeParms' => array('cols'=> 80, 'rows' => 10, 'size'=>'block-level'), 'help'=>'Use this field to enter any vstore related custom css, without the need to edit any source files.'),
+
+			'tax_calculate'	            => array('title'=> 'Calculate tax', 'tab'=>7, 'type'=>'boolean', 'data' => 'int','help'=>'Enable to activate tax calculation.'),
+			'tax_business_country'		=> array('title'=> 'Business country', 'tab'=>7, 'type'=>'country', 'data' => 'string', 'help'=>'The country where the business is located.', 'writeParms' => ''),
+			'tax_check_vat'	            => array('title'=> 'Check VAT id online (EU only!)', 'tab'=>7, 'type'=>'boolean', 'data' => 'int','help'=>'Enable to activate online VAT id checking. (EU only!)'),
+			'tax_classes'				=> array('title'=> 'Tax classes', 'tab'=>7, 'type'=>'method', 'data' => 'json', 'help'=>'', 'writeParms' => ''),
 		);
 
 
@@ -67,6 +74,8 @@ class vstore_pref_ui extends e_admin_ui
 		public function init()
 		{
 			$this->prefs['currency']['writeParms'] = array('USD'=>'US Dollars', 'EUR'=>'Euros', 'CAN'=>'Canadian Dollars');
+			
+			$this->prefs['amount_format']['writeParms'] = array('0'=>'Currency before number', '1'=>'Currency behind number');
 
 			$this->prefs['weight_unit']['writeParms'] = array('g' => 'Gram', 'kg'=>'Kilogram', 'lb'=>'Pound', 'oz'=>'Ounce', 'carat' => 'Carat');
 
@@ -110,6 +119,7 @@ class vstore_pref_ui extends e_admin_ui
 			$this->prefs['email_templates']['title'] = $text;
 		}
 
+
 		/*
 		public function customPage()
 		{
@@ -125,12 +135,11 @@ class vstore_pref_ui extends e_admin_ui
 
 class vstore_pref_form_ui extends e_admin_form_ui
 {
-
-	private function varempty($val, $default=0)
-	{
-		if (!empty($val)) return $val;
-		return $default;
-	}
+	private static $taxClassesDefault = array(
+		0 => array('name'=>'none', 		'description'=>'No tax', 		'value'=>'0.00'),
+		1 => array('name'=>'reduced', 	'description'=>'Reduced tax', 	'value'=>'0.00'),
+		2 => array('name'=>'standard', 	'description'=>'Standard tax', 	'value'=>'0.00'),
+	);
 
 	public function init()
 	{
@@ -188,6 +197,31 @@ class vstore_pref_form_ui extends e_admin_form_ui
 		});
 		";
 		e107::js('footer-inline', $js);
+
+
+		// Fix the tax_classes array
+		$tc = $prefs['tax_classes'];
+		if (!is_array($tc))
+		{
+			$tc = e107::unserialize($tc);
+		}
+
+		if (count($tc) == 0)
+		{
+			$tc = self::$taxClassesDefault;
+		}
+		// Make sure that the array is correctly indexed
+		$tmp = array();
+		foreach ($tc as $key => $value) {
+			$tmp[] = array(
+				'name' => strtolower(trim(strip_tags($value['name']))), 
+				'description' => trim(strip_tags($value['description'])), 
+				'value' => floatval($value['value']));
+		}
+		$tc = e107::serialize($tmp, 'json');
+
+		e107::getConfig('vstore')->update('tax_classes', e107::serialize($tmp, 'json'))->save(false, false, false);
+
 	}
 
 
@@ -381,6 +415,89 @@ class vstore_pref_form_ui extends e_admin_form_ui
 		$items = array('-1' => 'As defined in product') + $items;
 		return $frm->select('customer_userclass', $items, $curVal);
 		
+	}
+
+
+	function tax_classes($curVal,$mode)
+	{
+
+
+		switch($mode)
+		{
+			case 'read': // List Page
+				return $curVal;
+			break;
+
+			case 'write': // Edit Page
+				if(!empty($curVal))
+				{
+					$cur = e107::unserialize($curVal);
+				}
+				else
+				{
+					$cur = self::$taxClassesDefault;
+				}
+
+				$text = '
+					The tax classes and default tax value to use with the products.<br />
+					Enter tax value as decimal number (e.g. 19% => 0.19)!<br/>
+					The classes "none", "reduced" and "standard" can not be removed!
+					<div class="tax-classes-container">';
+
+					foreach($cur as $i=>$v)
+					{
+						// Default class names are readonly!
+						$readonly = in_array($v['name'], array('none', 'reduced', 'standard'));
+						$text .= '	
+							<div class="form-inline tax-classes-row" style="margin-bottom:5px">'.
+							$this->text('tax_classes['.$i.'][name]', $v['name'], 20, array('id'=>null, 'size'=>'small', 'placeholder'=>'Name', 'readonly' => $readonly)).
+							" ".$this->text('tax_classes['.$i.'][description]', $v['description'], 150, array('id'=>null, 'size'=>'large', 'placeholder'=>'Description')).
+							" ".$this->text('tax_classes['.$i.'][value]', $v['value'], 6, array('id'=>null, 'size'=>'small', 'placeholder'=> 'Tax', 'pattern' => '^0\.?[0-9]{0,4}$'))
+							.'</div>';
+
+					}
+
+					$text .= '
+					</div>
+										
+				';
+
+				$text .= $this->button('clonetaxclass',1,'action', "<i class='fa fa-plus'></i> ".LAN_ADD, array('class'=>'btn btn-primary btn-sm'));
+
+				e107::js('footer-inline', "
+				
+				
+					$('#clonetaxclass').on('click', function()
+					{
+				
+						var row = $('.tax-classes-row:first').clone();
+						var rowCount = $('.tax-classes-row').length;
+						
+						row.find('input').prop('readonly','');
+
+						row.html(row.html().replace(new RegExp('value=\"[^\"]*\"', 'g'),'value=\"\"'));
+						row.html(row.html().replace(/\[0\]/g,'[' + rowCount + ']'));
+					
+						row.css('display', 'none');
+						
+						$('.tax-classes-container').append(row);
+						row.show('slow');						
+			
+							
+					});
+				
+				");
+
+
+
+				return $text;
+			break;
+
+			case 'filter':
+			case 'batch':
+				return  array();
+			break;
+		}
 	}
 
 }		

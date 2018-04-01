@@ -82,6 +82,12 @@ class vstore_sitelink // include plugin-folder in the name.
 		$sc = e107::getScBatch('vstore_plugin');
 
 		$data = $vst->getCartData();
+		$cust = $vst->getCustomerData();
+		$data = $vst->prepareCheckoutData($data, false);
+
+		$isBusiness = !empty($cust['vat_id']);
+		$isLocal = (varset($cust['country'], e107::pref('vstore', 'tax_business_country')) == e107::pref('vstore', 'tax_business_country'));
+		
 		$frm = e107::getForm();
 		$tp = e107::getParser();
 		$template = e107::getTemplate('vstore', 'vstore', 'navcart');
@@ -111,49 +117,32 @@ class vstore_sitelink // include plugin-folder in the name.
 		$itemcount = 0;
 
 
-		foreach($data as $item)
+		foreach($data['items'] as $item)
 		{
 			$images = e107::unserialize($item['item_pic']);
 			$img = $tp->toImage($images[0]['path'],array('w'=>60));
 
-			$subtotal = ($item['item_price'] * $item['cart_qty']);
 			$itemcount += $item['cart_qty'];
-
-			$itemvarstring = '';
-			if (!empty($item['cart_item_vars']))
-			{
-				$itemprop = vstore::getItemVarProperties($item['cart_item_vars'], $item['item_price']);
-
-				if ($itemprop)
-				{
-					$itemvarstring = $itemprop['variation'];
-					$subtotal = ($item['item_price'] + $itemprop['price']) * $item['cart_qty'];
-				}
-
-				if (!empty($itemvarstring))
-				{
-					$itemvarstring = '<br/><span class="vstore-cart-item-var small">' . $itemvarstring . '</span>';
-				}
-			}
 
 			$sc->setVars(array(
 				'item' => array(
 					'pic' => $img,
-					'item_total' => $subtotal,
-					'name' => '<span class="vstore-navcart-name">'.$item['item_name'].'</span>'.$itemvarstring,
-					'quantity' => $item['cart_qty']
-					)
+					'price' => ($isBusiness && !$isLocal ? $item['item_price_net'] : $item['item_price']),
+					'item_total' => ($isBusiness && !$isLocal ? $item['item_total_net'] : $item['item_total']),
+					'name' => '<span class="vstore-navcart-name">'.$item['item_name'].'</span>'.($item['itemvarstring'] ? '<br/>'.$item['itemvarstring'] : ''),
+					'quantity' => $item['cart_qty']					
 				)
-			);
+			));
+
 			$text .= $tp->parseTemplate($template['item'], true, $sc); 
 
-			$total = $total + $subtotal;
+			//$total += $subtotal;
 
 		}
 
 
 		$sc->setVars(array(
-			'order_pay_amount' => $total,
+			'order_pay_amount' => ($isBusiness && !$isLocal ? $data['totals']['cart_subNet'] : $data['totals']['cart_subTotal']),
 			'item_count' => $itemcount,
 		));
 		$text .= $tp->parseTemplate($template['footer'], true, $sc); 

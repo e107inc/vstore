@@ -2,6 +2,7 @@
     "require": {
         "omnipay/paypal": "~2.0",
         "lemonstand/omnipay-amazon": "dev-master",
-        "omnipay/coinbase": "v2.0.4"
+        "omnipay/coinbase": "v2.0.4",
+        "dannyvankooten/vat.php": "^1.1"
     }
 }
