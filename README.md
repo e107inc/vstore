@@ -10,6 +10,7 @@ A simple shopping cart solution for e107 v2.x Bootstrap CMS.
 * Customer email templates
 * Flexible shipping cost calculation
 * Coupon codes
+* Tax
 * Statistics
 
 ## TODO
@@ -18,6 +19,7 @@ A simple shopping cart solution for e107 v2.x Bootstrap CMS.
 * Localization (LANS)
 
 ## Requirements
+* PHP SOAP extension
 * The very latest version of e107 v2.x available on Github. 
 
 ## Contributing
