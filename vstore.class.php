@@ -3834,15 +3834,15 @@ class vstore
 
 			$row['is_business'] = $isBusiness;
 			$row['is_local'] = $isLocal;
-			$row['tax_rate'] = vstore::getTaxRate($row['cart_item_tax_class'], varset($cust['country']));
-			$row['tax_amount'] = vstore::calcTaxAmount($item_total, $row['tax_rate']);
-			$row['item_price_net'] = vstore::calcNetPrice($price, $row['tax_rate']);
+			$row['tax_rate'] = $this->getTaxRate($row['cart_item_tax_class'], varset($cust['country']));
+			$row['tax_amount'] = $this->calcTaxAmount($item_total, $row['tax_rate']);
+			$row['item_price_net'] = $this->calcNetPrice($price, $row['tax_rate']);
 
 			$row['item_total'] = $item_total;
-			$row['item_total_net'] = vstore::calcNetPrice($item_total, $row['tax_rate']);
+			$row['item_total_net'] = $this->calcNetPrice($item_total, $row['tax_rate']);
 
-			$taxTotal[''.$row['tax_rate']] += vstore::calcTaxAmount($coupon_amount, $row['tax_rate']);
-			$checkoutData['coupon']['amount_net'] += vstore::calcNetPrice($coupon_amount, $row['tax_rate']);
+			$taxTotal[''.$row['tax_rate']] += $this->calcTaxAmount($coupon_amount, $row['tax_rate']);
+			$checkoutData['coupon']['amount_net'] += $this->calcNetPrice($coupon_amount, $row['tax_rate']);
 
 			$netTotal[''.$row['tax_rate']] += $row['item_total_net'];
 			$taxTotal[''.$row['tax_rate']] += $row['tax_amount'];
@@ -3870,8 +3870,8 @@ class vstore
 			foreach ($netTotal as $tax_rate => $value) 
 			{
 				$gross = ($value / $sum) * $shippingTotal;
-				$taxTotal[''.$tax_rate] += vstore::calcTaxAmount($gross, $tax_rate);
-				$shippingNet += vstore::calcNetPrice($gross, $tax_rate);
+				$taxTotal[''.$tax_rate] += $this->calcTaxAmount($gross, $tax_rate);
+				$shippingNet += $this->calcNetPrice($gross, $tax_rate);
 			}
 		}
 
@@ -4430,16 +4430,11 @@ class vstore
 	 * @param string $customer_country should be the ISO 3166-1 alpha-2 country code of the customers (billing) country
 	 * @return number
 	 */
-	public static function getTaxRate($tax_class, $customer_country=null)
+	public function getTaxRate($tax_class, $customer_country=null)
 	{
 		$result = 0.0;
-		static $pref;
-		if (empty($pref))
-		{
-			$pref = e107::pref('vstore');
-		}
 
-		if (!varsettrue($pref['tax_calculate']))
+		if (!varsettrue($this->pref['tax_calculate']))
 		{
 			// Tax calculation is deactivated
 			return $result;
@@ -4464,13 +4459,13 @@ class vstore
 			$customerCountry = $customer_country;
 		}
 
-		$businessCountry = $pref['tax_business_country'];
+		$businessCountry = $this->pref['tax_business_country'];
 		
 
 		if ($customerCountry == $businessCountry)
 		{
 			// customer is from the same country as the business
-			$tax_classes = e107::unserialize($pref['tax_classes']);
+			$tax_classes = e107::unserialize($this->pref['tax_classes']);
 			foreach ($tax_classes as $tclass) {
 				// lookup tax value
 				if ($tclass['name'] == $tax_class)
@@ -4530,7 +4525,7 @@ class vstore
 	 * @param string $country
 	 * @return void
 	 */
-	private static function getTaxClass($tax_class, $country)
+	private function getTaxClass($tax_class, $country)
 	{
 		$country = strtoupper($country);
 
@@ -4612,7 +4607,7 @@ class vstore
 	 * @param number $tax_rate
 	 * @return number
 	 */
-	public static function calcNetPrice($grossprice, $tax_rate)
+	private function calcNetPrice($grossprice, $tax_rate)
 	{
 		return round($grossprice / (1 + $tax_rate), 2);
 	}
@@ -4629,7 +4624,7 @@ class vstore
 	 * @param number $tax_rate
 	 * @return number
 	 */
-	public static function calcTaxAmount($grossprice, $tax_rate)
+	private function calcTaxAmount($grossprice, $tax_rate)
 	{
 		return round(($grossprice * $tax_rate) / (1 + $tax_rate), 2);
 	}
@@ -4640,7 +4635,7 @@ class vstore
 	 * @param string $vat_id the VAT ID to check
 	 * @return bool true if exists, $vat_id is empty or checking is disabled; false otherwise
 	 */
-	public function checkVAT_ID($vat_id, $country)
+	private function checkVAT_ID($vat_id, $country)
 	{
 		if (empty(trim($vat_id)))
 		{
@@ -4688,7 +4683,7 @@ class vstore
 	 * @param array $data
 	 * @return bool/array false if data is invalid, otherwise the filtered data
 	 */
-	function validateCustomerData($data, $type = 'billing')
+	private function validateCustomerData($data, $type = 'billing')
 	{
 		$mes = e107::getMessage();
 		if (empty($data) || !is_array($data))
