@@ -48,7 +48,6 @@ class vstore_pref_ui extends e_admin_ui
 			'sender_name'               => array('title'=> 'Sender Name', 'tab'=>2, 'type'=>'text', 'writeParms'=>array('placeholder'=>'Sales Department'), 'help'=>'Leave blank to use system default','multilan'=>false),
 			'sender_email'              => array('title'=> LAN_EMAIL, 'tab'=>2, 'type'=>'text', 'writeParms'=>array('placeholder'=>'orders@mysite.com'), 'help'=>'Leave blank to use system default', 'multilan'=>false),
 			'merchant_info'             => array('title'=> "Merchant Name/Address", 'tab'=>2, 'type'=>'textarea', 'writeParms'=>array('placeholder'=>'My Store Inc. etc.'), 'help'=>'Will be displayed on customer email.', 'multilan'=>false),
-			'email_templates'           => array('title'=> "Email templates", 'tab'=>2, 'type'=>'method'),
 			
 			'howtoorder'	            => array('title'=> 'How to order', 'tab'=>3, 'type'=>'bbarea', 'help'=>'Enter how-to-order info.'),
 
@@ -57,9 +56,6 @@ class vstore_pref_ui extends e_admin_ui
 
 			'additional_fields'         => array('title'=>'Additional Fields', 'tab'=>5, 'type'=>'method'),
 			
-			// Not used anymore, because of the redisigned checkout process (Summary and order confirmation page)
-			//'admin_confirm_order'		=> array('title'=> 'Confirm order', 'tab'=>4, 'type'=>'bool', 'help'=>'If ON, the customer has to confirm his order after selecting the payment method on the checkout page!'),
-
 			'custom_css'	            => array('title'=> 'Custom CSS', 'tab'=>6, 'type' => 'textarea', 'data' => 'str', 'width' => '100%', 'readParms' => '', 'writeParms' => array('cols'=> 80, 'rows' => 10, 'size'=>'block-level'), 'help'=>'Use this field to enter any vstore related custom css, without the need to edit any source files.'),
 
 			'tax_calculate'	            => array('title'=> 'Calculate tax', 'tab'=>7, 'type'=>'boolean', 'data' => 'int','help'=>'Enable to activate tax calculation.'),
@@ -85,50 +81,18 @@ class vstore_pref_ui extends e_admin_ui
 				'staggered'		=> 'Use settings from staggered shipping costs table',
 			);
 
-			$email_fields = array(
-				'{ORDER_DATA: order_ref}'		=> 'The order reference number',
-				'{ORDER_DATA: cust_firstname}'	=> 'The billing firstname',
-				'{ORDER_DATA: cust_lastname}' 	=> 'The billing lastname',
-				'{ORDER_DATA: cust_company}'	=> 'The billing company name',
-				'{ORDER_DATA: cust_address}'	=> 'The billing street',
-				'{ORDER_DATA: cust_city}'		=> 'The billing city',
-				'{ORDER_DATA: cust_state}'		=> 'The billing state',
-				'{ORDER_DATA: cust_zip}'		=> 'The billing zip code',
-				'{ORDER_DATA: cust_country}'	=> 'The billing country',
-				'{ORDER_DATA: ship_firstname}'	=> 'The shipping firstname',
-				'{ORDER_DATA: ship_lastname}' 	=> 'The shipping lastname',
-				'{ORDER_DATA: ship_company}'	=> 'The shipping company name',
-				'{ORDER_DATA: ship_address}'	=> 'The shipping street',
-				'{ORDER_DATA: ship_city}'		=> 'The shipping city',
-				'{ORDER_DATA: ship_state}'		=> 'The shipping state',
-				'{ORDER_DATA: ship_zip}'		=> 'The shipping zip code',
-				'{ORDER_DATA: ship_country}'	=> 'The shipping country',
-				'{ORDER_ITEMS}'					=> 'The ordered items',
-				'{ORDER_PAYMENT_INSTRUCTIONS}' 	=> 'In case of payment method "bank transfer", the bank transfer details',
-				'{ORDER_MERCHANT_INFO}'			=> 'Merchant name & adress',
-				'{SENDER_NAME}'					=> 'Sender name es defined in the vstore prefs'
-			);
-	
-			foreach ($email_fields as $key => $value) {
-				$field_notes[] = sprintf('<div>%s</div><div class="col-sm-offset-1">%s</div>', $key, $value);
-			}
-	
-			$text = '<div>'.$this->prefs['email_templates']['title'].'<br/><br/>Available fields<br/>';
-			$text .= '<div class="small">'.implode("\n", $field_notes).'</div></div>';
-	
-			$this->prefs['email_templates']['title'] = $text;
 		}
 
 
-		/*
-		public function customPage()
-		{
-			$ns = e107::getRender();
-			$text = 'Hello World!';
-			$ns->tablerender('Hello',$text);	
+		
+		// public function customPage()
+		// {
+		// 	$ns = e107::getRender();
+		// 	$text = 'Hello World!';
+		// 	$ns->tablerender('Hello',$text);	
 			
-		}
-	*/
+		// }
+	
 			
 }
 
@@ -168,15 +132,6 @@ class vstore_pref_form_ui extends e_admin_form_ui
 		$js = "
 		var rowcount = $max;
 		$(function(){
-			$('.vstore-email-reset').click(function(){
-				var type = $(this).data('type');
-				var template = decodeURIComponent($(this).data('template'));
-
-				var id = 'email-templates-'+type+'-template';
-				$('#'+id).val(template);
-				$(tinymce.get(id).getBody()).html(template);
-			});
-
 			$('.vstore-shipping-add').click(function(){
 				rowcount++;
 				var row = $('#vstore-shipping-data-template').html();
@@ -351,62 +306,6 @@ class vstore_pref_form_ui extends e_admin_form_ui
 	}
 
 
-	function email_templates($curVal, $mode)
-	{
-		$frm = e107::getForm();		
-
-		e107::wysiwyg(true);
-
-		$orig_templates = e107::getTemplate('vstore', 'vstore_email');
-	//	$text = '';
-		$tab = array();
-		foreach (vstore::getEmailTypes() as $type => $label) {
-
-			// $orig_template = e107::getTemplate('vstore', 'vstore_email', $type);
-			$orig_template = $orig_templates[$type];
-			if (empty($curVal[$type]['template']))
-			{
-				$curVal = array();
-				$curVal[$type]['template'] = $orig_template;
-			}
-			$isActive = isset($curVal[$type]['active']) ? $curVal[$type]['active'] : true;
-			$isCC = isset($curVal[$type]['cc']) ? $curVal[$type]['cc'] : true;
-
-		//	$text = '<div><label><b>'.$label.'</b>';
-			$text = '
-			<div class="row">
-				<div class="form-group">
-					<label class="control-label col-3 col-xs-3">'.LAN_ACTIVE.'?</label>
-					<div class="text-right col-3 col-xs-3">
-					'.$this->flipswitch('email_templates['.$type.'][active]', $isActive, null, array('switch'=>'small', 'title' => LAN_ACTIVE)).'
-					</div>
-					<div class="text-right col-6 col-xs-6">
-						'.$this->button('', '<span class="fa fa-undo"></span> '. 'Reset template', 'action', '', array('data-template' => rawurlencode($orig_template), 'data-type' => $type, 'class' => 'vstore-email-reset pull-right btn-sm', 'title' => 'Click & save to reset this template to the default template.')).'
-					</div>
-				</div>
-			</div>
-			<div class="row">
-				<div class="form-group">
-					<label class="control-label col-3 col-xs-3">Receive email in CC?</label>
-					<div class="text-right col-3 col-xs-3">
-					'.$this->flipswitch('email_templates['.$type.'][cc]', $isCC, null, array('switch'=>'small', 'title' => 'Receive this email in CC?')).'
-					</div>
-				</div>
-			</div>
-			<div class="row">
-				'.$this->textarea('email_templates['.$type.'][template]', $curVal[$type]['template'], 10, 80, array('class' => 'tbox form-control input-block-level e-autoheight e-wysiwyg')).'
-			</div>
-			';
-			
-
-			$tab[] = array('caption'=>$label,'text' => $text);
-
-		}
-
-		return $this->tabs($tab);
-		 		
-	}
-
 	function customer_userclass($curVal, $mode)
 	{
 		$frm = e107::getForm();
@@ -420,8 +319,6 @@ class vstore_pref_form_ui extends e_admin_form_ui
 
 	function tax_classes($curVal,$mode)
 	{
-
-
 		switch($mode)
 		{
 			case 'read': // List Page
@@ -452,7 +349,8 @@ class vstore_pref_form_ui extends e_admin_form_ui
 							<div class="form-inline tax-classes-row" style="margin-bottom:5px">'.
 							$this->text('tax_classes['.$i.'][name]', $v['name'], 20, array('id'=>null, 'size'=>'small', 'placeholder'=>'Name', 'readonly' => $readonly)).
 							" ".$this->text('tax_classes['.$i.'][description]', $v['description'], 150, array('id'=>null, 'size'=>'large', 'placeholder'=>'Description')).
-							" ".$this->text('tax_classes['.$i.'][value]', $v['value'], 6, array('id'=>null, 'size'=>'small', 'placeholder'=> 'Tax', 'pattern' => '^0\.?[0-9]{0,4}$'))
+							" ".$this->text('tax_classes['.$i.'][value]', $v['value'], 6, array('id'=>null, 'size'=>'small', 'placeholder'=> 'Tax', 'pattern' => '^0\.?[0-9]{0,4}$')).
+							" ".$this->button('tax-remove', '1', 'action', "<i class='fa fa-times'></i> Del", array('class'=>'btn btn-danger btn-sm vstore-tax-remove'.($readonly ? ' hidden invisible' : '')))
 							.'</div>';
 
 					}
@@ -467,25 +365,33 @@ class vstore_pref_form_ui extends e_admin_form_ui
 				e107::js('footer-inline', "
 				
 				
+					var taxRowCount = $('.tax-classes-row').length;
 					$('#clonetaxclass').on('click', function()
 					{
-				
 						var row = $('.tax-classes-row:first').clone();
-						var rowCount = $('.tax-classes-row').length;
+						//var rowCount = $('.tax-classes-row').length;
+						taxRowCount++;
 						
 						row.find('input').prop('readonly','');
 
 						row.html(row.html().replace(new RegExp('value=\"[^\"]*\"', 'g'),'value=\"\"'));
-						row.html(row.html().replace(/\[0\]/g,'[' + rowCount + ']'));
+						row.html(row.html().replace(/\[0\]/g,'[' + taxRowCount + ']'));
+						row.html(row.html().replace(/hidden/g,''));
+						row.html(row.html().replace(/invisible/g,''));
 					
 						row.css('display', 'none');
 						
 						$('.tax-classes-container').append(row);
-						row.show('slow');						
-			
+						row.show('slow');									
 							
 					});
 				
+
+					$('body').on('click', '.vstore-tax-remove', function(){
+						var row = $(this).parent();
+						row.remove();
+					});
+							
 				");
 
 
