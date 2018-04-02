@@ -24,7 +24,12 @@ class vstore_pref_ui extends e_admin_ui
 		
 		// protected $fieldpref = array();
 
-
+		public static $taxClassesDefault = array(
+			0 => array('name'=>'none', 		'description'=>'No tax', 		'value'=>'0.00'),
+			1 => array('name'=>'reduced', 	'description'=>'Reduced tax', 	'value'=>'0.00'),
+			2 => array('name'=>'standard', 	'description'=>'Standard tax', 	'value'=>'0.00'),
+		);
+	
 		// optional
 		protected $preftabs = array(LAN_GENERAL, "Shipping", "Emails", "How to Order", "Admin Area", "Check-Out", "Custom CSS", "Tax");
 
@@ -81,6 +86,73 @@ class vstore_pref_ui extends e_admin_ui
 				'staggered'		=> 'Use settings from staggered shipping costs table',
 			);
 
+			// Fix the shipping data array
+			if (isset($_POST['shipping_data']))
+			{
+				$sd = $_POST['shipping_data'];
+				if (!is_array($sd))
+				{
+					$sd = e107::unserialize($sd);
+				}
+	
+				unset($sd['%ROW%']);
+	
+				// Make sure that the array is correctly indexed
+				$tmp = array();
+				foreach ($sd as $key => $value) {
+					$tmp[] = array('cost' => floatval($value['cost']), 'unit' => floatval($value['unit']));
+				}
+
+				$_POST['shipping_data'] = $tmp;
+			}
+
+			// Fix the tax_classes array
+			if (isset($_POST['tax_classes']))
+			{
+				$tc = $_POST['tax_classes'];
+				if (!is_array($tc))
+				{
+					$tc = e107::unserialize($tc);
+				}
+
+				if (count($tc) == 0)
+				{
+					$tc = self::$taxClassesDefault;
+				}
+				$defaultKeys = array_column(self::$taxClassesDefault, 'name');
+				// Make sure that the array is correctly indexed
+				$tmp = array();
+				$used = array();
+				$forceSave = false;
+				foreach ($tc as $key => $value) {
+					if (empty($value['name'])) 
+					{
+						$forceSave = true;
+						continue;
+					}
+					if ($key < count($defaultKeys) && $value['name'] != $defaultKeys[$key])
+					{
+						$forceSave = true;
+						$value['name'] = $defaultKeys[$key];
+						e107::getMessage()->addWarning('Tax classes seam not to be in order!<br>The first 3 must be "none", "reduced", "standard"!<br/>Add your country specific classes after them.');
+					}
+					if (in_array($value['name'], $used))
+					{
+						$forceSave = true;
+						continue;
+					}
+					$used[] = $value['name'];
+
+					$tmp[] = array(
+						'name' => strtolower(trim(strip_tags($value['name']))), 
+						'description' => trim(strip_tags($value['description'])), 
+						'value' => floatval($value['value']));
+				}
+
+				$_POST['tax_classes'] = $tmp;
+
+			}			
+
 		}
 
 
@@ -99,34 +171,16 @@ class vstore_pref_ui extends e_admin_ui
 
 class vstore_pref_form_ui extends e_admin_form_ui
 {
-	private static $taxClassesDefault = array(
-		0 => array('name'=>'none', 		'description'=>'No tax', 		'value'=>'0.00'),
-		1 => array('name'=>'reduced', 	'description'=>'Reduced tax', 	'value'=>'0.00'),
-		2 => array('name'=>'standard', 	'description'=>'Standard tax', 	'value'=>'0.00'),
-	);
+	// private static $taxClassesDefault = array(
+	// 	0 => array('name'=>'none', 		'description'=>'No tax', 		'value'=>'0.00'),
+	// 	1 => array('name'=>'reduced', 	'description'=>'Reduced tax', 	'value'=>'0.00'),
+	// 	2 => array('name'=>'standard', 	'description'=>'Standard tax', 	'value'=>'0.00'),
+	// );
 
 	public function init()
 	{
-		$prefs = e107::pref('vstore');
-
-		$sd = $prefs['shipping_data'];
-		if (!is_array($sd))
-		{
-			$sd = e107::unserialize($sd);
-		}
-
-		unset($sd['%ROW%']);
-
-		// Make sure that the array is correctly indexed
-		$tmp = array();
-		foreach ($sd as $key => $value) {
-			$tmp[] = array('cost' => floatval($value['cost']), 'unit' => floatval($value['unit']));
-		}
-		$sd = e107::serialize($tmp, 'json');
-
-		e107::getConfig('vstore')->update('shipping_data', e107::serialize($tmp, 'json'))->save(false, false, false);
-
-		$max = (int) max(array_keys($tmp));
+		
+		$max = (int) max(array_keys(e107::unserialize(e107::pref('vstore','shipping_data'))));
 		$max++;
 
 		$js = "
@@ -152,30 +206,6 @@ class vstore_pref_form_ui extends e_admin_form_ui
 		});
 		";
 		e107::js('footer-inline', $js);
-
-
-		// Fix the tax_classes array
-		$tc = $prefs['tax_classes'];
-		if (!is_array($tc))
-		{
-			$tc = e107::unserialize($tc);
-		}
-
-		if (count($tc) == 0)
-		{
-			$tc = self::$taxClassesDefault;
-		}
-		// Make sure that the array is correctly indexed
-		$tmp = array();
-		foreach ($tc as $key => $value) {
-			$tmp[] = array(
-				'name' => strtolower(trim(strip_tags($value['name']))), 
-				'description' => trim(strip_tags($value['description'])), 
-				'value' => floatval($value['value']));
-		}
-		$tc = e107::serialize($tmp, 'json');
-
-		e107::getConfig('vstore')->update('tax_classes', e107::serialize($tmp, 'json'))->save(false, false, false);
 
 	}
 
@@ -326,14 +356,22 @@ class vstore_pref_form_ui extends e_admin_form_ui
 			break;
 
 			case 'write': // Edit Page
+
 				if(!empty($curVal))
 				{
 					$cur = e107::unserialize($curVal);
 				}
 				else
 				{
-					$cur = self::$taxClassesDefault;
+					$cur = vstore_pref_ui::$taxClassesDefault;
 				}
+
+				foreach(vstore::getTaxClasses() as $v)
+				{
+					$tax_classes[$v] = $v; 
+				}
+
+
 
 				$text = '
 					The tax classes and default tax value to use with the products.<br />
@@ -347,7 +385,7 @@ class vstore_pref_form_ui extends e_admin_form_ui
 						$readonly = in_array($v['name'], array('none', 'reduced', 'standard'));
 						$text .= '	
 							<div class="form-inline tax-classes-row" style="margin-bottom:5px">'.
-							$this->text('tax_classes['.$i.'][name]', $v['name'], 20, array('id'=>null, 'size'=>'small', 'placeholder'=>'Name', 'readonly' => $readonly)).
+							$this->select('tax_classes['.$i.'][name]', $tax_classes, $v['name'], array('id'=>null, 'size'=>'small', 'placeholder'=>'Name', 'readonly' => $readonly)).
 							" ".$this->text('tax_classes['.$i.'][description]', $v['description'], 150, array('id'=>null, 'size'=>'large', 'placeholder'=>'Description')).
 							" ".$this->text('tax_classes['.$i.'][value]', $v['value'], 6, array('id'=>null, 'size'=>'small', 'placeholder'=> 'Tax', 'pattern' => '^0\.?[0-9]{0,4}$')).
 							" ".$this->button('tax-remove', '1', 'action', "<i class='fa fa-times'></i> Del", array('class'=>'btn btn-danger btn-sm vstore-tax-remove'.($readonly ? ' hidden invisible' : '')))
@@ -372,8 +410,9 @@ class vstore_pref_form_ui extends e_admin_form_ui
 						//var rowCount = $('.tax-classes-row').length;
 						taxRowCount++;
 						
-						row.find('input').prop('readonly','');
+						//row.find('select').prop('readonly','');
 
+						row.html(row.html().replace(/readonly=\"readonly\"/g,''));
 						row.html(row.html().replace(new RegExp('value=\"[^\"]*\"', 'g'),'value=\"\"'));
 						row.html(row.html().replace(/\[0\]/g,'[' + taxRowCount + ']'));
 						row.html(row.html().replace(/hidden/g,''));
