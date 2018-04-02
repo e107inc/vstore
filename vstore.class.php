@@ -92,11 +92,11 @@ class vstore_plugin_shortcodes extends e_shortcode
 			default:
 				if ($area != '')
 				{
-					$text = $this->var[$area][$key];
+					$text = varset($this->var[$area][$key]);
 				}
 				else
 				{
-					$text = $this->var[$key];
+					$text = varset($this->var[$key]);
 				}
 				break;
 		}
@@ -1446,19 +1446,19 @@ class vstore
 		$this->get = $_GET;
 		$this->post = $_POST;
 
-		$pref = e107::pref('vstore');
+		$this->pref = e107::pref('vstore');
 
-		if(!empty($pref['currency']))
+		if(!empty($this->pref['currency']))
 		{
-			$this->currency = $pref['currency'];
+			$this->currency = $this->pref['currency'];
 		}
 
-		if(!empty($pref['caption']) && !empty($pref['caption'][e_LANGUAGE]))
+		if(!empty($this->pref['caption']) && !empty($this->pref['caption'][e_LANGUAGE]))
 		{
-			$this->captionBase = $pref['caption'][e_LANGUAGE];
+			$this->captionBase = $this->pref['caption'][e_LANGUAGE];
 		}
 
-		foreach($pref['additional_fields'] as $k => $v)
+		foreach($this->pref['additional_fields'] as $k => $v)
 		{
 			if (vartrue($v['active'], false))
 			{
@@ -1466,15 +1466,15 @@ class vstore
 			}
 		}
 
-		if(!empty($pref['caption_categories']) && !empty($pref['caption_categories'][e_LANGUAGE]))
+		if(!empty($this->pref['caption_categories']) && !empty($this->pref['caption_categories'][e_LANGUAGE]))
 		{
-			$this->captionCategories = $pref['caption_categories'][e_LANGUAGE];
+			$this->captionCategories = $this->pref['caption_categories'][e_LANGUAGE];
 			//e107::getDebug()->log("caption: ".$this->captionCategories);
 		}
 
-		if(!empty($pref['caption_outofstock']) && !empty($pref['caption_outofstock'][e_LANGUAGE]))
+		if(!empty($this->pref['caption_outofstock']) && !empty($this->pref['caption_outofstock'][e_LANGUAGE]))
 		{
-			$this->captionOutOfStock = $pref['caption_outofstock'][e_LANGUAGE];
+			$this->captionOutOfStock = $this->pref['caption_outofstock'][e_LANGUAGE];
 			$this->sc->captionOutOfStock = $this->captionOutOfStock;
 		}
 
@@ -1514,11 +1514,11 @@ class vstore
 		foreach(self::$gateways as $k=>$icon)
 		{
 			$key = $k."_active";
-			if(!empty($pref[$key]))
+			if(!empty($this->pref[$key]))
 			{
 				$active[$k] = $this->getGatewayIcon($k);
 
-				foreach($pref as $key=>$v) // get gateway prefs.
+				foreach($this->pref as $key=>$v) // get gateway prefs.
 				{
 					if(strpos($key,$k) === 0)
 					{
@@ -1728,6 +1728,7 @@ class vstore
 			{
 				if (!empty(trim($this->post['ship']['notes'])))
 				{
+					// validate/filter order notes
 					$tmp = $this->getShippingData(true);
 					$tmp['notes'] = trim(strip_tags($this->post['ship']['notes']));
 					$this->setShippingData($tmp);
@@ -1794,9 +1795,8 @@ class vstore
 		 * Additional checkout fields
 		 * Start
 		 */
-		$pref = e107::pref('vstore');
 		$addFieldActive = 0;
-		foreach ($pref['additional_fields'] as $k => $v) 
+		foreach ($this->pref['additional_fields'] as $k => $v) 
 		{
 			// Check if additional fields are enabled
 			if (vartrue($v['active'], false))
@@ -1809,7 +1809,7 @@ class vstore
 		{
 			// If any additional fields are enabled
 			// add active fields to form
-			foreach ($pref['additional_fields'] as $k => $v) 
+			foreach ($this->pref['additional_fields'] as $k => $v) 
 			{
 				if (vartrue($v['active'], false))
 				{
@@ -1925,7 +1925,7 @@ class vstore
 
 		$cust = $this->getCustomerData(true);
 		$isBusiness = !empty($cust['vat_id']);
-		$isLocal = (varset($cust['country'], e107::pref('vstore', 'tax_business_country')) == e107::pref('vstore', 'tax_business_country'));
+		$isLocal = (varset($cust['country'], $this->pref['tax_business_country']) == $this->pref['tax_business_country']);
 
 		$ship = $this->getShippingData(true);
 		
@@ -2008,10 +2008,44 @@ class vstore
 
 		if($this->getMode() == 'checkout')
 		{
+			$text = '';
 
-			/**
-			 *  @todo: create shipping address view
-			 */ 
+			// Validate posted data
+			if($this->post['mode'] == 'shipping' || $this->post['mode'] == 'confirm')
+			{
+				if(!empty($this->post['cust']['firstname']))
+				{
+					// validate billing data
+					$result = $this->validateCustomerData($this->post['cust'], 'billing');
+					if (!$result)
+					{
+						// Something wrong. Stay at the billing address page
+						$text .= e107::getMessage()->render('vstore');
+						$this->post['mode'] = 'customer';
+					}
+					else
+					{
+						$this->post['cust'] = $result;
+					}
+				}
+				elseif(!empty($this->post['ship']['firstname']))
+				{
+					// Validate shipping data
+					$result = $this->validateCustomerData($this->post['ship'], 'shipping');
+					if (!$result)
+					{
+						// Something wrong. Stay at the shipping address page
+						$text .= e107::getMessage()->render('vstore');
+						$this->post['mode'] = 'shipping';
+					}
+					else
+					{
+						$this->post['ship'] = $result;
+					}
+				}
+			}
+
+			// Render pages
 			if($this->post['mode'] == 'shipping')
 			{
 				// Shipping data form
@@ -2019,13 +2053,13 @@ class vstore
 
 				if(!empty($this->post['cust']['firstname']))
 				{
-					$this->setCustomerData($this->post['cust']);    // TODO Validate data before proceeding.
+					$this->setCustomerData($this->post['cust']); 
 					$this->setGatewayType($this->post['gateway']);
-					$text = $this->shippingView();
+					$text .= $this->shippingView();
 				}
 				else
 				{
-					$text = e107::getMessage()->addError('Billing address is missing!', 'vstore')->render('vstore');
+					$text .= e107::getMessage()->addError('Billing address is missing!', 'vstore')->render('vstore');
 				}
 
 				$ns->tablerender($this->captionBase, $bread.$text, 'vstore-cart-list');
@@ -2039,7 +2073,7 @@ class vstore
 				if(!empty($this->post['ship']['firstname']))
 				{
 					$this->setShippingType($this->post['order_use_shipping']);
-					$this->setShippingData($this->post['ship']);    // TODO Validate data before proceeding.
+					$this->setShippingData($this->post['ship']); 
 				}
 
 				if(!empty($this->post['cust']['firstname']))
@@ -2050,20 +2084,20 @@ class vstore
 
 				if (empty($this->getCustomerData(true)))
 				{
-					$text = e107::getMessage()->addError('Billing address is missing!', 'vstore')->render('vstore');
+					$text .= e107::getMessage()->addError('Billing address is missing!', 'vstore')->render('vstore');
 				}
 				elseif (varsettrue($this->post['order_use_shipping']) && empty($this->getShippingData(true)))
 				{
-					$text = e107::getMessage()->addError('No shipping address set!', 'vstore')->render('vstore');
+					$text .= e107::getMessage()->addError('No shipping address set!', 'vstore')->render('vstore');
 				}
 				elseif (empty($this->getCheckoutData()))
 				{
-					$text = e107::getMessage()->addError('No items to checkout!', 'vstore')->render('vstore');
+					$text .= e107::getMessage()->addError('No items to checkout!', 'vstore')->render('vstore');
 				}
 				else
 				{
 					// Order confirmation
-					$text = $this->confirmOrderView();
+					$text .= $this->confirmOrderView();
 				}
 				$ns->tablerender($this->captionBase, $bread.$text, 'vstore-cart-list');
 	
@@ -2076,11 +2110,11 @@ class vstore
 
 				if (empty($this->getCheckoutData()))
 				{
-					$text = e107::getMessage()->addError('No items to checkout!', 'vstore')->render('vstore');
+					$text .= e107::getMessage()->addError('No items to checkout!', 'vstore')->render('vstore');
 				}
 				else
 				{
-					$text = $this->checkoutView();
+					$text .= $this->checkoutView();
 				}
 				$ns->tablerender($this->captionBase, $bread.$text, 'vstore-cart-list');
 				return null;
@@ -2642,9 +2676,9 @@ class vstore
 
 		$customerData = $this->getCustomerData();
 
-		$prefs = e107::getPlugPref('vstore', 'additional_fields');
+		$fields = $this->pref['additional_fields'];
 		$add = array();
-		foreach ($prefs as $key => $value) {
+		foreach ($fields as $key => $value) {
 			if (isset($customerData['add_field'.$key]))
 			{
 				$add['add_field'.$key] = array('caption' => strip_tags($value['caption'][e_LANGUAGE]), 'value' => ($value['type'] == 'text'  ? $customerData['add_field'.$key] : ($customerData['add_field'.$key]?'X':'-')));
@@ -2879,7 +2913,7 @@ class vstore
 		{
 			$type = 'default';
 		}
-		$template = e107::pref('vstore', 'email_templates');
+		$template = $this->pref['email_templates'];
 		if (isset($template[$type]['active']) && ($template[$type]['active'] ? false : true))
 		{
 			return '';
@@ -2921,8 +2955,8 @@ class vstore
 			return;
 		}
 
-		$sender_name = e107::pref('vstore','sender_name');
-		$sender_email = e107::pref('vstore','sender_email');
+		$sender_name = $this->pref['sender_name'];
+		$sender_email = $this->pref['sender_email'];
 		if (empty($sender_email))
 		{
 			e107::getMessage()->addDebug('No explicit shop email defined!<br/>Will use siteadmin email!', 'vstore');
@@ -2936,9 +2970,9 @@ class vstore
 		}
 
 
-		$prefs = e107::pref('vstore','email_templates');
+		$templates = $this->pref['email_templates'];
 		$cc = '';
-		if (varsettrue($prefs[$templateKey]['cc']))
+		if (varsettrue($templates[$templateKey]['cc']))
 		{
 			$cc = $sender_email;
 		}
@@ -2946,7 +2980,7 @@ class vstore
 		$receiver = e107::unserialize($insert['order_billing']);
 
 		$insert['is_business'] = !empty($receiver['vat_id']);
-		$insert['is_local'] = (varset($receiver['country'], $prefs['tax_business_country']) == $prefs['tax_business_country']);
+		$insert['is_local'] = (varset($receiver['country'], $this->pref['tax_business_country']) == $this->pref['tax_business_country']);
 
 		$insert['order_ref'] = (empty($ref) ? $insert['order_refcode'] : $ref);
 
@@ -2971,10 +3005,10 @@ class vstore
 			$eml['cc'] = $cc;
 		}
 
-		die(e107::getEmail()->preview($eml));
+		// die(e107::getEmail()->preview($eml));
 
-	//	$debug = e107::getEmail()->preview($eml);
-	//	e107::getDebug()->log($debug);
+		// $debug = e107::getEmail()->preview($eml);
+		// e107::getDebug()->log($debug);
 
 
 
@@ -3419,7 +3453,7 @@ class vstore
 			}
 		}
 		
-		if (!empty(e107::pref('vstore', 'howtoorder')))
+		if (!empty($this->pref['howtoorder']))
 		{
 			$tabData['howto']		= array('caption'=>'How to Order', 'text'=> $tmpl['item']['howto']);
 		}
@@ -3703,7 +3737,7 @@ class vstore
 		$sql = e107::getDb();
 		$cust = $this->getCustomerData();
 		$isBusiness = !empty($cust['vat_id']);
-		$isLocal = (varset($cust['country'], e107::pref('vstore', 'tax_business_country')) == e107::pref('vstore', 'tax_business_country'));
+		$isLocal = (varset($cust['country'], $this->pref['tax_business_country']) == $this->pref['tax_business_country']);
 
 		$coupon = '';
 		$checkoutData['coupon'] = array('code' => '', 'amount' => 0.0, 'amount_net' => 0.0);
@@ -3886,7 +3920,6 @@ class vstore
 	 */
 	private function setShippingData($data=array())
 	{
-		$pref = e107::pref('vstore');
 		$fields = self::getShippingFields();
 		foreach($fields as $fld)
 		{
@@ -3929,7 +3962,6 @@ class vstore
 	 */
 	private function setCustomerData($data=array())
 	{
-		$pref = e107::pref('vstore');
 		$fields = self::getCustomerFields();
 		foreach($fields as $fld)
 		{
@@ -4169,9 +4201,9 @@ class vstore
 	 */
 	public static function calcShippingCost($items)
 	{
-		$prefs = e107::pref('vstore');
+		$pref = e107::pref('vstore');
 		// No shipping
-		if (!vartrue($prefs['shipping']))
+		if (!vartrue($pref['shipping']))
 		{
 			return 0.0;
 		}
@@ -4180,7 +4212,7 @@ class vstore
 		$subtotal = 0.0;
 		$weight = 0.0;
 		foreach ($items as $item) {
-			if (varset($prefs['shipping_method']) == 'sum_unique') // sum_unique, sum_simple or staggered
+			if (varset($pref['shipping_method']) == 'sum_unique') // sum_unique, sum_simple or staggered
 			{
 				$shipping += (double) $item['item_shipping'];
 			}
@@ -4192,12 +4224,12 @@ class vstore
 			$weight += (double) ($item['item_weight'] * $item['cart_qty']);
 		}
 
-		if (varset($prefs['shipping_method']) == 'staggered' && varset($prefs['shipping_limit']) && varset($prefs['shipping_data']))
+		if (varset($pref['shipping_method']) == 'staggered' && varset($pref['shipping_limit']) && varset($pref['shipping_data']))
 		{
-			$data = e107::unserialize($prefs['shipping_data']);
+			$data = e107::unserialize($pref['shipping_data']);
 			unset($data['%ROW%']);
 			$val = $subtotal;
-			if (varset($prefs['shipping_unit']) == 'weight') // weight or subtotal
+			if (varset($pref['shipping_unit']) == 'weight') // weight or subtotal
 			{
 				$val = $weight;
 			}
@@ -4205,7 +4237,7 @@ class vstore
 			foreach ($data as $v) {
 				if ($val <= floatval($v['unit']))
 				{
-					if ($prefs['shipping_limit'] == 'limit') // limit or money
+					if ($pref['shipping_limit'] == 'limit') // limit or money
 					{
 						$shipping = (double) (floatval($v['cost']) > $shipping ? $shipping : $v['cost']);
 					}
@@ -4401,13 +4433,13 @@ class vstore
 	public static function getTaxRate($tax_class, $customer_country=null)
 	{
 		$result = 0.0;
-		static $prefs;
-		if (empty($prefs))
+		static $pref;
+		if (empty($pref))
 		{
-			$prefs = e107::pref('vstore');
+			$pref = e107::pref('vstore');
 		}
 
-		if (!varsettrue($prefs['tax_calculate']))
+		if (!varsettrue($pref['tax_calculate']))
 		{
 			// Tax calculation is deactivated
 			return $result;
@@ -4432,13 +4464,13 @@ class vstore
 			$customerCountry = $customer_country;
 		}
 
-		$businessCountry = $prefs['tax_business_country'];
+		$businessCountry = $pref['tax_business_country'];
 		
 
 		if ($customerCountry == $businessCountry)
 		{
 			// customer is from the same country as the business
-			$tax_classes = e107::unserialize($prefs['tax_classes']);
+			$tax_classes = e107::unserialize($pref['tax_classes']);
 			foreach ($tax_classes as $tclass) {
 				// lookup tax value
 				if ($tclass['name'] == $tax_class)
@@ -4530,18 +4562,154 @@ class vstore
 	 * @param string $vat_id the VAT ID to check
 	 * @return bool true if exists, $vat_id is empty or checking is disabled; false otherwise
 	 */
-	public function checkVAT_ID($vat_id)
+	public function checkVAT_ID($vat_id, $country)
 	{
 		if (empty(trim($vat_id)))
 		{
+			// no VAT = VALID
+			return true;
+		}
+		if (empty(trim($country)))
+		{
+			// Country missing = INVALID
+			return false;
+		}
+
+		$vat_country = strtoupper(substr($vat_id, 0, 2));
+
+		$countries = new DvK\Vat\Countries();
+		if (!$countries->inEurope($vat_country))
+		{
+			// VAT ID is only used in the EU
 			return true;
 		}
 
 		if ($this->pref['tax_check_vat'])
 		{
 			$validator = new DvK\Vat\Validator();
-			return $validator->validate($vat_id); // false (checks format + existence)
+			// check if VAT ID is valid
+			if ($validator->validate($vat_id)) // false (checks format + existence)
+			{
+				// Is VAT ID from the customers country?
+				if (strtoupper($country) != $vat_country)
+				{
+					return false;
+				}
+			}
+			else
+			{
+				return false;
+			}
 		}
 		return true;
+	}
+
+	/**
+	 * Validate and filter the customer data
+	 *
+	 * @param array $data
+	 * @return bool/array false if data is invalid, otherwise the filtered data
+	 */
+	function validateCustomerData($data, $type = 'billing')
+	{
+		$mes = e107::getMessage();
+		if (empty($data) || !is_array($data))
+		{
+			$mes->addError('Customer data is missing or invalid!', 'vstore');
+			return false;
+		}
+		if (empty($type) || !in_array($type, array('billing', 'shipping')))
+		{
+			$mes->addError('Invalid type!', 'vstore');
+			return false;
+		}
+
+		$result = array();
+		$fields = array();
+		if ($type == 'billing')
+		{
+			$fields = self::$customerFields;
+		}
+		elseif ($type == 'shipping')
+		{
+			$fields = self::$shippingFields;
+		}
+
+		foreach ($fields as $field) {
+			if (substr($field, 0, 9) == 'add_field') continue;
+
+			$result[$field] = trim(strip_tags($data[$field]));
+			switch($field)
+			{
+				// REQUIRED
+				case 'firstname':
+				case 'lastname':
+				case 'address':
+				case 'city':
+				case 'zip':
+				case 'country':
+				case 'email':
+					if (empty($result[$field]))
+					{
+						$mes->addError('The field '.ucfirst($field).' is required!', 'vstore');
+						return false;
+					}
+					if ($field == 'email' && !filter_var($result[$field], FILTER_VALIDATE_EMAIL))
+					{
+						$mes->addError('The given email address is invalid!', 'vstore');
+						return false;
+					}
+					break;
+
+				// OPTIONAL
+				case 'title':		
+				case 'company':
+				case 'state':
+				case 'taxcode':
+				case 'phone':
+				case 'fax':
+				case 'notes':
+					break;
+
+				// VAT ID
+				case 'vat_id':
+					$result[$field] = strtoupper($result[$field]);
+					if(!empty($result[$field]))
+					{
+						if (!$this->checkVAT_ID($result[$field], $data['country']))
+						{
+							$mes->addError('The VAT-ID is invalid or doesn\'t match the selected country!', 'vstore');
+							return false;
+						}
+					}
+					break;
+				
+				// ADDITIONAL FIELDS
+				case 'additional_fields':
+					$addFields = $this->pref['additional_fields'];
+					foreach ($addFields as $i => $addField) {
+						if ($addField['active'])
+						{
+							$fieldName = 'add_field'.$i;
+							if ($addField['type'] == 'text')
+							{
+								$result[$fieldName] = trim(strip_tags($data[$fieldName]));
+							}
+							else
+							{
+								$result[$fieldName] = ($data[$fieldName] ? '1' : '');
+							}
+							if ($addField['required'] && empty($result[$fieldName]))
+							{
+								$mes->addError('The field '.$addField['caption'].' is required!', 'vstore');
+								return false;										
+							}
+						}
+					}
+					break;
+			}
+		}
+
+		return $result;
 	}
 }
