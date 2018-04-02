@@ -4489,28 +4489,29 @@ class vstore
 				// means no tax value
 				return $result;
 			}
+
 			// Calc EU tax
-			$rates = new DvK\Vat\Rates\Rates();
-			$check_rate = true;
-			$tax_class1 = $tax_class;
-			$i = 0;
-			while($check_rate)
+
+			// get tax class by mapping
+			$tax_class = self::getTaxClass($tax_class, $customerCountry);
+			if (empty($tax_class))
 			{
-				try{
-					$result = $rates->country($customerCountry, $tax_class1); 
-					$check_rate = false;
-				}catch(Exception $ex) {
-					$i++;
-					if ($ex->getMessage() == 'Invalid rate.')
-					{
-						$tax_class1 = $tax_class.$i;
-						if ($i > 3)
-						{
-							$check_rate = false;
-						}
-					}
+				return 0.0;
+			}
+
+			$rates = new DvK\Vat\Rates\Rates();
+			try{
+				// $result = $rates->country($customerCountry, $tax_class1); 
+				$result = $rates->country($customerCountry, $tax_class); 
+				// $check_rate = false;
+			}catch(Exception $ex) {
+				$i++;
+				if ($ex->getMessage() == 'Invalid rate.')
+				{
+					e107::getMessage()->addError('Invalid tax class! Please inform the shop administrator!', 'vstore');						
 				}
 			}
+
 			if ($result) $result /= 100.0;
 		}
 		else
@@ -4521,6 +4522,83 @@ class vstore
 		return $result;
 	}
 
+	/**
+	 * Check if the tax class is available in the customers country
+	 * otherwise get the next "similar" class
+	 *
+	 * @param string $tax_class
+	 * @param string $country
+	 * @return void
+	 */
+	private static function getTaxClass($tax_class, $country)
+	{
+		$country = strtoupper($country);
+
+		// $official_tax_classes = array(
+		// 	'reduced',
+		// 	'reduced1',
+		// 	'reduced2',
+		// 	'super_reduced',
+		// 	'standard',
+		// 	'parking'
+		// );
+
+		// map the tax classes from one country to another
+		// e.g. in Germany there is only the reduced class
+		// in Austria they have no reduced, only reduced1 and reduced2
+		// The method will try to substitute the non existing class with 
+		// an existing one (e.g. reduced2 in the previous example)
+		$map_classes = array(
+			'reduced' => array('reduced2', 'reduced1', 'super_reduced'),
+			'reduced1' => array('reduced', 'super_reduced', 'reduced2'),
+			'reduced2' => array('reduced', 'reduced1', 'super_reduced'),
+			'super_reduced' => array('reduced', 'reduced1', 'reduced2'),
+		);
+
+
+		$rates = new DvK\Vat\Rates\Rates();
+		$map = $rates->all();
+
+		if (!array_key_exists($country, $map))
+		{
+			return '';
+		}
+
+		$periods = $map[$country];
+		if (empty($periods))
+		{
+			// Country not in table
+			return '';
+		}
+
+        // Sort by date desc
+        usort($periods, function ($period1, $period2) {
+            return new \DateTime($period1['effective_from']) > new \DateTime($period2['effective_from']) ? -1 : 1;
+        });
+		
+		$tax_classes = array_keys($periods[0][0]['rates']);
+
+		if (!in_array($tax_class, $tax_classes))
+		{
+			// tax class not found...
+			// try to map
+			foreach($tax_classes as $tc)
+			{
+				foreach ($map_classes[$tax_class] as $value) {
+					if ($tc == $value)
+					{
+						return $tc;
+					}
+				}
+			}
+			return '';
+		}
+		else
+		{
+			// tax class is available
+			return $tax_class;
+		}
+	}
 
 	/**
 	 * calc the net price of the item depending on the tax_rate for this item
