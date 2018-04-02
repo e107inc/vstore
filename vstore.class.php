@@ -1437,6 +1437,17 @@ class vstore
 		//  'notes' // Customer notes are for internal use only
 	);
 
+	protected static $official_tax_classes = array(
+		'none',
+		'reduced',
+		'reduced1',
+		'reduced2',
+		'super_reduced',
+		'standard',
+		'parking'
+	);
+
+
 	public function __construct()
 	{
 		$this->cartId = $this->getCartId();		
@@ -1594,6 +1605,16 @@ class vstore
 
 		return self::$emailTypes;
 
+	}
+
+	/**
+	 * Return the official tax classes array
+	 *
+	 * @return array
+	 */
+	public static function getTaxClasses()
+	{
+		return self::$official_tax_classes;
 	}
 
 	/**
@@ -4528,15 +4549,6 @@ class vstore
 	private function getTaxClass($tax_class, $country)
 	{
 		$country = strtoupper($country);
-
-		// $official_tax_classes = array(
-		// 	'reduced',
-		// 	'reduced1',
-		// 	'reduced2',
-		// 	'super_reduced',
-		// 	'standard',
-		// 	'parking'
-		// );
 
 		// map the tax classes from one country to another
 		// e.g. in Germany there is only the reduced class
