@@ -77,7 +77,8 @@ class vstore_sitelink // include plugin-folder in the name.
 
 	function storeCart() // http://bootsnipp.com/snippets/33gmp
 	{
-
+		if (ADMIN_AREA) return;
+		
 		$vst = e107::getSingleton('vstore',e_PLUGIN.'vstore/vstore.class.php');
 		$sc = e107::getScBatch('vstore_plugin');
 
