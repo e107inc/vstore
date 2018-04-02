@@ -35,23 +35,23 @@ class vstore_gateways_ui extends e_admin_ui
 			'paypal_active'         => array('title'=>"Paypal Express Payments", 'type'=>'boolean', 'tab'=>0, 'data'=>'int', 'help'=>''),
 			'paypal_testmode'         => array('title'=>"Paypal Testmode", 'type'=>'boolean', 'tab'=>0, 'data'=>'int', 'writeParms'=>array(),'help'=>'Use Paypal Sandbox'),
 			'paypal_username'       => array('title'=>"Paypal Username", 'type'=>'text', 'tab'=>0, 'data'=>'str', 'writeParms'=>array('size'=>'xxlarge'), 'help'=>''),
-			'paypal_password'       => array('title'=>"Paypal Password", 'type'=>'text', 'tab'=>0, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
+			'paypal_password'       => array('title'=>"Paypal Password", 'type'=>'password', 'tab'=>0, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
 			'paypal_signature'      => array('title'=>"Paypal Signature", 'type'=>'text', 'tab'=>0, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
 
 			'paypal_rest_active'    => array('title'=>"Paypal REST Payments", 'type'=>'boolean', 'tab'=>1, 'data'=>'int', 'help'=>''),
 			'paypal_rest_testmode'  => array('title'=>"Paypal REST Testmode", 'type'=>'boolean', 'tab'=>1, 'data'=>'int', 'writeParms'=>array(),'help'=>'Use Paypal Sandbox'),
 			'paypal_rest_clientId'  => array('title'=>"Paypal Client Id", 'type'=>'text', 'tab'=>1, 'data'=>'str', 'writeParms'=>array('size'=>'xxlarge'), 'help'=>''),
-			'paypal_rest_secret'    => array('title'=>"Paypal Secret", 'type'=>'text', 'tab'=>1, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
+			'paypal_rest_secret'    => array('title'=>"Paypal Secret", 'type'=>'password', 'tab'=>1, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
 		//	'paypal_signature'      => array('title'=>"Paypal Signature", 'type'=>'text', 'tab'=>0, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
 
 			'coinbase_active'     => array('title'=>"Coinbase Payments", 'type'=>'boolean', 'tab'=>2, 'data'=>'int', 'help'=>''),
 			'coinbase_account'    => array('title'=>"Coinbase Account ID", 'type'=>'text', 'tab'=>2, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
 			'coinbase_api_key'    => array('title'=>"Coinbase API key", 'type'=>'text', 'tab'=>2, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
-			'coinbase_secret'     => array('title'=>"Coinbase Secret Key", 'type'=>'text', 'tab'=>2, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
+			'coinbase_secret'     => array('title'=>"Coinbase Secret Key", 'type'=>'password', 'tab'=>2, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
 
 			'amazon_active'         => array('title'=>"Amazon Payments", 'type'=>'boolean', 'tab'=>3, 'data'=>'int', 'help'=>''),
 			'amazon_merchant_id'    => array('title'=>"Amazon Merchant ID", 'type'=>'text', 'tab'=>3, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
-			'amazon_secret_key'     => array('title'=>"Amazon Secret Key", 'type'=>'text', 'tab'=>3, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
+			'amazon_secret_key'     => array('title'=>"Amazon Secret Key", 'type'=>'password', 'tab'=>3, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
 			'amazon_region'         => array('title'=>"Amazon Region", 'type'=>'dropdown', 'tab'=>3, 'data'=>'str', 'writeParms'=>array('optArray'=>array('us'=>'USA','de'=>"Germany",'uk'=>"United Kingdom",'jp'=>"Japan")), 'help'=>''),
 
 			'skrill_active'         => array('title'=>"Skrill Payments", 'type'=>'boolean', 'tab'=>4, 'data'=>'int', 'help'=>''),
