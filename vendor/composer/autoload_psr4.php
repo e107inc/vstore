@@ -11,7 +11,9 @@ return array(
     'Symfony\\Polyfill\\Mbstring\\' => array($vendorDir . '/symfony/polyfill-mbstring'),
     'Symfony\\Component\\HttpFoundation\\' => array($vendorDir . '/symfony/http-foundation'),
     'Symfony\\Component\\EventDispatcher\\' => array($vendorDir . '/symfony/event-dispatcher'),
+    'Psr\\SimpleCache\\' => array($vendorDir . '/psr/simple-cache/src'),
     'Omnipay\\PayPal\\' => array($vendorDir . '/omnipay/paypal/src'),
     'Omnipay\\Coinbase\\' => array($vendorDir . '/omnipay/coinbase/src'),
     'Omnipay\\AmazonPayments\\' => array($vendorDir . '/lemonstand/omnipay-amazon/src'),
+    'DvK\\Vat\\' => array($vendorDir . '/dannyvankooten/vat.php/src'),
 );

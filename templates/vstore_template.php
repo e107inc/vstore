@@ -181,7 +181,7 @@ $VSTORE_WRAPPER['item']['ITEM_PIC: w=200&h=200&crop=1&item=7&link=1&class=thumbn
 $VSTORE_TEMPLATE['orderconfirm']['main'] = '
 		<h3>Summary</h3>
 		<div class="row">
-			<div class="col-12 col-xs-12 col-sm-6 col-md-6">
+			<div class="col-12 col-xs-12 col-sm-5 col-md-5">
 				
 				{CONFIRM_FIELD: billing_address}
 				
@@ -191,9 +191,9 @@ $VSTORE_TEMPLATE['orderconfirm']['main'] = '
 				<p>{ORDER_GATEWAY_ICON} {ORDER_GATEWAY_TITLE}</p>
 			</div>
 
-			<div class="col-6 col-xs-12 col-sm-6 col-md-6">
+			<div class="col-12 col-xs-12 col-sm-7 col-md-7">
 				<h4>Items</h4>
-				{ORDER_ITEMS}
+				{CONFIRM_ITEMS}
 
 				<h4>Order notes</h4>
 				{SHIPPING_FIELD: ship_notes}
@@ -237,6 +237,69 @@ $VSTORE_TEMPLATE['orderconfirm']['shipping'] = '
  * Used in emails and on order summary and confirmation
  */		
 
+$VSTORE_TEMPLATE['confirm_items']['header'] = '
+<table class="table table-bordered">
+<colgroup>	
+	<col style="width:50%" />
+	<col  />
+	<col  />
+	<col  />
+</colgroup>
+<tr>
+	<th>Description</th>
+	<th class="text-right">Unit Price</th>
+	<th class="text-right">Qty</th>
+	<th class="text-right">Amount</th>
+</tr>
+';
+
+$VSTORE_TEMPLATE['confirm_items']['row'] = '
+<tr>
+	<td>{CONFIRM_DATA: name}</td>
+	<td class="text-right">{CONFIRM_DATA: price}</td>
+	<td class="text-right">{CONFIRM_DATA: quantity}</td>
+	<td class="text-right">{CONFIRM_DATA: item_total}</tdclass>
+</tr>';
+
+$VSTORE_TEMPLATE['confirm_items']['footer'] = '
+<tr>
+	<td colspan="3"><b>Subtotal</b></td>
+	<td class="text-right">{CONFIRM_DATA: sub_total}</td>
+</tr>
+<tr>
+	<td colspan="3"><b>Shipping</b></td>
+	<td class="text-right">{CONFIRM_DATA: shipping_total}</td>
+</tr>
+{CONFIRM_COUPON}
+{CONFIRM_TAX}
+<tr>
+	<td colspan="3"><b>Total</b></td>
+	<td class="text-right"><b>{CONFIRM_DATA: grand_total}</b></td>
+</tr>
+</table>
+';
+
+$VSTORE_TEMPLATE['confirm_items']['coupon'] = '
+<tr>
+	<td colspan="3"><b>Coupon:</b> {CONFIRM_DATA: coupon}</td>
+	<td class="text-right">{CONFIRM_DATA: coupon_amount}</td>
+</tr>
+';
+
+
+$VSTORE_TEMPLATE['confirm_items']['tax'] = '
+<tr>
+	<td colspan="2"><b>Included VAT</b></td>
+	<td colspan="1" class="text-right">[x]</td>
+	<td class="text-right">[y]</td>
+</tr>
+';
+
+/**
+ * Order items list
+ * Used in emails and on order summary and confirmation
+ */		
+
 $VSTORE_TEMPLATE['order_items']['header'] = '
 <table class="table table-bordered">
 <colgroup>	
@@ -263,16 +326,17 @@ $VSTORE_TEMPLATE['order_items']['row'] = '
 
 $VSTORE_TEMPLATE['order_items']['footer'] = '
 <tr>
-	<td colspan="3" class="text-right"><b>Subtotal</b></td>
+	<td colspan="3"><b>Subtotal</b></td>
 	<td class="text-right">{CART_DATA: sub_total}</td>
 </tr>
 <tr>
-	<td colspan="3" class="text-right"><b>Shipping</b></td>
+	<td colspan="3"><b>Shipping</b></td>
 	<td class="text-right">{CART_DATA: shipping_total}</td>
 </tr>
 {ORDER_COUPON}
+{ORDER_TAX}
 <tr>
-	<td colspan="3" class="text-right"><b>Total</b></td>
+	<td colspan="3"><b>Total</b></td>
 	<td class="text-right">{CART_DATA: grand_total}</td>
 </tr>
 </table>
@@ -282,6 +346,15 @@ $VSTORE_TEMPLATE['order_items']['coupon'] = '
 <tr>
 	<td colspan="3" class="text-right">Coupon: <b>{CART_DATA: coupon}</b></td>
 	<td class="text-right">{CART_DATA: coupon_amount}</td>
+</tr>
+';
+
+
+$VSTORE_TEMPLATE['order_items']['tax'] = '
+<tr>
+	<td colspan="2"><b>Included VAT</b></td>
+	<td colspan="1" class="text-right">[x]</td>
+	<td class="text-right">[y]</td>
 </tr>
 ';
 
@@ -335,6 +408,7 @@ $VSTORE_TEMPLATE['cart']['footer'] = '
 		<td class="text-right"><h5><strong>{CART_SHIPPINGTOTAL}</strong></h5></td>
 	</tr>
 	{CART_COUPON}
+	{CART_TAXTOTAL}
 	<tr>
 		<td colspan="4" class="text-right"><h3>Total</h3></td>
 		<td class="text-right"><h3><strong>{CART_GRANDTOTAL}</strong></h3></td>
@@ -347,6 +421,14 @@ $VSTORE_TEMPLATE['cart']['footer'] = '
 	</table>
 ';
 
+
+$VSTORE_TEMPLATE['cart']['tax'] = '
+<tr>
+	<td colspan="3" class="text-right"><h5>Included VAT</h5></td>
+	<td colspan="1" class="text-right"><h5>[x]</h5></td>
+	<td class="text-right"><h5><strong>[y]</strong></h5></td>
+</tr>
+';
 
 $VSTORE_TEMPLATE['cart']['coupon'] = '
 	<tr>
@@ -441,34 +523,6 @@ $VSTORE_TEMPLATE['shipping']['header'] = '
 		</div>
 	</div>
 	';
-
-	
-// $VSTORE_TEMPLATE['shipping']['additional']['item'] = '
-// 	<div class="row">
-// 		<div class="{SHIPPING_ADD_FIELD_CLASS}">
-// 			<div class="form-group">
-// 				{SHIPPING_ADD_FIELD_LABEL}
-// 				{SHIPPING_ADD_FIELD_FIELD}
-// 			</div>
-// 		</div>
-// 	</div>
-// ';
-
-
-// $VSTORE_TEMPLATE['shipping']['guest'] = '
-// 	<div class="row">
-// 		<div class="col-12 col-xs-12 col-sm-6">
-// 			<div class="form-group">
-// 				<input type="password" name="password" id="password" class="form-control input-sm" placeholder="Password">
-// 			</div>
-// 		</div>
-// 		<div class="col-12 col-xs-12 col-sm-6">
-// 			<div class="form-group">
-// 				<input type="password" name="password_confirmation" id="password_confirmation" class="form-control input-sm" placeholder="Confirm Password">
-// 			</div>
-// 		</div>
-// 	</div>
-// ';
 
 
 

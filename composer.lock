@@ -4,9 +4,54 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "2e64eba726baf2d0432395c5ac945470",
-    "content-hash": "e47b2beb4fbaf088b5f1ecae97fdaafb",
+    "content-hash": "1b67cf8794d722bf209fb1472b0ce30f",
     "packages": [
+        {
+            "name": "dannyvankooten/vat.php",
+            "version": "1.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/dannyvankooten/vat.php.git",
+                "reference": "464614722f3f04f41be2dc8eb1d887d0e342455c"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/dannyvankooten/vat.php/zipball/464614722f3f04f41be2dc8eb1d887d0e342455c",
+                "reference": "464614722f3f04f41be2dc8eb1d887d0e342455c",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.6",
+                "psr/simple-cache": "^1.0"
+            },
+            "provide": {
+                "psr/simple-cache-implementation": "1.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^5.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "DvK\\Vat\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Danny van Kooten",
+                    "email": "hi@dvk.co"
+                }
+            ],
+            "description": "PHP library for dealing with VAT in Europe",
+            "keywords": [
+                "vat"
+            ],
+            "time": "2017-02-24T09:10:55+00:00"
+        },
         {
             "name": "guzzle/guzzle",
             "version": "v3.9.3",
@@ -100,7 +145,8 @@
                 "rest",
                 "web service"
             ],
-            "time": "2015-03-18 18:23:50"
+            "abandoned": "guzzlehttp/guzzle",
+            "time": "2015-03-18T18:23:50+00:00"
         },
         {
             "name": "ircmaxell/password-compat",
@@ -142,7 +188,7 @@
                 "hashing",
                 "password"
             ],
-            "time": "2014-11-20 16:49:30"
+            "time": "2014-11-20T16:49:30+00:00"
         },
         {
             "name": "lemonstand/omnipay-amazon",
@@ -197,7 +243,7 @@
                 "payment",
                 "payments"
             ],
-            "time": "2015-03-11 17:43:10"
+            "time": "2015-03-11T17:43:10+00:00"
         },
         {
             "name": "omnipay/coinbase",
@@ -254,7 +300,7 @@
                 "pay",
                 "payment"
             ],
-            "time": "2015-03-06 05:35:39"
+            "time": "2015-03-06T05:35:39+00:00"
         },
         {
             "name": "omnipay/common",
@@ -352,7 +398,7 @@
                 "payment",
                 "purchase"
             ],
-            "time": "2016-11-07 06:10:23"
+            "time": "2016-11-07T06:10:23+00:00"
         },
         {
             "name": "omnipay/paypal",
@@ -410,7 +456,55 @@
                 "paypal",
                 "purchase"
             ],
-            "time": "2016-12-22 12:35:25"
+            "time": "2016-12-22T12:35:25+00:00"
+        },
+        {
+            "name": "psr/simple-cache",
+            "version": "1.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-fig/simple-cache.git",
+                "reference": "408d5eafb83c57f6365a3ca330ff23aa4a5fa39b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-fig/simple-cache/zipball/408d5eafb83c57f6365a3ca330ff23aa4a5fa39b",
+                "reference": "408d5eafb83c57f6365a3ca330ff23aa4a5fa39b",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Psr\\SimpleCache\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "PHP-FIG",
+                    "homepage": "http://www.php-fig.org/"
+                }
+            ],
+            "description": "Common interfaces for simple caching",
+            "keywords": [
+                "cache",
+                "caching",
+                "psr",
+                "psr-16",
+                "simple-cache"
+            ],
+            "time": "2017-10-23T01:57:42+00:00"
         },
         {
             "name": "symfony/event-dispatcher",
@@ -470,7 +564,7 @@
             ],
             "description": "Symfony EventDispatcher Component",
             "homepage": "https://symfony.com",
-            "time": "2016-06-29 05:29:29"
+            "time": "2016-06-29T05:29:29+00:00"
         },
         {
             "name": "symfony/http-foundation",
@@ -525,7 +619,7 @@
             ],
             "description": "Symfony HttpFoundation Component",
             "homepage": "https://symfony.com",
-            "time": "2016-06-29 07:02:14"
+            "time": "2016-06-29T07:02:14+00:00"
         },
         {
             "name": "symfony/polyfill-mbstring",
@@ -584,7 +678,7 @@
                 "portable",
                 "shim"
             ],
-            "time": "2016-05-18 14:26:46"
+            "time": "2016-05-18T14:26:46+00:00"
         },
         {
             "name": "symfony/polyfill-php54",
@@ -642,7 +736,7 @@
                 "portable",
                 "shim"
             ],
-            "time": "2016-05-18 14:26:46"
+            "time": "2016-05-18T14:26:46+00:00"
         },
         {
             "name": "symfony/polyfill-php55",
@@ -698,7 +792,7 @@
                 "portable",
                 "shim"
             ],
-            "time": "2016-05-18 14:26:46"
+            "time": "2016-05-18T14:26:46+00:00"
         }
     ],
     "packages-dev": [],

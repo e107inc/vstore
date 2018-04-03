@@ -27,18 +27,18 @@
 	</colgroup>
 	<tr>
 		<th>Merchant</th>
-		<th class='text-right'>Customer</th>
+		<th>Customer</th>
 	</tr>
 	<tr>
 		<td>{ORDER_MERCHANT_INFO}</td>
-		<td class='text-right'>
+		<td>
 			<h4>Billing address</h4>
 			{ORDER_DATA: cust_firstname} {ORDER_DATA: cust_lastname}<br />
 			{ORDER_DATA: cust_company}<br />
 			{ORDER_DATA: cust_address}<br />
 			{ORDER_DATA: cust_city} &nbsp;{ORDER_DATA: cust_state} &nbsp;{ORDER_DATA: cust_zip}<br />
 			{ORDER_DATA: cust_country}
-
+			<br />
 			<h4>Shipping address</h4>
 			{ORDER_DATA: ship_firstname} {ORDER_DATA: ship_lastname}<br />
 			{ORDER_DATA: ship_company}<br />
@@ -75,18 +75,18 @@
 	</colgroup>
 	<tr>
 		<th>Merchant</th>
-		<th class='text-right'>Customer</th>
+		<th>Customer</th>
 	</tr>
 	<tr>
 		<td>{ORDER_MERCHANT_INFO}</td>
-		<td class='text-right'>
+		<td>
 			<h4>Billing address</h4>
 			{ORDER_DATA: cust_firstname} {ORDER_DATA: cust_lastname}<br />
 			{ORDER_DATA: cust_company}<br />
 			{ORDER_DATA: cust_address}<br />
 			{ORDER_DATA: cust_city} &nbsp;{ORDER_DATA: cust_state} &nbsp;{ORDER_DATA: cust_zip}<br />
 			{ORDER_DATA: cust_country}
-
+			<br />
 			<h4>Shipping address</h4>
 			{ORDER_DATA: ship_firstname} {ORDER_DATA: ship_lastname}<br />
 			{ORDER_DATA: ship_company}<br />
