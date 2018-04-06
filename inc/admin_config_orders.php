@@ -207,23 +207,10 @@ class vstore_order_form_ui extends e_admin_form_ui
 	// Custom Method/Function
 	function order_e107_user($curVal,$mode)
 	{
-		$frm = e107::getForm();
 
-		switch($mode)
-		{
-			case 'read': // List Page
-				return $curVal;
-			break;
+		$text = $curVal.') '.e107::getDb()->retrieve('user', 'user_name', 'user_id="'.$curVal.'"');
+		return $text;
 
-			case 'write': // Edit Page
-				return $frm->text('order_e107_user',$curVal, 255, 'size=large');
-			break;
-
-			case 'filter':
-			case 'batch':
-				return  array();
-			break;
-		}
 	}
 
 	function order_items($curVal,$mode)
