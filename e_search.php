@@ -69,8 +69,14 @@ class vstore_search extends e_search // include plugin-folder in the name.
 		$tp = e107::getParser();
 		
 		$res = array();
-		$link = 'vstore/vstore.php?item='.$row['item_id'];
-		$res['link'] 		= e107::getUrl()->create($link);
+
+		// Build url to product / item
+		$link = e107::url('vstore', 'product', array(
+				'cat_sef' => eHelper::title2sef($row['cat_name'], 'dashl'), 
+				'item_id' => eHelper::title2sef($row['item_id'], 'dashl'), 
+				'item_sef' => eHelper::title2sef($row['item_name'], 'dashl')));
+
+		$res['link'] 		= $link;
 		$res['pre_title'] 	= $tp->toHtml($row['cat_name'],false,'TITLE')." | ";
 		$res['title'] 		= $row['item_name'];
 		$res['summary'] 	= $row['news_desc'];
@@ -93,24 +99,16 @@ class vstore_search extends e_search // include plugin-folder in the name.
 	
 		$time = time();
 		
-		// $qry = "(news_start < ".$time.") AND (news_end=0 OR news_end > ".$time.") AND news_class IN (".USERCLASS_LIST.") AND";
+		// search only in active items and categories
 		$qry = 'i.item_active = 1 AND c.cat_active = 1 AND';
 		
 		if (isset($parm['cat']) && $parm['cat'] != 'all') {
 			$qry .= " c.cat_id='".intval($parm['cat'])."' AND";
 		}
-		
-		// if (isset($parm['time']) && is_numeric($parm['time'])) {
-		// 	$qry .= " n.news_datestamp ".($parm['on'] == 'new' ? '>=' : '<=')." '".(time() - $parm['time'])."' AND";
-		// }
-				
+
 		return $qry;
 	}
 	
 
 }
-
-//Old v1.
-// $search_info[] = array('sfile' => e_PLUGIN.'chatbox_menu/search/search_parser.php', 'qtype' => CB_SCH_LAN_1, 'refpage' => 'chat.php', 'advanced' => e_PLUGIN.'chatbox_menu/search/search_advanced.php');
-
 ?>
