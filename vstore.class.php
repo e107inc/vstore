@@ -2729,8 +2729,8 @@ class vstore
 		$insert['order_items'] = json_encode($items, JSON_PRETTY_PRINT);
 
 		$insert['order_use_shipping']    = $this->getShippingType();
-		$insert['order_billing']    	= json_encode($customerData, JSON_PRETTY_PRINT);
-		$insert['order_shipping']    	= json_encode($shippingData, JSON_PRETTY_PRINT);
+		$insert['order_billing']    	= e107::serialize($customerData, 'json');
+		$insert['order_shipping']    	= e107::serialize($shippingData, 'json');
 
 		$insert['order_pay_gateway']    = $this->getGatewayType(true);
 		$insert['order_pay_status']     = empty($transData) ? 'incomplete' : 'complete';
@@ -2740,7 +2740,15 @@ class vstore
 		$insert['order_pay_shipping']   = $cartData['totals']['cart_shippingTotal'];
 		$insert['order_pay_coupon_code']= $cartData['totals']['cart_coupon']['code'];
 		$insert['order_pay_coupon_amount']= $cartData['totals']['cart_coupon']['amount'];
-		$insert['order_pay_rawdata']    = json_encode($transData, JSON_PRETTY_PRINT);
+		$insert['order_pay_rawdata']    = e107::serialize($transData, 'json');
+
+		$log = array(array(
+			'datestamp' => time(),
+			'user_id' => USERID,
+			'user_name' => USERNAME,
+			'text' => 'Order created' . (empty($transData) ? '' : ' and paid') . '.'
+		));
+		$insert['order_log']    = e107::serialize($log, 'json');
 
 		$mes = e107::getMessage();
 
@@ -2755,7 +2763,15 @@ class vstore
 			}
 
 			$refId = $this->getOrderRef($nid, $customerData['firstname'], $customerData['lastname']);
-			e107::getDb()->update('vstore_orders', array('data' => array('order_refcode' => $refId), 'WHERE' => 'order_id='.$nid));
+
+			$log[] = array(
+				'datestamp' => time(),
+				'user_id' => USERID,
+				'user_name' => USERNAME,
+				'text' => 'Order Ref-Nr. assigned: '.$refId
+			);
+	
+			e107::getDb()->update('vstore_orders', array('data' => array('order_refcode' => $refId, 'order_log' => e107::serialize($log, 'json')), 'WHERE' => 'order_id='.$nid));
 		
 			$mes->addSuccess("Your order <b>#".$refId."</b> is complete and you will receive a order confirmation with all details within the next few minutes!",'vstore');
 			$this->updateInventory($insert['order_items']);

@@ -15,9 +15,9 @@ class vstore_order_ui extends e_admin_ui
 	//	protected $batchCopy		= true;
 	//	protected $sortField		= 'somefield_order';
 	//	protected $orderStep		= 10;
-		protected $tabs				= array(LAN_GENERAL,'Details'); // Use 'tab'=>0  OR 'tab'=>1 in the $fields below to enable.
+		protected $tabs				= array(LAN_GENERAL, 'Details', 'Log'); // Use 'tab'=>0  OR 'tab'=>1 in the $fields below to enable.
 
-	//	protected $listQry      	= "SELECT o.*, SUM(c.cart_qty) as items FROM `#vstore_orders` AS o LEFT JOIN `#vstore_cart` AS  c ON o.order_session = c.cart_session  "; // Example Custom Query. LEFT JOINS allowed. Should be without any Order or Limit.
+		// protected $listQry      	= "SELECT o.*, SUM(c.cart_qty) as items FROM `#vstore_orders` AS o LEFT JOIN `#vstore_cart` AS  c ON o.order_session = c.cart_session  "; // Example Custom Query. LEFT JOINS allowed. Should be without any Order or Limit.
 
 		protected $listOrder		= 'order_id DESC';
 
@@ -38,9 +38,11 @@ class vstore_order_ui extends e_admin_ui
 			'order_pay_transid'     => array ( 'title' => 'TransID', 'type' => 'text', 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 			'order_pay_amount' 		=> array ( 'title' => 'Total', 'type' => 'method', 'data' => 'int', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 			'order_pay_shipping' 	=> array ( 'title' => 'Shipping', 'type' => 'number', 'data' => 'int', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+
 			'order_ship_notes'      => array ( 'title' => 'Notes', 'type'=>'method', 'tab'=>1, 'data'=>false, 'width'=>'20%'),
 			'order_session'       	=> array ( 'title' => 'Session', 'type' => 'text', 'tab'=>1, 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 			'order_pay_rawdata' 	=> array ( 'title' => 'Rawdata', 'type' => 'method', 'tab'=>1, 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+			'order_log' 			=> array ( 'title' => 'Log', 'type' => 'method', 'tab'=>2, 'data' => 'json', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 			'options' 				=> array ( 'title' => LAN_OPTIONS, 'type' => null, 'data' => null, 'width' => '10%', 'thclass' => 'center last', 'class' => 'center last', 'forced' => '1',  ),
 		);
 
@@ -133,6 +135,32 @@ class vstore_order_ui extends e_admin_ui
 					}
 				}
 			}
+
+			// Check for changes and add to the log
+			$now = time();
+			foreach ($new_data as $key => $value) {
+				$oldval = $old_data[$key];
+				if ($value !== $oldval && array_key_exists($key, $this->fields))
+				{
+					$title = $this->fields[$key]['title'];
+
+					if ($key == 'order_status')
+					{
+						$value = vstore::getStatus($value);
+						$oldval = vstore::getStatus($oldval);
+					}
+
+					$log[] = array(
+						'datestamp' => $now,
+						'user_id' => USERID,
+						'user_name' => USERNAME,
+						'text' => sprintf('Changed %s from "%s" to "%s".', $title, $oldval, $value)
+					);
+					
+				}
+			}
+
+			$new_data['order_log'] = $log; //e107::serialize($log, 'json');
 			return $new_data;
 		}
 
@@ -384,6 +412,35 @@ class vstore_order_form_ui extends e_admin_form_ui
 				return  array();
 			break;
 		}
+	}
+
+
+	function order_log($curVal, $mode)
+	{
+
+		$items = e107::unserialize($curVal);
+
+		$text = '<table class="table table-bordered table-striped">
+			<tr>
+				<th>Date/Time</th>
+				<th>User</td>
+				<td>Description</td>
+			</tr>
+			';
+		foreach ($items as $item) {
+			$text .= sprintf('
+			<tr>
+				<td>%s</td>
+				<td>%s (%d)</td>
+				<td>%s</td>
+			</tr>', 
+				e107::getDateConvert()->convert_date($item['datestamp']),
+				$item['user_name'],
+				$item['user_id'],
+				e107::getParser()->toHTML($item['text']));
+		}
+		$text .= '</table>';
+		return $text;
 	}
 
 }

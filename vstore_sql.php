@@ -41,6 +41,7 @@ CREATE TABLE vstore_orders (
   `order_pay_coupon_code` varchar(50) DEFAULT NULL,
   `order_pay_coupon_amount` decimal(10,2) NOT NULL DEFAULT '0.00',
   `order_pay_rawdata` text NOT NULL,
+  `order_log` text NOT NULL,
   PRIMARY KEY (`order_id`)
 ) ENGINE=MyISAM;
 
