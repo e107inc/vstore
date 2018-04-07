@@ -12,6 +12,7 @@ A simple shopping cart solution for e107 v2.x Bootstrap CMS.
 * Coupon codes
 * Tax
 * Statistics
+* Search for products
 
 ## TODO
 * Add more payment gateways. 
