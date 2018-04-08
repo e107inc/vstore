@@ -120,7 +120,6 @@ class vstore_items_ui extends e_admin_ui
 				// set tax class to "standard" if not defined
 				$new_data['item_tax_class'] = 'standard';
 			}
-			if (!in_array('item_vars_inventory', $new_data)) $new_data['item_vars_inventory'] = '';
 			return $new_data;
 		}
 
@@ -158,7 +157,7 @@ class vstore_items_ui extends e_admin_ui
 				$new_data['item_vars'] = implode(',', $new_data['item_vars']);
 			}
 
-			if (array_key_exists('item_vars', $new_data) && !varsettrue($new_data['item_tax_class']))
+			if (array_key_exists('item_tax_class', $new_data) && !varsettrue($new_data['item_tax_class']))
 			{
 				// set tax class to "standard" if not defined
 				$new_data['item_tax_class'] = 'standard';
