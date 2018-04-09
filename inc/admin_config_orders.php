@@ -26,7 +26,7 @@ class vstore_order_ui extends e_admin_ui
 		protected $fields 		= array (
 			'checkboxes'           	=> array ( 'title' => '', 'type' => null, 'data' => null, 'width' => '5%', 'thclass' => 'center', 'forced' => '1', 'class' => 'center', 'toggle' => 'e-multiselect',  ),
 			'order_id'            	=> array ( 'title' => LAN_ID, 'data' => 'int', 'width' => '5%', 'help' => '', 'readonly'=>true, 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
-			'order_status'          => array ( 'title' => 'Status', 'type'=>'dropdown', 'data'=>'str', 'inline'=>true, 'filter'=>true, 'batch'=>true,'width'=>'5%'),
+			'order_status'          => array ( 'title' => 'Status', 'type'=>'method', 'data'=>'str', 'inline'=>true, 'filter'=>true, 'batch'=>true,'width'=>'5%'),
 			'order_date'          	=> array ( 'title' => LAN_DATESTAMP, 'type' => 'datestamp', 'data' => 'str',  'readonly'=>true, 'width' => 'auto', 'filter' => true, 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 
 			'order_billing'      	=> array ( 'title' => 'Billing to', 'type'=>'method', 'data'=>false, 'width'=>'20%'),
@@ -56,6 +56,16 @@ class vstore_order_ui extends e_admin_ui
 
 		public function init()
 		{
+
+			if ($_GET['filter_options'] == 'order_status__open')
+			{
+				// List all open orders: New, Processing, On Hold
+				// Completed, Cancelled, Refunded will NOT be displayed!
+				$this->filterQry = 'SELECT * FROM `#vstore_orders` WHERE FIND_IN_SET(order_status, "N,P,H")';
+				//$this->setQuery('filter_options');
+			}
+
+
 			$this->fields['order_status']['writeParms']['optArray'] = vstore::getStatus();
 			// Set drop-down values (if any).
 
@@ -203,6 +213,30 @@ class vstore_order_ui extends e_admin_ui
 class vstore_order_form_ui extends e_admin_form_ui
 {
 
+	function order_status($curVal, $mode)
+	{
+
+		switch($mode)
+		{
+			case 'read': // List Page
+				return vstore::getStatus($curVal);
+				break;
+
+			case 'write': // Edit Page
+				return e107::getForm()->select('order_status', vstore::getStatus(), $curVal);
+				break;
+
+			case 'filter':
+				$filter = vstore::getStatus();
+				$filter['open'] = 'Open';
+				return $filter;
+				break;
+
+			case 'batch':
+				return  array();
+				break;
+		}		
+	}
 
 	// Custom Method/Function
 	function order_e107_user($curVal,$mode)
