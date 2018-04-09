@@ -66,9 +66,6 @@ class vstore_order_ui extends e_admin_ui
 			}
 
 
-			$this->fields['order_status']['writeParms']['optArray'] = vstore::getStatus();
-			// Set drop-down values (if any).
-
 			if(e_DEBUG !== true)
 			{
 				unset($this->preftabs[3],$this->preftabs[4]); // Disable Amazon and Skrill for Now until they work. // TODO //FIXME
