@@ -74,7 +74,7 @@ class vstore_pref_ui extends e_admin_ui
 		// optional
 		public function init()
 		{
-			$this->prefs['currency']['writeParms'] = array('USD'=>'US Dollars', 'EUR'=>'Euros', 'CAN'=>'Canadian Dollars');
+			$this->prefs['currency']['writeParms'] = array('USD'=>'US Dollars', 'EUR'=>'Euros', 'CAN'=>'Canadian Dollars', 'GBP'=>'GB Pounds');
 			
 			$this->prefs['amount_format']['writeParms'] = array('0'=>'Currency before number', '1'=>'Currency behind number');
 
