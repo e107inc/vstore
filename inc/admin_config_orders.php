@@ -114,6 +114,8 @@ class vstore_order_ui extends e_admin_ui
 
 		public function beforeUpdate($new_data, $old_data, $id)
 		{
+			$tp = e107::getParser();
+
 			if (array_key_exists('order_status', $new_data)) 
 			{
 				if ($old_data['order_status'] === 'C' && $new_data['order_status'] !== 'C')
@@ -123,9 +125,9 @@ class vstore_order_ui extends e_admin_ui
 					if ($uc)
 					{
 						$uc_list = e107::getDB()->retrieve('SELECT GROUP_CONCAT(userclass_name) AS ucs FROM e107_userclass_classes WHERE FIND_IN_SET(userclass_id, "'.$uc.'")');
-						$msg = sprintf('The userclasses, the customer has been assigned to during the purchase can not be removed automatically.<br/>
-							Click <a href="'.e_ADMIN.'users.php?searchquery=%d">here</a> to remove the following userclasses manually.<br/>
-							%s', $old_data['order_e107_user'], str_replace(',', ', ', $uc_list));
+						$msg = $tp->lanVars('The userclasses, the customer has been assigned to during the purchase can not be removed automatically.<br/>
+							Click <a href="'.e_ADMIN.'users.php?searchquery=[x]">here</a> to remove the following userclasses manually.<br/>[y]', 
+							array('x' => $old_data['order_e107_user'], 'y' => str_replace(',', ', ', $uc_list)));
 						
 						if (e_AJAX_REQUEST)
 						{
@@ -161,7 +163,7 @@ class vstore_order_ui extends e_admin_ui
 						'datestamp' => $now,
 						'user_id' => USERID,
 						'user_name' => USERNAME,
-						'text' => sprintf('Changed %s from "%s" to "%s".', $title, $oldval, $value)
+						'text' => $tp->lanVars('Changed [x] from "[y]" to "[z]".', array('x' => $title, 'y' => $oldval, 'z' => $value))
 					);
 					
 				}
@@ -435,7 +437,6 @@ class vstore_order_form_ui extends e_admin_form_ui
 
 	function order_log($curVal, $mode)
 	{
-
 		$items = e107::unserialize($curVal);
 
 		$text = '<table class="table table-bordered table-striped">
