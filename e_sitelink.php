@@ -16,10 +16,6 @@
 */
 
 if (!defined('e107_INIT')) { exit; }
-/*if(!e107::isInstalled('gsitemap'))
-{ 
-	return;
-}*/
 
 
 class vstore_sitelink // include plugin-folder in the name.
@@ -57,8 +53,7 @@ class vstore_sitelink // include plugin-folder in the name.
 		{
 			$sublinks[] = array(
 				'link_name'			=> $tp->toHtml($row['cat_name'],'','TITLE'),
-				'link_url'			=> e107::url('vstore','category',$row),
-				//'link_url'			=> e107::url('vstore','cat',$row), // '{e_PLUGIN}vstore/vstore.php?item='.$row['item_id'], // 1e107::getUrl()->sc('faqs/list/all', array('category' => $row['faq_info_id'])),
+				'link_url'			=> e107::url('vstore','category', $row),
 				'link_description'	=> '',
 				'link_button'		=> '',
 				'link_category'		=> '',
@@ -77,7 +72,7 @@ class vstore_sitelink // include plugin-folder in the name.
 
 	function storeCart() // http://bootsnipp.com/snippets/33gmp
 	{
-		if (ADMIN_AREA) return;
+		if (e_ADMIN_AREA) return;
 		
 		$vst = e107::getSingleton('vstore',e_PLUGIN.'vstore/vstore.class.php');
 		$sc = e107::getScBatch('vstore_plugin');

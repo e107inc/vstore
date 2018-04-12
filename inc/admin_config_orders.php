@@ -15,9 +15,9 @@ class vstore_order_ui extends e_admin_ui
 	//	protected $batchCopy		= true;
 	//	protected $sortField		= 'somefield_order';
 	//	protected $orderStep		= 10;
-		protected $tabs				= array(LAN_GENERAL,'Details'); // Use 'tab'=>0  OR 'tab'=>1 in the $fields below to enable.
+		protected $tabs				= array(LAN_GENERAL, 'Details', 'Log'); // Use 'tab'=>0  OR 'tab'=>1 in the $fields below to enable.
 
-	//	protected $listQry      	= "SELECT o.*, SUM(c.cart_qty) as items FROM `#vstore_orders` AS o LEFT JOIN `#vstore_cart` AS  c ON o.order_session = c.cart_session  "; // Example Custom Query. LEFT JOINS allowed. Should be without any Order or Limit.
+		// protected $listQry      	= "SELECT o.*, SUM(c.cart_qty) as items FROM `#vstore_orders` AS o LEFT JOIN `#vstore_cart` AS  c ON o.order_session = c.cart_session  "; // Example Custom Query. LEFT JOINS allowed. Should be without any Order or Limit.
 
 		protected $listOrder		= 'order_id DESC';
 
@@ -26,7 +26,7 @@ class vstore_order_ui extends e_admin_ui
 		protected $fields 		= array (
 			'checkboxes'           	=> array ( 'title' => '', 'type' => null, 'data' => null, 'width' => '5%', 'thclass' => 'center', 'forced' => '1', 'class' => 'center', 'toggle' => 'e-multiselect',  ),
 			'order_id'            	=> array ( 'title' => LAN_ID, 'data' => 'int', 'width' => '5%', 'help' => '', 'readonly'=>true, 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
-			'order_status'          => array ( 'title' => 'Status', 'type'=>'dropdown', 'data'=>'str', 'inline'=>true, 'filter'=>true, 'batch'=>true,'width'=>'5%'),
+			'order_status'          => array ( 'title' => 'Status', 'type'=>'method', 'data'=>'str', 'inline'=>true, 'filter'=>true, 'batch'=>true,'width'=>'5%'),
 			'order_date'          	=> array ( 'title' => LAN_DATESTAMP, 'type' => 'datestamp', 'data' => 'str',  'readonly'=>true, 'width' => 'auto', 'filter' => true, 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 
 			'order_billing'      	=> array ( 'title' => 'Billing to', 'type'=>'method', 'data'=>false, 'width'=>'20%'),
@@ -38,9 +38,11 @@ class vstore_order_ui extends e_admin_ui
 			'order_pay_transid'     => array ( 'title' => 'TransID', 'type' => 'text', 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 			'order_pay_amount' 		=> array ( 'title' => 'Total', 'type' => 'method', 'data' => 'int', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 			'order_pay_shipping' 	=> array ( 'title' => 'Shipping', 'type' => 'number', 'data' => 'int', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+
 			'order_ship_notes'      => array ( 'title' => 'Notes', 'type'=>'method', 'tab'=>1, 'data'=>false, 'width'=>'20%'),
 			'order_session'       	=> array ( 'title' => 'Session', 'type' => 'text', 'tab'=>1, 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 			'order_pay_rawdata' 	=> array ( 'title' => 'Rawdata', 'type' => 'method', 'tab'=>1, 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+			'order_log' 			=> array ( 'title' => 'Log', 'type' => 'method', 'tab'=>2, 'data' => 'json', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 			'options' 				=> array ( 'title' => LAN_OPTIONS, 'type' => null, 'data' => null, 'width' => '10%', 'thclass' => 'center last', 'class' => 'center last', 'forced' => '1',  ),
 		);
 
@@ -54,8 +56,15 @@ class vstore_order_ui extends e_admin_ui
 
 		public function init()
 		{
-			$this->fields['order_status']['writeParms']['optArray'] = vstore::getStatus();
-			// Set drop-down values (if any).
+
+			if ($_GET['filter_options'] == 'order_status__open')
+			{
+				// List all open orders: New, Processing, On Hold
+				// Completed, Cancelled, Refunded will NOT be displayed!
+				$this->filterQry = 'SELECT * FROM `#vstore_orders` WHERE FIND_IN_SET(order_status, "N,P,H")';
+				//$this->setQuery('filter_options');
+			}
+
 
 			if(e_DEBUG !== true)
 			{
@@ -105,6 +114,8 @@ class vstore_order_ui extends e_admin_ui
 
 		public function beforeUpdate($new_data, $old_data, $id)
 		{
+			$tp = e107::getParser();
+
 			if (array_key_exists('order_status', $new_data)) 
 			{
 				if ($old_data['order_status'] === 'C' && $new_data['order_status'] !== 'C')
@@ -114,9 +125,9 @@ class vstore_order_ui extends e_admin_ui
 					if ($uc)
 					{
 						$uc_list = e107::getDB()->retrieve('SELECT GROUP_CONCAT(userclass_name) AS ucs FROM e107_userclass_classes WHERE FIND_IN_SET(userclass_id, "'.$uc.'")');
-						$msg = sprintf('The userclasses, the customer has been assigned to during the purchase can not be removed automatically.<br/>
-							Click <a href="'.e_ADMIN.'users.php?searchquery=%d">here</a> to remove the following userclasses manually.<br/>
-							%s', $old_data['order_e107_user'], str_replace(',', ', ', $uc_list));
+						$msg = $tp->lanVars('The userclasses, the customer has been assigned to during the purchase can not be removed automatically.<br/>
+							Click <a href="'.e_ADMIN.'users.php?searchquery=[x]">here</a> to remove the following userclasses manually.<br/>[y]', 
+							array('x' => $old_data['order_e107_user'], 'y' => str_replace(',', ', ', $uc_list)));
 						
 						if (e_AJAX_REQUEST)
 						{
@@ -133,6 +144,32 @@ class vstore_order_ui extends e_admin_ui
 					}
 				}
 			}
+
+			// Check for changes and add to the log
+			$now = time();
+			foreach ($new_data as $key => $value) {
+				$oldval = $old_data[$key];
+				if ($value !== $oldval && array_key_exists($key, $this->fields))
+				{
+					$title = $this->fields[$key]['title'];
+
+					if ($key == 'order_status')
+					{
+						$value = vstore::getStatus($value);
+						$oldval = vstore::getStatus($oldval);
+					}
+
+					$log[] = array(
+						'datestamp' => $now,
+						'user_id' => USERID,
+						'user_name' => USERNAME,
+						'text' => $tp->lanVars('Changed [x] from "[y]" to "[z]".', array('x' => $title, 'y' => $oldval, 'z' => $value))
+					);
+					
+				}
+			}
+
+			$new_data['order_log'] = $log; //e107::serialize($log, 'json');
 			return $new_data;
 		}
 
@@ -175,27 +212,38 @@ class vstore_order_ui extends e_admin_ui
 class vstore_order_form_ui extends e_admin_form_ui
 {
 
-
-	// Custom Method/Function
-	function order_e107_user($curVal,$mode)
+	function order_status($curVal, $mode)
 	{
-		$frm = e107::getForm();
 
 		switch($mode)
 		{
 			case 'read': // List Page
-				return $curVal;
-			break;
+				return vstore::getStatus($curVal);
+				break;
 
 			case 'write': // Edit Page
-				return $frm->text('order_e107_user',$curVal, 255, 'size=large');
-			break;
+				return e107::getForm()->select('order_status', vstore::getStatus(), $curVal);
+				break;
 
 			case 'filter':
+				$filter = vstore::getStatus();
+				$filter['open'] = 'Open';
+				return $filter;
+				break;
+
 			case 'batch':
 				return  array();
-			break;
-		}
+				break;
+		}		
+	}
+
+	// Custom Method/Function
+	function order_e107_user($curVal,$mode)
+	{
+
+		$text = $curVal.') '.e107::getDb()->retrieve('user', 'user_name', 'user_id="'.$curVal.'"');
+		return $text;
+
 	}
 
 	function order_items($curVal,$mode)
@@ -384,6 +432,34 @@ class vstore_order_form_ui extends e_admin_form_ui
 				return  array();
 			break;
 		}
+	}
+
+
+	function order_log($curVal, $mode)
+	{
+		$items = e107::unserialize($curVal);
+
+		$text = '<table class="table table-bordered table-striped">
+			<tr>
+				<th>Date/Time</th>
+				<th>User</td>
+				<td>Description</td>
+			</tr>
+			';
+		foreach ($items as $item) {
+			$text .= sprintf('
+			<tr>
+				<td>%s</td>
+				<td>%s (%d)</td>
+				<td>%s</td>
+			</tr>', 
+				e107::getDateConvert()->convert_date($item['datestamp']),
+				$item['user_name'],
+				$item['user_id'],
+				e107::getParser()->toHTML($item['text']));
+		}
+		$text .= '</table>';
+		return $text;
 	}
 
 }
