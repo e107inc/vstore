@@ -132,6 +132,34 @@ class vstore_setup
 				return false;
 			}
 		}
+
+		// Add missing invoice_nr to vstore_orders
+		if($sql->field('vstore_orders','order_invoice_nr'))
+		{
+			$sql = e107::getDb('sql1');
+			$sql2 = e107::getDb('sql2');
+			if ($sql->select('vstore_orders','order_id', 'ISNULL(order_invoice_nr)=true ORDER BY order_id'))
+			{
+				// check pref
+				$pref = e107::pref('vstore', 'invoice_next_nr', 1);
+				if (intval($pref) < 1) $pref = 1;
+				$pref--;
+
+				// get next order_invoice_nr
+				$max = $sql2->retrieve('vstore_orders', 'MAX(order_invoice_nr) AS max');
+				$max = (is_array($max) ? intval($max['max']) : 0);
+				$max = max($pref, $max);
+
+				// Update order_invoice_nr
+				while($row = $sql->fetch())
+				{
+					$id = $row['order_id'];
+					$max++;
+					$sql2->update('vstore_orders', array('data' => array('order_invoice_nr' => $max), 'WHERE' => 'order_id='.$id));
+				}
+				return true;
+			}
+		}
 		return false;
 	}	
 

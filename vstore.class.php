@@ -81,12 +81,24 @@ class vstore_plugin_shortcodes extends e_shortcode
 		
 		switch($key)
 		{
+			case 'order_invoice_nr':
+				$text = vstore::formatInvoiceNr($this->var[$key]);
+				break;
+
 			case 'order_date':
-				$text = e107::getDateConvert()->convert_date($this->var[$key], 'long');
+				$text = e107::getDateConvert()->convert_date($this->var[$key], 'short');
 				break;
 
 			case 'country':
-				$text =  e107::getForm()->getCountry($this->var[$area][$key]);
+				$text = e107::getForm()->getCountry($this->var[$area][$key]);
+				break;
+
+			case 'order_gateway':
+				$text = vstore::getGatewayTitle($this->var['order_pay_gateway']);
+				break;
+
+			case 'order_ref':
+				$text = $this->var['order_refcode'];
 				break;
 
 			default:
@@ -197,7 +209,7 @@ class vstore_plugin_shortcodes extends e_shortcode
 		return $text;
 	}
 	
-	function sc_order_merchant_info()
+	function sc_order_merchant_info($parm=null)
 	{
 		$info = e107::pref('vstore', 'merchant_info');
 
@@ -206,7 +218,26 @@ class vstore_plugin_shortcodes extends e_shortcode
 			return null;
 		}
 
-		return e107::getParser()->toHtml($info,true);
+		if (varsettrue($parm))
+		{
+			$parm = array_keys($parm);
+			$parm = $parm[0];
+
+			if ($parm == 'line')
+			{
+				if (stripos($info, '<br') !== false)
+				{
+					$info = str_ireplace(array('<br>', '<br/>', '<br />'), ', ', $info);
+					$info = str_ireplace(array("\r\n", "\n"), '', $info);
+				}
+				else
+				{
+					$info = str_ireplace(array("\r\n", "\n"), ', ', $info);
+				}
+			}
+		}
+
+		return e107::getParser()->toHtml($info, true);
 
 	}
 
@@ -785,29 +816,6 @@ class vstore_plugin_shortcodes extends e_shortcode
 		return e107::url('vstore','product', $this->var);
 	}
 	
-	// -------------
-
-	// function sc_shipping_add_field_class($parm = null)
-	// {
-	// 	if ($this->var['fieldcount'] > 1)
-	// 	{
-	// 		return 'col-12 col-xs-12 col-sm-6';
-	// 	}
-	// 	else
-	// 	{
-	// 		return 'col-12 col-sm-12';
-	// 	}
-	// }
-
-	// function sc_shipping_add_field_label($parm = null)
-	// {
-	// 	return '<label for="'.$this->var['fieldname'].'">'.$this->var['fieldcaption'].'</label>';
-	// }
-
-	// function sc_shipping_add_field_field($parm = null)
-	// {
-	// 	return $this->var['field'];
-	// }
 
 	function sc_shipping_field($parm = null)
 	{
@@ -1129,6 +1137,9 @@ class vstore_plugin_shortcodes extends e_shortcode
 			case 'quantity': 
 				$text = $this->var['item']['quantity'];
 				break;
+			case 'tax': 
+				$text = ($this->var['is_business'] && !$this->var['is_local']) ? '' : ($this->var['item']['tax_rate'] * 100) . '%';
+				break;
 			case 'item_total': 
 				$field = ($this->var['is_business'] && !$this->var['is_local'] ? 'item_total_net' : 'item_total');
 				$value = $this->var['item'][$field];
@@ -1354,6 +1365,190 @@ class vstore_plugin_shortcodes extends e_shortcode
 		return $this->curSymbol;
 	}
 
+
+
+	function sc_invoice_data($parm = null)
+	{
+		if (empty($parm)) return '';
+		
+		$key = array_keys($parm);
+		if ($key) $key = $key[0];
+		
+		$frm = e107::getForm();
+		$ns = e107::getParser();
+		$text = '';
+		
+		switch($key)
+		{
+			case 'footer0':
+			case 'footer1':
+			case 'footer2':
+			case 'footer3':
+				$i = intval(substr($key, -1));
+				if (!is_array($this->vpref['invoice_footer']))
+				{
+					$this->vpref['invoice_footer'] = e107::unserialize($this->vpref['invoice_footer']);
+				}
+				// if (!empty($this->vpref['invoice_footer'][$i]['title'][e_LANGUAGE]))
+				// {
+				// 	$text = "<b>" . $ns->toHTML($this->vpref['invoice_footer'][$i]['title'][e_LANGUAGE], true) . "</b>";
+				// }
+				// $text .= $ns->toHTML($this->vpref['invoice_footer'][$i]['text'][e_LANGUAGE], true);
+				$text = $ns->toHTML($this->vpref['invoice_footer'][$i], true);
+				break;
+
+			case 'title':
+				$text = $ns->toHTML($this->vpref['invoice_title'][e_LANGUAGE], true);
+				break;
+
+			case 'info_title':
+				$text = $ns->toHTML($this->vpref['invoice_info_title'][e_LANGUAGE], true);
+				break;
+
+			case 'subject':
+				$text = $ns->parseTemplate($this->vpref['invoice_subject'][e_LANGUAGE], true, $this);
+				break;
+
+			case 'hint':
+				$text = $ns->toHTML($this->vpref['invoice_hint'][e_LANGUAGE], true);
+				$text = ($text ? '<p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p>' : '') . $text;
+				break;
+
+			case 'finish_phrase':
+				$text = $ns->toHTML($this->vpref['invoice_finish_phrase'], true);
+				$text = ($text ? '<p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p>' : '') . $text;
+				break;
+
+			case 'payment_deadline':
+				$datestamp = $this->var['order_date'];
+				$datestamp += ($this->vpref['invoice_payment_deadline'] * 24 * 60 * 60);
+				$format = varset($this->vpref['invoice_date_format'], '%m/%d/%Y');
+				$text = e107::getDateConvert()->convert_date($datestamp, $format);
+				break;
+		}
+		return $text;
+	}
+
+	function sc_invoice_items()
+	{
+		$items = $this->var['order_items'];
+
+		$template = e107::getTemplate('vstore', 'vstore_invoice', 'invoice_items');
+
+		$text = e107::getParser()->parseTemplate($template['header'], true, $this);
+
+		foreach($items as $key=>$item)
+		{
+			$desc = $item['description'];
+
+			if (!empty($item['vars']))
+			{
+				$desc .= '<br/>' . $item['vars'];
+			}
+			if ($item['id']>0 && varset($item['file']) && isset($this->var['order_status']))
+			{
+				if ($this->var['order_status'] === 'C' || ($this->var['order_status'] === 'N' && $this->var['order_pay_status'] == 'complete'))
+				{
+					$linktext = 'Download';
+				}
+				else
+				{
+					$linktext = 'Download (will be available once the payment has been received)';
+				}
+				$desc .= '<br/><a href="'.e107::url('vstore', 'download', array('item_id' => $item['id']), array('mode'=>'full')).'">'.$linktext.'</a>';
+			}
+
+			$item['name'] = $desc;
+			$item['item_total'] = $item['price'] * $item['quantity'];
+
+			$this->addVars(array('item' => $item));
+			$text .= e107::getParser()->parseTemplate($template['row'], true, $this);
+		}
+
+		$text .= e107::getParser()->parseTemplate($template['footer'], true, $this);
+
+		return $text;
+		
+	}
+
+
+	function sc_invoice_coupon()
+	{
+		if (empty($this->var['order_pay_coupon_code']))
+		{
+			return '';
+		}
+		
+		$template = e107::getTemplate('vstore', 'vstore_invoice', 'invoice_items');
+		$data = array('x' => $this->var['order_pay_coupon_code'], 'y' => $this->format_amount($this->var['order_pay_coupon_amount']));
+		$text = e107::getParser()->lanVars($template['coupon'], $data);
+		return $text;
+	}
+	
+	
+	function sc_invoice_tax($parm=null)
+	{
+		if ($this->var['is_business'] && !$this->var['is_local'])
+		{
+			return '';
+		}		
+		if (!is_array($this->var['order_pay_tax']))
+		{
+			$this->var['order_pay_tax'] = e107::unserialize($this->var['order_pay_tax']);
+		}
+		$template = e107::getTemplate('vstore', 'vstore_invoice', 'invoice_items');
+		$text = $x = $y = '';
+		foreach($this->var['order_pay_tax'] as $tax_rate => $value)
+		{
+			if (floatval($tax_rate) <= 0) continue;
+			$x .= ($x != '' ? '<br />' : '').($tax_rate * 100).'%';
+			$y .= ($y != '' ? '<br />' : '').$this->format_amount($value);
+		}
+
+		if ($x != '')
+		{			
+			$text .= e107::getParser()->lanVars($template['tax'], array('x' => $x, 'y' => $y));
+		}
+
+		return $text;
+	}
+	
+	function sc_invoice_logo($parm)
+	{
+		// Paths to image file, link are relative to site base
+		$tp = e107::getParser();
+
+		$logopref = e107::getConfig('core')->get('sitelogo');
+		$logop = $tp->replaceConstants($logopref);
+
+		if(vartrue($logopref) && is_readable($logop))
+		{
+			$logo = $tp->replaceConstants($logopref,'abs');
+			$path = $tp->replaceConstants($logopref);
+		}
+		elseif (isset($file) && $file && is_readable($file))
+		{
+			$logo = e_HTTP.$file;						// HTML path
+			$path = e_BASE.$file;						// PHP path
+		}
+		else if (is_readable(THEME.'images/e_logo.png'))
+		{
+			$logo = THEME_ABS.'images/e_logo.png';		// HTML path
+			$path = THEME.'images/e_logo.png';			// PHP path
+		}
+		else
+		{
+			$logo = '{e_IMAGE}logoHD.png';				// HTML path
+			$path = e_IMAGE.'logoHD.png';					// PHP path
+		}
+
+		if ($parm === 'path')
+		{
+			return $path;
+		}
+		return '<image src="'.$path.'" style="max-width:150px;max-height: 150px;width:100%;height:auto;">';
+	}
+
 }
 
 
@@ -1378,6 +1573,7 @@ class vstore
 	protected   $pref               = array();
 	protected   $parentData         = array();
 	protected   $currency           = 'USD';
+	protected 	$pdf_path			= 'invoices/';
 
 	protected static $gateways    = array(
 		'paypal'        => array('title'=>'Paypal', 'icon'=>'fa-paypal'),
@@ -2156,6 +2352,33 @@ class vstore
 			return null;
 		}
 
+
+		if(intval($this->get['invoice']) > 0)
+		{
+			// Display invoice
+			$data = $this->renderInvoice($this->getOrderIdFromInvoiceNr($this->get['invoice']));
+			
+			if ($data)
+			{
+				$this->invoiceToPdf($data, !false);
+			}
+
+			$msg = e107::getMessage()->render('vstore');
+
+			$ns->tablerender('invoice', $msg, 'vstore-invoice');
+
+			// $msg = e107::getMessage()->render('vstore');
+
+			// if ($msg)
+			// {
+			// 	$bread = $this->breadcrumb();
+			// 	$ns->tablerender($this->captionBase, $bread.$msg, 'vstore-cart-list');
+			// }
+
+			return null;
+		}
+
+
 		if($this->getMode() == 'cart')
 		{
 			// print_a($this->post);
@@ -2548,6 +2771,7 @@ class vstore
 					'price'       => $price,
 					'description' => $var['item_name'],
 					'quantity'    => $var['cart_qty'],
+					'tax_rate'    => $var['tax_rate'],
 					'file'        => $var['item_download'],
 					'vars'		  => $itemvarstring,
 				);
@@ -2771,7 +2995,7 @@ class vstore
 				'text' => 'Order Ref-Nr. assigned: '.$refId
 			);
 	
-			e107::getDb()->update('vstore_orders', array('data' => array('order_refcode' => $refId, 'order_log' => e107::serialize($log, 'json')), 'WHERE' => 'order_id='.$nid));
+			e107::getDb()->update('vstore_orders', array('data' => array('order_refcode' => $refId, 'order_log' => e107::serialize($log, 'json'), 'order_invoice_nr' => vstore::getNextInvoiceNr()), 'WHERE' => 'order_id='.$nid));
 		
 			$mes->addSuccess("Your order <b>#".$refId."</b> is complete and you will receive a order confirmation with all details within the next few minutes!",'vstore');
 			$this->updateInventory($insert['order_items']);
@@ -4813,4 +5037,203 @@ class vstore
 
 		return $result;
 	}
+
+	/**
+	 * fetch the next invoice nr to use
+	 *
+	 * @return int
+	 */
+	public static function getNextInvoiceNr()
+	{
+		// Get last used invoice nr.
+		$last_nr = e107::getDB()->retrieve('vstore_orders', 'MAX(order_invoice_nr) AS last');
+		// Get next nr. from prefs
+		$pref = (int) e107::pref('vstore', 'invoice_next_nr');
+		// if the pref nr is higher ...
+		if (varsettrue($pref) > (int)$last_nr['last'])
+		{
+			// ... use pref
+			return $pref;
+		}
+		// ... otherwise return next higher
+		return (int) ($last_nr['last'] + 1);
+	}
+
+
+	/**
+	 * Return a formated invoice nr incl. prefix
+	 *
+	 * @param int $invoice_nr
+	 * @return string
+	 */
+	public static function formatInvoiceNr($invoice_nr)
+	{
+		$text = e107::pref('vstore', 'invoice_nr_prefix');
+		$text .= e107::getParser()->leadingZeros($invoice_nr, 6);
+
+		return $text;
+		
+	}
+
+
+	/**
+	 * fetch the corresponding order_id to a invoice_nr
+	 *
+	 * @param int $invoice_nr
+	 * @return int
+	 */
+	function getOrderIdFromInvoiceNr($invoice_nr)
+	{
+		return e107::getDb()->retrieve('vstore_orders', 'order_id', 'order_invoice_nr='.intval($invoice_nr));
+	}
+
+
+	/**
+	 * render the invoice by a given order_id
+	 *
+	 * @param int $order_id
+	 * @return boolean/array
+	 */
+	function renderInvoice($order_id)
+	{
+
+		if (!varsettrue($order_id))
+		{
+			// Order ID missing or invalid
+			e107::getMessage()->addDebug('Order id "'.$order_id.'" missing or invalid!', 'vstore');
+			return false;
+		}
+
+		// Get order data
+		$order = e107::getDb()->retrieve('vstore_orders', '*', 'order_id='.$order_id);
+		if (!$order)
+		{
+			// Order not found!
+			e107::getMessage()->addDebug('Order id "'.$order_id.'" not found!', 'vstore');
+			return false;
+		}
+
+
+		// check if the invoice belongs to the user (or is admin)
+		if ($order['order_e107_user'] != USERID)
+		{
+			// is user an admin
+			if (!ADMIN)
+			{
+				e107::getMessage()->addError('Access denied!', 'vstore');
+				return false;
+			}
+		}
+
+		// check status of order: Invoice should be rendered only in status: N=New, C=Complete, P=Processing
+		if (!in_array(strtoupper($order['order_status']), array('N', 'C', 'P')))
+		{
+			e107::getMessage()->addError(e107::getParser()->lanVars('Order in status "[x]". Invoice not available!', self::getStatus($order['order_status'])) , 'vstore');
+			return false;
+		}
+
+
+		// Load template
+		$template = e107::getTemplate('vstore', 'vstore_invoice');
+		$invoice = $this->pref['invoice_template'];
+		if (empty($invoice))
+		{
+			if (!varsettrue($template['default']))
+			{
+				// Template not found!
+				e107::getMessage()->addDebug('Order id "'.$order_id.'" not found!', 'vstore');
+				return $result;
+			}
+			$invoice = $template['default'];
+		}
+
+
+		$order['order_items'] = e107::unserialize($order['order_items']);
+		$order['order_billing'] = e107::unserialize($order['order_billing']);
+		$order['order_shipping'] = e107::unserialize($order['order_shipping']);
+		$order['order_pay_tax'] = e107::unserialize($order['order_pay_tax']);
+
+		$order['is_business'] = !empty($order['order_billing']['vat_id']);
+		$order['is_local'] = (varset($order['order_billing']['country'], $this->pref['tax_business_country']) == $this->pref['tax_business_country']);
+
+
+		$ns = e107::getParser();
+		
+		$this->sc->addVars($order);
+		
+		$text = $ns->parseTemplate($invoice, true, $this->sc);
+		$footer = $ns->parseTemplate($template['footer'], true, $this->sc);
+
+		$logo = $this->sc->sc_invoice_logo('path');
+		if (!empty($logo))
+		{
+			$logo = e_ROOT . $logo;
+		}
+
+
+		// $text		= $text;					//define text
+		// $creator	= SITENAME;					//define creator
+		// $author		= varset($this->pref['sender_name'], 'Sales');					//define author
+		// $title		= varset($this->pref['invoice_title'][e_LANGUAGE], 'Invoice').' '.self::formatInvoiceNr($order['order_invoice_nr']);		//define title
+		// $subject	= $title;					//define subject
+		// $keywords	= '';						//define keywords
+
+		// //define url and logo to use in the header of the pdf file
+		// $url		= e107::url('vstore', 'invoice', array('order_invoice_nr' => $order['order_invoice_nr']), array('mode' => 'full'));
+	
+
+		$result = array(
+			'subject' => varset($this->pref['invoice_title'][e_LANGUAGE], 'Invoice').' '.self::formatInvoiceNr($order['order_invoice_nr']),
+			'text' => $text,
+			'footer' => $footer,
+			'logo' => $logo,
+			'url' => e107::url('vstore', 'invoice', array('order_invoice_nr' => $order['order_invoice_nr']), array('mode' => 'full'))
+		);
+
+		return $result;
+	}
+
+	/**
+	 * create a pdf invoice
+	 *
+	 * @param array $data
+	 * @param boolean $saveToDisk
+	 * @return void
+	 */
+	function invoiceToPdf($data, $saveToDisk=false)
+	{
+
+		if (!e107::isInstalled('pdf'))
+		{
+			e107::getMessage()->addError('PDF plugin not installed!<br/>This plugin is required to create invoice pdf\'s!', 'vstore');
+			return false;
+		}
+
+		require_once('inc/vstore_pdf.class.php');	//require the vstore_pdf class
+		// require_once(e_PLUGIN.'pdf/tcpdf.php');		//require the e107pdf class
+
+		$pdf = new vstore_pdf();
+
+		if ($saveToDisk)
+		{
+			$pdf->pdf_path = dirname(__FILE__) . '/' . $this->pdf_path;
+			$pdf->pdf_output = 'F';
+		}
+		else
+		{
+			$pdf->pdf_path = '';
+		}
+
+		$data['title'] = $data['subject'];
+		$data['creator'] = SITENAME;
+		$data['author'] = varset($this->pref['sender_name'], 'Sales');
+		$data['keywords'] = '';
+
+		extract($data);
+
+		$pdf->makePDF($text, $footer, $creator, $author, $title, $subject, $keywords, $url, $logo);
+
+		return;
+	}
+
 }
