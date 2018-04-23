@@ -1127,6 +1127,9 @@ class vstore_plugin_shortcodes extends e_shortcode
 		$text = '';
 		switch($key)
 		{
+			case 'nr': 
+				$text = $this->var['item']['nr'];
+				break;
 			case 'name': 
 				$text = $this->var['item']['name'];
 				break;
@@ -1458,6 +1461,7 @@ class vstore_plugin_shortcodes extends e_shortcode
 				$desc .= '<br/><a href="'.e107::url('vstore', 'download', array('item_id' => $item['id']), array('mode'=>'full')).'">'.$linktext.'</a>';
 			}
 
+			$item['nr'] = ($key + 1);
 			$item['name'] = $desc;
 			$item['item_total'] = $item['price'] * $item['quantity'];
 
@@ -2360,20 +2364,18 @@ class vstore
 			
 			if ($data)
 			{
+				// if invoice is correctly rendered, convert to pdf
 				$this->invoiceToPdf($data, !false);
+				$local_pdf = $this->pathToInvoicePdf($this->get['invoice']);
+				$this->downloadInvoicePdf($local_pdf);								
 			}
 
 			$msg = e107::getMessage()->render('vstore');
-
-			$ns->tablerender('invoice', $msg, 'vstore-invoice');
-
-			// $msg = e107::getMessage()->render('vstore');
-
-			// if ($msg)
-			// {
-			// 	$bread = $this->breadcrumb();
-			// 	$ns->tablerender($this->captionBase, $bread.$msg, 'vstore-cart-list');
-			// }
+			if ($msg)
+			{
+				$bread = $this->breadcrumb();
+				$ns->tablerender($this->captionBase, $bread.$msg, 'vstore-invoice');
+			}
 
 			return null;
 		}
@@ -2994,12 +2996,25 @@ class vstore
 				'user_name' => USERNAME,
 				'text' => 'Order Ref-Nr. assigned: '.$refId
 			);
-	
-			e107::getDb()->update('vstore_orders', array('data' => array('order_refcode' => $refId, 'order_log' => e107::serialize($log, 'json'), 'order_invoice_nr' => vstore::getNextInvoiceNr()), 'WHERE' => 'order_id='.$nid));
+			
+			$invoice_nr = vstore::getNextInvoiceNr();
+
+			e107::getDb()->update('vstore_orders', array('data' => array('order_refcode' => $refId, 'order_log' => e107::serialize($log, 'json'), 'order_invoice_nr' => $invoice_nr), 'WHERE' => 'order_id='.$nid));
 		
+			$insert['order_refcode'] = $refId;
+			$insert['order_invoice_nr'] = $invoice_nr;
+
+			$pdf_data = $this->renderInvoice($nid);
+			$pdf_file = '';
+			if ($pdf_data)
+			{
+				$this->invoiceToPdf($pdf_data);
+				$pdf_file = $this->pathToInvoicePdf($invoice_nr);
+			}
+
 			$mes->addSuccess("Your order <b>#".$refId."</b> is complete and you will receive a order confirmation with all details within the next few minutes!",'vstore');
 			$this->updateInventory($insert['order_items']);
-			$this->emailCustomer('default', $refId, $insert);
+			$this->emailCustomer('default', $refId, $insert, $pdf_file);
 
 			if (!empty($transData))
 			{
@@ -3204,7 +3219,7 @@ class vstore
 	 * @param array $insert email contents
 	 * @return void
 	 */
-	function emailCustomer($templateKey='default', $ref, $insert=array())
+	function emailCustomer($templateKey='default', $ref, $insert=array(), $pdf_file='')
 	{
 		$tp = e107::getParser();
 		$template = $this->getEmailTemplate($templateKey);
@@ -3261,9 +3276,14 @@ class vstore
 					'body'			=> $tp->parseTemplate($template,true,$this->sc)
 		);
 
-		if ($cc != '')
+		if (!empty($cc))
 		{
 			$eml['cc'] = $cc;
+		}
+
+		if (!empty($pdf_file))
+		{
+			$eml['attach'] = $pdf_file;
 		}
 
 		// die(e107::getEmail()->preview($eml));
@@ -5094,7 +5114,7 @@ class vstore
 	 * @param int $order_id
 	 * @return boolean/array
 	 */
-	function renderInvoice($order_id)
+	function renderInvoice($order_id, $forceUpdate=false)
 	{
 
 		if (!varsettrue($order_id))
@@ -5130,6 +5150,15 @@ class vstore
 		{
 			e107::getMessage()->addError(e107::getParser()->lanVars('Order in status "[x]". Invoice not available!', self::getStatus($order['order_status'])) , 'vstore');
 			return false;
+		}
+
+
+		// Check if invoice already exists
+		$local_pdf = $this->pathToInvoicePdf($order['order_invoice_nr']);
+		if ($local_pdf != '' && !$forceUpdate)
+		{
+			$this->downloadInvoicePdf($local_pdf);
+			return;
 		}
 
 
@@ -5170,18 +5199,6 @@ class vstore
 			$logo = e_ROOT . $logo;
 		}
 
-
-		// $text		= $text;					//define text
-		// $creator	= SITENAME;					//define creator
-		// $author		= varset($this->pref['sender_name'], 'Sales');					//define author
-		// $title		= varset($this->pref['invoice_title'][e_LANGUAGE], 'Invoice').' '.self::formatInvoiceNr($order['order_invoice_nr']);		//define title
-		// $subject	= $title;					//define subject
-		// $keywords	= '';						//define keywords
-
-		// //define url and logo to use in the header of the pdf file
-		// $url		= e107::url('vstore', 'invoice', array('order_invoice_nr' => $order['order_invoice_nr']), array('mode' => 'full'));
-	
-
 		$result = array(
 			'subject' => varset($this->pref['invoice_title'][e_LANGUAGE], 'Invoice').' '.self::formatInvoiceNr($order['order_invoice_nr']),
 			'text' => $text,
@@ -5200,7 +5217,7 @@ class vstore
 	 * @param boolean $saveToDisk
 	 * @return void
 	 */
-	function invoiceToPdf($data, $saveToDisk=false)
+	function invoiceToPdf($data, $saveToDisk=true)
 	{
 
 		if (!e107::isInstalled('pdf'))
@@ -5210,7 +5227,6 @@ class vstore
 		}
 
 		require_once('inc/vstore_pdf.class.php');	//require the vstore_pdf class
-		// require_once(e_PLUGIN.'pdf/tcpdf.php');		//require the e107pdf class
 
 		$pdf = new vstore_pdf();
 
@@ -5236,4 +5252,60 @@ class vstore
 		return;
 	}
 
+	/**
+	 * Check if pdf of given invoice number already exists and return the fullpath incl. filename
+	 *
+	 * @param int $invoice_nr
+	 * @return string empty string if file doesn't exists
+	 */
+	function pathToInvoicePdf($invoice_nr)
+	{
+		$title = varset($this->pref['invoice_title'][e_LANGUAGE], 'Invoice').' '.self::formatInvoiceNr($invoice_nr);
+		$file = dirname(__FILE__) . '/' . $this->pdf_path . e107::getForm()->name2id($title) . '.pdf';
+
+		return (is_readable($file) ? $file : '');
+	}
+
+
+	/**
+	 * Return the given pdf file as downloads
+	 *
+	 * @param string $local_pdf
+	 * @return void
+	 */
+	function downloadInvoicePdf($local_pdf)
+	{
+		if ($local_pdf != '')
+		{
+			while(ob_end_clean());
+			header('Content-Description: File Transfer');
+			if (headers_sent()) {
+				$this->Error('Some data has already been output to browser, can\'t send PDF file');
+			}
+			header('Cache-Control: private, must-revalidate, post-check=0, pre-check=0, max-age=1');
+			header('Pragma: public');
+			header('Expires: Sat, 26 Jul 1997 05:00:00 GMT'); // Date in the past
+			header('Last-Modified: '.gmdate('D, d M Y H:i:s').' GMT');
+			// force download dialog
+			if (strpos(php_sapi_name(), 'cgi') === false) {
+				header('Content-Type: application/force-download');
+				header('Content-Type: application/octet-stream', false);
+				header('Content-Type: application/download', false);
+				header('Content-Type: application/pdf', false);
+			} else {
+				header('Content-Type: application/pdf');
+			}
+			// use the Content-Disposition header to supply a recommended filename
+			header('Content-Disposition: attachment; filename="'.basename($local_pdf).'"');
+			header('Content-Transfer-Encoding: binary');
+
+			header('Content-Length: ' . filesize($local_pdf));
+			readfile($local_pdf);
+			exit;
+		}
+		else
+		{
+			e107::getMessage()->addWarning('Invoice pdf not found!', 'vstore');
+		}
+	}
 }
