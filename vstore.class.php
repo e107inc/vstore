@@ -2103,12 +2103,12 @@ class vstore
 		 * End
 		 */
 
-		if(!USER)
-		{
+		// if(!USER)
+		// {
 
-			$text .= e107::getParser()->parseTemplate($template['guest'], true, $this->sc);
+		// 	$text .= e107::getParser()->parseTemplate($template['guest'], true, $this->sc);
 
-		}
+		// }
 
 		return $text;
 
@@ -2563,7 +2563,7 @@ class vstore
 		$active = $this->getActiveGateways();
 		$curGateway = $this->getGatewayType();
 
-		if(!USER)
+		if(!USER && !isset($_POST['as_guest']))
 		{
 			// TODO: Fill with life ...
 			$text = e107::getForm()->open('gateway-select','post', e107::url('vstore', 'checkout', 'sef'), array('class'=>'form'));
@@ -2572,7 +2572,6 @@ class vstore
 
 
 			return $text;
-
 		}
 
 
@@ -3017,7 +3016,7 @@ class vstore
 		$nid = e107::getDb()->insert('vstore_orders',$insert);
 		if( $nid !== false)
 		{
-			if (!$this->saveCustomer($customerData, $shippingData, $this->getShippingType(), $this->getGatewayType(true)))
+			if (USER && !$this->saveCustomer($customerData, $shippingData, $this->getShippingType(), $this->getGatewayType(true)))
 			{
 				$mes->addError('Unable to save/Update customer data!', 'vstore');
 			}
@@ -4053,7 +4052,7 @@ class vstore
 	 * @param boolean $isCheckoutData true if $data is of type checkout data
 	 * @return array
 	 */
-	public function prepareCheckoutData($data, $isCheckoutData=false)
+	public function prepareCheckoutData($data, $isCheckoutData=false, $fromSitelink=false)
 	{
 		$sql = e107::getDb();
 		$cust = $this->getCustomerData();
@@ -4177,7 +4176,7 @@ class vstore
 		
 		if ($count_active == 0)
 		{
-			return e107::getMessage()->addInfo("Your cart is empty.",'vstore')->render('vstore');
+			return ($fromSitelink ? null : e107::getMessage()->addInfo("Your cart is empty.",'vstore')->render('vstore'));
 		}
 
 

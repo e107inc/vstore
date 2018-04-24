@@ -673,7 +673,7 @@ $VSTORE_TEMPLATE['customer']['guest'] = '
 			</p>
 
 			<div class="form-group">
-				<button name="register" class="btn btn-primary btn-block">Sign up</button>
+				<a class="btn btn-primary btn-block" id="register" href="{SITEURL}signup.php" title="Sign up">Sign up</a>
 			</div>
 		</div>
 
@@ -686,22 +686,25 @@ $VSTORE_TEMPLATE['customer']['guest'] = '
 			</p>
 
 			<div class="form-group">
-				<button name="as_guest" class="btn btn-default btn-block">Order as guest</button>
+				<button name="as_guest" class="btn btn-default btn-block" type="submit" value="guest">Order as guest</button>
 			</div>
 		</div>
 	
 		<div class="col-12 col-xs-12 col-sm-4">
 			<h4>I\'ve got a useraccount</h4>
-
+			
+			<p>Let me login...</p>
+			<form method="post" onsubmit="hashLoginPassword(this);return true" accept-charset="UTF-8">
 			<div class="form-group">
-				<input type="text" name="username" id="username" class="form-control input-sm" placeholder="Username or email address">
+				<input type="text" name="username" id="username" class="form-control input-sm tbox login user" placeholder="Username or email address" value="" maxlength="100">
 			</div>
 			<div class="form-group">
-				<input type="password" name="password" id="password" class="form-control input-sm" placeholder="Password">
+				<input type="password" name="userpass" id="userpass" class="form-control input-sm tbox login pass" placeholder="Password" size="15" value="" maxlength="30">
 			</div>
 			<div class="form-group">
-				<button name="login" class="btn btn-default btn-block">Login</button>
+				<button name="userlogin" class="btn btn-default btn-block" type="submit">Login</button>
 			</div>
+			</form>
 		</div>
 
 	</div>
