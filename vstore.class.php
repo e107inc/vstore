@@ -1985,6 +1985,25 @@ class vstore
 
 	}
 
+	/**
+	 * Render a form in case the current user is not logged in
+	 * for him to decide if he wants to buy as guest, create a
+	 * new user account or to login with an existing user account
+	 *
+	 * @return string
+	 */
+	private function renderGuestForm()
+	{
+		$frm = e107::getForm();
+		$tp = e107::getParser();
+
+		$template = e107::getTemplate('vstore', 'vstore', 'customer');
+
+		$text = $tp->parseTemplate($template['guest'], true, $this->sc);
+
+		return $text;
+	}
+
 
 	/**
 	 * Render customer (billing) information form
@@ -2087,7 +2106,7 @@ class vstore
 		if(!USER)
 		{
 
-			$text .= e107::getParser()->parseTemplate($template['additional']['guest'], true, $this->sc);
+			$text .= e107::getParser()->parseTemplate($template['guest'], true, $this->sc);
 
 		}
 
@@ -2543,6 +2562,21 @@ class vstore
 	{
 		$active = $this->getActiveGateways();
 		$curGateway = $this->getGatewayType();
+
+		if(!USER)
+		{
+			// TODO: Fill with life ...
+			$text = e107::getForm()->open('gateway-select','post', e107::url('vstore', 'checkout', 'sef'), array('class'=>'form'));
+			$text .= $this->renderGuestForm();
+			$text .= e107::getForm()->close();
+
+
+			return $text;
+
+		}
+
+
+
 		if(!empty($active))
 		{
 			$text = e107::getForm()->open('gateway-select','post', e107::url('vstore', 'checkout', 'sef'), array('class'=>'form'));
@@ -3090,10 +3124,16 @@ class vstore
 		{
 			$order['order_items'] = json_decode($order['order_items'], true);
 			$receiver = json_decode($order['order_billing'], true);
-			//$refId = $this->getOrderRef($order['order_id'], $receiver['firstname'], $receiver['lastname']);
 			$refId = $order['order_refcode'];
 
-			$this->emailCustomer(strtolower($this->getStatus($order['order_status'])), $refId, $order);
+			// Attach the invoice in case the order status is New, Complete or Processing
+			$pdf_file = '';
+			if (self::validInvoiceOrderState($order['order_status']))
+			{
+				$pdf_file = self::pathToInvoicePdf($order['order_invoice_nr']);
+			}
+
+			$this->emailCustomer(strtolower($this->getStatus($order['order_status'])), $refId, $order, $pdf_file);
 		}
 		else
 		{
@@ -3760,11 +3800,11 @@ class vstore
 	 */	
 	protected function addToCart($id, $itemvars=false)
 	{
-		if (USERID === 0){
-			// Allow only logged in users to add items to the cart
-			e107::getMessage()->addError('You must be logged in before adding products to the cart!', 'vstore');
-			return false;
-		}
+		// if (USERID === 0){
+		// 	// Allow only logged in users to add items to the cart
+		// 	e107::getMessage()->addError('You must be logged in before adding products to the cart!', 'vstore');
+		// 	return false;
+		// }
 
 		$itemvars = $this->fixItemVarArray($itemvars);
 		$sql = e107::getDb();
@@ -5146,7 +5186,7 @@ class vstore
 		}
 
 		// check status of order: Invoice should be rendered only in status: N=New, C=Complete, P=Processing
-		if (!in_array(strtoupper($order['order_status']), array('N', 'C', 'P')))
+		if (!self::validInvoiceOrderState($order['order_status']))
 		{
 			e107::getMessage()->addError(e107::getParser()->lanVars('Order in status "[x]". Invoice not available!', self::getStatus($order['order_status'])) , 'vstore');
 			return false;
@@ -5160,7 +5200,11 @@ class vstore
 			$this->downloadInvoicePdf($local_pdf);
 			return;
 		}
-
+		if ($local_pdf != '')
+		{
+			// Delete old pdf, to make sure it WILL get recreated!
+			@unlink($local_pdf);
+		}
 
 		// Load template
 		$template = e107::getTemplate('vstore', 'vstore_invoice');
@@ -5222,7 +5266,9 @@ class vstore
 
 		if (!e107::isInstalled('pdf'))
 		{
-			e107::getMessage()->addError('PDF plugin not installed!<br/>This plugin is required to create invoice pdf\'s!', 'vstore');
+			e107::getAdminLog()->addError('PDF plugin not installed!<br/>This plugin is required by vstore to create invoice pdf\'s!', true, true)->save();
+
+			e107::getMessage()->addError('PDF plugin not installed!<br/>This plugin is required to create invoice pdf\'s!<br/>Please inform the site-admin!', 'vstore');
 			return false;
 		}
 
@@ -5307,5 +5353,16 @@ class vstore
 		{
 			e107::getMessage()->addWarning('Invoice pdf not found!', 'vstore');
 		}
+	}
+
+	/**
+	 * Check if the current order status is valid for invoice creation
+	 *
+	 * @param string $order_status
+	 * @return bool true, order is in a valid state (New, Complete, Processing); false otherwise
+	 */
+	public static function validInvoiceOrderState($order_status)
+	{
+		return in_array(strtoupper($order_status), array('N', 'C', 'P'));
 	}
 }

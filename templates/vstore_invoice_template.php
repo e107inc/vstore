@@ -10,13 +10,16 @@
 
 	$VSTORE_INVOICE_TEMPLATE = array();
 
-	// Content of the invoice.
+	/** 
+	*  vstore Invoice template for use to be converted to pdf.
 
-
-	// $VSTORE_INVOICE_TEMPLATE['default'] = '
-
-	// {INVOICE_ITEMS}';
-
+	ATTENTION!!!
+	Do mainly use standard html elements as not all html5 tags
+	or css is supported by the pdf plugin (TCPDF)!
+	You need to test ALL changes to the templates 
+	BEFORE using in a production environment!
+	
+	*/
 	$VSTORE_INVOICE_TEMPLATE['default'] = '
 
 <table>

@@ -22,7 +22,7 @@ class vstore_url // plugin-folder + '_url'
 		$config = array();
 
 		$config['invoice'] = array(
-			'regex'			=> '^{alias}/invoice/([\d]*)$',
+			'regex'			=> '^{alias}\/invoice\/([\d]*)\/?$',
 			'redirect'		=> '{e_PLUGIN}vstore/vstore.php?invoice=$1&',
 			'sef'			=> '{alias}/invoice/{order_invoice_nr}/'
 		);

@@ -664,16 +664,46 @@ $VSTORE_TEMPLATE['customer']['additional']['item'] = '
 
 $VSTORE_TEMPLATE['customer']['guest'] = '
 	<div class="row">
-		<div class="col-12 col-xs-12 col-sm-6">
+		<div class="col-12 col-xs-12 col-sm-4">
+			<h4>I\'m a new customer</h4>
+
+			<p>By signing up on our site, you are able to order quicker, 
+			know always the state of your orders and have always an 
+			up-to-date overview about your orders.
+			</p>
+
+			<div class="form-group">
+				<button name="register" class="btn btn-primary btn-block">Sign up</button>
+			</div>
+		</div>
+
+		<div class="col-12 col-xs-12 col-sm-4">
+			<h4>Order as guest</h4>
+
+			<p>When ordering as guest, no user account will be created.<br/>
+			That means, in case of another order, you will have to enter
+			all information once again.
+			</p>
+
+			<div class="form-group">
+				<button name="as_guest" class="btn btn-default btn-block">Order as guest</button>
+			</div>
+		</div>
+	
+		<div class="col-12 col-xs-12 col-sm-4">
+			<h4>I\'ve got a useraccount</h4>
+
+			<div class="form-group">
+				<input type="text" name="username" id="username" class="form-control input-sm" placeholder="Username or email address">
+			</div>
 			<div class="form-group">
 				<input type="password" name="password" id="password" class="form-control input-sm" placeholder="Password">
 			</div>
-		</div>
-		<div class="col-12 col-xs-12 col-sm-6">
 			<div class="form-group">
-				<input type="password" name="password_confirmation" id="password_confirmation" class="form-control input-sm" placeholder="Confirm Password">
+				<button name="login" class="btn btn-default btn-block">Login</button>
 			</div>
 		</div>
+
 	</div>
 ';
 

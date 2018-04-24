@@ -321,7 +321,8 @@ class vstore_pdf extends TCPDF
 		$this->SetFont('helvetica', '', 8);
 		// Page number
         $this->writeHTML($this->footer_text, true, false, false, false, 'L');
-        $this->Cell(0, 5, PDF_LAN_19 . ' ' . $this->getAliasNumPage() . '/' . $this->getAliasNbPages(), 0, 1, 'C');
+        $this->Cell(0, 5, PDF_LAN_19 . ' ' . $this->getAliasNumPage() . '/' . $this->getAliasNbPages(), 0, 0, 'C');
+        $this->Cell(0, 5, 'Document created: ' . e107::getDateConvert()->convert_date(time(), 'short'), 0, 1, 'R');
 	}
 
     /**
