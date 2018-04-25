@@ -1577,7 +1577,6 @@ class vstore
 	protected   $pref               = array();
 	protected   $parentData         = array();
 	protected   $currency           = 'USD';
-	protected 	$pdf_path			= 'invoices/';
 
 	protected static $gateways    = array(
 		'paypal'        => array('title'=>'Paypal', 'icon'=>'fa-paypal'),
@@ -2385,7 +2384,7 @@ class vstore
 			{
 				// if invoice is correctly rendered, convert to pdf
 				$this->invoiceToPdf($data, !false);
-				$local_pdf = $this->pathToInvoicePdf($this->get['invoice']);
+				$local_pdf = $this->pathToInvoicePdf($this->get['invoice'], $data['userid']);
 				$this->downloadInvoicePdf($local_pdf);								
 			}
 
@@ -3042,7 +3041,7 @@ class vstore
 			if ($pdf_data)
 			{
 				$this->invoiceToPdf($pdf_data);
-				$pdf_file = $this->pathToInvoicePdf($invoice_nr);
+				$pdf_file = $this->pathToInvoicePdf($invoice_nr, $pdf_data['userid']);
 			}
 
 			$mes->addSuccess("Your order <b>#".$refId."</b> is complete and you will receive a order confirmation with all details within the next few minutes!",'vstore');
@@ -3129,7 +3128,7 @@ class vstore
 			$pdf_file = '';
 			if (self::validInvoiceOrderState($order['order_status']))
 			{
-				$pdf_file = self::pathToInvoicePdf($order['order_invoice_nr']);
+				$pdf_file = $this->pathToInvoicePdf($order['order_invoice_nr'], $order['order_e107_user']);
 			}
 
 			$this->emailCustomer(strtolower($this->getStatus($order['order_status'])), $refId, $order, $pdf_file);
@@ -5193,7 +5192,7 @@ class vstore
 
 
 		// Check if invoice already exists
-		$local_pdf = $this->pathToInvoicePdf($order['order_invoice_nr']);
+		$local_pdf = $this->pathToInvoicePdf($order['order_invoice_nr'], $order['order_e107_user']);
 		if ($local_pdf != '' && !$forceUpdate)
 		{
 			$this->downloadInvoicePdf($local_pdf);
@@ -5243,6 +5242,7 @@ class vstore
 		}
 
 		$result = array(
+			'userid' => $order['order_e107_user'],
 			'subject' => varset($this->pref['invoice_title'][e_LANGUAGE], 'Invoice').' '.self::formatInvoiceNr($order['order_invoice_nr']),
 			'text' => $text,
 			'footer' => $footer,
@@ -5277,7 +5277,8 @@ class vstore
 
 		if ($saveToDisk)
 		{
-			$pdf->pdf_path = dirname(__FILE__) . '/' . $this->pdf_path;
+			// Make sure the path is absolute
+			$pdf->pdf_path = str_replace(array("..\\", "../"), '', e_ROOT . e107::getFile()->getUserDir($data['userid'], true));
 			$pdf->pdf_output = 'F';
 		}
 		else
@@ -5300,13 +5301,18 @@ class vstore
 	/**
 	 * Check if pdf of given invoice number already exists and return the fullpath incl. filename
 	 *
-	 * @param int $invoice_nr
+	 * @param int $invoice_nr invoice nr used in the filename
+	 * @param int $e107_user_id userid of the customer
 	 * @return string empty string if file doesn't exists
 	 */
-	function pathToInvoicePdf($invoice_nr)
+	function pathToInvoicePdf($invoice_nr, $e107_user_id = null)
 	{
+		if (is_null($e107_user_id))
+		{
+			$e107_user_id = USERID;
+		}
 		$title = varset($this->pref['invoice_title'][e_LANGUAGE], 'Invoice').' '.self::formatInvoiceNr($invoice_nr);
-		$file = dirname(__FILE__) . '/' . $this->pdf_path . e107::getForm()->name2id($title) . '.pdf';
+		$file = e107::getFile()->getUserDir($e107_user_id, true) . e107::getForm()->name2id($title) . '.pdf';
 
 		return (is_readable($file) ? $file : '');
 	}

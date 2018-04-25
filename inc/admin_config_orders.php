@@ -199,7 +199,7 @@ class vstore_order_ui extends e_admin_ui
 				}
 
 				// Check if the pdf was created
-				if (empty($vs->pathToInvoicePdf($new_data['order_invoice_nr'])))
+				if (empty($vs->pathToInvoicePdf($new_data['order_invoice_nr'], $new_data['order_e107_user'])))
 				{
 					e107::getMessage()->addWarning('Invoice couldn\'t be created!');
 				}
