@@ -664,16 +664,49 @@ $VSTORE_TEMPLATE['customer']['additional']['item'] = '
 
 $VSTORE_TEMPLATE['customer']['guest'] = '
 	<div class="row">
-		<div class="col-12 col-xs-12 col-sm-6">
+		<div class="col-12 col-xs-12 col-sm-4">
+			<h4>I\'m a new customer</h4>
+
+			<p>By signing up on our site, you are able to order quicker, 
+			know always the state of your orders and have always an 
+			up-to-date overview about your orders.
+			</p>
+
 			<div class="form-group">
-				<input type="password" name="password" id="password" class="form-control input-sm" placeholder="Password">
+				<a class="btn btn-primary btn-block" id="register" href="{SITEURL}signup.php" title="Sign up">Sign up</a>
 			</div>
 		</div>
-		<div class="col-12 col-xs-12 col-sm-6">
+
+		<div class="col-12 col-xs-12 col-sm-4">
+			<h4>Order as guest</h4>
+
+			<p>When ordering as guest, no user account will be created.<br/>
+			That means, in case of another order, you will have to enter
+			all information once again.
+			</p>
+
 			<div class="form-group">
-				<input type="password" name="password_confirmation" id="password_confirmation" class="form-control input-sm" placeholder="Confirm Password">
+				<button name="as_guest" class="btn btn-default btn-block" type="submit" value="guest">Order as guest</button>
 			</div>
 		</div>
+	
+		<div class="col-12 col-xs-12 col-sm-4">
+			<h4>I\'ve got a useraccount</h4>
+			
+			<p>Let me login...</p>
+			<form method="post" onsubmit="hashLoginPassword(this);return true" accept-charset="UTF-8">
+			<div class="form-group">
+				<input type="text" name="username" id="username" class="form-control input-sm tbox login user" placeholder="Username or email address" value="" maxlength="100">
+			</div>
+			<div class="form-group">
+				<input type="password" name="userpass" id="userpass" class="form-control input-sm tbox login pass" placeholder="Password" size="15" value="" maxlength="30">
+			</div>
+			<div class="form-group">
+				<button name="userlogin" class="btn btn-default btn-block" type="submit">Login</button>
+			</div>
+			</form>
+		</div>
+
 	</div>
 ';
 

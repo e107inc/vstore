@@ -44,6 +44,13 @@ class vstore_admin extends e_admin_dispatcher
 			'uipath' 		=> 'inc/admin_config_email_templates.php'
 		),
 		
+		'invoice'	=> array(
+			'controller' 	=> 'vstore_invoice_pref_ui',
+			'path' 			=> 'inc/admin_config_invoice.php',
+			'ui' 			=> 'vstore_invoice_pref_form_ui',
+			'uipath' 		=> 'inc/admin_config_invoice.php'
+		),
+		
 		'gateways'	=> array(
 			'controller' 	=> 'vstore_gateways_ui',
 			'path' 			=> 'inc/admin_config_gateways.php',
@@ -134,6 +141,8 @@ class vstore_admin extends e_admin_dispatcher
 		'main/prefs' 		=> array('caption'=> LAN_PREFS, 'perm' => 'P'),
 
 		'email/prefs' 		=> array('caption'=> 'Email Templates', 'perm' => 'P'),
+
+		'invoice/prefs' 	=> array('caption'=> 'Invoice settings', 'perm' => 'P'),
 
 		'gateways/prefs'	=> array('caption'=> "Payment Gateways", 'perm' => 'P'),
 

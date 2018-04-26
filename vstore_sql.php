@@ -44,7 +44,8 @@ CREATE TABLE vstore_orders (
   `order_pay_coupon_amount` decimal(10,2) NOT NULL DEFAULT '0.00',
   `order_pay_rawdata` text,
   `order_log` text,
-  PRIMARY KEY (`order_id`)
+  PRIMARY KEY (`order_id`),
+  UNIQUE KEY `order_invoice_nr` (`order_invoice_nr`)
 ) ENGINE=MyISAM;
 
 

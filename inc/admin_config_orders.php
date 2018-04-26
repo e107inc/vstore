@@ -29,9 +29,10 @@ class vstore_order_ui extends e_admin_ui
 			'order_status'          => array ( 'title' => 'Status', 'type'=>'method', 'data'=>'str', 'inline'=>true, 'filter'=>true, 'batch'=>true,'width'=>'5%'),
 			'order_date'          	=> array ( 'title' => LAN_DATESTAMP, 'type' => 'datestamp', 'data' => 'str',  'readonly'=>true, 'width' => 'auto', 'filter' => true, 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 
+			'order_invoice_nr'     	=> array ( 'title' => 'Invoice Nr', 'type'=>'method', 'data'=>false, 'width'=>'20%'),
 			'order_billing'      	=> array ( 'title' => 'Billing to', 'type'=>'method', 'data'=>false, 'width'=>'20%'),
 			'order_shipping'      	=> array ( 'title' => 'Ship to', 'type'=>'method', 'data'=>false, 'width'=>'20%'),
-			'order_items'     		=> array ( 'title' => "Items", 'type' => 'method', 'data' => false, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'right', 'thclass' => 'right',  ),
+			'order_items'     		=> array ( 'title' => 'Items', 'type' => 'method', 'data' => false, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'right', 'thclass' => 'right',  ),
 			'order_e107_user'     	=> array ( 'title' => LAN_AUTHOR, 'type' => 'method', 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 			'order_pay_gateway'     => array ( 'title' => 'Gateway', 'type' => 'text', 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 			'order_pay_status'      => array ( 'title' => 'Pay Status', 'type' => 'text',  'data' => 'str',  'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
@@ -43,10 +44,11 @@ class vstore_order_ui extends e_admin_ui
 			'order_session'       	=> array ( 'title' => 'Session', 'type' => 'text', 'tab'=>1, 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 			'order_pay_rawdata' 	=> array ( 'title' => 'Rawdata', 'type' => 'method', 'tab'=>1, 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 			'order_log' 			=> array ( 'title' => 'Log', 'type' => 'method', 'tab'=>2, 'data' => 'json', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+
 			'options' 				=> array ( 'title' => LAN_OPTIONS, 'type' => null, 'data' => null, 'width' => '10%', 'thclass' => 'center last', 'class' => 'center last', 'forced' => '1',  ),
 		);
 
-		protected $fieldpref = array('order_id','order_ship_to', 'order_status', 'order_date', 'order_items', 'order_pay_transid','order_pay_amount','order_pay_status');
+		protected $fieldpref = array('order_id','order_ship_to', 'order_status', 'order_invoice_nr', 'order_date', 'order_items', 'order_pay_transid','order_pay_amount','order_pay_status');
 
 
 		// protected $preftabs = array();
@@ -169,7 +171,7 @@ class vstore_order_ui extends e_admin_ui
 				}
 			}
 
-			$new_data['order_log'] = $log; //e107::serialize($log, 'json');
+			$new_data['order_log'] = $log;
 			return $new_data;
 		}
 
@@ -184,8 +186,30 @@ class vstore_order_ui extends e_admin_ui
 					vstore::setCustomerUserclass($old_data['order_e107_user'], json_decode($old_data['order_items'], true));
 				}
 			}
-			// Send our email to customer
+
 			$vs = e107::getSingleton('vstore');
+
+			if (isset($_POST['force_new_invoice']) && intval($_POST['force_new_invoice']) == 1 && vstore::validInvoiceOrderState($new_data['order_status']))
+			{
+				// User requests to delete the current invoice pdf and to create a new one.
+				$data = $vs->renderInvoice($new_data['order_id'], true);
+				if ($data)
+				{
+					$vs->invoiceToPdf($data, true);
+				}
+
+				// Check if the pdf was created
+				if (empty($vs->pathToInvoicePdf($new_data['order_invoice_nr'], $new_data['order_e107_user'])))
+				{
+					e107::getMessage()->addWarning('Invoice couldn\'t be created!');
+				}
+				else
+				{
+					e107::getMessage()->addSuccess('Invoice successfully created!');
+				}
+			}
+
+			// Send our email to customer
 			$vs->emailCustomerOnStatusChange($new_data['order_id']);
 		}
 
@@ -212,6 +236,47 @@ class vstore_order_ui extends e_admin_ui
 class vstore_order_form_ui extends e_admin_form_ui
 {
 
+	function order_invoice_nr($curVal, $mode)
+	{
+		$status = $this->getController()->getFieldVar('order_status');
+		$exists = false;
+		if (vstore::validInvoiceOrderState($status))
+		{
+			$text = '<a href="' . e107::url('vstore', 'invoice', array('order_invoice_nr' => $curVal)) . '" target="_BLANK">' . vstore::formatInvoiceNr($curVal) . '</a>';
+			$exists = true;
+		}
+		else
+		{
+			$text = vstore::formatInvoiceNr($curVal);
+		}
+
+		switch($mode)
+		{
+			case 'read': // List Page
+				return $text;
+				break;
+
+			case 'write': // Edit Page
+				if ($exists)
+				{
+					return $text . ' &nbsp;&nbsp;&nbsp;&nbsp;' . e107::getForm()->checkbox_label('Check to force the creation of a new invoice pdf during save', 'force_new_invoice', 1);
+				}
+				else
+				{
+					return $text;
+				}
+				break;
+
+			case 'filter':
+				return null;
+				break;
+
+			case 'batch':
+				return  null;
+				break;
+		}		
+	}
+
 	function order_status($curVal, $mode)
 	{
 
@@ -223,6 +288,13 @@ class vstore_order_form_ui extends e_admin_form_ui
 
 			case 'write': // Edit Page
 				return e107::getForm()->select('order_status', vstore::getStatus(), $curVal);
+				break;
+
+			case 'inline': // Inline Edit Page
+				return array(
+					'inlineType' => 'select',
+					'inlineData' => vstore::getStatus()
+				);
 				break;
 
 			case 'filter':
