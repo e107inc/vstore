@@ -5278,7 +5278,13 @@ class vstore
 		if ($saveToDisk)
 		{
 			// Make sure the path is absolute
-			$pdf->pdf_path = str_replace(array("..\\", "../"), '', e_ROOT . e107::getFile()->getUserDir($data['userid'], true));
+			$pdf->pdf_path = realpath(e107::getFile()->getUserDir($data['userid'], true));
+
+			if ($pdf->pdf_path == false || trim($pdf->pdf_path) == '')
+			{
+				e107::getMessage()->addError('Unable to create invoice user folder!', 'vstore');
+				return;
+			}
 			$pdf->pdf_output = 'F';
 		}
 		else
@@ -5312,7 +5318,7 @@ class vstore
 			$e107_user_id = USERID;
 		}
 		$title = varset($this->pref['invoice_title'][e_LANGUAGE], 'Invoice').' '.self::formatInvoiceNr($invoice_nr);
-		$file = e107::getFile()->getUserDir($e107_user_id, true) . e107::getForm()->name2id($title) . '.pdf';
+		$file = e107::getFile()->getUserDir($e107_user_id, false) . e107::getForm()->name2id($title) . '.pdf';
 
 		return (is_readable($file) ? $file : '');
 	}
