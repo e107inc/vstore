@@ -57,12 +57,56 @@ class vstore_plugin_shortcodes extends e_shortcode
 		}
 	}
 
+	function format_address($address)
+	{
+		if (empty($address)) return '';
+		if (!is_array($address)) $address = e107::unserialize($address);
+		if (empty($address)) return '';
+
+		$text = $address['firstname'] . ' ' . $address['lastname']. '<br />' .
+				(!empty($address['company']) ? $address['company'].'<br />' : '').
+				$address['address'] .'<br />'.
+				$address['city'] . ' ' . $address['zip'] .'<br />'.
+				e107::getForm()->getCountry($address['country']);
+
+		return $text;
+	}
+
+	function sc_order_actions($parm=null)
+	{
+		/*
+		'N' => 'New',
+		'P' => 'Processing',
+		'H' => 'On Hold',
+		'C' => 'Completed',
+		'X' => 'Cancelled',
+		'R' => 'Refunded'
+		*/	
+		$cancellable = in_array($this->var['order_status'], array('N', 'P', 'H'));
+		$order_id = $this->var['order_id'];
+
+		$actions = array(
+			sprintf('<a href="%s">%s</a>', 
+				e107::url('vstore', 'dashboard_do', array('dashboard' => 'orders', 'action' => 'view', 'id' => $this->var['order_invoice_nr'])),
+				'View details')
+		);
+
+		if ($cancellable)
+		{
+			$actions[] = sprintf('<a href="%s">%s</a>', 
+			e107::url('vstore', 'dashboard_do', array('dashboard' => 'orders', 'action' => 'cancel', 'id' => $this->var['order_invoice_nr'])),
+			'Cancel order');
+		}
+
+		return e107::getForm()->button('order_actions', $actions, 'dropdown', 'Actions', array('class' => 'btn-default'));
+	}
+
 	function sc_order_data($parm = null)
 	{
 		if (empty($parm)) return '';
 		
 		$key = array_keys($parm);
-		if ($key) $key = $key[0];
+		if ($key) $key = strtolower($key[0]);
 		$area = '';
 
 		if (substr($key, 0, 5) == 'ship_' || substr($key, 0, 5) == 'cust_')
@@ -99,6 +143,37 @@ class vstore_plugin_shortcodes extends e_shortcode
 
 			case 'order_ref':
 				$text = $this->var['order_refcode'];
+				break;
+
+			case 'order_pay_status':
+				$text = ($this->var['order_status'] == 'C' || $this->var['order_pay_status'] == 'complete') ? '<span class="label label-success">Payed</span>' : '<span class="label label-warning">Open</span>';
+				break;
+
+			case 'order_pay_amount':
+				$text = $this->format_amount($this->var['order_pay_amount']);
+				break;
+
+			case 'order_status':
+				$text = vstore::getStatus($this->var['order_status']);
+				break;
+
+			case 'order_shipping_full':
+				$text = $this->format_address($this->var['order_shipping']);
+				break;
+
+			case 'order_billing_full':
+				$text = $this->format_address($this->var['order_billing']);
+				break;
+
+			case 'order_items_short':
+				$items = varset($this->var['order_items']);
+				if (!is_array($items)) $items = e107::unserialize($items);
+
+				$text = '';
+				foreach($items as $item)
+				{
+					$text .= sprintf("%dx %s", $item['quantity'], $item['description']);
+				}
 				break;
 
 			default:
@@ -1553,6 +1628,39 @@ class vstore_plugin_shortcodes extends e_shortcode
 		return '<image src="'.$path.'" style="max-width:150px;max-height: 150px;width:100%;height:auto;">';
 	}
 
+
+	function sc_dashboard($parm = null)
+	{
+		if (empty($parm)) return '';
+		
+		$key = array_keys($parm);
+		if ($key) $key = $key[0];
+
+		switch($key)
+		{
+			case 'title':
+				$text = $this->var['nav'][$this->var['area']];
+				break;
+
+			case 'nav':
+				$text = '<ul class="nav nav-tabs">
+				';
+				$nav = $this->var['nav'];
+				foreach($nav as $a => $caption)
+				{
+					$active = ($this->var['area'] == $a ? ' class="active"': '') ;
+					$text .= '<li role="navigation"'.$active.'><a href="'.e107::url('vstore', 'dashboard', array('dashboard' => $a)).'">'.$caption.'</a></li>
+					';
+				}
+				$text .= '</ul>';
+				break;
+				
+		}
+
+		return $text;
+	}
+
+	
 }
 
 
@@ -1982,6 +2090,20 @@ class vstore
 			}
 		}
 
+		if (isset($this->post['cancel_order']) && intval($this->post['cancel_order']) > 0)
+		{
+			$check = e107::getDb()->retrieve('vstore_orders', '*', 'order_id='.intval($this->post['cancel_order']).' AND order_e107_user = '.USERID);
+			if ($check)
+			{
+				e107::getDb()->update('vstore_orders', 'order_status = "X" WHERE order_id='.intval($this->post['cancel_order']));
+
+				$this->emailCustomerOnStatusChange($check['order_id']);
+
+				e107::redirect(e107::url('vstore', 'dashboard', array('dashboard' => 'orders')));
+				exit;
+			}
+		}
+
 	}
 
 	/**
@@ -2394,6 +2516,18 @@ class vstore
 				$bread = $this->breadcrumb();
 				$ns->tablerender($this->captionBase, $bread.$msg, 'vstore-invoice');
 			}
+
+			return null;
+		}
+
+
+		if($this->getMode() == 'dashboard')
+		{
+			// Display invoice
+			$text = $this->renderDashboard(trim($this->get['area']), trim($this->get['do']), intval($this->get['id']));
+			$bread = $this->breadcrumb();
+			$msg = e107::getMessage()->render('vstore');
+			$ns->tablerender($this->captionBase, $bread.$msg.$text, 'vstore-dashboard');
 
 			return null;
 		}
@@ -5376,4 +5510,164 @@ class vstore
 	{
 		return in_array(strtoupper($order_status), array('N', 'C', 'P'));
 	}
+
+
+	/**
+	 * Render the customers shop dashboard
+	 *
+	 * @param string $area the dashboard area to render
+	 * @param string $do (optional) the action to do (e.g. cancel order)
+	 * @param int $id (required if $do is set) the id of the record the action is targeting
+	 * @return string
+	 */
+	public function renderDashboard($area=null, $do=null, $id=null)
+	{
+		$dashboards = array(
+			'dashboard' => 'Dashboard', 
+			'orders' => 'My orders', 
+			'downloads' => 'My downloads', 
+			'addresses' => 'My adresses', 
+			'account' => 'My account'
+		);
+
+		$actions = array(
+			'orders' => array('view', 'cancel')
+		);
+
+		// Sanitize inputs
+		if (empty($area))
+		{
+			$area = 'dashboard';
+		}
+
+		$area = strtolower($area);
+		$do = strtolower($do);
+		$id = intval($id);
+
+		$this->from = vartrue($this->get['page'],1);
+
+		$limit_from = ($this->from - 1) * $this->perPage;
+
+		// Check, the requested area exists
+		if (!array_key_exists($area, $dashboards))
+		{
+			e107::getMessage()->addError('Invalid dashboard!', 'vstore');
+			return '';
+		}
+
+		// Check if the requested action exists and the requirted id is supplied
+		if (!empty($do))
+		{
+			if (!in_array($do, $actions[$area]))
+			{
+				e107::getMessage()->addError('Invalid request!', 'vstore');
+				return '';
+			}
+			if ($id <= 0)
+			{
+				e107::getMessage()->addError('Invalid request!', 'vstore');
+				return '';
+			}
+		}
+
+		$tp = e107::getParser();
+		$sql = e107::getDb();
+
+		$template = e107::getTemplate('vstore', 'vstore_dashboard');
+
+		$this->sc->setVars(array('nav' => $dashboards, 'area' => $area));
+
+		$text = $tp->parseTemplate($template['header'], true, $this->sc);
+
+
+		if ($area == 'dashboard')
+		{
+			// Entry page
+			$text .= $tp->parseTemplate($template['dashboard'], true, $this->sc);
+		}
+
+		elseif ($area == 'orders' && empty($do))
+		{
+			// List the orders
+			// TODO: Pagination
+			if ($sql->gen('SELECT SQL_CALC_FOUND_ROWS *, o.* FROM `#vstore_orders` o WHERE order_e107_user = '.USERID.' ORDER BY order_id DESC LIMIT '.$limit_from.','.$this->perPage))
+			{
+				$count = e107::getDb()->foundRows();
+
+				$text .= $tp->parseTemplate($template['order']['list']['header'], true, $this->sc);
+				while($row = $sql->fetch())
+				{
+					$this->sc->setVars($row);
+					$text .= $tp->parseTemplate($template['order']['list']['item'], true, $this->sc);
+				}
+
+				$text .= $tp->parseTemplate($template['order']['list']['footer'], true, $this->sc);
+
+				if ($count > intval($this->perPage))
+				{
+					$nextprev = array(
+							'tmpl'			=>'bootstrap',
+							'total'			=> ceil($count / intval($this->perPage)),
+							'amount'		=> intval($this->perPage),
+							'current'		=> $this->from,
+							'type'			=> 'page',
+							'url'			=> e107::url('vstore','dashboard', array('dashboard' => 'orders')).'?page=[FROM]'
+					);
+			
+					global $nextprev_parms;
+				
+					$nextprev_parms  = http_build_query($nextprev,false,'&');
+			
+					$text .= $tp->parseTemplate("{NEXTPREV: ".$nextprev_parms."}",true);
+				}
+			}
+			else
+			{
+				$text .= '<p>No order has been made yet.</p>';
+			}
+		}
+
+		elseif ($area == 'orders' && !empty($do))
+		{
+			// Order actions (view, cancel)
+			$data = $sql->retrieve('vstore_orders', '*', 'order_invoice_nr='.$id.' AND order_e107_user='.USERID);
+			if (!$data)
+			{
+				// Order not found or not assigned to user
+				$text .= '<p>No data found!</p>';
+			}
+			else
+			{
+				if ($do == 'view')
+				{
+					// render view order details
+					$this->sc->setVars($data);
+					$text .= $tp->parseTemplate($template['order']['detail'], true, $this->sc);
+				}
+				elseif ($do == 'cancel')
+				{
+					// render cancel order confirmation
+					$text .= e107::getForm()->open('confirm-cancel','post', null, array('class'=>'form'));
+					$text .= '
+						<div class="alert alert-warning" role="alert">Do you really want to cancel your order '.$data['order_refcode'].'?</div>
+						<a href="'.e107::url('vstore', 'dashboard', array('dashboard' => 'orders')).'" class="btn btn-primary" name="cancel_cancel" id="cancel_cancel">No, take me back</a>
+						<button type="submit" class="btn btn-warning" name="cancel_order" id="cancel_order" value="'.$data['order_id'].'">Yes, cancel this order!</button>
+					';
+					$text .= e107::getForm()->close();
+
+				}
+			}
+		}
+
+		else
+		{
+			// TODO warning ...
+			e107::getMessage()->addError('Dashboard area "'.$dashboards[$area].'" not implemented yet!', 'vstore');
+		}
+
+		$text .= $tp->parseTemplate($template['footer'], true, $this->sc);
+		return $text;
+
+	}
+
 }
