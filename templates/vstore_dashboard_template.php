@@ -65,7 +65,9 @@ $VSTORE_DASHBOARD_TEMPLATE['order']['list']['item'] = '
 ';
 
 
-
+/**
+ * Order detail
+ */
 $VSTORE_DASHBOARD_TEMPLATE['order']['detail'] = '
     <h4>Order details {ORDER_DATA: order_ref} <span class="pull-right float-right">{ORDER_DATA: order_status_label}</span></h4>
     <div class="clearfix">
@@ -107,3 +109,64 @@ $VSTORE_DASHBOARD_TEMPLATE['order']['detail'] = '
     </div>
 ';
 
+
+/**
+ * List downloads
+ */
+$VSTORE_DASHBOARD_TEMPLATE['download']['list']['header'] = '
+    <table class="table table-bordered table-striped">
+    <thead>
+    <tr>
+        <th>Order info</th>
+        <th>Items</th>
+        <th>Status</th>
+    </tr>
+    </thead>
+    <tbody>
+';
+
+
+$VSTORE_DASHBOARD_TEMPLATE['download']['list']['footer'] = '
+    </tbody>
+    </table>
+';
+
+
+$VSTORE_DASHBOARD_TEMPLATE['download']['list']['item'] = '
+    <tr>
+        <td>
+            Date: {ORDER_DATA: order_date}<br />
+            Order: {ORDER_DATA: order_ref}<br/>
+            Invoice: {ORDER_DATA: order_invoice_nr}
+        </td>
+        <td>{ORDER_DATA: order_downloads}</td>
+        <td>{ORDER_DATA: order_status_label}</td>
+    </tr>
+';
+
+
+/**
+ * List downloads
+ */
+$VSTORE_DASHBOARD_TEMPLATE['address']['view'] = '
+
+    <div class="col-12 col-xs-12 col-sm-6">
+        <h4>Billing</h4>
+
+        {DASHBOARD: billing_address}
+
+        <br />
+        {DASHBOARD: edit_billing}
+    </div>
+
+    <div class="col-12 col-xs-12 col-sm-6">
+        <h4>Shipping</h4>
+
+        {DASHBOARD: shipping_address}
+
+        <br />
+        {DASHBOARD: edit_shipping}
+    </div>
+    
+
+';

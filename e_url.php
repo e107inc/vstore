@@ -21,16 +21,16 @@ class vstore_url // plugin-folder + '_url'
 	{
 		$config = array();
 
-		$config['dashboard_do'] = array(
+		$config['dashboard_action'] = array(
 			'regex'			=> '^{alias}\/my\/?([a-zA-Z]*)\/?([a-zA-Z]*)\/?([\d]*)\/?$',
-			'redirect'		=> '{e_PLUGIN}vstore/vstore.php?mode=dashboard&area=$1&do=$2&id=$3',
-			'sef'			=> '{alias}/my/{dashboard}/{action}/{id}'
+			'redirect'		=> '{e_PLUGIN}vstore/vstore.php?mode=dashboard&area=$1&action=$2&id=$3',
+			'sef'			=> '{alias}/my/{dash}/{action}/{id}'
 		);
 
 		$config['dashboard'] = array(
 			'regex'			=> '^{alias}\/my\/?([a-zA-Z]*)\/?\??',
 			'redirect'		=> '{e_PLUGIN}vstore/vstore.php?mode=dashboard&area=$1&',
-			'sef'			=> '{alias}/my/{dashboard}'
+			'sef'			=> '{alias}/my/{dash}'
 		);
 
 		$config['invoice'] = array(
