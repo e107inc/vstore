@@ -74,16 +74,31 @@ class vstore_plugin_shortcodes extends e_shortcode
 
 	function sc_order_actions($parm=null)
 	{
-		/*
-		'N' => 'New',
-		'P' => 'Processing',
-		'H' => 'On Hold',
-		'C' => 'Completed',
-		'X' => 'Cancelled',
-		'R' => 'Refunded'
-		*/	
+		if (!USER) return '';
+		$key = '';
+		
+		if (!empty($parm))
+		{
+			$key = array_keys($parm);
+			if ($key) $key = strtolower($key[0]);
+		}
+
 		$cancellable = in_array($this->var['order_status'], array('N', 'P', 'H'));
 		$order_id = $this->var['order_id'];
+
+		if (!empty($key))
+		{
+			if ($key == 'cancel' && $cancellable)
+			{
+				$text = sprintf('<a href="%s" class="btn btn-warning">%s</a>', 
+					e107::url('vstore', 'dashboard_do', array('dashboard' => 'orders', 'action' => 'cancel', 'id' => $this->var['order_invoice_nr'])),
+					'Cancel order');
+			}
+			return $text;
+		}
+
+
+
 
 		$actions = array(
 			sprintf('<a href="%s">%s</a>', 
@@ -157,6 +172,18 @@ class vstore_plugin_shortcodes extends e_shortcode
 				$text = vstore::getStatus($this->var['order_status']);
 				break;
 
+			case 'order_status_label':
+				$label_classes = array(
+					'N' => 'primary',
+					'P' => 'info',
+					'H' => 'warning',
+					'C' => 'success',
+					'X' => 'danger',
+					'R' => 'default'
+				);
+				$text = '<span class="label label-'.$label_classes[$this->var['order_status']].'">' . vstore::getStatus($this->var['order_status']) .'</span>';
+				break;
+
 			case 'order_shipping_full':
 				$text = $this->format_address($this->var['order_shipping']);
 				break;
@@ -172,8 +199,33 @@ class vstore_plugin_shortcodes extends e_shortcode
 				$text = '';
 				foreach($items as $item)
 				{
-					$text .= sprintf("%dx %s", $item['quantity'], $item['description']);
+					$text .= sprintf("%dx %s<br/>", $item['quantity'], $item['description']);
 				}
+				break;
+
+			case 'order_log':
+				$log = varset($this->var['order_log']);
+				if (!is_array($log)) $log = e107::unserialize($log);
+
+				$dt = e107::getDateConvert();
+				$tp = e107::getParser();
+				$text = '<table class="table table-bordered table-striped">
+				<tr>
+					<th>'.LAN_DATE.'</th>
+					<th>'.LAN_USER.'</th>
+					<th>'.LAN_MESSAGE.'</th>
+				</tr>
+				';
+				foreach($log as $item)
+				{
+					$text .= '<tr>
+						<td>'.$dt->convert_date($item['datestamp'], 'short').'</td>
+						<td>'.$item['user_name'].'</td>
+						<td>'.$item['text'].'</td>
+					<tr>
+					';
+				}
+				$text .= '</table>';
 				break;
 
 			default:
@@ -2090,12 +2142,28 @@ class vstore
 			}
 		}
 
-		if (isset($this->post['cancel_order']) && intval($this->post['cancel_order']) > 0)
+		if (isset($this->post['cancel_order']) && intval($this->post['cancel_order']) > 0 && USER)
 		{
 			$check = e107::getDb()->retrieve('vstore_orders', '*', 'order_id='.intval($this->post['cancel_order']).' AND order_e107_user = '.USERID);
 			if ($check)
 			{
-				e107::getDb()->update('vstore_orders', 'order_status = "X" WHERE order_id='.intval($this->post['cancel_order']));
+				$log = e107::unserialize($check['order_log']);
+				$log[] = array(
+					'datestamp' => time(),
+					'user_id' => USERID,
+					'user_name' => USERNAME,
+					'text' => 'Order cancelled by user'
+				);
+
+				$update = array(
+					'data' => array(
+						'order_status' => 'X',
+						'order_log' => e107::serialize($log, 'json')
+					),
+					'WHERE' => 'order_id='.intval($this->post['cancel_order'])
+				);
+
+				e107::getDb()->update('vstore_orders', $update); 
 
 				$this->emailCustomerOnStatusChange($check['order_id']);
 
@@ -3137,7 +3205,7 @@ class vstore
 		$log = array(array(
 			'datestamp' => time(),
 			'user_id' => USERID,
-			'user_name' => USERNAME,
+			'user_name' => (USER ? USERNAME : 'Guest'),
 			'text' => 'Order created' . (empty($transData) ? '' : ' and paid') . '.'
 		));
 		$insert['order_log']    = e107::serialize($log, 'json');
@@ -3159,7 +3227,7 @@ class vstore
 			$log[] = array(
 				'datestamp' => time(),
 				'user_id' => USERID,
-				'user_name' => USERNAME,
+				'user_name' => (USER ? USERNAME : 'Guest'),
 				'text' => 'Order Ref-Nr. assigned: '.$refId
 			);
 			
@@ -5522,6 +5590,11 @@ class vstore
 	 */
 	public function renderDashboard($area=null, $do=null, $id=null)
 	{
+		if (!USER) {
+			e107::getMessage()->addError('You need to <a href="'.SITEURL.'login.php">login</a> to access this page!', 'vstore');
+			return '';
+		}
+
 		$dashboards = array(
 			'dashboard' => 'Dashboard', 
 			'orders' => 'My orders', 

@@ -59,7 +59,7 @@ $VSTORE_DASHBOARD_TEMPLATE['order']['list']['item'] = '
         <td>{ORDER_DATA: order_shipping_full}</td>
         <td>{ORDER_DATA: order_items_short}</td>
         <td>{ORDER_DATA: order_pay_amount}</td>
-        <td>{ORDER_DATA: order_status}</td>
+        <td>{ORDER_DATA: order_status_label}</td>
         <td>{ORDER_ACTIONS}</td>
     </tr>
 ';
@@ -67,7 +67,7 @@ $VSTORE_DASHBOARD_TEMPLATE['order']['list']['item'] = '
 
 
 $VSTORE_DASHBOARD_TEMPLATE['order']['detail'] = '
-    <h4>Order details {ORDER_DATA: order_ref}</h4>
+    <h4>Order details {ORDER_DATA: order_ref} <span class="pull-right float-right">{ORDER_DATA: order_status_label}</span></h4>
     <div class="clearfix">
         <div class="col-sm-4">
             <b>Date</b> {ORDER_DATA: order_date}<br />
@@ -91,7 +91,19 @@ $VSTORE_DASHBOARD_TEMPLATE['order']['detail'] = '
     <br />
 
     <div>
+        <b>Items</b>
         {ORDER_ITEMS}
+    </div>
+
+    <div>
+        <b>Log</b>
+        {ORDER_DATA: order_log}
+    </div>
+
+    <hr />
+
+    <div class="text-center">
+        {ORDER_ACTIONS: cancel}
     </div>
 ';
 
