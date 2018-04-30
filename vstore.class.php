@@ -1333,6 +1333,9 @@ class vstore_plugin_shortcodes extends e_shortcode
 			case 'cart_url': 
 				$text = e107::url('vstore','cart');
 				break;
+			case 'dashboard_url': 
+				$text = e107::url('vstore','dashboard', array('dash' => 'dashboard'));
+				break;
 			case 'coupon':
 				$text = $this->var['cart_coupon']['code'];
 				break;
@@ -2838,6 +2841,24 @@ class vstore
 			$array[] = array('url'=> e107::url('vstore','cart'), 'text'=> "Shopping Cart");
 			$array[] = array('url'=> null, 'text'=> "Checkout");
 
+		}
+
+		if($this->get['mode'] == 'dashboard')
+		{
+			if (!empty(trim($this->get['area'])))
+			{
+				include_once 'inc/vstore_dashboard.class.php';
+				$dashboard = new vstore_dashboard();
+				$array[] = array('url'=> e107::url('vstore','dashboard', array('dash' => $this->get['area'])), 'text'=> $dashboard->getArea());
+				if (!empty(trim($this->get['action'])))
+				{
+					$array[] = array('url'=> e107::url('vstore','dashboard_action', array('dash' => $this->get['area'], 'action' => $this->get['action'], 'id' => $dashboard->getId())), 'text'=> $dashboard->getAction());
+				}
+			}
+			else			
+			{
+				$array[] = array('url'=> e107::url('vstore','dashboard', array('dash' => 'dashboard')), 'text'=> "My Dashboard");
+			}
 		}
 
 

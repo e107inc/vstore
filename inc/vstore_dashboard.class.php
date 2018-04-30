@@ -6,6 +6,7 @@ class vstore_dashboard extends vstore
 {
 
     protected $dashboards;
+    protected $actions;
 
     protected $area;
     protected $action;
@@ -23,10 +24,20 @@ class vstore_dashboard extends vstore
 		$this->dashboards = array(
 			'dashboard' => 'Dashboard', 
 			'orders' => 'My orders', 
-			'downloads' => 'My downloads', 
+			'files' => 'My downloads', 
 			'addresses' => 'My adresses', 
 			'account' => 'My account'
-		);
+        );
+        
+        $this->actions = array(
+            'orders' => array(
+                'view' => 'View details',
+                'cancel' => 'Cancel order'
+            ),
+            'addresses' => array(
+                'edit' => 'Edit address'
+            )
+        );
 
         $this->area = strtolower(trim(varsettrue($this->get['area'], 'dashboard')));
         $this->action = strtolower(trim(varsettrue($this->get['action'], '')));
@@ -42,6 +53,35 @@ class vstore_dashboard extends vstore
 		$this->limit_from = ($this->from - 1) * $this->perPage;        
     }
 
+    /**
+     * Return title for current area
+     *
+     * @return string
+     */
+    public function getArea()
+    {
+        return $this->dashboards[$this->area];
+    }
+
+    /**
+     * Return title for current action
+     *
+     * @return string
+     */
+    public function getAction()
+    {
+        return $this->actions[$this->area][$this->action];
+    }
+
+    /**
+     * return action id
+     *
+     * @return int
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
 
 	/**
 	 * Render the customers shop dashboard
@@ -203,7 +243,7 @@ class vstore_dashboard extends vstore
 	 *
 	 * @return string
 	 */
-    private function downloads()
+    private function files()
     {
         $text = '';
         // List the downloads
@@ -400,6 +440,18 @@ class vstore_dashboard extends vstore
         unset($data);        
         return $text;
     }	
+
+
+    /**
+     * jump to user profiles
+     *
+     * @return void
+     */
+    private function account()
+    {
+        e107::redirect(SITEURL.'usersettings.php');
+        exit;
+    }
 }
 
 ?>
