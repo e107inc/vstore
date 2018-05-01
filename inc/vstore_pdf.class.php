@@ -231,6 +231,7 @@ class vstore_pdf extends TCPDF
 
         if (!empty($this->pdfPref['pdf_path']))
         {
+            $this->pdfPref['pdf_path'] = rtrim($this->pdfPref['pdf_path'], "/\\").'/';
             $file = $this->pdfPref['pdf_path'] . $file;
         }
 
