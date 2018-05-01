@@ -721,6 +721,9 @@ $VSTORE_TEMPLATE['navcart']['empty'] = '
 			<br/>
 			<a class="alert-link" href="{CART_DATA: index_url}">Start Shopping</a>
 		</div>
+		<div>
+			<a class="btn btn-block btn-default col-xs-6" href="{CART_DATA: dashboard_url}"><i class="fa fa-tachometer" aria-hidden="true"></i> My Dashboard</a>
+		</div>
 ';
 
 $VSTORE_TEMPLATE['navcart']['header'] = '
@@ -746,6 +749,7 @@ $VSTORE_TEMPLATE['navcart']['footer'] = '
 		<div>
 			<a class="btn btn-block btn-danger" href="#" onclick="vstoreCartReset()"><i class="fa fa-trash-o" aria-hidden="true"></i> Clear cart</a>
 			<a class="btn btn-block btn-primary col-xs-6" href="{CART_DATA: cart_url}"><i class="fa fa-shopping-cart" aria-hidden="true"></i> Checkout</a>
+			<a class="btn btn-block btn-default col-xs-6" href="{CART_DATA: dashboard_url}"><i class="fa fa-tachometer" aria-hidden="true"></i> My Dashboard</a>
 		</div>
 ';
 

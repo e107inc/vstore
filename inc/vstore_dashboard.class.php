@@ -1,0 +1,457 @@
+<?php
+if (!defined('e107_INIT')) { exit; }
+
+
+class vstore_dashboard extends vstore
+{
+
+    protected $dashboards;
+    protected $actions;
+
+    protected $area;
+    protected $action;
+    protected $id;
+    protected $limit_from;
+    protected $tp;
+    protected $sql;
+    protected $template;
+
+
+    public function __construct()
+    {
+		Parent::__construct();
+
+		$this->dashboards = array(
+			'dashboard' => 'Dashboard', 
+			'orders' => 'My orders', 
+			'files' => 'My downloads', 
+			'addresses' => 'My adresses', 
+			'account' => 'My account'
+        );
+        
+        $this->actions = array(
+            'orders' => array(
+                'view' => 'View details',
+                'cancel' => 'Cancel order'
+            ),
+            'addresses' => array(
+                'edit' => 'Edit address'
+            )
+        );
+
+        $this->area = strtolower(trim(varsettrue($this->get['area'], 'dashboard')));
+        $this->action = strtolower(trim(varsettrue($this->get['action'], '')));
+        $this->id = intval(varsettrue($this->get['id'], 0));
+
+		$this->tp = e107::getParser();
+		$this->sql = e107::getDb();
+
+        $this->template = e107::getTemplate('vstore', 'vstore_dashboard');
+		$this->from = vartrue($this->get['page'],1);
+
+		$this->from = vartrue($this->get['page'],1);
+		$this->limit_from = ($this->from - 1) * $this->perPage;        
+    }
+
+    /**
+     * Return title for current area
+     *
+     * @return string
+     */
+    public function getArea()
+    {
+        return $this->dashboards[$this->area];
+    }
+
+    /**
+     * Return title for current action
+     *
+     * @return string
+     */
+    public function getAction()
+    {
+        return $this->actions[$this->area][$this->action];
+    }
+
+    /**
+     * return action id
+     *
+     * @return int
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+	/**
+	 * Render the customers shop dashboard
+	 *
+	 * @return string
+	 */
+	public function render()
+	{
+		// Access only for logged in users
+		if (!USER) {
+			e107::getMessage()->addError('You need to <a href="'.SITEURL.'login.php">login</a> to access this page!', 'vstore');
+			return '';
+		}
+
+		$this->sc->setVars(array('nav' => $this->dashboards, 'area' => $this->area));
+
+		$text = $this->tp->parseTemplate($this->template['header'], true, $this->sc);
+
+        $method = $this->area . '_' . $this->action;
+
+        if (method_exists($this, $method) && $this->id)
+        {
+            $text .= $this->$method();
+        }
+        elseif (method_exists($this, $this->area))
+        {
+            $method = $this->area;
+            $text .= $this->$method();
+        }
+        else
+        {
+            e107::getMessage()->addError('Dashboard area "'.$this->dashboards[$this->area].'" not implemented yet!', 'vstore');
+        }
+
+		$text .= $this->tp->parseTemplate($this->template['footer'], true, $this->sc);
+		return $text;
+
+	}
+
+
+	/**
+	 * Dashboard landing page
+	 *
+	 * @return string
+	 */
+    private function dashboard()
+    {
+        return $this->tp->parseTemplate($this->template['dashboard'], true, $this->sc);
+    }
+
+
+	/**
+	 * Render list of orders
+	 *
+	 * @return string
+	 */
+    private function orders()
+    {
+        $text = '';
+        // List the orders
+        if ($this->sql->gen('SELECT SQL_CALC_FOUND_ROWS *, o.* FROM `#vstore_orders` o WHERE order_e107_user = '.USERID.' ORDER BY order_id DESC LIMIT '.$this->limit_from.','.$this->perPage))
+        {
+            $count = e107::getDb()->foundRows();
+
+            $text .= $this->tp->parseTemplate($this->template['order']['list']['header'], true, $this->sc);
+            while($row = $this->sql->fetch())
+            {
+                $this->sc->setVars($row);
+                $text .= $this->tp->parseTemplate($this->template['order']['list']['item'], true, $this->sc);
+            }
+            unset($row);
+
+            $text .= $this->tp->parseTemplate($this->template['order']['list']['footer'], true, $this->sc);
+
+            if ($count > intval($this->perPage))
+            {
+                $nextprev = array(
+                        'tmpl'			=>'bootstrap',
+                        'total'			=> ceil($count / intval($this->perPage)),
+                        'amount'		=> intval($this->perPage),
+                        'current'		=> $this->from,
+                        'type'			=> 'page',
+                        'url'			=> e107::url('vstore','dashboard', array('dash' => 'orders')).'?page=[FROM]'
+                );
+        
+                global $nextprev_parms;
+            
+                $nextprev_parms  = http_build_query($nextprev,false,'&');
+        
+                $text .= $this->tp->parseTemplate("{NEXTPREV: ".$nextprev_parms."}",true);
+            }
+        }
+        else
+        {
+            $text .= '<p>No order has been made yet.</p>';
+        }
+        return $text;
+    }
+
+
+	/**
+	 * Render order details
+	 *
+	 * @return string
+	 */
+    private function orders_view()
+    {
+        $text = '';
+        // Order actions (view, cancel)
+        $data = $this->sql->retrieve('vstore_orders', '*', 'order_invoice_nr='.$this->id.' AND order_e107_user='.USERID);
+        if (!$data)
+        {
+            // Order not found or not assigned to user
+            $text .= '<p>No data found!</p>';
+        }
+        else
+        {
+            // render view order details
+            $this->sc->setVars($data);
+            $text .= $this->tp->parseTemplate($this->template['order']['detail'], true, $this->sc);
+        }
+        return $text;      
+    }
+
+
+	/**
+	 * Render cancel order confirmations
+	 *
+	 * @return string
+	 */
+    private function orders_cancel()
+    {
+        $text = '';
+        // Order actions (view, cancel)
+        $data = $this->sql->retrieve('vstore_orders', '*', 'order_invoice_nr='.$this->id.' AND order_e107_user='.USERID);
+        if (!$data)
+        {
+            // Order not found or not assigned to user
+            $text .= '<p>No data found!</p>';
+        }
+        else
+        {
+            // render cancel order confirmation
+            $text .= e107::getForm()->open('confirm-cancel','post', null, array('class'=>'form'));
+            $text .= '
+                <div class="alert alert-warning" role="alert">Do you really want to cancel your order '.$data['order_refcode'].'?</div>
+                <a href="'.e107::url('vstore', 'dashboard', array('dash' => 'orders')).'" class="btn btn-primary" name="cancel_cancel" id="cancel_cancel">No, take me back</a>
+                <button type="submit" class="btn btn-warning" name="cancel_order" id="cancel_order" value="'.$data['order_id'].'">Yes, cancel this order!</button>
+            ';
+            $text .= e107::getForm()->close();
+
+        }
+        return $text;
+    }
+
+
+	/**
+	 * Render paid downloads
+	 *
+	 * @return string
+	 */
+    private function files()
+    {
+        $text = '';
+        // List the downloads
+        if ($this->sql->gen('SELECT SQL_CALC_FOUND_ROWS *, o.* FROM `#vstore_orders` o WHERE order_e107_user = '.USERID.' AND order_items REGEXP \'("file": "[a-zA-Z0-9_-]+",)\' AND FIND_IN_SET(order_status, "N,C,P") ORDER BY order_id DESC LIMIT '.$this->limit_from.','.$this->perPage))
+        {
+            $count = e107::getDb()->foundRows();
+
+            $text .= $this->tp->parseTemplate($this->template['download']['list']['header'], true, $this->sc);
+            while($row = $this->sql->fetch())
+            {
+                $this->sc->setVars($row);
+                $text .= $this->tp->parseTemplate($this->template['download']['list']['item'], true, $this->sc);
+            }
+            unset($row);
+
+            $text .= $this->tp->parseTemplate($this->template['download']['list']['footer'], true, $this->sc);
+
+            if ($count > intval($this->perPage))
+            {
+                $nextprev = array(
+                        'tmpl'			=>'bootstrap',
+                        'total'			=> ceil($count / intval($this->perPage)),
+                        'amount'		=> intval($this->perPage),
+                        'current'		=> $this->from,
+                        'type'			=> 'page',
+                        'url'			=> e107::url('vstore','dashboard', array('dash' => 'downloads')).'?page=[FROM]'
+                );
+        
+                global $nextprev_parms;
+            
+                $nextprev_parms  = http_build_query($nextprev,false,'&');
+        
+                $text .= $this->tp->parseTemplate("{NEXTPREV: ".$nextprev_parms."}",true);
+            }
+        }
+        else
+        {
+            $text .= '<p>No downloadable files yet.</p>';
+        }        
+
+        return $text;
+    }
+
+
+	/**
+	 * Render saved addresses
+	 *
+	 * @return string
+	 */
+    private function addresses()
+    {
+        $text = '';
+        // Read data
+        $data = $this->sql->retrieve('vstore_customer', '*', 'cust_e107_user = '.USERID);
+        if ($data)
+        {
+            $this->sc->setVars($data);
+            $text .= $this->tp->parseTemplate($this->template['address']['view'], true, $this->sc);
+        }
+        else
+        {
+            $text .= '<p>No addresses available yet.</p>';
+        }
+        unset($data);        
+        return $text;
+	}
+	
+
+	/**
+	 * Render edit address form
+	 *
+	 * @return string
+	 */
+    private function addresses_edit()
+    {
+        $text = '';
+        // Read data
+        $data = $this->sql->retrieve('vstore_customer', '*', 'cust_e107_user = '.USERID);
+        if ($data)
+        {
+			$frm = e107::getForm();
+
+			$text .= $frm->open('address_edit', 'post');
+
+			if ($this->id === 1) // Billing address
+			{
+
+				foreach ($data as $key => $value) {
+					$key2 = substr($key, 5);
+					$data['cust'][$key2] = $value;
+					unset($data[$key]);
+				}
+				if (!empty($data['cust']['additional_fields']))
+				{
+					$add = e107::unserialize($data['cust']['additional_fields']);
+					foreach ($add as $key => $value) {
+						$data['cust'][$key] = $value;
+					}
+				}
+				//unset($data['cust']['additional_fields']);
+
+
+				/**
+				 * Additional checkout fields
+				 * Start
+				 */
+				$addFieldActive = 0;
+				foreach ($this->pref['additional_fields'] as $k => $v) 
+				{
+					// Check if additional fields are enabled
+					if (vartrue($v['active'], false))
+					{
+						$addFieldActive++;
+					}
+				}
+
+				if ($addFieldActive > 0)
+				{
+					// If any additional fields are enabled
+					// add active fields to form
+					foreach ($this->pref['additional_fields'] as $k => $v) 
+					{
+						if (vartrue($v['active'], false))
+						{
+							$fieldid = 'add_field'.$k;
+							$fieldname = 'cust['.$fieldid.']';
+							if (isset($data['cust'][$fieldid]))
+							{
+								$fieldvalue = $data['cust'][$fieldid]['value'];
+							}
+							else
+							{
+								$fieldvalue = $data['cust']['additional_fields']['value'][$fieldid];
+							}
+							if ($v['type'] == 'text')
+							{
+								// Textboxes
+								$field = $frm->text($fieldname, $fieldvalue, 100, array('placeholder'=>varset($v['placeholder'][e_LANGUAGE], ''), 'required'=>($v['required'] ? 1 : 0)));
+							}
+							elseif ($v['type'] == 'checkbox')
+							{
+								// Checkboxes
+								$field = '<div class="form-control">'.$frm->checkbox($fieldname, 1, 0, array('required'=>($v['required'] ? 1 : 0)));
+								if (vartrue($v['placeholder']))
+								{
+									$field .= ' <label for="'.$frm->name2id($fieldname).'-1" class="text-muted">&nbsp;'.$this->tp->toHTML($v['placeholder'][e_LANGUAGE]).'</label>';
+								}
+								$field .= '</div>';
+							}
+
+							$this->sc->addVars(array(
+								'fieldname' => $fieldname,
+								'fieldcaption' => $this->tp->toHTML(varset($v['caption'][e_LANGUAGE], 'Additional field '.$k)),
+								'field' => $field,
+								'fieldcount' => $addFieldActive,
+								'fieldrequired' => $v['required']
+							));
+
+							$data['cust']['add'][$fieldid] = $this->tp->parseTemplate($this->template['address']['edit']['billing']['additional']['item'], true, $this->sc);
+
+						}
+					}
+
+				}
+
+
+				$this->sc->setVars($data);
+				$text .= $this->tp->parseTemplate($this->template['address']['edit']['billing']['body'], true, $this->sc);
+			}
+			elseif ($this->id === 2) // Shipping address
+			{
+				$data['ship'] = e107::unserialize($data['cust_shipping']);
+				$this->sc->setVars($data);
+				$text .= $this->tp->parseTemplate($this->template['address']['edit']['shipping']['body'], true, $this->sc);
+			}
+			else
+			{
+				e107::getMessage()->addError('Invalid address!', 'vstore');
+			}
+
+			$text .= '
+				<hr/>
+				<div class="text-center">
+				<a href="'.e107::url('vstore', 'dashboard', array('dash' => 'addresses')).'"  class="btn btn-default">Back</a>&nbsp;';
+			$text .= $frm->button('edit_address', $this->id, 'submit', 'Save', array('class' => 'btn btn-primary'));
+			$text .= '</div>';
+
+			$text .= $frm->close();
+        }
+        else
+        {
+            $text .= '<p>No addresses available yet.</p>';
+        }
+        unset($data);        
+        return $text;
+    }	
+
+
+    /**
+     * jump to user profiles
+     *
+     * @return void
+     */
+    private function account()
+    {
+        e107::redirect(SITEURL.'usersettings.php');
+        exit;
+    }
+}
+
+?>
