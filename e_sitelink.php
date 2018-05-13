@@ -75,7 +75,7 @@ class vstore_sitelink // include plugin-folder in the name.
 		if (e_ADMIN_AREA) return;
 		
 		$vst = e107::getSingleton('vstore',e_PLUGIN.'vstore/vstore.class.php');
-		$sc = e107::getScBatch('vstore_plugin');
+		$sc = e107::getScParser()->getScObject('vstore_shortcodes', 'vstore', false);
 
 		$data = $vst->getCartData();
 		$cust = $vst->getCustomerData();

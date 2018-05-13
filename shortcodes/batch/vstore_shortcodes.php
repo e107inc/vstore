@@ -368,7 +368,7 @@
 				return null;
 			}
 
-			if (varsettrue($parm))
+			if (vartrue($parm))
 			{
 				$parm = array_keys($parm);
 				$parm = $parm[0];
@@ -1106,7 +1106,7 @@
 					break;
 
 				case 'billing_title':
-					$text = (varsettrue($this->var['order_use_shipping']) ? 'Billing address' : 'Billing & Shipping address');
+					$text = (vartrue($this->var['order_use_shipping']) ? 'Billing address' : 'Billing & Shipping address');
 					break;
 
 				case 'ship_country':
@@ -1152,7 +1152,7 @@
 			{
 				case 'name':
 					$text = $this->var['item']['item_name'];
-					if (varsettrue($this->var['item']['itemvarstring']))
+					if (vartrue($this->var['item']['itemvarstring']))
 					{
 						$text .= '<br />'.$this->var['item']['itemvarstring'];
 					}

@@ -39,9 +39,9 @@ class vstore_dashboard extends vstore
             )
         );
 
-        $this->area = strtolower(trim(varsettrue($this->get['area'], 'dashboard')));
-        $this->action = strtolower(trim(varsettrue($this->get['action'], '')));
-        $this->id = intval(varsettrue($this->get['id'], 0));
+        $this->area = strtolower(trim(vartrue($this->get['area'], 'dashboard')));
+        $this->action = strtolower(trim(vartrue($this->get['action'], '')));
+        $this->id = intval(vartrue($this->get['id'], 0));
 
 		$this->tp = e107::getParser();
 		$this->sql = e107::getDb();
@@ -247,7 +247,7 @@ class vstore_dashboard extends vstore
     {
         $text = '';
         // List the downloads
-        if ($this->sql->gen('SELECT SQL_CALC_FOUND_ROWS *, o.* FROM `#vstore_orders` o WHERE order_e107_user = '.USERID.' AND order_items REGEXP \'("file": "[a-zA-Z0-9_-]+",)\' AND FIND_IN_SET(order_status, "N,C,P") ORDER BY order_id DESC LIMIT '.$this->limit_from.','.$this->perPage))
+        if ($this->sql->gen('SELECT SQL_CALC_FOUND_ROWS *, o.* FROM `#vstore_orders` o WHERE order_e107_user = '.USERID.' AND order_items REGEXP \'"file": "[[:alnum:][:digit:][:punct:][:blank:]]+",\' AND FIND_IN_SET(order_status, "N,C,P") ORDER BY order_id DESC LIMIT '.$this->limit_from.','.$this->perPage))
         {
             $count = e107::getDb()->foundRows();
 

@@ -135,14 +135,14 @@ class vstore_invoice_pref_form_ui extends e_admin_form_ui
 	{
 		e107::wysiwyg(true);
 
-		return e107::getForm()->textarea('invoice_hint['.e_LANGUAGE.']', varsettrue($curVal[e_LANGUAGE], ''), 5, 80, array('class' => 'tbox form-control input-block-level e-autoheight e-wysiwyg'));
+		return e107::getForm()->textarea('invoice_hint['.e_LANGUAGE.']', (!empty($curVal[e_LANGUAGE]) ? $curVal[e_LANGUAGE] : ''), 5, 80, array('class' => 'tbox form-control input-block-level e-autoheight e-wysiwyg'));
 	}
 
 	function invoice_finish_phrase($curVal, $mode)
 	{
 		e107::wysiwyg(true);
 
-		return e107::getForm()->textarea('invoice_finish_phrase', varsettrue($curVal, ''), 5, 80, array('class' => 'tbox form-control input-block-level e-autoheight e-wysiwyg'));
+		return e107::getForm()->textarea('invoice_finish_phrase', (!empty($curVal) ? $curVal : ''), 5, 80, array('class' => 'tbox form-control input-block-level e-autoheight e-wysiwyg'));
 	}
 
 
