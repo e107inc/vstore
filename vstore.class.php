@@ -863,7 +863,7 @@ class vstore
 
 				if(!empty($this->post['cust']['firstname']))
 				{
-					$this->setCustomerData($this->post['cust']);    // TODO Validate data before proceeding.
+					$this->setCustomerData($this->post['cust']);
 					$this->setGatewayType($this->post['gateway']);
 				}
 

@@ -24,18 +24,13 @@
 if (!defined('e107_INIT')) { exit; }
 
 ob_start(); // DO NOT REMOVE, USED TO PREVENT TCPDF SENTE HEADERS ERROR!!!!!!!
-/*
-TODO:
-1. Look at using disc cache
-2. More detailed check on image paths
-*/
 
 // Debug option - adds entries to rolling log (only works in 0.8)
 //define ('PDF_DEBUG', TRUE);
 define ('PDF_DEBUG', FALSE);
 
 define('K_PATH_MAIN', e_PLUGIN.'pdf/');
-define('K_PATH_URL', SITEURL);			// Used with forms (TODO: check validity)
+define('K_PATH_URL', SITEURL);
 define('K_CELL_HEIGHT_RATIO', 1.25);
 
 // Following may be used (among others)
@@ -159,7 +154,7 @@ class vstore_pdf extends TCPDF
     /**
      *	Convert e107-encoded text to title text
      *	@param string $text
-     *	@return string with various characters replaced with '-'		TODO: Why?
+     *	@return string with various characters replaced with '-'
      */
     function toPDFTitle($text)
     {
@@ -220,7 +215,7 @@ class vstore_pdf extends TCPDF
         $this->SetFooterFont(array($this->pdfPref['pdf_font_family'], '', $this->pdfPref['pdf_font_size']));
 
 
-        $this->WriteHTML($text, true);			//write text		TODO: possibly other parameters
+        $this->WriteHTML($text, true);			//write text
         $this->SetCreator($creator);			//name of creator
         $this->SetAuthor($author);				//name of author
         $this->SetTitle($title);				//title
@@ -311,7 +306,7 @@ class vstore_pdf extends TCPDF
         }
         $this->Cell(0, 0, '', 'T', 0, 'C');			// This puts a line between header and text
 
-        $this->SetTopMargin($this->GetY() + 2);		// FIXME: Bodge to force main body text to start below header
+        $this->SetTopMargin($this->GetY() + 2);
     }
 
     // Page footer
