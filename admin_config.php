@@ -115,6 +115,12 @@ class vstore_admin extends e_admin_dispatcher
 	
 	
 	protected $adminMenu = array(
+		'statistics/custom'	=> array('caption'=> "Statistics", 'perm' => 'P'),
+
+		'orders/list'		=> array('caption'=> "Sales", 'perm' => 'P'),
+		// 'cart/list' 		=> array('caption'=> 'Cart', 'perm' => 'P'),
+		'orders/div'        => array('divider'=>true),
+
 
 		'products/list'		=> array('caption'=> "Products", 'perm' => 'P'),
 		'products/create'	=> array('caption'=> "Add Product", 'perm' => 'P'),
@@ -132,10 +138,6 @@ class vstore_admin extends e_admin_dispatcher
 		'coupons/create'	=> array('caption'=> 'Add Coupon', 'perm' => 'P'),
 		'coupons/div'      	=> array('divider'=>true),
 
-		'orders/list'		=> array('caption'=> "Sales", 'perm' => 'P'),
-		// 'cart/list' 		=> array('caption'=> 'Cart', 'perm' => 'P'),
-		'orders/div'        => array('divider'=>true),
-
 		'customer/list'		=> array('caption'=> "Customers", 'perm' => 'P'),
 	
 		'main/prefs' 		=> array('caption'=> LAN_PREFS, 'perm' => 'P'),
@@ -145,8 +147,6 @@ class vstore_admin extends e_admin_dispatcher
 		'invoice/prefs' 	=> array('caption'=> 'Invoice settings', 'perm' => 'P'),
 
 		'gateways/prefs'	=> array('caption'=> "Payment Gateways", 'perm' => 'P'),
-
-		'statistics/custom'	=> array('caption'=> "Statistics", 'perm' => 'P'),
 
 		// 'main/custom'	=> array('caption'=> 'Custom Page', 'perm' => 'P')
 	);
@@ -162,15 +162,15 @@ class vstore_admin extends e_admin_dispatcher
 	
 	protected $menuTitle = 'Vstore';
 
-		function init()
+	function init()
+	{
+		if(deftrue('e_DEBUG'))
 		{
-			if(deftrue('e_DEBUG'))
-			{
-		//		$this->adminMenu['products/grid'] = array('caption'=> "Products (Grid)", 'perm' => 'P');
-			}
-
-			parent::init();
+	//		$this->adminMenu['products/grid'] = array('caption'=> "Products (Grid)", 'perm' => 'P');
 		}
+
+		parent::init();
+	}
 }
 
 new vstore_admin();

@@ -19,7 +19,6 @@ class vstore_statistics_ui extends e_admin_ui
 			$ns = e107::getRender();
 			$sql = e107::getDb();
 			$frm = e107::getForm();
-			$dt = e107::getDate();
 
 			// Define colors for the chart
 			$colors = array(
@@ -41,8 +40,8 @@ class vstore_statistics_ui extends e_admin_ui
 			);
 			
 
-			require_once(e_PLUGIN.'vstore/vstore.class.php');
-			$sc = new vstore_plugin_shortcodes();
+
+			$sc = e107::getScParser()->getScObject('vstore_shortcodes', 'vstore', false);
 
 			$posted = $this->getPosted();
 
@@ -92,6 +91,8 @@ class vstore_statistics_ui extends e_admin_ui
 			$fields = '';
 			// Make sure a chart type is defined (default = amount)
 			$posted['chart_type'] = varset($posted['chart_type'], 'amount');
+
+			$legend = array();
 
 			// Configure chart type depending settings
 			if ($posted['chart_type'] == 'amount')
@@ -289,28 +290,36 @@ class vstore_statistics_ui extends e_admin_ui
 			<div>
 				<div class="row">
 					<div class="panel panel-default col-6 col-xs-6 col-md-3">
+						<a href="admin_config.php?filter_options=order_status__open&mode=orders&action=list">
 						<div class="panel-body">
 							Open orders
 							<h4>'.number_format($count_open).'</h4>
 						</div>
+						</a>
 					</div>				
 					<div class="panel panel-default col-6 col-xs-6 col-md-3">
+					<a href="admin_config.php?filter_options=datestamp__order_date__week&mode=orders&action=list">
 						<div class="panel-body">
 							Orders last 7 days
 							<h4>'.number_format($count_orders_7).'</h4>
 						</div>
+					</a>
 					</div>				
 					<div class="panel panel-default col-6 col-xs-6 col-md-3">
+					<a href="admin_config.php?filter_options=datestamp__order_date__week&mode=orders&action=list">
 						<div class="panel-body">
 							Gross sales last 7 days
 							<h4>'.$sc->getCurrencySymbol() . number_format($gross_7, 2).'</h4>
 						</div>
+					</a>
 					</div>				
 					<div class="panel panel-default col-6 col-xs-6 col-md-3">
+					<a href="admin_config.php?filter_options=datestamp__order_date__month&mode=orders&action=list">
 						<div class="panel-body">
 							Gross sales last 31 days
 							<h4>'.$sc->getCurrencySymbol() . number_format($gross_31, 2).'</h4>
 						</div>
+					</a>
 					</div>				
 				</div>				
 
@@ -379,24 +388,13 @@ class vstore_statistics_ui extends e_admin_ui
 						format = format.replace("yyyy", "yy");
 						$("#e-datepicker-chart-start").val($.datepicker.formatDate(format, from));
 						$("#e-datepicker-chart-end").val($.datepicker.formatDate(format, to));
-
-
-						// from = to - (multiplier * 24 * 60 * 60);
-						// $("#chart-start").val(from;
-						// $("#chart-end").val(to);
-						// var format = $("#e-datepicker-chart-start").data("date-format");
-						// format = format.replace("yyyy", "yy");
-						// from = new Date(from * 1000);
-						// to = new Date(to * 1000);
-						// $("#e-datepicker-chart-start").val($.datepicker.formatDate(format, from));
-						// $("#e-datepicker-chart-end").val($.datepicker.formatDate(format, to));
 					}
 				}
 			});
 
 			');
 
-			return $ns->tablerender(null, $text);
+			return $ns->tablerender(null, $text, 'default', true);
 		}
 }
 

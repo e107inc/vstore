@@ -10,19 +10,18 @@ if (!defined('e107_INIT')) { exit; }
 
 class vstore_shortcodes extends e_shortcode
 {
-	var $vs = null;
-	
-	function __construct()
-	{
-		$this->vs = e107::getSingleton('vstore',e_PLUGIN.'vstore/vstore.class.php');
-	}
-
-	function sc_vstore_items()
-	{
-		$this->vs->setPerPage(3);
-		return $this->vs->productList();		
-		
-	}
-
+//	var $vs = null;
+//
+//	function __construct()
+//	{
+//		$this->vs = e107::getSingleton('vstore',e_PLUGIN.'vstore/vstore.class.php');
+//	}
+//
+//	function sc_vstore_items()
+//	{
+//		$this->vs->setPerPage(3);
+//		return $this->vs->productList();
+//
+//	}
 }
 ?>

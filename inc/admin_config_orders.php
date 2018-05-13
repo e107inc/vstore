@@ -67,12 +67,6 @@ class vstore_order_ui extends e_admin_ui
 				//$this->setQuery('filter_options');
 			}
 
-
-			if(e_DEBUG !== true)
-			{
-				unset($this->preftabs[3],$this->preftabs[4]); // Disable Amazon and Skrill for Now until they work. // TODO //FIXME
-			}
-
 			// check for responses on inline editing
 			// and display them
 			$js = '
