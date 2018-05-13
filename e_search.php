@@ -100,7 +100,7 @@ class vstore_search extends e_search // include plugin-folder in the name.
 		$time = time();
 		
 		// search only in active items and categories
-		$qry = 'i.item_active = 1 AND c.cat_active = 1 AND';
+		$qry = 'i.item_active = 1 AND c.cat_class IN ('.USERCLASS_LIST.') AND';
 		
 		if (isset($parm['cat']) && $parm['cat'] != 'all') {
 			$qry .= " c.cat_id='".intval($parm['cat'])."' AND";

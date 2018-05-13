@@ -147,7 +147,7 @@ class vstore
 		e107::getDebug()->log("CartID:".$this->cartId);
 
 		// get all category data.
-		$query = 'SELECT * FROM #vstore_cat WHERE cat_active=1 ';
+		$query = 'SELECT * FROM #vstore_cat WHERE cat_class IN ('.USERCLASS_LIST.') ';
 		if(!$data = e107::getDb()->retrieve($query, true))
 		{
 
@@ -2162,7 +2162,7 @@ class vstore
 		
 		$this->from = vartrue($this->get['frm'],0);
 
-		$query = 'SELECT * FROM #vstore_cat WHERE cat_active=1 AND cat_parent = '.$parent.' ORDER BY cat_order LIMIT '.$this->from.",".$this->perPage;
+		$query = 'SELECT * FROM #vstore_cat WHERE cat_class IN ('.USERCLASS_LIST.') AND cat_parent = '.$parent.' ORDER BY cat_order LIMIT '.$this->from.",".$this->perPage;
 		if ((!$data = e107::getDb()->retrieve($query, true)) &&  intval($parent) == 0)
 		{
 			return e107::getMessage()->addInfo('No categories available!', 'vstore')->render('vstore');
@@ -2223,7 +2223,7 @@ class vstore
 
 
 
-		if(!$data = e107::getDb()->retrieve('SELECT SQL_CALC_FOUND_ROWS *, cat_active FROM #vstore_items LEFT JOIN #vstore_cat ON (item_cat = cat_id) WHERE cat_active=1 AND item_active=1 AND item_cat = '.intval($category).' ORDER BY item_order LIMIT '.$this->from.','.$this->perPage, true))
+		if(!$data = e107::getDb()->retrieve('SELECT SQL_CALC_FOUND_ROWS *, cat_class FROM #vstore_items LEFT JOIN #vstore_cat ON (item_cat = cat_id) WHERE cat_class IN ('.USERCLASS_LIST.') AND item_active=1 AND item_cat = '.intval($category).' ORDER BY item_order LIMIT '.$this->from.','.$this->perPage, true))
 		{
 
 			return e107::getMessage()->addInfo("No products available in this category",'vstore')->render('vstore');
@@ -3013,7 +3013,7 @@ class vstore
 		}
 		$sql = e107::getDb();
 		
-		if ($sql->gen('SELECT item_id FROM `#vstore_items` LEFT JOIN `#vstore_cat` ON (item_cat = cat_id) WHERE item_active=1 AND cat_active=1 AND item_id='.intval($itemid)))
+		if ($sql->gen('SELECT item_id FROM `#vstore_items` LEFT JOIN `#vstore_cat` ON (item_cat = cat_id) WHERE item_active=1 AND cat_class IN ('.USERCLASS_LIST.') AND item_id='.intval($itemid)))
 		{
 			return true;
 		}
