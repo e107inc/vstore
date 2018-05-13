@@ -10,20 +10,20 @@ class vstore_invoice_pref_ui extends e_admin_ui
 
 
 		// optional
-		// protected $preftabs = array('Settings', 'Template');
+		protected $preftabs = array(LAN_PREFS, LAN_TEMPLATE);
 
 
 		protected $prefs = array(
 			'invoice_title'        		=> array('title'=> 'Title', 'tab'=>0, 'type'=>'text', 'data' => 'str', 'writeParms'=>array('placeholder'=>'Title', 'default'=>'INVOICE'),'multilan'=>true, 'help' => 'Title of the invoice'),
 			'invoice_info_title'        => array('title'=> 'Information section caption', 'tab'=>0, 'type'=>'text', 'data' => 'str', 'writeParms'=>array('placeholder'=>'Information block title', 'default'=>'Information'),'multilan'=>true, 'help' => 'Title of the information block on the top right side of the invoice.'),
-			'invoice_subject'        	=> array('title'=> 'Subject', 'tab'=>0, 'type'=>'text', 'data' => 'str', 'writeParms'=>array('placeholder'=>'Subject', 'default'=>'This is the invoice for your order #{ORDER_DATA: order_ref} from {ORDER_DATA: order_date}'),'multilan'=>true, 'note'=>'This is rendered right above the items.'),
+			'invoice_subject'        	=> array('title'=> 'Subject', 'tab'=>0, 'type'=>'text', 'data' => 'str', 'writeParms'=>array('size'=>'block-level', 'placeholder'=>'Subject', 'default'=>'This is the invoice for your order #{ORDER_DATA: order_ref} from {ORDER_DATA: order_date}'),'multilan'=>true, 'help'=>'This is rendered right above the items.'),
 			'invoice_nr_prefix'  		=> array('title'=> 'Invoice number prefix', 'tab'=>0, 'type'=>'text', 'data' => 'str', 'writeParms'=>array('placeholder'=>'IN', 'default'=>'IN', 'maxlength' => '5'), 'help' => 'Define the prefix for your invoice number. This will be rendered e.g. IN000012'),
 			'invoice_next_nr'  			=> array('title'=> 'Next invoice number', 'tab'=>0, 'type'=>'method', 'data' => 'int', 'writeParms'=>array('default'=>'1'), 'help' => 'This enables you to start at a given invoice number, or to step over a number. But it will ALWAYS be bigger than the last invoice number used!'),
 			'invoice_date_format'		=> array('title'=> 'Invoice date format', 'tab'=>0, 'type'=>'text', 'data' => 'str', 'writeParms'=>array('placeholder'=>'Dateformat used on invoices (date only)', 'default'=>'%m/%d/%Y'), 'help' => 'Date format (date only) used on onvoices. e.g. 05/02/2018'),
 			'invoice_payment_deadline'  => array('title'=> 'Default payment deadline (days)', 'tab'=>0, 'type'=>'number', 'data' => 'int', 'writeParms'=>array('default'=>'7'), 'help' => 'A notice will be added to the invoice, when the invoice should be paid latest.'),
-			'invoice_hint'        		=> array('title'=> 'Hint', 'tab'=>0, 'type' =>'method', 'data' => 'str', 'note' => 'This will be rendered on the invoice below the items and can be used to add some information on each invoice.'),
-			'invoice_finish_phrase'		=> array('title'=> 'Finishing phrase', 'tab'=>0, 'type' =>'method', 'data' => 'str', 'note' => 'This will be rendered on the invoice below the items and the hint.', 'writeParms' => array('placeholder' => 'Finishing phase', 'default' => 'Thanks for your business!<br><br><br>Yours faithfully<br><br>_______________________________________')),
-			'invoice_footer'        	=> array('title'=> 'Footer content', 'tab'=>0, 'type'=>'method', 'data' => 'json', 'writeParms'=>'', 'note' => 'These fields will be rendered on the bottom of each page.'),
+			'invoice_hint'        		=> array('title'=> 'Hint', 'tab'=>1, 'type' =>'method', 'data' => 'str', 'help' => 'This will be rendered on the invoice below the items and can be used to add some information on each invoice.'),
+			'invoice_finish_phrase'		=> array('title'=> 'Finishing phrase', 'tab'=>1, 'type' =>'method', 'data' => 'str', 'help' => 'This will be rendered on the invoice below the items and the hint.', 'writeParms' => array('placeholder' => 'Finishing phase', 'default' => "Thanks for your business!\n\n\nYours faithfully\n\n_______________________________________")),
+			'invoice_footer'        	=> array('title'=> 'Footer content', 'tab'=>1, 'type'=>'method', 'data' => 'json', 'writeParms'=>'', 'help' => 'These fields will be rendered on the bottom of each page.'),
 			
 			// 'invoice_template'         => array('title'=> "Invoice template", 'type'=>'method', 'tab' => 1, 'data' => 'str'),
 		);
@@ -96,7 +96,7 @@ class vstore_invoice_pref_form_ui extends e_admin_form_ui
 
 				var id = 'invoice-template';
 				$('#'+id).val(template);
-				$(tinymce.get(id).getBody()).html(template);
+			//	$(tinymce.get(id).getBody()).html(template);
 			});
 		});
 		";
@@ -107,8 +107,6 @@ class vstore_invoice_pref_form_ui extends e_admin_form_ui
 	function invoice_template($curVal, $mode)
 	{
 		$frm = e107::getForm();		
-
-		e107::wysiwyg(true);
 
 		$orig_templates = e107::getTemplate('vstore', 'vstore_invoice');
 		$orig_templates = $orig_templates['default'];
@@ -122,7 +120,7 @@ class vstore_invoice_pref_form_ui extends e_admin_form_ui
 			</div>
 		</div>
 		<div class="row">
-			'.$this->textarea('invoice_template', $curVal, 10, 80, array('class' => 'tbox form-control input-block-level e-autoheight e-wysiwyg', 'size' => 'xxlarge')).'
+			'.$this->textarea('invoice_template', $curVal, 5, 80, array('size' => 'block-level')).'
 		</div>
 		';
 
@@ -133,16 +131,12 @@ class vstore_invoice_pref_form_ui extends e_admin_form_ui
 
 	function invoice_hint($curVal, $mode)
 	{
-		e107::wysiwyg(true);
-
-		return e107::getForm()->textarea('invoice_hint['.e_LANGUAGE.']', (!empty($curVal[e_LANGUAGE]) ? $curVal[e_LANGUAGE] : ''), 5, 80, array('class' => 'tbox form-control input-block-level e-autoheight e-wysiwyg'));
+		return e107::getForm()->textarea('invoice_hint['.e_LANGUAGE.']', (!empty($curVal[e_LANGUAGE]) ? $curVal[e_LANGUAGE] : ''), 5, 80, array('size' => 'block-level'));
 	}
 
 	function invoice_finish_phrase($curVal, $mode)
 	{
-		e107::wysiwyg(true);
-
-		return e107::getForm()->textarea('invoice_finish_phrase', (!empty($curVal) ? $curVal : ''), 5, 80, array('class' => 'tbox form-control input-block-level e-autoheight e-wysiwyg'));
+		return e107::getForm()->textarea('invoice_finish_phrase', (!empty($curVal) ? $curVal : ''), 6, 80, array('size' => 'block-level'));
 	}
 
 
@@ -152,9 +146,9 @@ class vstore_invoice_pref_form_ui extends e_admin_form_ui
 		{
 			$curVal = array(
 				0 => e107::pref('vstore', 'merchant_info'),
-				1 => '<b>Contact</b><br/>Phone: <br/>Email: <br/>Website: ',
-				2 => '<b>Tax information</b><br/>VAT-ID: <br/>Tax code: ',
-				3 => '<b>Bank information</b><br/>Bank: <br/>Owner: <br/>IBAN: <br/>BIC/SWIFT: '
+				1 => "Contact\nPhone: \nEmail: \nWebsite: ",
+				2 => "Tax information\nVAT-ID: \nTax code: ",
+				3 => "Bank information\nBank: \nOwner: \nIBAN: \nBIC/SWIFT: "
 			);
 		}
 
@@ -165,29 +159,21 @@ class vstore_invoice_pref_form_ui extends e_admin_form_ui
 
 		$frm = e107::getForm();
 
-
-		$text = '
-		<table class="table table-bordered table-striped">
-		<tr>
-			<th>Fieldname</th>
-			<!-- <th>Title</th> -->
-			<th>Text</th>
-		</tr>';
+		$tab = array();
 
 		for($i=0; $i < 4; $i++)
 		{
-			$text .= '
-			<tr>
-				<td>footer' . ($i) . '</td>
-				<td>' . $frm->bbarea('invoice_footer['.$i.']', $curVal[$i],'', '_common', 'small') . '</td>
-			</tr>
-			';
+			$tab[$i] = array(
+				'caption'   =>'Footer #' . ($i) ,
+				'text'      => $frm->textarea('invoice_footer['.$i.']', $curVal[$i], 6, 80, array('size'=>'block-level'), 'small')
+			);
 		}
 
-		$text .= '
-		</table>';
-		return $text;
+		return $this->tabs($tab);
+
 	}
+
+
 
 	function invoice_next_nr($curVal, $mode)
 	{

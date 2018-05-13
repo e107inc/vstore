@@ -394,7 +394,7 @@ class vstore_statistics_ui extends e_admin_ui
 
 			');
 
-			return $ns->tablerender(null, $text, 'default', true);
+			return $text; // $ns->tablerender(null, $text, 'default', true);
 		}
 }
 

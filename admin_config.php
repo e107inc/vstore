@@ -142,7 +142,7 @@ class vstore_admin extends e_admin_dispatcher
 	
 		'main/prefs' 		=> array('caption'=> LAN_PREFS, 'perm' => 'P'),
 
-		'email/prefs' 		=> array('caption'=> 'Email Templates', 'perm' => 'P'),
+		'email/templates' 	=> array('caption'=> 'Email Templates', 'perm' => 'P'),
 
 		'invoice/prefs' 	=> array('caption'=> 'Invoice settings', 'perm' => 'P'),
 
