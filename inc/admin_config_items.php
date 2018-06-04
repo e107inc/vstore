@@ -26,7 +26,7 @@ class vstore_items_ui extends e_admin_ui
 		  'checkboxes' 			=>   array ( 'title' => '', 'type' => null, 'data' => null, 	'width' => '5%', 'thclass' => 'center', 'forced' => '1', 'class' => 'center', 'toggle' => 'e-multiselect',  ),
 		  'item_preview'        =>   array ( 'title' => LAN_PREVIEW, 'type'=>'method', 'data'=>false, 'width'=>'5%', 'forced'=>1),
 		  'item_id' 			=>   array ( 'title' => LAN_ID, 			'type' => 'text', 'data' => 'int', 	'width' => '5%', 'help' => '', 'readParms'=>'link=sef&target=blank', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
-		  'item_active' 		=>   array ( 'title' => LAN_ACTIVE, 		'type' => 'boolean', 'data' => 'int', 'inline' =>true, 'width' => '5%', 'help' => '', 'readParms'=>'', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+		  'item_active' 		=>   array ( 'title' => LAN_ACTIVE, 		'type' => 'boolean', 'data' => 'int', 'inline' =>true, 'width' => '5%', 'help' => '', 'readParms'=>'', 'writeParms' => array('default' => '1'), 'class' => 'left', 'thclass' => 'left'),
 		  'item_code' 			=>   array ( 'title' => 'Code', 			'type' => 'text', 'inline'=>true,	'data' => 'str', 'width' => '2%', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'center', 'thclass' => 'center',  ),
 		  'item_name'			=>   array ( 'title' => LAN_TITLE, 			'type' => 'text', 	'data' => 'str', 'width' => 'auto', 'inline' => true, 'help' => '', 'readParms' => '', 'writeParms' => array('size'=>'xxlarge'), 'class' => 'left', 'thclass' => 'left',  ),
 		  'item_desc' 			=>   array ( 'title' => 'Description', 		'type' => 'textarea', 	'data' => 'str', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => array('size'=>'xxlarge','maxlength'=>250), 'class' => 'center', 'thclass' => 'center',  ),
@@ -34,7 +34,7 @@ class vstore_items_ui extends e_admin_ui
 		  'item_pic' 			=>   array ( 'title' => 'Images/Videos', 	'type' => 'images', 'data' => 'array', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => 'media=vstore&video=1&max=8', 'class' => 'center', 'thclass' => 'center',  ),
 		  'item_files' 			=>   array ( 'title' => 'Files', 			'type' => 'files', 'tab'=>3, 'data' => 'array', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => 'media=vstore_file_2', 'class' => 'center', 'thclass' => 'center',  ),
 		  'item_price' 			=>   array ( 'title' => 'Price', 			'type' => 'text', 'data' => 'float', 'width' => 'auto', 'inline'=>true, 'help' => 'Price is always the gross price incl. tax!', 'readParms' => '', 'writeParms' => '', 'class' => 'right', 'thclass' => 'right',  ),
-		  'item_tax_class' 		=>   array ( 'title' => 'Tax class', 		'type' => 'dropdown', 'data' => 'str', 'width' => 'auto', 'filter'=>true, 'batch'=>true, 'inline' => true, 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+		  'item_tax_class' 		=>   array ( 'title' => 'Tax class', 		'type' => 'method', 'data' => 'str', 'width' => 'auto', 'filter'=>true, 'batch'=>true, 'inline' => true, 'help' => '', 'readParms' => '', 'writeParms' => array(), 'class' => 'left', 'thclass' => 'left' ),
 		  'item_shipping' 		=>   array ( 'title' => 'Shipping', 		'type' => 'text', 'data' => 'float', 'width' => 'auto',  'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'center', 'thclass' => 'center',  ),
 		  'item_weight' 		=>   array ( 'title' => 'Weight', 			'type' => 'text', 'data' => 'float', 'width' => 'auto',  'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'center', 'thclass' => 'center',  ),
 
@@ -44,7 +44,7 @@ class vstore_items_ui extends e_admin_ui
 		  'item_related' 		=>   array ( 'title' => 'Related', 			'type' => 'method', 'tab'=>2, 'data' => 'array', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => 'video=1', 'class' => 'center', 'thclass' => 'center',  ),
 
 		  'item_order' 			=>   array ( 'title' => LAN_ORDER, 			'type' => 'hidden', 'data' => 'int', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
-		  'item_inventory' 		=>   array ( 'title' => 'Inventory', 		'type' => 'method', 'data' => 'int', 'width' => 'auto', 'inline'=>true, 'help' => 'Enter -1 if this item is always available', 'readParms' => '', 'writeParms' => '', 'class' => 'right item-inventory', 'thclass' => 'right',  ),
+		  'item_inventory' 		=>   array ( 'title' => 'Inventory', 		'type' => 'method', 'data' => 'int', 'width' => 'auto', 'inline'=>true, 'help' => 'Enter -1 if this item is always available', 'readParms' => '', 'writeParms' => array('default' => -1), 'class' => 'right item-inventory', 'thclass' => 'right',  ),
 		  'item_vars' 	        =>   array ( 'title' => 'Product Variations', 	'type' => 'method'), 
 		  'item_vars_inventory' =>   array ( 'title' => 'Variations Inventory', 'type' => 'method', 'data' => 'json'), 
 
@@ -73,6 +73,7 @@ class vstore_items_ui extends e_admin_ui
 
 			if($data = e107::getDb()->retrieve('SELECT item_var_id,item_var_name FROM #vstore_items_vars ORDER BY item_var_name', true))
 			{
+				$this->fields['item_vars']['writeParms'] = array();
 				foreach($data as $k=>$v)
 				{
 					$key = $v['item_var_id'];
@@ -104,7 +105,8 @@ class vstore_items_ui extends e_admin_ui
 			{
 				$tc = e107::unserialize($tc);
 			}
-				foreach($tc as $tclass)
+			
+			foreach($tc as $tclass)
 			{
 				$this->fields['item_tax_class']['writeParms'][$tclass['name']] = sprintf('%s (%s%%)', $tclass['description'], ($tclass['value'] * 100.0));
 			}
@@ -232,6 +234,38 @@ class vstore_items_form_ui extends e_admin_form_ui
 
 
 	}
+	
+	// Custom Method/Function 
+	function item_tax_class($curVal,$mode)
+	{
+		$frm = e107::getForm();		
+		$opts = $this->getController()->getFields()['item_tax_class']['writeParms'];
+		 		
+		switch($mode)
+		{
+			case 'read': // List Page
+				if (!empty($curVal))
+				{
+					$curVal = $opts[$curVal];
+				}
+				return $curVal;
+			break;
+			
+			case 'write': // Edit Page
+				if (empty($curVal))
+				{
+					$curVal = 'standard';
+				}
+				return $frm->select('item_tax_class', $opts, $curVal);		
+			break;
+			
+			case 'filter':
+			case 'batch':
+				return $opts;
+			break;
+		}
+	}
+
 	
 	// Custom Method/Function 
 	function item_cat($curVal,$mode)
