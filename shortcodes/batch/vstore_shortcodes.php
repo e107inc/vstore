@@ -9,7 +9,7 @@
 		protected $currency = null;
 		protected $displayCurrency = false;
 		protected $categories = array();
-		public $captionOutOfStock = 'Out of Stock';
+		public $captionOutOfStock = LAN_VSTORE_003; // 'Out of Stock';
 		protected $halt = false;
 
 		public function __construct()
@@ -939,7 +939,7 @@
 				return "<a href='#' class='btn-out-of-stock ".$classo."' ".$itemid.">".$this->captionOutOfStock."</a>";
 			}
 
-			$label =  ($this->var['item_price'] == '0.00' || !$inStock) ? LAN_READ_MORE : 'Add to cart';
+			$label =  ($this->var['item_price'] == '0.00' || !$inStock) ? LAN_READ_MORE : LAN_VSTORE_001; // 'Add to cart';
 
 
 			return '<a class="'.$class.'" '.$itemid.' href="#">'.e107::getParser()->toGlyph('fa-shopping-cart').' '.$label.'</a>';
@@ -950,10 +950,10 @@
 		{
 			if($this->var['item_inventory'] != 0)
 			{
-				return '<span class="text-success"><strong>In Stock</strong></span>';
+				return '<span class="text-success"><strong>'.LAN_VSTORE_002.'</strong></span>';
 			}
 
-			return '<span class="text-danger"><strong>Out of Stock</strong></span>';
+			return '<span class="text-danger"><strong>'.LAN_VSTORE_003.'</strong></span>'; // Out of stock
 		}
 
 		function sc_item_url($parm=null)
