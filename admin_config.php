@@ -16,6 +16,8 @@ e107::css('inline',"
 	#custom-css{ font-family: monospace; }
 ");
 
+e107::lan('vstore', true, true);
+
 require_once('vstore.class.php');
 
 class vstore_admin extends e_admin_dispatcher
@@ -117,28 +119,28 @@ class vstore_admin extends e_admin_dispatcher
 	protected $adminMenu = array(
 		'statistics/custom'	=> array('caption'=> "Statistics", 'perm' => 'P'),
 
-		'orders/list'		=> array('caption'=> "Sales", 'perm' => 'P'),
+		'orders/list'		=> array('caption'=> LAN_VSTORE_ADMIN_001, 'perm' => 'P'), // "Sales"
 		// 'cart/list' 		=> array('caption'=> 'Cart', 'perm' => 'P'),
 		'orders/div'        => array('divider'=>true),
 
 
-		'products/list'		=> array('caption'=> "Products", 'perm' => 'P'),
-		'products/create'	=> array('caption'=> "Add Product", 'perm' => 'P'),
+		'products/list'		=> array('caption'=> LAN_VSTORE_ADMIN_002, 'perm' => 'P'),
+		'products/create'	=> array('caption'=> LAN_VSTORE_ADMIN_003, 'perm' => 'P'),
 		'products/div'      => array('divider'=>true),
 
-		'vars/list'			=> array('caption'=> "Product Variations", 'perm' => 'P'),
-		'vars/create'		=> array('caption'=> "Add Product Variations", 'perm' => 'P'),
+		'vars/list'			=> array('caption'=> LAN_VSTORE_ADMIN_004, 'perm' => 'P'), // Product Variations
+		'vars/create'		=> array('caption'=> LAN_VSTORE_ADMIN_005, 'perm' => 'P'),
 		'vars/div'          => array('divider'=>true),
 
 		'cat/list'			=> array('caption'=> LAN_CATEGORIES, 'perm' => 'P'),
 		'cat/create'		=> array('caption'=> LAN_CREATE_CATEGORY, 'perm' => 'P'),
 		'cat/div'           => array('divider'=>true),
 
-		'coupons/list'		=> array('caption'=> 'Coupons', 'perm' => 'P'),
-		'coupons/create'	=> array('caption'=> 'Add Coupon', 'perm' => 'P'),
+		'coupons/list'		=> array('caption'=> LAN_VSTORE_ADMIN_006, 'perm' => 'P'),
+		'coupons/create'	=> array('caption'=> LAN_VSTORE_ADMIN_007, 'perm' => 'P'),
 		'coupons/div'      	=> array('divider'=>true),
 
-		'customer/list'		=> array('caption'=> "Customers", 'perm' => 'P'),
+		'customer/list'		=> array('caption'=> LAN_VSTORE_ADMIN_008, 'perm' => 'P'),
 	
 		'main/prefs' 		=> array('caption'=> LAN_PREFS, 'perm' => 'P'),
 
