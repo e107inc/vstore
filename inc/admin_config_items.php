@@ -27,33 +27,33 @@
 		protected $fields = array(
 			'checkboxes'     => array('title' => '', 'type' => null, 'data' => null, 'width' => '5%', 'thclass' => 'center', 'forced' => '1', 'class' => 'center', 'toggle' => 'e-multiselect',),
 			'item_preview'   => array('title' => LAN_PREVIEW, 'type' => 'method', 'data' => false, 'width' => '5%', 'forced' => 1),
-			'item_id'        => array('title' => LAN_ID, 'type' => 'text', 'data' => 'int', 'width' => '5%', 'help' => '', 'readParms' => 'link=sef&target=blank', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',),
-			'item_active'    => array('title' => LAN_ACTIVE, 'type' => 'boolean', 'data' => 'int', 'inline' => true, 'width' => '5%', 'help' => '', 'readParms' => '', 'writeParms' => array('default' => '1'), 'class' => 'left', 'thclass' => 'left'),
-			'item_code'      => array('title' => 'Code', 'type' => 'text', 'inline' => true, 'data' => 'str', 'width' => '2%', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'center', 'thclass' => 'center',),
-			'item_name'      => array('title' => LAN_TITLE, 'type' => 'text', 'data' => 'str', 'width' => 'auto', 'inline' => true, 'help' => '', 'readParms' => '', 'writeParms' => array('size' => 'xxlarge'), 'class' => 'left', 'thclass' => 'left',),
-			'item_desc'      => array('title' => 'Description', 'type' => 'textarea', 'data' => 'str', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => array('size' => 'xxlarge', 'maxlength' => 250), 'class' => 'center', 'thclass' => 'center',),
-			'item_cat'       => array('title' => 'Category', 'type' => 'dropdown', 'data' => 'int', 'width' => 'auto', 'filter' => true, 'batch' => true, 'inline' => true, 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',),
-			'item_pic'       => array('title' => 'Images/Videos', 'type' => 'images', 'data' => 'array', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => 'media=vstore&video=1&max=8', 'class' => 'center', 'thclass' => 'center',),
-			'item_files'     => array('title' => 'Files', 'type' => 'files', 'tab' => 3, 'data' => 'array', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => 'media=vstore_file_2', 'class' => 'center', 'thclass' => 'center',),
-			'item_price'     => array('title' => 'Price', 'type' => 'text', 'data' => 'float', 'width' => 'auto', 'inline' => true, 'help' => 'Price is always the gross price incl. tax!', 'readParms' => '', 'writeParms' => '', 'class' => 'right', 'thclass' => 'right',),
-			'item_tax_class' => array('title' => 'Tax class', 'type' => 'method', 'data' => 'str', 'width' => 'auto', 'filter' => true, 'batch' => true, 'inline' => true, 'help' => '', 'readParms' => '', 'writeParms' => array(), 'class' => 'left', 'thclass' => 'left'),
-			'item_shipping'  => array('title' => 'Shipping', 'type' => 'text', 'data' => 'float', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'center', 'thclass' => 'center',),
-			'item_weight'    => array('title' => 'Weight', 'type' => 'text', 'data' => 'float', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'center', 'thclass' => 'center',),
+			'item_id'        => array('title' => LAN_ID, 'type' => 'text', 'data' => 'int', 'width' => '5%', 'help' => '', 'readParms' => 'link=sef&target=blank', 'writeParms' => array(), 'class' => 'left', 'thclass' => 'left',),
+			'item_active'    => array('title' => LAN_ACTIVE, 'type' => 'boolean', 'data' => 'int', 'inline' => true, 'width' => '5%', 'help' => '', 'readParms' => array(), 'writeParms' => array('default' => '1'), 'class' => 'left', 'thclass' => 'left'),
+			'item_code'      => array('title' => 'Code', 'type' => 'text', 'inline' => true, 'data' => 'str', 'width' => '2%', 'help' => '', 'readParms' => array(), 'writeParms' => array(), 'class' => 'center', 'thclass' => 'center',),
+			'item_name'      => array('title' => LAN_TITLE, 'type' => 'text', 'data' => 'str', 'width' => 'auto', 'inline' => true, 'help' => '', 'readParms' => array(), 'writeParms' => array('size' => 'xxlarge'), 'class' => 'left', 'thclass' => 'left',),
+			'item_desc'      => array('title' => 'Description', 'type' => 'textarea', 'data' => 'str', 'width' => 'auto', 'help' => '', 'readParms' => array(), 'writeParms' => array('size' => 'xxlarge', 'maxlength' => 250), 'class' => 'center', 'thclass' => 'center',),
+			'item_cat'       => array('title' => 'Category', 'type' => 'dropdown', 'data' => 'int', 'width' => 'auto', 'filter' => true, 'batch' => true, 'inline' => true, 'help' => '', 'readParms' => array(), 'writeParms' => array(), 'class' => 'left', 'thclass' => 'left',),
+			'item_pic'       => array('title' => 'Images/Videos', 'type' => 'images', 'data' => 'array', 'width' => 'auto', 'help' => '', 'readParms' => array(), 'writeParms' => 'media=vstore&video=1&max=8', 'class' => 'center', 'thclass' => 'center',),
+			'item_files'     => array('title' => 'Files', 'type' => 'files', 'tab' => 3, 'data' => 'array', 'width' => 'auto', 'help' => '', 'readParms' => array(), 'writeParms' => 'media=vstore_file_2', 'class' => 'center', 'thclass' => 'center',),
+			'item_price'     => array('title' => 'Price', 'type' => 'number', 'data' => 'float', 'width' => 'auto', 'inline' => true, 'help' => 'Price is always the gross price incl. tax!', 'readParms' => array(), 'writeParms' => array('decimals' => 2), 'class' => 'right', 'thclass' => 'right',),
+			'item_tax_class' => array('title' => 'Tax class', 'type' => 'method', 'data' => 'str', 'width' => 'auto', 'filter' => true, 'batch' => true, 'inline' => true, 'help' => '', 'readParms' => array(), 'writeParms' => array(), 'class' => 'left', 'thclass' => 'left'),
+			'item_shipping'  => array('title' => 'Shipping', 'type' => 'number', 'data' => 'float', 'width' => 'auto', 'help' => '', 'readParms' => array(), 'writeParms' => array('decimals' => 2), 'class' => 'center', 'thclass' => 'center',),
+			'item_weight'    => array('title' => 'Weight', 'type' => 'number', 'data' => 'float', 'width' => 'auto', 'help' => '', 'readParms' => array(), 'writeParms' => array('decimals' => 2), 'class' => 'center', 'thclass' => 'center',),
 
-			'item_details' => array('title' => 'Details', 'type' => 'bbarea', 'tab' => 1, 'data' => 'str', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'center', 'thclass' => 'center',),
+			'item_details' => array('title' => 'Details', 'type' => 'bbarea', 'tab' => 1, 'data' => 'str', 'width' => 'auto', 'help' => '', 'readParms' => array(), 'writeParms' => array(), 'class' => 'center', 'thclass' => 'center',),
 
-			'item_reviews' => array('title' => 'Reviews', 'type' => 'textarea', 'tab' => 2, 'data' => 'str', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => 'size=xxlarge', 'class' => 'center', 'thclass' => 'center',),
-			'item_related' => array('title' => 'Related', 'type' => 'method', 'tab' => 2, 'data' => 'array', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => 'video=1', 'class' => 'center', 'thclass' => 'center',),
+			'item_reviews' => array('title' => 'Reviews', 'type' => 'textarea', 'tab' => 2, 'data' => 'str', 'width' => 'auto', 'help' => '', 'readParms' => array(), 'writeParms' => 'size=xxlarge', 'class' => 'center', 'thclass' => 'center',),
+			'item_related' => array('title' => 'Related', 'type' => 'method', 'tab' => 2, 'data' => 'array', 'width' => 'auto', 'help' => '', 'readParms' => array(), 'writeParms' => 'video=1', 'class' => 'center', 'thclass' => 'center',),
 
-			'item_order'          => array('title' => LAN_ORDER, 'type' => 'hidden', 'data' => 'int', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',),
-			'item_inventory'      => array('title' => 'Inventory', 'type' => 'method', 'data' => 'int', 'width' => 'auto', 'inline' => true, 'help' => 'Enter -1 if this item is always available', 'readParms' => '', 'writeParms' => array('default' => -1), 'class' => 'right item-inventory', 'thclass' => 'right',),
+			'item_order'          => array('title' => LAN_ORDER, 'type' => 'hidden', 'data' => 'int', 'width' => 'auto', 'help' => '', 'readParms' => array(), 'writeParms' => array(), 'class' => 'left', 'thclass' => 'left',),
+			'item_inventory'      => array('title' => 'Inventory', 'type' => 'method', 'data' => 'int', 'width' => 'auto', 'inline' => true, 'help' => 'Enter -1 if this item is always available', 'readParms' => array(), 'writeParms' => array('default' => -1), 'class' => 'right item-inventory', 'thclass' => 'right',),
 			'item_vars'           => array('title' => 'Product Variations', 'type' => 'method'),
 			'item_vars_inventory' => array('title' => 'Variations Inventory', 'type' => 'method', 'data' => 'json'),
 
 			'item_userclass' => array('title' => 'Assign userclass', 'type' => 'method', 'help' => 'Assign userclass to customer on purchase'),
 
-			'item_link'     => array('title' => 'External Link', 'type' => 'text', 'tab' => 3, 'data' => 'str', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'center', 'thclass' => 'center',),
-			'item_download' => array('title' => 'Download File', 'type' => 'file', 'tab' => 3, 'data' => 'str', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => 'media=vstore_file', 'class' => 'center', 'thclass' => 'center',),
+			'item_link'     => array('title' => 'External Link', 'type' => 'text', 'tab' => 3, 'data' => 'str', 'width' => 'auto', 'help' => '', 'readParms' => array(), 'writeParms' => array(), 'class' => 'center', 'thclass' => 'center',),
+			'item_download' => array('title' => 'Download File', 'type' => 'file', 'tab' => 3, 'data' => 'str', 'width' => 'auto', 'help' => '', 'readParms' => array(), 'writeParms' => 'media=vstore_file', 'class' => 'center', 'thclass' => 'center',),
 
 			'options' => array('title' => LAN_OPTIONS, 'type' => null, 'data' => null, 'width' => '5%', 'thclass' => 'right last', 'class' => 'right last', 'forced' => '1',),
 		);
@@ -137,6 +137,12 @@
 
 		public function beforeUpdate($new_data, $old_data, $id)
 		{
+
+			if(array_key_exists('item_inventory', $new_data))
+			{
+				$new_data['item_inventory'] = intval($new_data['item_inventory']);
+				$new_data['item_inventory'] = $new_data['item_inventory'] < 0 ? -1 : $new_data['item_inventory'];
+			}
 
 			if(array_key_exists('item_vars', $new_data))
 			{
@@ -314,7 +320,8 @@
 					break;
 
 				case 'write': // Edit Page
-					$text = $frm->text('item_inventory', $curVal, null, array('pattern' => '^-?\d+$')); // to allow also negative values (<0 = Item will not run out of stock)
+					//$text = $frm->text('item_inventory', $curVal, null, array('pattern' => '^-?\d+$')); // to allow also negative values (<0 = Item will not run out of stock)
+					$text = $frm->number('item_inventory', $curVal, null, array('decimals' => 0, 'min' => -1)); // to allow also negative values (<0 = Item will not run out of stock)
 					$text .= '<span class="small">In case of any Product Variations selected, this setting will ignored! You have to fill out the Variations Inventory instead!</span>';
 
 					return $text;
@@ -519,7 +526,8 @@
 					break;
 
 				case 'write': // Edit Page
-					return $frm->text('item_price', $curVal);
+					//return $frm->text('item_price', $curVal);
+					return $frm->number('item_price', $curVal, 10, array('decimals' => 2));
 					break;
 
 				case 'filter':
