@@ -385,7 +385,7 @@ class vstore_pref_form_ui extends e_admin_form_ui
 						$readonly = in_array($v['name'], array('none', 'reduced', 'standard'));
 						$text .= '	
 							<div class="form-inline tax-classes-row" style="margin-bottom:5px">'.
-							$this->select('tax_classes['.$i.'][name]', $tax_classes, $v['name'], array('id'=>null, 'size'=>'small', 'placeholder'=>'Name', 'readonly' => $readonly)).
+							$this->select('tax_classes['.$i.'][name]', $tax_classes, $v['name'], array('id'=>null, 'size'=>'medium', 'placeholder'=>'Name', 'readonly' => $readonly)).
 							" ".$this->text('tax_classes['.$i.'][description]', $v['description'], 150, array('id'=>null, 'size'=>'large', 'placeholder'=>'Description')).
 							" ".$this->text('tax_classes['.$i.'][value]', $v['value'], 6, array('id'=>null, 'size'=>'small', 'placeholder'=> 'Tax', 'pattern' => '^0\.?[0-9]{0,4}$')).
 							" ".$this->button('tax-remove', '1', 'action', "<i class='fa fa-times'></i> Del", array('class'=>'btn btn-danger btn-sm vstore-tax-remove'.($readonly ? ' hidden invisible' : '')))
@@ -414,6 +414,8 @@ class vstore_pref_form_ui extends e_admin_form_ui
 
 						row.html(row.html().replace(/readonly=\"readonly\"/g,''));
 						row.html(row.html().replace(new RegExp('value=\"[^\"]*\"', 'g'),'value=\"\"'));
+						// fix empty option value
+						row.html(row.html().replace(new RegExp('option value=\"\"', 'g'),'option'));
 						row.html(row.html().replace(/\[0\]/g,'[' + taxRowCount + ']'));
 						row.html(row.html().replace(/hidden/g,''));
 						row.html(row.html().replace(/invisible/g,''));
