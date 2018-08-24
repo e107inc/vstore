@@ -143,9 +143,11 @@ class vstore
 		}
 
 
-		e107::getDebug()->log($this->pref);
-		e107::getDebug()->log("CartID:".$this->cartId);
-
+		if(deftrue('e_DEBUG_VSTORE'))
+		{
+			e107::getDebug()->log($this->pref);
+			e107::getDebug()->log("CartID:".$this->cartId);
+		}
 		// get all category data.
 		$query = 'SELECT * FROM #vstore_cat WHERE cat_class IN ('.USERCLASS_LIST.') ';
 		if(!$data = e107::getDb()->retrieve($query, true))
@@ -195,7 +197,7 @@ class vstore
 		}
 
 
-		if(getperms('0'))
+		if(deftrue('e_DEBUG_VSTORE') && getperms('0'))
 		{
 			e107::getDebug()->log($this->pref);
 		}
