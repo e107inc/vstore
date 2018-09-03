@@ -104,7 +104,9 @@ class vstore
 
 	public function __construct()
 	{
-		$this->cartId = $this->getCartId();		
+		$this->cartId = $this->getCartId();
+
+		/** @var vstore_shortcodes sc */
 		$this->sc = e107::getScParser()->getScObject('vstore_shortcodes', 'vstore', false);
 
 		$this->get = $_GET;

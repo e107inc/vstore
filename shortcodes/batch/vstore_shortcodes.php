@@ -930,17 +930,21 @@
 			$itemclass = ' vstore-add-item-'.varset($this->var['item_id'], 0);
 
 			$class .= $itemclass;
-			$class0 .= $itemclass;
+			$classo .= $itemclass;
 
 			$inStock = $this->inStock();
 
 			if(!$inStock)
 			{
+				if(!empty($this->var['item_link'])) // external link - redirect to URL, info only. ie. catalog mode
+				{
+					return "<a href='".$this->var['item_link']."' target='_blank' class='".$class."'>".LAN_READ_MORE."</a>";
+				}
+
 				return "<a href='#' class='btn-out-of-stock ".$classo."' ".$itemid.">".$this->captionOutOfStock."</a>";
 			}
 
-			$label =  ($this->var['item_price'] == '0.00' || !$inStock) ? LAN_READ_MORE : LAN_VSTORE_001; // 'Add to cart';
-
+			$label = LAN_VSTORE_001; // 'Add to cart';
 
 			return '<a class="'.$class.'" '.$itemid.' href="#">'.e107::getParser()->toGlyph('fa-shopping-cart').' '.$label.'</a>';
 		}
@@ -960,7 +964,7 @@
 		{
 			if(!empty($this->var['item_link']))
 			{
-				return $this->var['item_link'];
+			//	return $this->var['item_link'];
 			}
 
 			return e107::url('vstore','product', $this->var);

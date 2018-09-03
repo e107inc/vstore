@@ -16,7 +16,7 @@
 		protected $batchCopy   = true;
 		protected $sortField   = 'item_order';
 		//	protected $orderStep		= 10;
-		protected $tabs = array('Basic', 'Details', 'Reviews', 'Files'); // Use 'tab'=>0  OR 'tab'=>1 in the $fields below to enable.
+		protected $tabs = array(LAN_BASIC, LAN_ADVANCED, 'Variations', 'Reviews', 'Files'); // Use 'tab'=>0  OR 'tab'=>1 in the $fields below to enable.
 
 		//	protected $listQry      	= "SELECT * FROM #tableName WHERE field != '' "; // Example Custom Query. LEFT JOINS allowed. Should be without any Order or Limit.
 
@@ -25,35 +25,49 @@
 		protected $grid = array('title' => 'item_name', 'image' => 'item_preview', 'body' => '', 'class' => 'col-md-2', 'perPage' => 12, 'carousel' => true);
 
 		protected $fields = array(
+
+			// Tab 0
 			'checkboxes'     => array('title' => '', 'type' => null, 'data' => null, 'width' => '5%', 'thclass' => 'center', 'forced' => '1', 'class' => 'center', 'toggle' => 'e-multiselect',),
 			'item_preview'   => array('title' => LAN_PREVIEW, 'type' => 'method', 'data' => false, 'width' => '5%', 'forced' => 1),
 			'item_id'        => array('title' => LAN_ID, 'type' => 'text', 'data' => 'int', 'width' => '5%', 'help' => '', 'readParms' => 'link=sef&target=blank', 'writeParms' => array(), 'class' => 'left', 'thclass' => 'left',),
-			'item_active'    => array('title' => LAN_ACTIVE, 'type' => 'boolean', 'data' => 'int', 'inline' => true, 'width' => '5%', 'help' => '', 'readParms' => array(), 'writeParms' => array('default' => '1'), 'class' => 'left', 'thclass' => 'left'),
+			'item_active'    => array('title' => LAN_ACTIVE, 'type' => 'boolean', 'data' => 'int', 'inline' => true, 'width' => '5%', 'help' => '', 'readParms' => array(), 'writeParms' => array('default' => '1'), 'class' => 'center', 'thclass' => 'center'),
 			'item_code'      => array('title' => 'Code', 'type' => 'text', 'inline' => true, 'data' => 'str', 'width' => '2%', 'help' => '', 'readParms' => array(), 'writeParms' => array(), 'class' => 'center', 'thclass' => 'center',),
 			'item_name'      => array('title' => LAN_TITLE, 'type' => 'text', 'data' => 'str', 'width' => 'auto', 'inline' => true, 'help' => '', 'readParms' => array(), 'writeParms' => array('size' => 'xxlarge'), 'class' => 'left', 'thclass' => 'left',),
-			'item_desc'      => array('title' => 'Description', 'type' => 'textarea', 'data' => 'str', 'width' => 'auto', 'help' => '', 'readParms' => array(), 'writeParms' => array('size' => 'xxlarge', 'maxlength' => 250), 'class' => 'center', 'thclass' => 'center',),
-			'item_cat'       => array('title' => 'Category', 'type' => 'dropdown', 'data' => 'int', 'width' => 'auto', 'filter' => true, 'batch' => true, 'inline' => true, 'help' => '', 'readParms' => array(), 'writeParms' => array(), 'class' => 'left', 'thclass' => 'left',),
+			'item_desc'      => array('title' => LAN_DESCRIPTION, 'type' => 'textarea', 'data' => 'str', 'width' => 'auto', 'help' => '', 'readParms' => array(), 'writeParms' => array('size' => 'xxlarge', 'maxlength' => 250), 'class' => 'center', 'thclass' => 'center',),
+			'item_cat'       => array('title' => LAN_CATEGORY, 'type' => 'dropdown', 'data' => 'int', 'width' => 'auto', 'filter' => true, 'batch' => true, 'inline' => true, 'help' => '', 'readParms' => array(), 'writeParms' => array(), 'class' => 'left', 'thclass' => 'left',),
 			'item_pic'       => array('title' => 'Images/Videos', 'type' => 'images', 'data' => 'array', 'width' => 'auto', 'help' => '', 'readParms' => array(), 'writeParms' => 'media=vstore&video=1&max=8', 'class' => 'center', 'thclass' => 'center',),
-			'item_files'     => array('title' => 'Files', 'type' => 'files', 'tab' => 3, 'data' => 'array', 'width' => 'auto', 'help' => '', 'readParms' => array(), 'writeParms' => 'media=vstore_file_2', 'class' => 'center', 'thclass' => 'center',),
+			'item_files'     => array('title' => 'Files', 'type' => 'files', 'tab' => 4, 'data' => 'array', 'width' => 'auto', 'help' => '', 'readParms' => array(), 'writeParms' => 'media=vstore_file_2', 'class' => 'center', 'thclass' => 'center',),
 			'item_price'     => array('title' => 'Price', 'type' => 'number', 'data' => 'float', 'width' => 'auto', 'inline' => true, 'help' => 'Price is always the gross price incl. tax!', 'readParms' => array(), 'writeParms' => array('decimals' => 2), 'class' => 'right', 'thclass' => 'right',),
-			'item_tax_class' => array('title' => 'Tax class', 'type' => 'method', 'data' => 'str', 'width' => 'auto', 'filter' => true, 'batch' => true, 'inline' => true, 'help' => '', 'readParms' => array(), 'writeParms' => array(), 'class' => 'left', 'thclass' => 'left'),
-			'item_shipping'  => array('title' => 'Shipping', 'type' => 'number', 'data' => 'float', 'width' => 'auto', 'help' => '', 'readParms' => array(), 'writeParms' => array('decimals' => 2), 'class' => 'center', 'thclass' => 'center',),
-			'item_weight'    => array('title' => 'Weight', 'type' => 'number', 'data' => 'float', 'width' => 'auto', 'help' => '', 'readParms' => array(), 'writeParms' => array('decimals' => 2), 'class' => 'center', 'thclass' => 'center',),
 
-			'item_details' => array('title' => 'Details', 'type' => 'bbarea', 'tab' => 1, 'data' => 'str', 'width' => 'auto', 'help' => '', 'readParms' => array(), 'writeParms' => array(), 'class' => 'center', 'thclass' => 'center',),
 
-			'item_reviews' => array('title' => 'Reviews', 'type' => 'textarea', 'tab' => 2, 'data' => 'str', 'width' => 'auto', 'help' => '', 'readParms' => array(), 'writeParms' => 'size=xxlarge', 'class' => 'center', 'thclass' => 'center',),
-			'item_related' => array('title' => 'Related', 'type' => 'method', 'tab' => 2, 'data' => 'array', 'width' => 'auto', 'help' => '', 'readParms' => array(), 'writeParms' => 'video=1', 'class' => 'center', 'thclass' => 'center',),
+			// Tab 1
+			'item_tax_class' => array('title' => 'Tax class', 'type' => 'method',  'tab' => 1,'data' => 'str', 'width' => 'auto', 'filter' => true, 'batch' => true, 'inline' => true, 'help' => '', 'readParms' => array(), 'writeParms' => array(), 'class' => 'left', 'thclass' => 'left'),
+			'item_shipping'  => array('title' => 'Shipping', 'type' => 'number', 'tab' => 1, 'data' => 'float', 'width' => 'auto', 'help' => '', 'readParms' => array(), 'writeParms' => array('decimals' => 2), 'class' => 'center', 'thclass' => 'center',),
+			'item_weight'    => array('title' => 'Weight', 'type' => 'number', 'tab' => 1, 'data' => 'float', 'width' => 'auto', 'help' => '', 'readParms' => array(), 'writeParms' => array('decimals' => 2), 'class' => 'center', 'thclass' => 'center',),
+
+			'item_details' => array('title' => 'Detailed Description', 'type' => 'bbarea', 'tab' => 1, 'data' => 'str', 'width' => 'auto', 'help' => '', 'readParms' => array(), 'writeParms' => array(), 'class' => 'center', 'thclass' => 'center',),
+
+			'item_link'     => array('title' => 'External Link', 'type' => 'text', 'inline'=>true, 'tab' => 1, 'data' => 'str', 'width' => 'auto', 'help' => 'Optional: Enter URL of item on external site. Used only when no inventory is available.', 'readParms' => array(), 'writeParms' => array('size'=>'xxlarge'), 'class' => 'left', 'thclass' => 'left',),
+
+			'item_download' => array('title' => 'Download File', 'type' => 'file', 'tab' => 1, 'data' => 'str', 'width' => 'auto', 'help' => '', 'readParms' => array(), 'writeParms' => 'media=vstore_file', 'class' => 'center', 'thclass' => 'center',),
+			'item_userclass' => array('title' => 'Assign userclass', 'type' => 'method', 'tab'=>1, 'help' => 'Assign userclass to customer on purchase'),
+
+
+			// Tab 2
+			'item_vars'           => array('title' => 'Product Variations', 'tab'=>2, 'type' => 'method'),
+			'item_vars_inventory' => array('title' => 'Variations Inventory', 'tab'=>2, 'type' => 'method', 'data' => 'json'),
+
+
+
+			// Tab 3
+			'item_reviews' => array('title' => 'Reviews', 'type' => 'textarea', 'tab' => 3, 'data' => 'str', 'width' => 'auto', 'help' => '', 'readParms' => array(), 'writeParms' => 'size=xxlarge', 'class' => 'center', 'thclass' => 'center',),
+			'item_related' => array('title' => 'Related', 'type' => 'method', 'tab' => 3, 'data' => 'array', 'width' => 'auto', 'help' => '', 'readParms' => array(), 'writeParms' => 'video=1', 'class' => 'center', 'thclass' => 'center',),
 
 			'item_order'          => array('title' => LAN_ORDER, 'type' => 'hidden', 'data' => 'int', 'width' => 'auto', 'help' => '', 'readParms' => array(), 'writeParms' => array(), 'class' => 'left', 'thclass' => 'left',),
 			'item_inventory'      => array('title' => 'Inventory', 'type' => 'method', 'data' => 'int', 'width' => 'auto', 'inline' => true, 'help' => 'Enter -1 if this item is always available', 'readParms' => array(), 'writeParms' => array('default' => -1), 'class' => 'right item-inventory', 'thclass' => 'right',),
-			'item_vars'           => array('title' => 'Product Variations', 'type' => 'method'),
-			'item_vars_inventory' => array('title' => 'Variations Inventory', 'type' => 'method', 'data' => 'json'),
 
-			'item_userclass' => array('title' => 'Assign userclass', 'type' => 'method', 'help' => 'Assign userclass to customer on purchase'),
 
-			'item_link'     => array('title' => 'External Link', 'type' => 'text', 'tab' => 3, 'data' => 'str', 'width' => 'auto', 'help' => '', 'readParms' => array(), 'writeParms' => array(), 'class' => 'center', 'thclass' => 'center',),
-			'item_download' => array('title' => 'Download File', 'type' => 'file', 'tab' => 3, 'data' => 'str', 'width' => 'auto', 'help' => '', 'readParms' => array(), 'writeParms' => 'media=vstore_file', 'class' => 'center', 'thclass' => 'center',),
+
 
 			'options' => array('title' => LAN_OPTIONS, 'type' => null, 'data' => null, 'width' => '5%', 'thclass' => 'right last', 'class' => 'right last', 'forced' => '1',),
 		);
@@ -321,8 +335,10 @@
 
 				case 'write': // Edit Page
 					//$text = $frm->text('item_inventory', $curVal, null, array('pattern' => '^-?\d+$')); // to allow also negative values (<0 = Item will not run out of stock)
-					$text = $frm->number('item_inventory', $curVal, null, array('decimals' => 0, 'min' => -1)); // to allow also negative values (<0 = Item will not run out of stock)
-					$text .= '<span class="small">In case of any Product Variations selected, this setting will ignored! You have to fill out the Variations Inventory instead!</span>';
+					$text = $frm->number('item_inventory', $curVal, null, array('class'=>'pull-left', 'decimals' => 0, 'min' => -1)); // to allow also negative values (<0 = Item will not run out of stock)
+
+					$icon = e107::getParser()->toGlyph('fa-info-circle');
+					$text .= ' <span style="display:inline-block;padding:6px" title="In case of any Product Variations selected, this setting will ignored! You have to fill out the Variations Inventory instead!">'.$icon.'</span>';
 
 					return $text;
 					// return $frm->text('item_inventory', $curVal, null, array('pattern' => '^-?\d+$')); // to allow also negative values (<0 = Item will not run out of stock)
@@ -364,7 +380,7 @@
 			}
 
 			$sql = e107::getDb();
-			$frm = e107::getForm();
+
 
 			if($sql->select('vstore_items_vars', '*', sprintf('FIND_IN_SET(item_var_id, "%s") LIMIT 2', $item_vars)))
 			{
@@ -414,9 +430,9 @@
 					foreach($col['x']['names'] as $nameX)
 					{
 						$text .= sprintf('<tr><th style="width: 20%%;">%s</th>', $nameX);
-						$nameX = $frm->name2id($nameX);
+						$nameX = $this->name2id($nameX);
 						$value = varset($curVal[$nameX], 0);
-						$text .= sprintf('<td>%s</td>', $frm->text('item_vars_inventory[' . $nameX . ']', $value, 5, array('pattern' => '^-?\d+$', 'size' => 'sm')));
+						$text .= sprintf('<td>%s</td>', $this->text('item_vars_inventory[' . $nameX . ']', $value, 5, array('pattern' => '^-?\d+$', 'size' => 'sm')));
 						$text .= '</tr>
 					';
 					}
@@ -426,12 +442,12 @@
 					foreach($col['x']['names'] as $nameX)
 					{
 						$text .= sprintf('<tr><th style="width: 20%%;">%s</th>', $nameX);
-						$nameX = $frm->name2id($nameX);
+						$nameX = $this->name2id($nameX);
 						foreach($col['y']['names'] as $nameY)
 						{
-							$nameY = $frm->name2id($nameY);
+							$nameY = $this->name2id($nameY);
 							$value = varset($curVal[$nameX][$nameY], 0);
-							$text .= sprintf('<td>%s</td>', $frm->text('item_vars_inventory[' . $nameX . '][' . $nameY . ']', $value, 5, array('pattern' => '^-?\d+$', 'size' => 'sm')));
+							$text .= sprintf('<td>%s</td>', $this->text('item_vars_inventory[' . $nameX . '][' . $nameY . ']', $value, 5, array('pattern' => '^-?\d+$', 'size' => 'sm')));
 						}
 						$text .= '</tr>
 					';
@@ -449,7 +465,7 @@
 		function item_vars($curVal, $mode)
 		{
 
-			$frm = e107::getForm();
+
 
 			switch($mode)
 			{
@@ -468,7 +484,9 @@
 						}
 					}
 
-					$text = $frm->select('item_vars', $opt_array, $curVal, array('multiple' => 1));
+				//	$text = $this->checkboxes('item_vars',  $opt_array, $curVal, array('useKeyValues'=>1)); // needs to be saved even when unchecked.
+
+					$text = $this->select('item_vars', $opt_array, $curVal, array('multiple' => 1));
 					if($curVal)
 					{
 						$text .= '<p class="small">Do not select more than 2 variations, as only the first 2 will be stored.<br>
@@ -635,7 +653,8 @@
 				case 'write': // Edit Page
 					if($uc !== -1)
 					{
-						$text = $frm->text('', e107::getDB()->retrieve('userclass_classes', 'userclass_name', 'userclass_id=' . $uc), null, array('disabled' => true, 'title' => 'Userclass defined in store preferences'));
+						$name = e107::getUserClass()->getName($uc);
+						$text = "<span class='label label-success' title='Userclass defined in store preferences'>".$name."</span>";
 						$text .= $frm->hidden('item_userclass', $curVal);
 
 						return $text;
