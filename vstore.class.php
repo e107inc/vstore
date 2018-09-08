@@ -124,11 +124,14 @@ class vstore
 			$this->captionBase = $this->pref['caption'][e_LANGUAGE];
 		}
 
-		foreach($this->pref['additional_fields'] as $k => $v)
+		if(!empty($this->pref['additional_fields']))
 		{
-			if (vartrue($v['active'], false))
+			foreach($this->pref['additional_fields'] as $k => $v)
 			{
-				static::$customerFields[] = 'add_field'.$k;
+				if (vartrue($v['active'], false))
+				{
+					static::$customerFields[] = 'add_field'.$k;
+				}
 			}
 		}
 
