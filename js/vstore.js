@@ -235,7 +235,13 @@ var e107 = e107 || {'settings': {}, 'behaviors': {}};
 						$('.vstore-item-avail-' + itemid).removeClass('label-success').addClass('label-danger').html(settings.vstore.cart.outofstock);
 					}
 
-					$('.vstore-item-price-'+itemid).text(varprice.toFixed(2));
+					// fixes #92: missing currency symbol after selecting a new variation
+					var currency = $('#vstore-currency-symbol').text();
+					if (currency.substr(0, 1) == 1) {
+                        $('.vstore-item-price-'+itemid).text(varprice.toFixed(2) + ' ' + currency.substr(1));
+					}else{
+                        $('.vstore-item-price-' + itemid).text(currency.substr(1) + ' ' + varprice.toFixed(2));
+					}
 
 				});
 			});
