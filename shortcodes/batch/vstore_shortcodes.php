@@ -16,7 +16,6 @@
 		{
 			$this->vpref = e107::pref('vstore');
 
-			//$this->symbols = array('USD'=>'$','EUR'=>'€','CAN'=>'$','GBP'=>'£', "BTC"=> "<i class='fa fa-btc'></i>");
 			$this->symbols = array('USD'=>'$','EUR'=>'€','CAN'=>'$','GBP'=>'£', "BTC"=> e107::getParser()->toGlyph('fa-btc'));
 			$currency = !empty($this->vpref['currency']) ? $this->vpref['currency'] : 'USD';
 
@@ -591,6 +590,8 @@
 							<label>'.$row['item_var_name'].'
 							'.$select.'
 							</label>
+							<!-- fix #92: currency symbol used with product variations --> 
+							<span class="text-hide" id="vstore-currency-symbol">'.varset($this->vpref['amount_format'], 0).$this->curSymbol.'</span>
 						</div>';
 					}
 					$text .= '
