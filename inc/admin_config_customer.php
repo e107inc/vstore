@@ -178,11 +178,11 @@ class vstore_customer_form_ui extends e_admin_form_ui
 		switch($mode)
 		{
 			case 'read': // List Page
-				return $curVal;
+				return  $this->getCountry($curVal);
 			break;
 			
 			case 'write': // Edit Page
-				return $frm->text('cust_country',$curVal);		
+				return $frm->country('cust_country', $curVal);
 			break;
 			
 			case 'filter':
