@@ -2463,7 +2463,7 @@ class vstore
 		if (array_key_exists(0, $itemvars))
 		{
 			foreach ($itemvars as $value) {
-				list($id, $name) = explode('-', $value);
+				list($id, $name) = explode('-', $value, 2);
 				$result[$id] = $name;
 			}
 		}

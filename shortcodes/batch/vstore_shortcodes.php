@@ -548,7 +548,7 @@
 
 						$select = $frm->select_open(
 							'item_var['.$itemid.']['.$row['item_var_id'].']',
-							array('class' => 'vstore-item-var tbox select form-control', 'data-id'=>$itemid, 'data-name'=>varset($row['name'], 'foo'), 'required' => vartrue($row['item_var_compulsory']))
+							array('class' => 'vstore-item-var tbox select form-control', 'data-id'=>$itemid, 'data-name'=>varset($row['item_var_name'], 'foo'), 'required' => vartrue($row['item_var_compulsory']))
 						);
 
 						$selected = true;
