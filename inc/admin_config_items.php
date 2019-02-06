@@ -266,7 +266,6 @@
 		function item_tax_class($curVal, $mode)
 		{
 
-			$frm = e107::getForm();
 			$opts = $this->getController()->getFields()['item_tax_class']['writeParms'];
 
 			switch($mode)
@@ -286,7 +285,7 @@
 						$curVal = 'standard';
 					}
 
-					return $frm->select('item_tax_class', $opts, $curVal);
+					return $this->select('item_tax_class', $opts, $curVal);
 					break;
 
 				case 'filter':
@@ -300,9 +299,6 @@
 		// Custom Method/Function
 		function item_cat($curVal, $mode)
 		{
-
-			$frm = e107::getForm();
-
 			switch($mode)
 			{
 				case 'read': // List Page
@@ -310,7 +306,7 @@
 					break;
 
 				case 'write': // Edit Page
-					return $frm->text('item_cat', $curVal);
+					return $this->text('item_cat', $curVal);
 					break;
 
 				case 'filter':
@@ -324,9 +320,6 @@
 		// Custom Method/Function
 		function item_inventory($curVal, $mode)
 		{
-
-			$frm = e107::getForm();
-
 			switch($mode)
 			{
 				case 'read': // List Page
@@ -334,15 +327,15 @@
 					break;
 
 				case 'write': // Edit Page
-					//$text = $frm->text('item_inventory', $curVal, null, array('pattern' => '^-?\d+$')); // to allow also negative values (<0 = Item will not run out of stock)
-					$text = $frm->number('item_inventory', $curVal, null, array('class'=>'pull-left', 'decimals' => 0, 'min' => -1)); // to allow also negative values (<0 = Item will not run out of stock)
+					//$text = $this->text('item_inventory', $curVal, null, array('pattern' => '^-?\d+$')); // to allow also negative values (<0 = Item will not run out of stock)
+					$text = $this->number('item_inventory', $curVal, null, array('class'=>'pull-left', 'decimals' => 0, 'min' => -1)); // to allow also negative values (<0 = Item will not run out of stock)
 
 					$icon = e107::getParser()->toGlyph('fa-info-circle');
 					$text .= ' <span style="display:inline-block;padding:6px" title="In case of any Product Variations selected, this setting will ignored! You have to fill out the Variations Inventory instead!">'.$icon.'</span>';
 
 					return $text;
-					// return $frm->text('item_inventory', $curVal, null, array('pattern' => '^-?\d+$')); // to allow also negative values (<0 = Item will not run out of stock)
-					//return $frm->number('item_inventory',$curVal);
+					// return $this->text('item_inventory', $curVal, null, array('pattern' => '^-?\d+$')); // to allow also negative values (<0 = Item will not run out of stock)
+					//return $this->number('item_inventory',$curVal);
 					break;
 
 				case 'filter':
@@ -510,9 +503,6 @@
 		// Custom Method/Function
 		function item_pic($curVal, $mode)
 		{
-
-			$frm = e107::getForm();
-
 			switch($mode)
 			{
 				case 'read': // List Page
@@ -520,7 +510,7 @@
 					break;
 
 				case 'write': // Edit Page
-					return $frm->text('item_pic', $curVal);
+					return $this->text('item_pic', $curVal);
 					break;
 
 				case 'filter':
@@ -534,9 +524,6 @@
 		// Custom Method/Function
 		function item_price($curVal, $mode)
 		{
-
-			$frm = e107::getForm();
-
 			switch($mode)
 			{
 				case 'read': // List Page
@@ -544,8 +531,8 @@
 					break;
 
 				case 'write': // Edit Page
-					//return $frm->text('item_price', $curVal);
-					return $frm->number('item_price', $curVal, 10, array('decimals' => 2));
+					//return $this->text('item_price', $curVal);
+					return $this->number('item_price', $curVal, 10, array('decimals' => 2));
 					break;
 
 				case 'filter':
@@ -559,9 +546,6 @@
 		// Custom Method/Function
 		function item_ph($curVal, $mode)
 		{
-
-			$frm = e107::getForm();
-
 			switch($mode)
 			{
 				case 'read': // List Page
@@ -569,7 +553,7 @@
 					break;
 
 				case 'write': // Edit Page
-					return $frm->text('item_ph', $curVal);
+					return $this->text('item_ph', $curVal);
 					break;
 
 				case 'filter':
@@ -583,9 +567,6 @@
 		// Custom Method/Function
 		function item_details($curVal, $mode)
 		{
-
-			$frm = e107::getForm();
-
 			switch($mode)
 			{
 				case 'read': // List Page
@@ -593,7 +574,7 @@
 					break;
 
 				case 'write': // Edit Page
-					return $frm->text('item_details', $curVal);
+					return $this->text('item_details', $curVal);
 					break;
 
 				case 'filter':
@@ -607,9 +588,6 @@
 		// Custom Method/Function
 		function item_related($curVal, $mode)
 		{
-
-			$frm = e107::getForm();
-
 			$chp = e107::getDb()->retrieve('page_chapters', '*', 'chapter_parent !=0 ORDER BY chapter_order', true);
 
 			foreach($chp as $row)
@@ -627,7 +605,7 @@
 					break;
 
 				case 'write': // Edit Page
-					return "Tab Name: " . $frm->text('item_related[caption]', $curVal['caption']) . "<br />Source: " . $frm->select('item_related[src]', $options, $curVal['src'], null, true);
+					return "Tab Name: " . $this->text('item_related[caption]', $curVal['caption']) . "<br />Source: " . $this->select('item_related[src]', $options, $curVal['src'], null, true);
 					break;
 
 				case 'filter':
@@ -639,8 +617,6 @@
 
 		function item_userclass($curVal, $mode)
 		{
-
-			$frm = e107::getForm();
 			$uc = intval(e107::pref('vstore', 'customer_userclass'));
 
 
@@ -655,7 +631,7 @@
 					{
 						$name = e107::getUserClass()->getName($uc);
 						$text = "<span class='label label-success' title='Userclass defined in store preferences'>".$name."</span>";
-						$text .= $frm->hidden('item_userclass', $curVal);
+						$text .= $this->hidden('item_userclass', $curVal);
 
 						return $text;
 					}
@@ -663,7 +639,7 @@
 					{
 						$items = e107::getUserClass()->getClassList('nobody,member,classes');
 
-						return $frm->select('item_userclass', $items, $curVal, array('readonly' => ($uc !== -1)));
+						return $this->select('item_userclass', $items, $curVal, array('readonly' => ($uc !== -1)));
 					}
 					break;
 

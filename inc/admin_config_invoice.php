@@ -106,8 +106,6 @@ class vstore_invoice_pref_form_ui extends e_admin_form_ui
 
 	function invoice_template($curVal, $mode)
 	{
-		$frm = e107::getForm();		
-
 		$orig_templates = e107::getTemplate('vstore', 'vstore_invoice');
 		$orig_templates = $orig_templates['default'];
 
@@ -131,12 +129,12 @@ class vstore_invoice_pref_form_ui extends e_admin_form_ui
 
 	function invoice_hint($curVal, $mode)
 	{
-		return e107::getForm()->textarea('invoice_hint['.e_LANGUAGE.']', (!empty($curVal[e_LANGUAGE]) ? $curVal[e_LANGUAGE] : ''), 5, 80, array('size' => 'block-level'));
+		return $this->textarea('invoice_hint['.e_LANGUAGE.']', (!empty($curVal[e_LANGUAGE]) ? $curVal[e_LANGUAGE] : ''), 5, 80, array('size' => 'block-level'));
 	}
 
 	function invoice_finish_phrase($curVal, $mode)
 	{
-		return e107::getForm()->textarea('invoice_finish_phrase', (!empty($curVal) ? $curVal : ''), 6, 80, array('size' => 'block-level'));
+		return $this->textarea('invoice_finish_phrase', (!empty($curVal) ? $curVal : ''), 6, 80, array('size' => 'block-level'));
 	}
 
 
@@ -157,15 +155,13 @@ class vstore_invoice_pref_form_ui extends e_admin_form_ui
 			$curVal = e107::unserialize($curVal);
 		}
 
-		$frm = e107::getForm();
-
 		$tab = array();
 
 		for($i=0; $i < 4; $i++)
 		{
 			$tab[$i] = array(
 				'caption'   =>'Footer #' . ($i) ,
-				'text'      => $frm->textarea('invoice_footer['.$i.']', $curVal[$i], 6, 80, array('size'=>'block-level'), 'small')
+				'text'      => $this->textarea('invoice_footer['.$i.']', $curVal[$i], 6, 80, array('size'=>'block-level'), 'small')
 			);
 		}
 
@@ -183,7 +179,7 @@ class vstore_invoice_pref_form_ui extends e_admin_form_ui
 			$curVal = $next;
 		}
 
-		return e107::getForm()->number('invoice_next_nr', $curVal);
+		return $this->number('invoice_next_nr', $curVal);
 
 	}
 
