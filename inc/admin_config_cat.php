@@ -240,8 +240,6 @@ class vstore_cat_form_ui extends e_admin_form_ui
 		function cat_name($curVal,$mode,$parm)
 		{
 
-			$frm = e107::getForm();
-
 			if($mode == 'read')
 			{
 				return $curVal;
@@ -249,7 +247,7 @@ class vstore_cat_form_ui extends e_admin_form_ui
 
 			if($mode == 'write')
 			{
-				return $frm->text('cat_name',$curVal,255,'size=xxlarge');
+				return $this->text('cat_name',$curVal,255,'size=xxlarge');
 			}
 
 			if($mode == 'filter')

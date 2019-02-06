@@ -236,8 +236,6 @@ class vstore_items_form_ui extends e_admin_form_ui
 	// Custom Method/Function 
 	function item_cat($curVal,$mode)
 	{
-		$frm = e107::getForm();		
-		 		
 		switch($mode)
 		{
 			case 'read': // List Page
@@ -245,7 +243,7 @@ class vstore_items_form_ui extends e_admin_form_ui
 			break;
 			
 			case 'write': // Edit Page
-				return $frm->text('item_cat',$curVal);		
+				return $this->text('item_cat',$curVal);		
 			break;
 			
 			case 'filter':
@@ -259,8 +257,6 @@ class vstore_items_form_ui extends e_admin_form_ui
 		// Custom Method/Function
 	function item_inventory($curVal,$mode)
 	{
-		$frm = e107::getForm();
-
 		switch($mode)
 		{
 			case 'read': // List Page
@@ -268,11 +264,11 @@ class vstore_items_form_ui extends e_admin_form_ui
 			break;
 
 			case 'write': // Edit Page
-				$text = $frm->text('item_inventory', $curVal, null, array('pattern' => '^-?\d+$')); // to allow also negative values (<0 = Item will not run out of stock)
+				$text = $this->text('item_inventory', $curVal, null, array('pattern' => '^-?\d+$')); // to allow also negative values (<0 = Item will not run out of stock)
 				$text .= '<span class="small">In case of any Product Variations selected, this setting will ignored! You have to fill out the Variations Inventory instead!</span>';
 				return $text;
-				// return $frm->text('item_inventory', $curVal, null, array('pattern' => '^-?\d+$')); // to allow also negative values (<0 = Item will not run out of stock)
-				//return $frm->number('item_inventory',$curVal);
+				// return $this->text('item_inventory', $curVal, null, array('pattern' => '^-?\d+$')); // to allow also negative values (<0 = Item will not run out of stock)
+				//return $this->number('item_inventory',$curVal);
 			break;
 
 			case 'filter':
@@ -309,7 +305,6 @@ class vstore_items_form_ui extends e_admin_form_ui
 		}
 
 		$sql = e107::getDb();
-		$frm = e107::getForm();
 
 		if ($sql->select('vstore_items_vars', '*', sprintf('FIND_IN_SET(item_var_id, "%s") LIMIT 2', $item_vars)))
 		{
@@ -353,9 +348,9 @@ class vstore_items_form_ui extends e_admin_form_ui
 				$text .= sprintf('<tr><th style="width: 20%%;">%s</th><th>%s</th>', $col['x']['caption'], 'Inventory');
 				foreach ($col['x']['names'] as $nameX) {
 					$text .= sprintf('<tr><th style="width: 20%%;">%s</th>', $nameX);
-					$nameX = $frm->name2id($nameX);
+					$nameX = $this->name2id($nameX);
 					$value = varset($curVal[$nameX], 0);
-					$text .= sprintf('<td>%s</td>', $frm->text('item_vars_inventory['.$nameX.']', $value, 5, array('pattern' => '^-?\d+$', 'size' => 'sm')));
+					$text .= sprintf('<td>%s</td>', $this->text('item_vars_inventory['.$nameX.']', $value, 5, array('pattern' => '^-?\d+$', 'size' => 'sm')));
 					$text .= '</tr>
 					';
 				}
@@ -364,11 +359,11 @@ class vstore_items_form_ui extends e_admin_form_ui
 			{
 				foreach ($col['x']['names'] as $nameX) {
 					$text .= sprintf('<tr><th style="width: 20%%;">%s</th>', $nameX);
-					$nameX = $frm->name2id($nameX);
+					$nameX = $this->name2id($nameX);
 					foreach ($col['y']['names'] as $nameY) {
-						$nameY = $frm->name2id($nameY);
+						$nameY = $this->name2id($nameY);
 						$value = varset($curVal[$nameX][$nameY], 0);
-						$text .= sprintf('<td>%s</td>', $frm->text('item_vars_inventory['.$nameX.']['.$nameY.']', $value, 5, array('pattern' => '^-?\d+$', 'size' => 'sm')));
+						$text .= sprintf('<td>%s</td>', $this->text('item_vars_inventory['.$nameX.']['.$nameY.']', $value, 5, array('pattern' => '^-?\d+$', 'size' => 'sm')));
 					}
 					$text .= '</tr>
 					';
@@ -384,8 +379,6 @@ class vstore_items_form_ui extends e_admin_form_ui
 
 	function item_vars($curVal,$mode)
 	{
-		$frm = e107::getForm();		
-		 		
 		switch($mode)
 		{
 			case 'read': // List Page
@@ -403,7 +396,7 @@ class vstore_items_form_ui extends e_admin_form_ui
 					}
 				}
 
-				$text = $frm->select('item_vars', $opt_array, $curVal, array('multiple'=>1));
+				$text = $this->select('item_vars', $opt_array, $curVal, array('multiple'=>1));
 				if ($curVal)
 				{
 					$text .= '<p class="small">Do not select more than 2 variations, as only the first 2 will be stored.<br>
@@ -426,8 +419,6 @@ class vstore_items_form_ui extends e_admin_form_ui
 	// Custom Method/Function 
 	function item_pic($curVal,$mode)
 	{
-		$frm = e107::getForm();		
-		 		
 		switch($mode)
 		{
 			case 'read': // List Page
@@ -435,7 +426,7 @@ class vstore_items_form_ui extends e_admin_form_ui
 			break;
 			
 			case 'write': // Edit Page
-				return $frm->text('item_pic',$curVal);		
+				return $this->text('item_pic',$curVal);		
 			break;
 			
 			case 'filter':
@@ -449,8 +440,6 @@ class vstore_items_form_ui extends e_admin_form_ui
 	// Custom Method/Function 
 	function item_price($curVal,$mode)
 	{
-		$frm = e107::getForm();		
-		 		
 		switch($mode)
 		{
 			case 'read': // List Page
@@ -458,7 +447,7 @@ class vstore_items_form_ui extends e_admin_form_ui
 			break;
 			
 			case 'write': // Edit Page
-				return $frm->text('item_price',$curVal);		
+				return $this->text('item_price',$curVal);		
 			break;
 			
 			case 'filter':
@@ -472,8 +461,6 @@ class vstore_items_form_ui extends e_admin_form_ui
 	// Custom Method/Function 
 	function item_ph($curVal,$mode)
 	{
-		$frm = e107::getForm();		
-		 		
 		switch($mode)
 		{
 			case 'read': // List Page
@@ -481,7 +468,7 @@ class vstore_items_form_ui extends e_admin_form_ui
 			break;
 			
 			case 'write': // Edit Page
-				return $frm->text('item_ph',$curVal);		
+				return $this->text('item_ph',$curVal);		
 			break;
 			
 			case 'filter':
@@ -495,8 +482,6 @@ class vstore_items_form_ui extends e_admin_form_ui
 	// Custom Method/Function 
 	function item_details($curVal,$mode)
 	{
-		$frm = e107::getForm();		
-		 		
 		switch($mode)
 		{
 			case 'read': // List Page
@@ -504,7 +489,7 @@ class vstore_items_form_ui extends e_admin_form_ui
 			break;
 			
 			case 'write': // Edit Page
-				return $frm->text('item_details',$curVal);		
+				return $this->text('item_details',$curVal);		
 			break;
 			
 			case 'filter':
@@ -518,8 +503,6 @@ class vstore_items_form_ui extends e_admin_form_ui
 	// Custom Method/Function 
 	function item_related($curVal,$mode)
 	{
-		$frm = e107::getForm();		
-		
 		$chp = e107::getDb()->retrieve('page_chapters', '*', 'chapter_parent !=0 ORDER BY chapter_order', true);
 				
 		foreach($chp as $row)
@@ -537,7 +520,7 @@ class vstore_items_form_ui extends e_admin_form_ui
 			break;
 			
 			case 'write': // Edit Page
-				return "Tab Name: ". $frm->text('item_related[caption]',$curVal['caption'])."<br />Source: ".$frm->select('item_related[src]',$options, $curVal['src'],null,true);		
+				return "Tab Name: ". $this->text('item_related[caption]',$curVal['caption'])."<br />Source: ".$this->select('item_related[src]',$options, $curVal['src'],null,true);		
 			break;
 			
 			case 'filter':
@@ -549,7 +532,6 @@ class vstore_items_form_ui extends e_admin_form_ui
 
 	function item_userclass($curVal, $mode)
 	{
-		$frm = e107::getForm();
 		$uc = intval(e107::pref('vstore', 'customer_userclass'));
 
 
@@ -562,14 +544,14 @@ class vstore_items_form_ui extends e_admin_form_ui
 			case 'write': // Edit Page
 				if ($uc !== -1)
 				{
-					$text = $frm->text('', e107::getDB()->retrieve('userclass_classes', 'userclass_name', 'userclass_id='.$uc), null, array('disabled' => true, 'title'=>'Userclass defined in store preferences'));
-					$text .= $frm->hidden('item_userclass', $curVal);
+					$text = $this->text('', e107::getDB()->retrieve('userclass_classes', 'userclass_name', 'userclass_id='.$uc), null, array('disabled' => true, 'title'=>'Userclass defined in store preferences'));
+					$text .= $this->hidden('item_userclass', $curVal);
 					return $text;
 				}
 				else
 				{
 					$items = e107::getUserClass()->getClassList('nobody,member,classes');
-					return $frm->select('item_userclass', $items, $curVal, array('readonly' => ($uc !== -1)));
+					return $this->select('item_userclass', $items, $curVal, array('readonly' => ($uc !== -1)));
 				}
 			break;
 			

@@ -218,8 +218,6 @@ class vstore_coupons_form_ui extends e_admin_form_ui
 	 */
 	function coupon_items($curVal, $mode)
 	{
-		$frm = e107::getForm();		
-		 		
 		switch($mode)
 		{
 			case 'read': // List Page
@@ -237,7 +235,7 @@ class vstore_coupons_form_ui extends e_admin_form_ui
 					}
 				}
 
-				$text = $frm->select('coupon_items', $opt_array, $curVal, array('multiple'=>1));
+				$text = $this->select('coupon_items', $opt_array, $curVal, array('multiple'=>1));
 				return $text; 		
 			break;
 			
@@ -257,8 +255,6 @@ class vstore_coupons_form_ui extends e_admin_form_ui
 	 */
 	function coupon_items_ex($curVal, $mode)
 	{
-		$frm = e107::getForm();		
-		 		
 		switch($mode)
 		{
 			case 'read': // List Page
@@ -276,7 +272,7 @@ class vstore_coupons_form_ui extends e_admin_form_ui
 					}
 				}
 
-				$text = $frm->select('coupon_items_ex', $opt_array, $curVal, array('multiple'=>1));
+				$text = $this->select('coupon_items_ex', $opt_array, $curVal, array('multiple'=>1));
 				return $text; 		
 			break;
 			
@@ -296,8 +292,6 @@ class vstore_coupons_form_ui extends e_admin_form_ui
 	 */
 	function coupon_cats($curVal, $mode)
 	{
-		$frm = e107::getForm();		
-		 		
 		switch($mode)
 		{
 			case 'read': // List Page
@@ -315,7 +309,7 @@ class vstore_coupons_form_ui extends e_admin_form_ui
 					}
 				}
 
-				$text = $frm->select('coupon_cats', $opt_array, $curVal, array('multiple'=>1));
+				$text = $this->select('coupon_cats', $opt_array, $curVal, array('multiple'=>1));
 				return $text; 		
 			break;
 			
@@ -335,8 +329,6 @@ class vstore_coupons_form_ui extends e_admin_form_ui
 	 */
 	function coupon_cats_ex($curVal, $mode)
 	{
-		$frm = e107::getForm();		
-		 		
 		switch($mode)
 		{
 			case 'read': // List Page
@@ -354,7 +346,7 @@ class vstore_coupons_form_ui extends e_admin_form_ui
 					}
 				}
 
-				$text = $frm->select('coupon_cats_ex', $opt_array, $curVal, array('multiple'=>1));
+				$text = $this->select('coupon_cats_ex', $opt_array, $curVal, array('multiple'=>1));
 				return $text; 		
 			break;
 			
