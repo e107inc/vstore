@@ -16,6 +16,7 @@ class vstore_statistics_ui extends e_admin_ui
 
 		public function customPage()
 		{
+			$frm = e107::getForm();
 			$sql = e107::getDb();
 
 			// Define colors for the chart
@@ -254,7 +255,7 @@ class vstore_statistics_ui extends e_admin_ui
 				$cht = e107::getChart();
 				$cht->setType(varset($chart_type, 'line'));
 				$cht->setOptions($options);
-				$cht->setData($data,'canvas');
+				$cht->setData($data); //,'canvas');
 				$chart = $cht->render('canvas');
 				
 
@@ -284,7 +285,7 @@ class vstore_statistics_ui extends e_admin_ui
 
 
 			// render page
-			$text = $this->open('vstore-statistics','post', null, array('class'=>'form')) . '
+			$text = $frm->open('vstore-statistics','post', null, array('class'=>'form')) . '
 			<div>
 				<div class="row">
 					<div class="panel panel-default col-6 col-xs-6 col-md-3">
@@ -323,35 +324,35 @@ class vstore_statistics_ui extends e_admin_ui
 
 				<div class="row" style="margin-top: 10px;">
 					<div class="col-sm-3">Type:</div>
-					<div class="col-sm-9">'.$this->select('chart_type', $opt_types, $posted['chart_type']).'</div>
+					<div class="col-sm-9">'.$frm->select('chart_type', $opt_types, $posted['chart_type']).'</div>
 				</div>
 				<div class="row">
 					<div class="col-sm-3">Range:</div>
 					<div class="col-sm-9">'
-					.' '.$this->button('plus1', 'Yesterday', 'button', '', array('class' => 'btn-default vstore-range', 'data-value' => '1'))
-					.' '.$this->button('plus7', 'Week', 'button', '', array('class' => 'btn-default vstore-range', 'data-value' => '7'))
-					.' '.$this->button('plus31', 'Month', 'button', '', array('class' => 'btn-default vstore-range', 'data-value' => '31'))
-					.' '.$this->button('plus365', 'Year', 'button', '', array('class' => 'btn-default vstore-range', 'data-value' => '365'))
+					.' '.$frm->button('plus1', 'Yesterday', 'button', '', array('class' => 'btn-default vstore-range', 'data-value' => '1'))
+					.' '.$frm->button('plus7', 'Week', 'button', '', array('class' => 'btn-default vstore-range', 'data-value' => '7'))
+					.' '.$frm->button('plus31', 'Month', 'button', '', array('class' => 'btn-default vstore-range', 'data-value' => '31'))
+					.' '.$frm->button('plus365', 'Year', 'button', '', array('class' => 'btn-default vstore-range', 'data-value' => '365'))
 					.'</div>
 				</div>
 				<div class="row">
 					<div class="col-sm-3">From:</div>
-					<div class="col-sm-9">'.$this->datepicker('chart_start', $posted['chart_start']).'</div>
+					<div class="col-sm-9">'.$frm->datepicker('chart_start', $posted['chart_start']).'</div>
 				</div>
 				<div class="row">
 					<div class="col-sm-3">To:</div>
-					<div class="col-sm-9">'.$this->datepicker('chart_end', $posted['chart_end']).'</div>
+					<div class="col-sm-9">'.$frm->datepicker('chart_end', $posted['chart_end']).'</div>
 				</div>
 
 				<div class="row" style="margin-top: 10px;">
-					<div class="text-center">'.$this->button('chart_update', '<i class="fa fa-refresh" aria-hidden="true"></i> Update').'</div>
+					<div class="text-center">'.$frm->button('chart_update', '<i class="fa fa-refresh" aria-hidden="true"></i> Update').'</div>
 				</div>
 
 				<div class="row vstore-chart" style="margin-top: 10px;">
 					'.$chart.'
 				</div>
 			</div>
-			'.$this->close();
+			'.$frm->close();
 
 			e107::js('footer-inline', '
 

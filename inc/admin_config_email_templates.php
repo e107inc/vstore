@@ -81,6 +81,7 @@ class vstore_email_templates_ui extends e_admin_ui
 		
 		public function templatesPage()
 		{
+			$frm = e107::getForm();
 			e107::wysiwyg(true);
 	
 			$orig_templates = e107::getTemplate('vstore', 'vstore_email');
@@ -107,10 +108,10 @@ class vstore_email_templates_ui extends e_admin_ui
 					<div class="col-md-12 form-group">
 						<label class="control-label col-3 col-xs-3">'.LAN_ACTIVE.'?</label>
 						<div class="text-right col-3 col-xs-3">
-						'.$this->flipswitch('email_templates['.$type.'][active]', $isActive, null, array('switch'=>'small', 'title' => LAN_ACTIVE)).'
+						'.$frm->flipswitch('email_templates['.$type.'][active]', $isActive, null, array('switch'=>'small', 'title' => LAN_ACTIVE)).'
 						</div>
 						<div class="text-right col-6 col-xs-6">
-							'.$this->button('', '<span class="fa fa-undo"></span> '. 'Reset template', 'action', '', array('data-template' => rawurlencode($orig_template), 'data-type' => $type, 'class' => 'vstore-email-reset pull-right btn-sm', 'title' => 'Click & save to reset this template to the default template.')).'
+							'.$frm->button('', '<span class="fa fa-undo"></span> '. 'Reset template', 'action', '', array('data-template' => rawurlencode($orig_template), 'data-type' => $type, 'class' => 'vstore-email-reset pull-right btn-sm', 'title' => 'Click & save to reset this template to the default template.')).'
 						</div>
 					</div>
 				</div>
@@ -118,13 +119,13 @@ class vstore_email_templates_ui extends e_admin_ui
 					<div class="col-md-12 form-group">
 						<label class="control-label col-3 col-xs-3">Receive email in CC?</label>
 						<div class="text-right col-3 col-xs-3">
-						'.$this->flipswitch('email_templates['.$type.'][cc]', $isCC, null, array('switch'=>'small', 'title' => 'Receive this email in CC?')).'
+						'.$frm->flipswitch('email_templates['.$type.'][cc]', $isCC, null, array('switch'=>'small', 'title' => 'Receive this email in CC?')).'
 						</div>
 					</div>
 				</div>
 				<div class="row">
 					<div class="col-md-12">
-					'.$this->textarea('email_templates['.$type.'][template]', $curVal[$type]['template'], 10, 80, array('class' => 'tbox form-control input-block-level e-autoheight e-wysiwyg')).'
+					'.$frm->textarea('email_templates['.$type.'][template]', $curVal[$type]['template'], 10, 80, array('class' => 'tbox form-control input-block-level e-autoheight e-wysiwyg')).'
 					</div>
 				</div>
 				';
@@ -134,19 +135,19 @@ class vstore_email_templates_ui extends e_admin_ui
 	
 			}
 
-			$text = $this->open('vstore_email_templates','post');
+			$text = $frm->open('vstore_email_templates','post');
 
-			$text .= $this->tabs($tab);
+			$text .= $frm->tabs($tab);
 
 				$tp = e107::getParser();
 
 			$text .= "<div class='buttons-bar row'>
 				<div class='col-md-4'></div>
-				<div class='col-md-4 center'>".$this->admin_button('save', 1, 'update', LAN_UPDATE)."</div>
+				<div class='col-md-4 center'>".$frm->admin_button('save', 1, 'update', LAN_UPDATE)."</div>
 				<div class='col-md-4 right'><a class='btn btn-sm btn-default e-expandit' href='#leg'>".$tp->toGlyph('fa-info-circle')." Field Options</a></div>
 				</div>";
 
-			$text .= $this->close();
+			$text .= $frm->close();
 
 		//	$text .= "<hr />";
 
