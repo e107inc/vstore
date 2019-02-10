@@ -81,8 +81,7 @@ class vstore_email_templates_ui extends e_admin_ui
 		
 		public function templatesPage()
 		{
-			$frm = e107::getForm();		
-
+			$frm = e107::getForm();
 			e107::wysiwyg(true);
 	
 			$orig_templates = e107::getTemplate('vstore', 'vstore_email');

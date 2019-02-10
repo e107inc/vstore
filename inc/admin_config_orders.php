@@ -253,7 +253,7 @@ class vstore_order_form_ui extends e_admin_form_ui
 			case 'write': // Edit Page
 				if ($exists)
 				{
-					return $text . ' &nbsp;&nbsp;&nbsp;&nbsp;' . e107::getForm()->checkbox_label('Check to force the creation of a new invoice pdf during save', 'force_new_invoice', 1);
+					return $text . ' &nbsp;&nbsp;&nbsp;&nbsp;' . $this->checkbox_label('Check to force the creation of a new invoice pdf during save', 'force_new_invoice', 1);
 				}
 				else
 				{
@@ -281,7 +281,7 @@ class vstore_order_form_ui extends e_admin_form_ui
 				break;
 
 			case 'write': // Edit Page
-				return e107::getForm()->select('order_status', vstore::getStatus(), $curVal);
+				return $this->select('order_status', vstore::getStatus(), $curVal);
 				break;
 
 			case 'inline': // Inline Edit Page

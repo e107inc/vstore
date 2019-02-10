@@ -225,13 +225,13 @@ class vstore_dashboard extends vstore
         else
         {
             // render cancel order confirmation
-            $text .= e107::getForm()->open('confirm-cancel','post', null, array('class'=>'form'));
+            $text .= $this->open('confirm-cancel','post', null, array('class'=>'form'));
             $text .= '
                 <div class="alert alert-warning" role="alert">Do you really want to cancel your order '.$data['order_refcode'].'?</div>
                 <a href="'.e107::url('vstore', 'dashboard', array('dash' => 'orders')).'" class="btn btn-primary" name="cancel_cancel" id="cancel_cancel">No, take me back</a>
                 <button type="submit" class="btn btn-warning" name="cancel_order" id="cancel_order" value="'.$data['order_id'].'">Yes, cancel this order!</button>
             ';
-            $text .= e107::getForm()->close();
+            $text .= $this->close();
 
         }
         return $text;
@@ -324,9 +324,7 @@ class vstore_dashboard extends vstore
         $data = $this->sql->retrieve('vstore_customer', '*', 'cust_e107_user = '.USERID);
         if ($data)
         {
-			$frm = e107::getForm();
-
-			$text .= $frm->open('address_edit', 'post');
+			$text .= $this->open('address_edit', 'post');
 
 			if ($this->id === 1) // Billing address
 			{
@@ -381,15 +379,15 @@ class vstore_dashboard extends vstore
 							if ($v['type'] == 'text')
 							{
 								// Textboxes
-								$field = $frm->text($fieldname, $fieldvalue, 100, array('placeholder'=>varset($v['placeholder'][e_LANGUAGE], ''), 'required'=>($v['required'] ? 1 : 0)));
+								$field = $this->text($fieldname, $fieldvalue, 100, array('placeholder'=>varset($v['placeholder'][e_LANGUAGE], ''), 'required'=>($v['required'] ? 1 : 0)));
 							}
 							elseif ($v['type'] == 'checkbox')
 							{
 								// Checkboxes
-								$field = '<div class="form-control">'.$frm->checkbox($fieldname, 1, 0, array('required'=>($v['required'] ? 1 : 0)));
+								$field = '<div class="form-control">'.$this->checkbox($fieldname, 1, 0, array('required'=>($v['required'] ? 1 : 0)));
 								if (vartrue($v['placeholder']))
 								{
-									$field .= ' <label for="'.$frm->name2id($fieldname).'-1" class="text-muted">&nbsp;'.$this->tp->toHTML($v['placeholder'][e_LANGUAGE]).'</label>';
+									$field .= ' <label for="'.$this->name2id($fieldname).'-1" class="text-muted">&nbsp;'.$this->tp->toHTML($v['placeholder'][e_LANGUAGE]).'</label>';
 								}
 								$field .= '</div>';
 							}
@@ -428,10 +426,10 @@ class vstore_dashboard extends vstore
 				<hr/>
 				<div class="text-center">
 				<a href="'.e107::url('vstore', 'dashboard', array('dash' => 'addresses')).'"  class="btn btn-default">Back</a>&nbsp;';
-			$text .= $frm->button('edit_address', $this->id, 'submit', 'Save', array('class' => 'btn btn-primary'));
+			$text .= $this->button('edit_address', $this->id, 'submit', 'Save', array('class' => 'btn btn-primary'));
 			$text .= '</div>';
 
-			$text .= $frm->close();
+			$text .= $this->close();
         }
         else
         {

@@ -212,8 +212,6 @@ class vstore_pref_form_ui extends e_admin_form_ui
 
 	function shipping_data($curVal, $mode)
 	{
-		$frm = e107::getForm();
-
 		if (!empty($curVal) && !is_array($curVal))
 		{
 			$curVal = e107::unserialize($curVal);
@@ -238,8 +236,8 @@ class vstore_pref_form_ui extends e_admin_form_ui
 		{
 			$text .= '
 			<tr>
-				<td>'.$frm->text('shipping_data['.$i.'][unit]', '0.00', 8, array('pattern' => '^(\d+(\.\d{1,2}){0,1})$', 'min' => '0')).'</td>
-				<td>'.$frm->text('shipping_data['.$i.'][cost]', '0.00', 8, array('pattern' => '^(\d+(\.\d{1,2}){0,1})$', 'min' => '0')).'</td>
+				<td>'.$this->text('shipping_data['.$i.'][unit]', '0.00', 8, array('pattern' => '^(\d+(\.\d{1,2}){0,1})$', 'min' => '0')).'</td>
+				<td>'.$this->text('shipping_data['.$i.'][cost]', '0.00', 8, array('pattern' => '^(\d+(\.\d{1,2}){0,1})$', 'min' => '0')).'</td>
 				<td><button class="vstore-shipping-remove btn btn-danger" type="button"><i class="fa fa-times"></i> Remove</button></td>
 			</tr>
 			';
@@ -250,8 +248,8 @@ class vstore_pref_form_ui extends e_admin_form_ui
 			foreach ($curVal as $x => $val) {
 				$text .= '
 				<tr>
-					<td>'.$frm->text('shipping_data['.$i.'][unit]', number_format($val['unit'], 2), 8, array('pattern' => '^(\d+(\.\d{1,2}){0,1})$', 'min' => '0')).'</td>
-					<td>'.$frm->text('shipping_data['.$i.'][cost]', number_format($val['cost'], 2), 8, array('pattern' => '^(\d+(\.\d{1,2}){0,1})$', 'min' => '0')).'</td>
+					<td>'.$this->text('shipping_data['.$i.'][unit]', number_format($val['unit'], 2), 8, array('pattern' => '^(\d+(\.\d{1,2}){0,1})$', 'min' => '0')).'</td>
+					<td>'.$this->text('shipping_data['.$i.'][cost]', number_format($val['cost'], 2), 8, array('pattern' => '^(\d+(\.\d{1,2}){0,1})$', 'min' => '0')).'</td>
 					<td><button class="vstore-shipping-remove btn btn-danger" type="button"><i class="fa fa-times"></i> Remove</button></td>
 				</tr>
 				';
@@ -268,8 +266,8 @@ class vstore_pref_form_ui extends e_admin_form_ui
 
 		$text .= '
 		<div id="vstore-shipping-data-template" style="display:none;">
-			<xxx>'.$frm->text('shipping_data[%ROW%][unit]', '0.00', 8, array('pattern' => '^(\d+(\.\d{1,2}){0,1})$', 'min' => '0')).'</xxx>
-			<xxx>'.$frm->text('shipping_data[%ROW%][cost]', '0.00', 8, array('pattern' => '^(\d+(\.\d{1,2}){0,1})$', 'min' => '0')).'</xxx>
+			<xxx>'.$this->text('shipping_data[%ROW%][unit]', '0.00', 8, array('pattern' => '^(\d+(\.\d{1,2}){0,1})$', 'min' => '0')).'</xxx>
+			<xxx>'.$this->text('shipping_data[%ROW%][cost]', '0.00', 8, array('pattern' => '^(\d+(\.\d{1,2}){0,1})$', 'min' => '0')).'</xxx>
 			<xxx><button class="vstore-shipping-remove btn btn-danger" type="button"><i class="fa fa-times"></i> Remove</button></xxx>
 		</div>
 		';
@@ -338,11 +336,9 @@ class vstore_pref_form_ui extends e_admin_form_ui
 
 	function customer_userclass($curVal, $mode)
 	{
-		$frm = e107::getForm();
-	
 		$items = e107::getUserClass()->getClassList('nobody,member,classes');
 		$items = array('-1' => 'As defined in product') + $items;
-		return $frm->select('customer_userclass', $items, $curVal);
+		return $this->select('customer_userclass', $items, $curVal);
 		
 	}
 

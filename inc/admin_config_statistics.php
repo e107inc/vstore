@@ -16,9 +16,8 @@ class vstore_statistics_ui extends e_admin_ui
 
 		public function customPage()
 		{
-			$ns = e107::getRender();
-			$sql = e107::getDb();
 			$frm = e107::getForm();
+			$sql = e107::getDb();
 
 			// Define colors for the chart
 			$colors = array(
@@ -256,7 +255,7 @@ class vstore_statistics_ui extends e_admin_ui
 				$cht = e107::getChart();
 				$cht->setType(varset($chart_type, 'line'));
 				$cht->setOptions($options);
-				$cht->setData($data,'canvas');
+				$cht->setData($data); //,'canvas');
 				$chart = $cht->render('canvas');
 				
 
@@ -394,7 +393,7 @@ class vstore_statistics_ui extends e_admin_ui
 
 			');
 
-			return $text; // $ns->tablerender(null, $text, 'default', true);
+			return $text;
 		}
 }
 

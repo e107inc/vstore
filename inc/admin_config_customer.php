@@ -98,8 +98,6 @@ class vstore_customer_form_ui extends e_admin_form_ui
 	// Custom Method/Function 
 	function cust_firstname($curVal,$mode)
 	{
-		$frm = e107::getForm();		
-		 		
 		switch($mode)
 		{
 			case 'read': // List Page
@@ -107,7 +105,7 @@ class vstore_customer_form_ui extends e_admin_form_ui
 			break;
 			
 			case 'write': // Edit Page
-				return $frm->text('cust_firstname',$curVal);		
+				return $this->text('cust_firstname',$curVal);
 			break;
 			
 			case 'filter':
@@ -123,8 +121,6 @@ class vstore_customer_form_ui extends e_admin_form_ui
 	// Custom Method/Function 
 	function cust_lastname($curVal,$mode)
 	{
-		$frm = e107::getForm();		
-		 		
 		switch($mode)
 		{
 			case 'read': // List Page
@@ -132,7 +128,7 @@ class vstore_customer_form_ui extends e_admin_form_ui
 			break;
 			
 			case 'write': // Edit Page
-				return $frm->text('cust_lastname',$curVal);		
+				return $this->text('cust_lastname',$curVal);
 			break;
 			
 			case 'filter':
@@ -148,8 +144,6 @@ class vstore_customer_form_ui extends e_admin_form_ui
 	// Custom Method/Function 
 	function cust_company($curVal,$mode)
 	{
-		$frm = e107::getForm();		
-		 		
 		switch($mode)
 		{
 			case 'read': // List Page
@@ -157,7 +151,7 @@ class vstore_customer_form_ui extends e_admin_form_ui
 			break;
 			
 			case 'write': // Edit Page
-				return $frm->text('cust_company',$curVal);		
+				return $this->text('cust_company',$curVal);
 			break;
 			
 			case 'filter':
@@ -173,16 +167,16 @@ class vstore_customer_form_ui extends e_admin_form_ui
 	// Custom Method/Function 
 	function cust_country($curVal,$mode)
 	{
-		$frm = e107::getForm();		
-		 		
 		switch($mode)
 		{
 			case 'read': // List Page
-				return  $this->getCountry($curVal);
+
+				return $this->getCountry($curVal);
 			break;
 			
 			case 'write': // Edit Page
-				return $frm->country('cust_country', $curVal);
+				return $this->country('cust_country',$curVal);
+
 			break;
 			
 			case 'filter':

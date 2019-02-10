@@ -46,8 +46,6 @@ class vstore_cart_form_ui extends e_admin_form_ui
 	// Custom Method/Function 
 	function cart_item($curVal,$mode)
 	{
-		$frm = e107::getForm();		
-		 		
 		switch($mode)
 		{
 			case 'read': // List Page
@@ -55,7 +53,7 @@ class vstore_cart_form_ui extends e_admin_form_ui
 			break;
 			
 			case 'write': // Edit Page
-				return $frm->text('cart_item',$curVal);		
+				return $this->text('cart_item',$curVal);
 			break;
 			
 			case 'filter':
@@ -71,8 +69,6 @@ class vstore_cart_form_ui extends e_admin_form_ui
 	// Custom Method/Function 
 	function cart_qty($curVal,$mode)
 	{
-		$frm = e107::getForm();		
-		 		
 		switch($mode)
 		{
 			case 'read': // List Page
@@ -80,7 +76,7 @@ class vstore_cart_form_ui extends e_admin_form_ui
 			break;
 			
 			case 'write': // Edit Page
-				return $frm->text('cart_qty',$curVal);		
+				return $this->text('cart_qty',$curVal);
 			break;
 			
 			case 'filter':
@@ -96,8 +92,6 @@ class vstore_cart_form_ui extends e_admin_form_ui
 	// Custom Method/Function 
 	function cart_paystat($curVal,$mode)
 	{
-		$frm = e107::getForm();		
-		 		
 		switch($mode)
 		{
 			case 'read': // List Page
@@ -105,7 +99,7 @@ class vstore_cart_form_ui extends e_admin_form_ui
 			break;
 			
 			case 'write': // Edit Page
-				return $frm->text('cart_paystat',$curVal);		
+				return $this->text('cart_paystat',$curVal);
 			break;
 			
 			case 'filter':
@@ -121,8 +115,6 @@ class vstore_cart_form_ui extends e_admin_form_ui
 	// Custom Method/Function 
 	function cart_paydate($curVal,$mode)
 	{
-		$frm = e107::getForm();		
-		 		
 		switch($mode)
 		{
 			case 'read': // List Page
@@ -130,7 +122,7 @@ class vstore_cart_form_ui extends e_admin_form_ui
 			break;
 			
 			case 'write': // Edit Page
-				return $frm->text('cart_paydate',$curVal);		
+				return $this->text('cart_paydate',$curVal);
 			break;
 			
 			case 'filter':
@@ -146,8 +138,6 @@ class vstore_cart_form_ui extends e_admin_form_ui
 	// Custom Method/Function 
 	function cart_paytrans($curVal,$mode)
 	{
-		$frm = e107::getForm();		
-		 		
 		switch($mode)
 		{
 			case 'read': // List Page
@@ -155,7 +145,7 @@ class vstore_cart_form_ui extends e_admin_form_ui
 			break;
 			
 			case 'write': // Edit Page
-				return $frm->text('cart_paytrans',$curVal);		
+				return $this->text('cart_paytrans',$curVal);
 			break;
 			
 			case 'filter':
@@ -171,8 +161,6 @@ class vstore_cart_form_ui extends e_admin_form_ui
 	// Custom Method/Function 
 	function cart_paygross($curVal,$mode)
 	{
-		$frm = e107::getForm();		
-		 		
 		switch($mode)
 		{
 			case 'read': // List Page
@@ -180,7 +168,7 @@ class vstore_cart_form_ui extends e_admin_form_ui
 			break;
 			
 			case 'write': // Edit Page
-				return $frm->text('cart_paygross',$curVal);		
+				return $this->text('cart_paygross',$curVal);
 			break;
 			
 			case 'filter':
@@ -196,8 +184,6 @@ class vstore_cart_form_ui extends e_admin_form_ui
 	// Custom Method/Function 
 	function cart_payshipping($curVal,$mode)
 	{
-		$frm = e107::getForm();		
-		 		
 		switch($mode)
 		{
 			case 'read': // List Page
@@ -205,7 +191,7 @@ class vstore_cart_form_ui extends e_admin_form_ui
 			break;
 			
 			case 'write': // Edit Page
-				return $frm->text('cart_payshipping',$curVal);		
+				return $this->text('cart_payshipping',$curVal);
 			break;
 			
 			case 'filter':
@@ -221,8 +207,6 @@ class vstore_cart_form_ui extends e_admin_form_ui
 	// Custom Method/Function 
 	function cart_payshipto($curVal,$mode)
 	{
-		$frm = e107::getForm();		
-		 		
 		switch($mode)
 		{
 			case 'read': // List Page
@@ -230,7 +214,7 @@ class vstore_cart_form_ui extends e_admin_form_ui
 			break;
 			
 			case 'write': // Edit Page
-				return $frm->text('cart_payshipto',$curVal);		
+				return $this->text('cart_payshipto',$curVal);
 			break;
 			
 			case 'filter':
