@@ -15,7 +15,7 @@ CREATE TABLE vstore_cart (
   `cart_paygross` decimal(10,2) NOT NULL DEFAULT '0.00',
   `cart_payshipping` decimal(10,2) NOT NULL DEFAULT '0.00',
   `cart_payshipto` text,
-  `cart_lastupdate` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP() ON UPDATE CURRENT_TIMESTAMP(),
+  `cart_lastupdate` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`cart_id`)
 ) ENGINE=MyISAM;
 
