@@ -28,7 +28,7 @@ class vstore_gateways_ui extends e_admin_ui
 		// protected $fieldpref = array('order_id','order_ship_to', 'order_status', 'order_date', 'order_items', 'order_pay_transid','order_pay_amount','order_pay_status');
 
 
-		protected $preftabs = array('Paypal Express', 'Paypal REST', 'Coinbase', 'Amazon', 'Skrill', 'Bank Transfer');
+		protected $preftabs = array('Paypal Express', 'Paypal REST', 'Mollie', 'Amazon', 'Skrill', 'Bank Transfer');
 
 
 		protected $prefs = array(
@@ -44,18 +44,23 @@ class vstore_gateways_ui extends e_admin_ui
 			'paypal_rest_secret'    => array('title'=>"Paypal Secret", 'type'=>'password', 'tab'=>1, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
 		//	'paypal_signature'      => array('title'=>"Paypal Signature", 'type'=>'text', 'tab'=>0, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
 
-			'coinbase_active'     => array('title'=>"Coinbase Payments", 'type'=>'boolean', 'tab'=>2, 'data'=>'int', 'help'=>''),
-			'coinbase_account'    => array('title'=>"Coinbase Account ID", 'type'=>'text', 'tab'=>2, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
-			'coinbase_api_key'    => array('title'=>"Coinbase API key", 'type'=>'text', 'tab'=>2, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
-			'coinbase_secret'     => array('title'=>"Coinbase Secret Key", 'type'=>'password', 'tab'=>2, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
+//			'coinbase_active'     => array('title'=>"Coinbase Payments", 'type'=>'boolean', 'tab'=>2, 'data'=>'int', 'help'=>''),
+//			'coinbase_account'    => array('title'=>"Coinbase Account ID", 'type'=>'text', 'tab'=>2, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
+//			'coinbase_api_key'    => array('title'=>"Coinbase API key", 'type'=>'text', 'tab'=>2, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
+//			'coinbase_secret'     => array('title'=>"Coinbase Secret Key", 'type'=>'password', 'tab'=>2, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
 
-			'amazon_active'         => array('title'=>"Amazon Payments", 'type'=>'boolean', 'tab'=>3, 'data'=>'int', 'help'=>''),
-			'amazon_merchant_id'    => array('title'=>"Amazon Merchant ID", 'type'=>'text', 'tab'=>3, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
-			'amazon_secret_key'     => array('title'=>"Amazon Secret Key", 'type'=>'password', 'tab'=>3, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
-			'amazon_region'         => array('title'=>"Amazon Region", 'type'=>'dropdown', 'tab'=>3, 'data'=>'str', 'writeParms'=>array('optArray'=>array('us'=>'USA','de'=>"Germany",'uk'=>"United Kingdom",'jp'=>"Japan")), 'help'=>''),
+			'mollie_active'         => array('title'=>"Mollie Payments", 'type'=>'boolean', 'tab'=>2, 'data'=>'int', 'help'=>''),
+			'mollie_testmode'       => array('title'=>"Mollie Testmode", 'type'=>'boolean', 'tab'=>2, 'data'=>'int', 'writeParms'=>array(),'help'=>'Use Mollie Testmode'),
+			'mollie_api_key_live'   => array('title'=>"Mollie Live API key", 'type'=>'text', 'tab'=>2, 'data'=>'str', 'note'=>'Get your api keys <a href="https://www.mollie.com/dashboard/developers/api-keys">here</a>', 'writeParms'=>array('size'=>'xxlarge')),
+			'mollie_api_key_test'   => array('title'=>"Mollie Test API key", 'type'=>'text', 'tab'=>2, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
 
-			'skrill_active'         => array('title'=>"Skrill Payments", 'type'=>'boolean', 'tab'=>4, 'data'=>'int', 'help'=>''),
-			'skrill_email'          => array('title'=>"Skrill Email", 'type'=>'text', 'tab'=>4, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
+//			'amazon_active'         => array('title'=>"Amazon Payments", 'type'=>'boolean', 'tab'=>3, 'data'=>'int', 'help'=>''),
+//			'amazon_merchant_id'    => array('title'=>"Amazon Merchant ID", 'type'=>'text', 'tab'=>3, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
+//			'amazon_secret_key'     => array('title'=>"Amazon Secret Key", 'type'=>'password', 'tab'=>3, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
+//			'amazon_region'         => array('title'=>"Amazon Region", 'type'=>'dropdown', 'tab'=>3, 'data'=>'str', 'writeParms'=>array('optArray'=>array('us'=>'USA','de'=>"Germany",'uk'=>"United Kingdom",'jp'=>"Japan")), 'help'=>''),
+//
+//			'skrill_active'         => array('title'=>"Skrill Payments", 'type'=>'boolean', 'tab'=>4, 'data'=>'int', 'help'=>''),
+//			'skrill_email'          => array('title'=>"Skrill Email", 'type'=>'text', 'tab'=>4, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
 
 			'bank_transfer_active'    => array('title'=>"Bank Transfer", 'type'=>'boolean', 'tab'=>5, 'data'=>'int', 'help'=>''),
 			'bank_transfer_details'    => array('title'=>"Bank Transfer", 'type'=>'textarea', 'tab'=>5, 'data'=>'str', 'writeParms'=>array('placeholder'=>"Bank Account Details"), 'help'=>''),
@@ -68,7 +73,7 @@ class vstore_gateways_ui extends e_admin_ui
 		{
 			if(e_DEBUG !== true)
 			{
-				unset($this->preftabs[2],$this->preftabs[3],$this->preftabs[4]); // Disable Coinbase, Amazon and Skrill for Now until they work. // TODO //FIXME
+				unset($this->preftabs[3],$this->preftabs[4]); // Disable Mollie, Amazon and Skrill for Now until they work. // TODO //FIXME
 			}
 		}
 
