@@ -36,8 +36,9 @@ class vstore
 	protected static $gateways    = array(
 		'paypal'        => array('title'=>'Paypal', 'icon'=>'fa-paypal'),
 		'paypal_rest'   => array('title'=>'Paypal', 'icon'=>'fa-paypal'),
-		'amazon'        => array('title'=> 'Amazon', 'icon'=>'fa-amazon'),
-		'coinbase'      => array('title'=> 'Bitcoin', 'icon'=>'fa-btc'),
+		'mollie'        => array('title'=>'Mollie', 'icon'=>'fa-laptop'),
+//		'amazon'        => array('title'=> 'Amazon', 'icon'=>'fa-amazon'),
+//		'coinbase'      => array('title'=> 'Bitcoin', 'icon'=>'fa-btc'),
 		'bank_transfer' => array('title'=>'Bank Transfer', 'icon'=>'fa-bank'),
 	);
 
@@ -1293,25 +1294,39 @@ class vstore
 
 		switch($type)
 		{
-			case "amazon":
-				/** @var \Omnipay\Common\AbstractGateway $gateway */
-				$gateway = Omnipay::create('AmazonPayments');
-				$defaults = $gateway->getParameters();
-				e107::getDebug()->log($defaults);
-				break;
+//			case "amazon":
+//				/** @var \Omnipay\Common\AbstractGateway $gateway */
+//				$gateway = Omnipay::create('AmazonPayments');
+//				$defaults = $gateway->getParameters();
+//				e107::getDebug()->log($defaults);
+//				break;
 
-			case "coinbase":
+//			case "coinbase":
+//
+//				$gateway = Omnipay::create('Coinbase');
+//
+//			/*	if(!empty($this->pref['paypal']['testmode']))
+//				{
+//					$gateway->setTestMode(true);
+//				}*/
+//
+//				$gateway->setAccountId($this->pref['coinbase']['account']);
+//				$gateway->setSecret($this->pref['coinbase']['secret']);
+//				$gateway->setApiKey($this->pref['coinbase']['api_key']);
+//				break;
 
-				$gateway = Omnipay::create('Coinbase');
+			case "mollie":
 
-			/*	if(!empty($this->pref['paypal']['testmode']))
+				$gateway = Omnipay::create('Mollie');
+
+				if(!empty($this->pref['mollie']['testmode']))
 				{
-					$gateway->setTestMode(true);
-				}*/
-
-				$gateway->setAccountId($this->pref['coinbase']['account']);
-				$gateway->setSecret($this->pref['coinbase']['secret']);
-				$gateway->setApiKey($this->pref['coinbase']['api_key']);
+					$gateway->setApiKey($this->pref['mollie']['api_key_test']);
+				}
+				else
+				{
+					$gateway->setApiKey($this->pref['mollie']['api_key_live']);
+				}
 				break;
 
 			case "paypal":
@@ -1431,6 +1446,7 @@ class vstore
 				'items'          => $items,
 				'transactionId'  => $this->getCheckoutData('id'),
 				'clientIp'       => USERIP,
+				'description'    => 'Order Ref #' . $this->getCheckoutData('id'), // required for Mollie
 			);
 
 			$_SESSION['vstore']['_data'] = $_data;
@@ -1499,7 +1515,7 @@ class vstore
 		}
 		else
 		{
-			$message = $response->getMessage();
+			$message = stripslashes($response->getMessage());
 			e107::getMessage()->addError($message,'vstore');
 		}
 	}
@@ -2848,13 +2864,24 @@ class vstore
 		return e107::unserialize(e107::getDb()->retrieve('vstore_customer', 'cust_shipping', 'cust_e107_user='.USERID));
 	}
 
-	
+
+	/**
+	 * Set the selected shipping option
+	 *
+	 * @param int 1 = use shipping address; 0 = use customer address
+	 * @return void
+	 */
 	private function setShippingType($type)
 	{
 		$_SESSION['vstore']['shipping_type'] = (vartrue($type) ? 1 : 0);
 	}
 
 
+	/**
+	 * Return the selected shipping option
+	 *
+	 * @return int 1 = use shipping address; 0 = use customer address
+	 */
 	private function getShippingType()
 	{
 		return ($_SESSION['vstore']['shipping_type']  ? 1 : 0);

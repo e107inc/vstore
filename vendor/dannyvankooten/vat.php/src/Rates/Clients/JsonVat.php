@@ -10,8 +10,7 @@ class JsonVat implements Client{
     /**
      * @const string
      */
-    // const URL = 'https://jsonvat.com/';
-    const URL = 'http://jsonvat.com/';
+    const URL = 'https://jsonvat.com/';
 
     /**
      * @throws ClientException
@@ -26,7 +25,6 @@ class JsonVat implements Client{
         curl_setopt($curl_handle, CURLOPT_CONNECTTIMEOUT, 10);
         curl_setopt($curl_handle, CURLOPT_RETURNTRANSFER, true);
         $response_body = curl_exec($curl_handle);
-        $error = curl_error($curl_handle);
         curl_close($curl_handle);
 
         if( empty( $response_body ) ) {
