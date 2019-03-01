@@ -328,7 +328,7 @@
 
 				case 'write': // Edit Page
 					//$text = $this->text('item_inventory', $curVal, null, array('pattern' => '^-?\d+$')); // to allow also negative values (<0 = Item will not run out of stock)
-					$text = $this->number('item_inventory', $curVal, null, array('class'=>'pull-left', 'decimals' => 0, 'min' => -1)); // to allow also negative values (<0 = Item will not run out of stock)
+					$text = $this->number('item_inventory', varset($curVal, -1), null, array('class'=>'pull-left', 'decimals' => 0, 'min' => -1)); // to allow also negative values (<0 = Item will not run out of stock)
 
 					$icon = e107::getParser()->toGlyph('fa-info-circle');
 					$text .= ' <span style="display:inline-block;padding:6px" title="In case of any Product Variations selected, this setting will ignored! You have to fill out the Variations Inventory instead!">'.$icon.'</span>';
@@ -424,8 +424,9 @@
 					{
 						$text .= sprintf('<tr><th style="width: 20%%;">%s</th>', $nameX);
 						$nameX = $this->name2id($nameX);
-						$value = varset($curVal[$nameX], 0);
-						$text .= sprintf('<td>%s</td>', $this->text('item_vars_inventory[' . $nameX . ']', $value, 5, array('pattern' => '^-?\d+$', 'size' => 'sm')));
+						$value = varset($curVal[$nameX], -1);
+						//$text .= sprintf('<td>%s</td>', $this->text('item_vars_inventory[' . $nameX . ']', $value, 5, array('pattern' => '^-?\d+$', 'size' => 'sm')));
+						$text .= sprintf('<td>%s</td>', $this->number('item_inventory[' . $nameX . ']', $value, null, array('class'=>'pull-left', 'decimals' => 0, 'min' => -1))); // to allow also negative values (<0 = Item will not run out of stock)
 						$text .= '</tr>
 					';
 					}
@@ -439,8 +440,9 @@
 						foreach($col['y']['names'] as $nameY)
 						{
 							$nameY = $this->name2id($nameY);
-							$value = varset($curVal[$nameX][$nameY], 0);
-							$text .= sprintf('<td>%s</td>', $this->text('item_vars_inventory[' . $nameX . '][' . $nameY . ']', $value, 5, array('pattern' => '^-?\d+$', 'size' => 'sm')));
+							$value = varset($curVal[$nameX][$nameY], -1);
+							//$text .= sprintf('<td>%s</td>', $this->text('item_vars_inventory[' . $nameX . '][' . $nameY . ']', $value, 5, array('pattern' => '^-?\d+$', 'size' => 'sm')));
+							$text .= sprintf('<td>%s</td>', $this->number('item_inventory[' . $nameX . '][' . $nameY . ']', $value, null, array('class'=>'pull-left', 'decimals' => 0, 'min' => -1)));
 						}
 						$text .= '</tr>
 					';
