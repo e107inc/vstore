@@ -455,12 +455,13 @@
 		function inStock()
 		{
 			$inStock = true;
-			if(empty($this->var['item_vars'])){
+			$itemvars = vstore::filterItemVarsByType(varset($this->var['item_vars']), 1, true);
+			if(empty($itemvars)){
 				$inStock = empty($this->var['item_inventory']) ? false : ($this->var['item_inventory'] != 0);
 			}
 			else
 			{
-				$itemvars = explode(',', $this->var['item_vars']);
+				//$itemvars = explode(',', $this->var['item_vars']);
 				$inv = e107::unserialize($this->var['item_vars_inventory']);
 				if (empty($this->var['item_vars_inventory']))
 				{
@@ -532,12 +533,15 @@
 		{
 			$itemid = intval($this->var['item_id']);
 			$baseprice = floatval($this->var['item_price']);
-			$this->var['item_var_price'] = -1;
+			$this->var['item_var_price'] = $baseprice;
+			$stock = -1;
+
 			if (varset($this->var['item_vars']))
 			{
 				$ns = e107::getParser();
 				$frm = e107::getForm();
 				$sql = e107::getDb();
+
 				if ($sql->select('vstore_items_vars', '*', 'FIND_IN_SET(item_var_id, "'.$this->var['item_vars'].'")'))
 				{
 					$text = '
@@ -545,31 +549,41 @@
 					while($row = $sql->fetch())
 					{
 						$attributes = e107::unserialize($row['item_var_attributes']);
+						$varid = intval($row['item_var_id']);
 
 						$select = $frm->select_open(
-							'item_var['.$itemid.']['.$row['item_var_id'].']',
-							array('class' => 'vstore-item-var tbox select form-control', 'data-id'=>$itemid, 'data-name'=>varset($row['item_var_name'], 'foo'), 'required' => vartrue($row['item_var_compulsory']))
+							'item_var[' . $itemid . '][' . $varid . ']',
+							array('class' => 'vstore-item-var tbox select form-control', 'data-id' => $itemid, 'data-item' => $varid, 'data-name' => varset($row['item_var_name'], 'foo'), 'required' => vartrue($row['item_var_compulsory']))
 						);
 
 						$selected = true;
 						foreach($attributes as $var)
 						{
 							$varname = $var['name'];
-							if (floatval($var['value']) > 0.0)
+							if(floatval($var['value']) > 0.0)
 							{
-								switch ($var['operator'])
+								switch($var['operator'])
 								{
 									case '%':
-										if ($selected) $this->var['item_var_price'] = $baseprice * (floatval($var['value']) / 100.0);
-										$varname .= ' (+ '.floatval($var['value']).'%)';
+										if($selected)
+										{
+											$this->var['item_var_price'] *= (floatval($var['value']) / 100.0);
+										}
+										$varname .= ' (+ ' . floatval($var['value']) . '%)';
 										break;
 									case '+':
-										if ($selected) $this->var['item_var_price'] = $baseprice + floatval($var['value']);
-										$varname .= ' (+ '.$this->format_amount($var['value']).')';
+										if($selected)
+										{
+											$this->var['item_var_price'] += floatval($var['value']);
+										}
+										$varname .= ' (+ ' . $this->format_amount($var['value']) . ')';
 										break;
 									case '-':
-										if ($selected) $this->var['item_var_price'] = $baseprice - floatval($var['value']);
-										$varname .= ' (- '.$this->format_amount($var['value']).')';
+										if($selected)
+										{
+											$this->var['item_var_price'] -= floatval($var['value']);
+										}
+										$varname .= ' (- ' . $this->format_amount($var['value']) . ')';
 										break;
 								}
 							}
@@ -578,7 +592,7 @@
 								$varname,
 								$frm->name2id($var['name']),
 								$selected,
-								array('data-op'=>$var['operator'], 'data-val'=>floatval($var['value']), 'data-id'=>$row['item_var_id'], 'data-item'=>$itemid)
+								array('data-op' => $var['operator'], 'data-val' => floatval($var['value']), 'data-id' => $varid, 'data-item' => $itemid)
 							);
 							$selected = false;
 						}
@@ -587,50 +601,41 @@
 
 						$text .= '
 						<div>
-							<label>'.$row['item_var_name'].'
-							'.$select.'
+							<label>' . $row['item_var_name'] . '
+							' . $select . '
 							</label>
 							<!-- fix #92: currency symbol used with product variations --> 
-							<span class="text-hide" id="vstore-currency-symbol">'.varset($this->vpref['amount_format'], 0).$this->curSymbol.'</span>
+							<span class="text-hide" id="vstore-currency-symbol">' . varset($this->vpref['amount_format'], 0) . $this->curSymbol . '</span>
 						</div>';
+
+
+						$stock = -1;
+						if(vstore::isInventoryTrackingVar($itemid))
+						{
+
+							if(varset($this->var['item_vars_inventory']))
+							{
+								$stock = e107::unserialize($this->var['item_vars_inventory']);
+							}
+							else
+							{
+								$stock = intval($this->var['item_inventory']);
+							}
+
+						}
+
+						e107::js('settings', array('vstore' => array(
+								'stock' => array("x{$itemid}-{$varid}" => $stock))
+							)
+						);
+
 					}
+
 					$text .= '
 					</div>';
 
-
-					if (varset($this->var['item_vars_inventory']))
-					{
-						e107::js('settings', array('vstore' => array(
-								'stock' => array(
-									"x{$itemid}" => e107::unserialize($this->var['item_vars_inventory'])
-								)
-							)
-							)
-						);
-					}
-					else
-					{
-						e107::js('settings', array('vstore' => array(
-								'stock' => array(
-									"x{$itemid}" => intval($this->var['item_inventory'])
-								)
-							)
-							)
-						);
-
-					}
 					return $text;
 				}
-			}
-			else
-			{
-				e107::js('settings', array('vstore' => array(
-						'stock' => array(
-							"x{$itemid}" => intval($this->var['item_inventory'])
-						)
-					)
-					)
-				);
 			}
 			return ''; // No item_vars set
 		}
