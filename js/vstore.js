@@ -362,13 +362,15 @@ function vstoreCheckInventory(itemid, varid, itemvars)
 	}
 	else if ($.isArray(itemvars))
 	{
-		result = 0;
 		for(var i=0; i<itemvars.length; i++)
 		{
 			if (itemvars[i].item == varid)
 			{
 				if (typeof stock == 'object'){
 					result = stock[itemvars[i].val];
+					if (typeof result == 'object'){
+						result = result[itemvars[i+1].val];
+					}
 				}
 				else
 				{
