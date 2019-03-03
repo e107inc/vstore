@@ -19,7 +19,7 @@
 		protected $treePrefix       = 'cat_name';
 
 
-	//	protected $tabs			= array('Tabl 1','Tab 2'); // Use 'tab'=>0  OR 'tab'=>1 in the $fields below to enable. 
+		protected $tabs			= array(LAN_BASIC, LAN_ADVANCED); // Use 'tab'=>0  OR 'tab'=>1 in the $fields below to enable.
 
 	
 		protected $fields 		= array (  
@@ -31,9 +31,11 @@
 		  	'cat_sef' 			=>   array ( 'title' => LAN_SEFURL, 'type' => 'text', 'data' => 'str', 'width' => 'auto', 'batch'=>true, 'inline' => true, 'help' => '', 'readParms' => '', 'writeParms' => array('size'=>'xxlarge','sef'=>'cat_name'), 'class' => 'left', 'thclass' => 'left',  ),
 			'cat_parent'        =>   array ( 'title' => "Parent", 'type'=>'dropdown', 'data'=>'int', 'inline'=>true,  'width'=>'auto'),
 		  	'cat_image' 		=>   array ( 'title' => LAN_IMAGE, 'type' => 'image', 'data' => 'str', 'width' => '40%', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),	
-		 	'cat_info' 			=>   array ( 'title' => "Details", 'type' => 'bbarea', 'data' => 'str', 'width' => '40%', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 		  	'cat_class' 		=>   array ( 'title' => LAN_USERCLASS, 'type' => 'userclass', 'data' => 'str', 'width' => 'auto', 'batch' => true, 'filter' => true, 'inline' => true, 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 		  	'cat_order' 		=>   array ( 'title' => LAN_ORDER, 'type' => 'text', 'data' => 'int', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+
+		 	'cat_info' 			=>   array ( 'title' => "Details", 'type' => 'bbarea', 'data' => 'str', 'tab' => 1, 'width' => '40%', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+
 		  	'options' 			=>   array ( 'title' => 'Options', 'type' => null, 'data' => null, 'width' => '10%', 'thclass' => 'center last', 'class' => 'center last', 'forced' => '1', 'sort'=>1  ),
 		);		
 		
@@ -174,18 +176,6 @@
 		{
 			$this->perPage = e107::pref('vstore','admin_categories_perpage',10);
 
-		//	$this->checkOrder();
-
-			/*$data = e107::getDb()->retrieve('vstore_cat','cat_id,cat_name', "cat_parent = 0", true);
-
-			$this->fields['cat_parent']['writeParms']['optArray'] = array(0=>'(Root)');
-
-			foreach($data as $v)
-			{
-				$key = $v['cat_id'];
-				$this->fields['cat_parent']['writeParms']['optArray'][$key] = $v['cat_name'];
-			}*/
-
 			$this->setVstoreCategoryTree();
 
 		}
@@ -204,7 +194,7 @@
 
 		while($row = $sql->fetch())
 		{
-			$num = $row['_depth'] - 1;
+			$num = max($row['_depth'] - 1, 0);
 			$id = $row['cat_id'];
 			$this->fields['cat_parent']['writeParms']['optArray'][$id] = str_repeat("&nbsp;&nbsp;",$num).$row['cat_name'];
 		}

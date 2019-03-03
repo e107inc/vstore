@@ -735,13 +735,16 @@ $VSTORE_TEMPLATE['navcart']['item'] = '
 				<li class="media">
 					<span class="media-object pull-left">{CART_DATA: pic}</span>
 					<div class="media-body">{CART_DATA: name}<br />
-						<span class="pull-right">{CART_DATA: quantity} &times; {CART_DATA: item_total}</span>
+						<span class="pull-right">{CART_DATA: quantity} &Cross; {CART_DATA: item_total}</span>
 					</div>
 				</li>
 			';
 
 $VSTORE_TEMPLATE['navcart']['footer'] = '
-				<li class="media text-right float-right"><h5>Subtotal: {CART_DATA: grand_total}</h5></li>
+				<li class="media" style="font-size: 1.2em;">
+					<span class="pull-right">{CART_DATA: grand_total}</span>
+					<span class="">Subtotal:</span>
+				</li>
 			</ul>
 			<input type="hidden" id="vstore-item-count" value="{CART_DATA: item_count}"/>
 		</div>

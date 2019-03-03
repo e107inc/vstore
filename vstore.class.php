@@ -102,9 +102,13 @@ class vstore
 		'parking'
 	);
 
+	protected static $itemVarsTypes = array();
+
 
 	public function __construct()
 	{
+		$sql = e107::getDb();
+
 		$this->cartId = $this->getCartId();
 
 		/** @var vstore_shortcodes sc */
@@ -155,31 +159,24 @@ class vstore
 			e107::getDebug()->log("CartID:".$this->cartId);
 		}
 		// get all category data.
-		$query = 'SELECT * FROM #vstore_cat WHERE cat_class IN ('.USERCLASS_LIST.') ';
-		if(!$data = e107::getDb()->retrieve($query, true))
-		{
-
-		}
-
-
 		$count = 0;
-		foreach($data as $row)
+		$query = 'SELECT * FROM #vstore_cat WHERE cat_class IN ('.USERCLASS_LIST.') ';
+		if($data = $sql->retrieve($query, true))
 		{
-			$id = $row['cat_id'];
-			$this->categories[$id] = $row;
-			$sef = vartrue($row['cat_sef'],'--undefined--');
-			$this->categorySEF[$sef] = $id;
-
-			if(empty($row['cat_parent']))
+			foreach($data as $row)
 			{
-				$count++;
+				$id = $row['cat_id'];
+				$this->categories[$id] = $row;
+				$sef = vartrue($row['cat_sef'],'--undefined--');
+				$this->categorySEF[$sef] = $id;
+
+				if(empty($row['cat_parent']))
+				{
+					$count++;
+				}
 			}
 		}
-
 		$this->categoriesTotal = $count;
-
-
-
 
 		$active = array();
 
@@ -3995,5 +3992,72 @@ class vstore
 		return in_array(strtoupper($order_status), array('N', 'C', 'P'));
 	}
 
+	/**
+	 * Check if a given item_var_id is used for inventory tracking
+	 *
+	 * @param $varId item_var_id
+	 * @return bool true if inventory must be tracked, false otherwise
+	 */
+	public static function isInventoryTrackingVar($varId)
+	{
+		// Init itemsVarsTypes array
+		if (empty(self::$itemVarsTypes))
+		{
+			if($data = e107::getDb()->retrieve('vstore_items_vars', 'item_var_id, item_var_compulsory', null, true))
+			{
+				foreach($data as $row)
+				{
+					self::$itemVarsTypes[$row['item_var_compulsory']][] = $row['item_var_id'];
+				}
+			}
+		}
 
+		foreach(self::$itemVarsTypes as $type => $ids)
+		{
+			if (in_array($varId, $ids)) return ($type == 1);
+		}
+		return false;
+	}
+
+
+	/**
+	 * Filter the given string/array $curVal by $type (0 =non-tracking; 1=tracking)
+	 *
+	 * @param string/array $curVal  value to filter against §itemVarsType
+	 * @param int  $type    (0 =non-tracking; 1=tracking)
+	 * @param bool $asArray true return array, otherwise comma-separated string
+	 * @return array|string
+	 */
+	public static function filterItemVarsByType($curVal, $type=0, $asArray=false)
+	{
+		$curArr = array_filter(is_array($curVal) ? $curVal : explode(',', $curVal));
+		if (count($curArr) == 0) {
+			return $asArray ? array() : '';
+		}
+
+		// Init itemsVarsTypes array
+		if (empty(self::$itemVarsTypes))
+		{
+			if($data = e107::getDb()->retrieve('vstore_items_vars', 'item_var_id, item_var_compulsory', null, true))
+			{
+				foreach($data as $row)
+				{
+					self::$itemVarsTypes[$row['item_var_compulsory']][] = $row['item_var_id'];
+				}
+			}
+		}
+
+		if (!isset(self::$itemVarsTypes[$type])) {
+			return $asArray ? array() : '';
+		}
+
+		$result = array();
+		foreach(self::$itemVarsTypes[$type] as $item){
+			if (in_array($item, $curArr)){
+				$result[] = $item;
+			}
+		}
+
+		return $asArray ? $result : implode(',', $result);
+	}
 }

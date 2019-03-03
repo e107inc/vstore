@@ -217,7 +217,9 @@ class vstore_statistics_ui extends e_admin_ui
 				if (count($data['labels']) > count($sets['A']))
 				{
 					// Fill up the dataset with null values
-					for($x = count($sets[0]); $x < count($data['labels']); $x++)
+					$num = isset($sets[0]) ? count($sets[0]) : 0;
+					$max = isset($data['labels']) ? count($data['labels']) : 0;
+					for($x = $num; $x < $max; $x++)
 					{
 						foreach(array_keys($legend) as $col)
 						{
