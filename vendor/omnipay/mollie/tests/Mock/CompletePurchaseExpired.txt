@@ -1,0 +1,28 @@
+HTTP/1.1 200 OK
+Content-Type: application/hal+json; charset=utf-8
+
+{
+    "resource": "payment",
+    "id": "tr_Qzin4iTWrU",
+    "mode": "test",
+    "createdAt": "2018-07-19T12:04:56+00:00",
+    "amount": {
+      "value": "100.00",
+      "currency": "EUR"
+    },
+    "description": "apex.sh performance test payment",
+    "method": null,
+    "metadata": null,
+    "status": "expired",
+    "expiredAt": "2018-07-19T12:21:04+00:00",
+    "locale": "nl_NL",
+    "profileId": "pfl_7N5qjbu42V",
+    "sequenceType": "oneoff",
+    "redirectUrl": "https://www.example.org/",
+    "_links": {
+      "self": {
+        "href": "https://api.mollie.com/v2/payments/tr_wnUB738Suu",
+        "type": "application/hal+json"
+      }
+    }
+}

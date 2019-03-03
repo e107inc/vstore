@@ -1,0 +1,31 @@
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+
+{
+    "resource": "payment",
+    "id": "tr_WDqYK6vllg",
+    "mode": "test",
+    "createdAt": "2018-03-12T10:56:15+00:00",
+    "amount": {
+        "value": "1.00",
+        "currency": "EUR"
+    },
+    "description": "Order 66",
+    "method": null,
+    "metadata": null,
+    "status": "expired",
+    "isCancelable": false,
+    "expiresAt": "2018-03-12T11:11:15+00:00",
+    "details": null,
+    "profileId": "pfl_7N5qjbu42V",
+    "sequenceType": "oneoff",
+    "redirectUrl": "https://www.example.org/payment/completed",
+    "_links": {
+      "self": {
+          "href": "https://api.mollie.com/v2/payments/tr_WDqYK6vllg"
+      },
+      "checkout": {
+          "href": "https://www.mollie.com/payscreen/select-method/PSj7b45bkj"
+      }
+    }
+}
