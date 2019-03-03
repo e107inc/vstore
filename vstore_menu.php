@@ -28,10 +28,12 @@ if (!empty($vstore_prefs['custom_css']))
 	" . $vstore_prefs['custom_css']);
 }
 
-$category = 1;  //TODO e_menu config.
+$category = e107::prefs('vstore', 'menu_cat', 1);
+$num_items= e107::prefs('vstore', 'menu_item_count', 2);
+
 $caption = "Products";
 
-$text = $vst->productList(1, true, 'menu');
+$text = $vst->productList($category, true, 'menu', $num_items);
 
 
 $ns = e107::getRender();

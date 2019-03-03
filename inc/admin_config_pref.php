@@ -31,7 +31,7 @@ class vstore_pref_ui extends e_admin_ui
 		);
 	
 		// optional
-		protected $preftabs = array(LAN_GENERAL, "Shipping", "Emails", "How to Order", "Admin Area", "Check-Out", "Custom CSS", "Tax");
+		protected $preftabs = array(LAN_GENERAL, "Shipping", "Emails", "How to Order", "Admin Area", "Check-Out", "Custom CSS", "Tax", "Menu");
 
 
 		protected $prefs = array(
@@ -61,12 +61,15 @@ class vstore_pref_ui extends e_admin_ui
 
 			'additional_fields'         => array('title'=>'Additional Fields', 'tab'=>5, 'type'=>'method'),
 			
-			'custom_css'	            => array('title'=> 'Custom CSS', 'tab'=>6, 'type' => 'textarea', 'data' => 'str', 'width' => '100%', 'readParms' => '', 'writeParms' => array('cols'=> 80, 'rows' => 10, 'size'=>'block-level'), 'help'=>'Use this field to enter any vstore related custom css, without the need to edit any source files.'),
+			'custom_css'	            => array('title'=> 'Custom CSS', 'tab'=>6, 'type' => 'textarea', 'data' => 'str', 'width' => '100%', 'readParms' => array(), 'writeParms' => array('cols'=> 80, 'rows' => 10, 'size'=>'block-level'), 'help'=>'Use this field to enter any vstore related custom css, without the need to edit any source files.'),
 
 			'tax_calculate'	            => array('title'=> 'Calculate tax', 'tab'=>7, 'type'=>'boolean', 'data' => 'int','help'=>'Enable to activate tax calculation.'),
-			'tax_business_country'		=> array('title'=> 'Business country', 'tab'=>7, 'type'=>'country', 'data' => 'string', 'help'=>'The country where the business is located.', 'writeParms' => ''),
+			'tax_business_country'		=> array('title'=> 'Business country', 'tab'=>7, 'type'=>'country', 'data' => 'string', 'help'=>'The country where the business is located.', 'writeParms' => array()),
 			'tax_check_vat'	            => array('title'=> 'Check VAT id online (EU only!)', 'tab'=>7, 'type'=>'boolean', 'data' => 'int','help'=>'Enable to activate online VAT id checking. (EU only!)'),
-			'tax_classes'				=> array('title'=> 'Tax classes', 'tab'=>7, 'type'=>'method', 'data' => 'json', 'help'=>'', 'writeParms' => ''),
+			'tax_classes'				=> array('title'=> 'Tax classes', 'tab'=>7, 'type'=>'method', 'data' => 'json', 'help'=>'', 'writeParms' => array()),
+			
+			'menu_cat'				    => array('title'=> 'Product category', 'tab'=>8, 'type'=>'dropdown', 'data' => 'int', 'help'=>'', 'writeParms' => array()),
+			'menu_item_count'		    => array('title'=> 'Nr. of products', 'tab'=>8, 'type'=>'number', 'data' => 'int', 'help'=>'', 'writeParms' => array('decimals' => 0,'default' => 2)),
 		);
 
 
@@ -85,6 +88,16 @@ class vstore_pref_ui extends e_admin_ui
 				'sum_unique'	=> 'Sum up shipping cost only for unique items', 
 				'staggered'		=> 'Use settings from staggered shipping costs table',
 			);
+
+			// Get all active product categories
+			$this->prefs['menu_cat']['writeParms']['optArray'] = array();
+			if ($data = e107::getDb()->retrieve('vstore_cat', '*', 'cat_active=1 ORDER BY cat_parent, cat_name', true))
+			{
+				foreach($data as $row)
+				{
+					$this->prefs['menu_cat']['writeParms']['optArray'][$row['cat_id']] = $row['cat_name'];
+				}
+			}
 
 			// Fix the shipping data array
 			if (isset($_POST['shipping_data']))
