@@ -2236,16 +2236,20 @@ class vstore
 	 * @param integer $category selected category id
 	 * @param boolean $np	render nextpref yes/no
 	 * @param string $templateID name of the template to use
+	 * @param int $item_count number of items to show (used for menu)
 	 * @return string
 	 */
-	public function productList($category=1,$np=false,$templateID = 'list')
+	public function productList($category=1, $np=false, $templateID = 'list', $item_count=null)
 	{
 
-
+		if (!empty($item_count))
+		{
+			$this->from = 0;
+			$this->perPage = $item_count;
+		}
 
 		if(!$data = e107::getDb()->retrieve('SELECT SQL_CALC_FOUND_ROWS *, cat_class FROM #vstore_items LEFT JOIN #vstore_cat ON (item_cat = cat_id) WHERE cat_class IN ('.USERCLASS_LIST.') AND item_active=1 AND item_cat = '.intval($category).' ORDER BY item_order LIMIT '.$this->from.','.$this->perPage, true))
 		{
-
 			return e107::getMessage()->addInfo("No products available in this category",'vstore')->render('vstore');
 		}
 		
