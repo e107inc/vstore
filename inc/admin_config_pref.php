@@ -89,7 +89,7 @@ class vstore_pref_ui extends e_admin_ui
 				'staggered'		=> 'Use settings from staggered shipping costs table',
 			);
 
-			// Get all active product categories
+			// Get all active product categories 
 			$this->prefs['menu_cat']['writeParms']['optArray'] = array();
 			if ($data = e107::getDb()->retrieve('vstore_cat', 'cat_id,cat_name', 'ORDER BY cat_parent, cat_name', true))
 			{
