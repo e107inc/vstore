@@ -523,7 +523,7 @@
 						$text .= sprintf('<tr><th style="width: 20%%;">%s</th>', $nameX);
 						$nameX = $this->name2id($nameX);
 						$value = varset($curVal[$nameX], -1);
-						$text .= sprintf('<td>%s</td>', $this->number('item_inventory[' . $nameX . ']', $value, null, array('class'=>'pull-left', 'decimals' => 0, 'min' => -1))); // to allow also negative values (<0 = Item will not run out of stock)
+						$text .= sprintf('<td>%s</td>', $this->number('item_vars_inventory[' . $nameX . ']', $value, null, array('class'=>'pull-left', 'decimals' => 0, 'min' => -1))); // to allow also negative values (<0 = Item will not run out of stock)
 						$text .= '</tr>
 					';
 					}
@@ -538,7 +538,7 @@
 						{
 							$nameY = $this->name2id($nameY);
 							$value = varset($curVal[$nameX][$nameY], -1);
-							$text .= sprintf('<td>%s</td>', $this->number('item_inventory[' . $nameX . '][' . $nameY . ']', $value, null, array('class'=>'pull-left', 'decimals' => 0, 'min' => -1)));
+							$text .= sprintf('<td>%s</td>', $this->number('item_vars_inventory[' . $nameX . '][' . $nameY . ']', $value, null, array('class'=>'pull-left', 'decimals' => 0, 'min' => -1)));
 						}
 						$text .= '</tr>
 					';

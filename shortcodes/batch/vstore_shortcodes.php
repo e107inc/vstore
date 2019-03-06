@@ -532,13 +532,29 @@
 		function sc_item_vars($parm=null)
 		{
 			$itemid = intval($this->var['item_id']);
+			$stock = empty($this->var['item_vars_inventory'])
+				? (isset($this->var['item_inventory']) ? $this->var['item_inventory'] : -1)
+				: e107::unserialize($this->var['item_vars_inventory']);
+
+			if (isset($this->var['item_vars']))
+			{
+				$vars = explode(',', $this->var['item_vars']);
+				foreach($vars as $varid)
+				{
+					e107::js('settings', array('vstore' => array(
+							'stock' => array("x{$itemid}-{$varid}" => vstore::isInventoryTrackingVar($varid)
+								? $stock
+								: (isset($this->var['item_inventory']) ? $this->var['item_inventory'] : -1)))
+						)
+					);
+				}
+			}
+
 			$baseprice = floatval($this->var['item_price']);
 			$this->var['item_var_price'] = $baseprice;
-			$stock = -1;
 
-			if (varset($this->var['item_vars']))
+			if (isset($this->var['item_vars']))
 			{
-				$ns = e107::getParser();
 				$frm = e107::getForm();
 				$sql = e107::getDb();
 
@@ -595,6 +611,7 @@
 								array('data-op' => $var['operator'], 'data-val' => floatval($var['value']), 'data-id' => $varid, 'data-item' => $itemid)
 							);
 							$selected = false;
+
 						}
 
 						$select .= $frm->select_close();
@@ -607,28 +624,6 @@
 							<!-- fix #92: currency symbol used with product variations --> 
 							<span class="text-hide" id="vstore-currency-symbol">' . varset($this->vpref['amount_format'], 0) . $this->curSymbol . '</span>
 						</div>';
-
-
-						$stock = -1;
-						if(vstore::isInventoryTrackingVar($itemid))
-						{
-
-							if(varset($this->var['item_vars_inventory']))
-							{
-								$stock = e107::unserialize($this->var['item_vars_inventory']);
-							}
-							else
-							{
-								$stock = intval($this->var['item_inventory']);
-							}
-
-						}
-
-						e107::js('settings', array('vstore' => array(
-								'stock' => array("x{$itemid}-{$varid}" => $stock))
-							)
-						);
-
 					}
 
 					$text .= '
@@ -637,6 +632,7 @@
 					return $text;
 				}
 			}
+
 			return ''; // No item_vars set
 		}
 
