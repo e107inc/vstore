@@ -16,7 +16,8 @@ if (!defined('e107_INIT')) { exit; }
 require_once(e_PLUGIN.'vstore/vstore.class.php');
 $vst = new vstore;
 
-e107::includeLan(e_PLUGIN.'vstore/languages/'.e_LANGUAGE.'/'.e_LANGUAGE.'_front.php'); 
+// Loads e_PLUGIN."vstore/languages/English/English_front.php (if English is the current language)
+e107::lan('vstore', false, true);
 
 e107::js('vstore','js/vstore.js');
 
