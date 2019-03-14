@@ -1319,6 +1319,7 @@ class vstore
 				if(!empty($this->pref['mollie']['testmode']))
 				{
 					$gateway->setApiKey($this->pref['mollie']['api_key_test']);
+					$gateway->setTestMode(true);
 				}
 				else
 				{
@@ -1444,6 +1445,7 @@ class vstore
 				'transactionId'  => $this->getCheckoutData('id'),
 				'clientIp'       => USERIP,
 				'description'    => 'Order Ref #' . $this->getCheckoutData('id'), // required for Mollie
+				'paymentMethod'  => 'sofort', // Mollie payment method
 			);
 
 			$_SESSION['vstore']['_data'] = $_data;
@@ -2280,6 +2282,7 @@ class vstore
 
 		if($np === true)
 		{
+
 			$nextprev = array(
 					'tmpl'			=>'bootstrap',
 					'total'			=> $count,
@@ -2287,7 +2290,14 @@ class vstore
 					'current'		=> $this->from,
 					'url'			=> e107::url('vstore','base')."?frm=[FROM]"
 			);
-	
+
+			// Check if SEF urls are deactivated for vstore
+			$sefActive = e107::getPref('e_url_list');
+			if (empty($sefActive['vstore'])) {
+				// SEF Urls deactivated, update url
+				$nextprev['url'] = e107::url('vstore','base')."?catsef={$categoryRow['cat_sef']}&frm=[FROM]";
+			}
+
 			global $nextprev_parms;
 		
 			$nextprev_parms  = http_build_query($nextprev,false,'&'); // 'tmpl_prefix='.deftrue('NEWS_NEXTPREV_TMPL', 'default').'&total='. $total_downloads.'&amount='.$amount.'&current='.$newsfrom.$nitems.'&url='.$url;
