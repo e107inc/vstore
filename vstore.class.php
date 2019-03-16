@@ -404,9 +404,14 @@ class vstore
 	 */
 	public static function getMolliePaymentMethodIcon($type='', $size='5x')
 	{
+		$size = vartrue($size, '5x');
+		if (preg_match('^[0-9.]+x$', $size)) {
+			// convert '1x' sizes to '1em'
+			$size = floatval($size) . 'em';
+		}
 		$size = vartrue(intval($size), 1) . 'em';
 		$text = !empty(self::$mollie_payment_methods[$type]) ? e_PLUGIN_ABS . 'vstore/' . self::$mollie_payment_methods[$type]['icon'] : '';
-		return e107::getParser()->toImage($text, array('style' => "width: ".$size."; height: ".$size.";", 'class' => ' '));
+		return e107::getParser()->toImage($text, array('style' => "width: ".$size."; height: ".$size.";", 'class' => 'vstore-mollie-payment-icon img-circle'));
 	}
 
 	/**

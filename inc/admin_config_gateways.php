@@ -74,7 +74,7 @@ class vstore_gateways_ui extends e_admin_ui
 		{
 			if(e_DEBUG !== true)
 			{
-				unset($this->preftabs[3],$this->preftabs[4]); // Disable Mollie, Amazon and Skrill for Now until they work. // TODO //FIXME
+				unset($this->preftabs[3],$this->preftabs[4]); // Disable Amazon and Skrill for Now until they work. // TODO //FIXME
 			}
 			$paymentMethods = vstore::getMolliePaymentMethods();
 			foreach($paymentMethods as $k => $row) {
