@@ -52,7 +52,7 @@ class vstore_gateways_ui extends e_admin_ui
 			'mollie_active'         => array('title'=>"Mollie Payments", 'type'=>'boolean', 'tab'=>2, 'data'=>'int', 'help'=>''),
 			'mollie_testmode'       => array('title'=>"Mollie Testmode", 'type'=>'boolean', 'tab'=>2, 'data'=>'int', 'writeParms'=>array(),'help'=>'Use Mollie Testmode'),
 			'mollie_api_key_live'   => array('title'=>"Mollie Live API key", 'type'=>'text', 'tab'=>2, 'data'=>'str', 'note'=>'Get your api keys <a href="https://www.mollie.com/dashboard/developers/api-keys">here</a>', 'writeParms'=>array('size'=>'xxlarge')),
-			'mollie_api_key_test'   => array('title'=>"Mollie Test API key", 'type'=>'text', 'tab'=>2, 'data'=>'str', 'note' => 'Goto your Mollie dashboard to activate testmode.', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
+			'mollie_api_key_test'   => array('title'=>"Mollie Test API key", 'type'=>'text', 'tab'=>2, 'data'=>'str', 'note' => '', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
 			'mollie_payment_methods'=> array('title'=>"Mollie Payment methods", 'type'=>'checkboxes', 'tab'=>2, 'data'=>'str', 'note' => 'Select at least 1 payment method.\nThe payment method MUST BE enabled in your Mollie dashoard BEFORE you can use it with vstore!\nBe aware, that not all methods support all currencies!', 'help'=>'', 'writeParms'=>array('__options' => array('multiple' => true, 'size' => 'xxlarge'))),
 
 //			'amazon_active'         => array('title'=>"Amazon Payments", 'type'=>'boolean', 'tab'=>3, 'data'=>'int', 'help'=>''),
