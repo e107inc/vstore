@@ -40,6 +40,7 @@ CREATE TABLE vstore_orders (
   `order_pay_amount` decimal(10,2) NOT NULL DEFAULT '0.00',
   `order_pay_tax` text,
   `order_pay_shipping` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `order_pay_currency` varchar(10) DEFAULT NULL,
   `order_pay_coupon_code` varchar(50) DEFAULT NULL,
   `order_pay_coupon_amount` decimal(10,2) NOT NULL DEFAULT '0.00',
   `order_pay_rawdata` text,
