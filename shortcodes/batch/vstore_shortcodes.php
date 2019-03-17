@@ -4,7 +4,7 @@
 
 		protected $vpref = array();
 		protected $videos = array();
-		protected $symbols = array();
+		//protected $symbols = array();
 		protected $curSymbol = null;
 		protected $currency = null;
 		protected $displayCurrency = false;
@@ -16,17 +16,16 @@
 		{
 			$this->vpref = e107::pref('vstore');
 
-			$this->symbols = array('USD'=>'$','EUR'=>'€','CAN'=>'$','GBP'=>'£', "BTC"=> e107::getParser()->toGlyph('fa-btc'));
 			$currency = !empty($this->vpref['currency']) ? $this->vpref['currency'] : 'USD';
 
-			$this->curSymbol = vartrue($this->symbols[$currency],'$');
+			$this->curSymbol = vstore::getCurrencySymbol($currency);
 			$this->currency = ($this->displayCurrency === true) ? $currency : '';
 
 		}
 
 		public function getCurrencySymbol()
 		{
-			return $this->curSymbol;
+			return vstore::getCurrencySymbol($this->currency);
 		}
 
 		function format_amount($amount)
@@ -35,11 +34,11 @@
 			$amount = floatval($amount);
 			if ($format == 1)
 			{
-				return number_format($amount, 2).'&nbsp;'.$this->curSymbol.$this->currency;
+				return number_format($amount, 2).'&nbsp;'.$this->curSymbol/*.$this->currency*/;
 			}
 			else
 			{
-				return $this->currency.$this->curSymbol.'&nbsp;'.number_format($amount, 2);
+				return /*$this->currency.*/$this->curSymbol.'&nbsp;'.number_format($amount, 2);
 			}
 		}
 
@@ -80,7 +79,6 @@
 			}
 
 			$cancellable = in_array($this->var['order_status'], array('N', 'P', 'H'));
-			$order_id = $this->var['order_id'];
 
 			if (!empty($key))
 			{
@@ -92,9 +90,6 @@
 				}
 				return $text;
 			}
-
-
-
 
 			$actions = array(
 				sprintf('<a href="%s">%s</a>',
@@ -204,7 +199,6 @@
 					if (!is_array($log)) $log = e107::unserialize($log);
 
 					$dt = e107::getDateConvert();
-					$tp = e107::getParser();
 					$text = '<table class="table table-bordered table-striped">
 				<tr>
 					<th>'.LAN_DATE.'</th>
@@ -405,23 +399,17 @@
 
 		function sc_order_gateway_title($parm=null)
 		{
-			$gateways = vstore::getGateways();
-			$gatewayType = $this->var['order_pay_gateway'];
-			return $gateways[$gatewayType]['title'];
+			$text = vstore::getGatewayTitle($this->var['order_pay_gateway']);
+			return $text;
 		}
 
 		function sc_order_gateway_icon($parm=null)
 		{
-			$gateways = vstore::getGateways();
-			$gatewayType = $this->var['order_pay_gateway'];
-			$icon = $gateways[$gatewayType]['icon'];
-			if (empty($icon)) return '';
-
-			if (empty($parm['size']))
-			{
-				return e107::getParser()->toGlyph($icon, array('size'=>'2x'));
+			if (!isset($parm['size'])) {
+				$parm['size'] = '2x';
 			}
-			return e107::getParser()->toGlyph($icon, array('size'=>$parm['size']));
+			$text = vstore::getGatewayIcon($this->var['order_pay_gateway'], $parm);
+			return $text;
 		}
 
 		function sc_sender_name()
@@ -618,7 +606,7 @@
 
 						$text .= '
 						<div>
-							<label>' . $row['item_var_name'] . '
+							<label style="width: 100%;">' . $row['item_var_name'] . '
 							' . $select . '
 							</label>
 							<!-- fix #92: currency symbol used with product variations --> 
@@ -902,7 +890,7 @@
 			{
 				$price = $varprice;
 			}
-			// return $this->currency.$this->curSymbol.' <span class="vstore-item-price-'.$itemid.'">'.number_format($price, 2).'</span><input type="hidden" class="vstore-item-baseprice-'.$itemid.'" value="'.$baseprice.'"/>';
+
 			return ' <span class="vstore-item-price-'.$itemid.'">'.$this->format_amount($price).'</span><input type="hidden" class="vstore-item-baseprice-'.$itemid.'" value="'.$baseprice.'"/>';
 		}
 
