@@ -554,19 +554,19 @@ class vstore
 	{
 		if(e_AJAX_REQUEST)
 		{
+			$js = e107::getJshelper();
+			$js->_reset();
 			// Process only ajax requests
 			if($this->get['add'])
 			{
 				// Add item to cart
-				$js = e107::getJshelper();
-				$js->_reset();
 				$itemid = $this->get['add'];
 				$itemvars = $this->get['itemvar'];
 				if (!$this->addToCart($itemid, $itemvars))
 				{
 					$msg = e107::getMessage()->render('vstore');
 					ob_clean();
-					$js->addTextResponse($msg)->sendResponse();
+					$js->sendTextResponse($msg);
 					exit;
 				}
 				else
@@ -576,7 +576,7 @@ class vstore
 					$msg = $sl->storeCart();
 				}
 				ob_clean();
-				$js->addTextResponse('ok '.$msg)->sendResponse();
+				$js->sendTextResponse('ok '.$msg);
 				exit;
 			}
 				
@@ -588,9 +588,7 @@ class vstore
 				$sl = new vstore_sitelink();
 				$msg = $sl->storeCart();
 				ob_clean();
-				$js = e107::getJshelper();
-				$js->_reset();
-				$js->addTextResponse('ok '.$msg)->sendResponse();
+				$js->sendTextResponse('ok '.$msg);
 				exit;
 			}
 		
@@ -602,12 +600,45 @@ class vstore
 				$sl = new vstore_sitelink();
 				$msg = $sl->storeCart();
 				ob_clean();
-				$js = e107::getJshelper();
-				$js->_reset();
-				$js->addTextResponse('ok '.$msg)->sendResponse();
+				$js->sendTextResponse('ok '.$msg);
 				exit;
 			}
 
+			// Refund a payment, $refund contains the orderId, access only for Admins!
+			if (isset($this->post['refund']) && intval($this->post['refund']) > 0 && ADMIN) {
+
+				$result = $this->refundPurchase((int) $this->post['refund']);
+				if($result === true)
+				{
+					$js->sendTextResponse("Success\n" . 'Order sucessfully refunded!');
+				}
+				else
+				{
+					$js->sendTextResponse("Error\n" . varset($result, 'Order could\'t be refunded!'));
+				}
+				/*
+				$orderData = e107::getDb()->retrieve('vstore_orders', 'order_pay_gateway, order_status, order_pay_status, order_pay_transid', 'order_id = ' . intval($this->post['refund']));
+				if (empty($orderData)) {
+					$js->sendTextResponse("Error\n".'Invalid order id!');
+				}
+				elseif ($orderData['order_status'] == 'R') {
+					$js->sendTextResponse("Error\n".'Order is already refunded!');
+				}
+				elseif (!in_array($orderData['order_status'], array('P','H','C'))) {
+					$js->sendTextResponse("Error\n".'Only orders with status "Processing", "On Hold" and "Complete" can be refunded!');
+				}
+				else {
+					// Do the actual refunding
+					$result = $this->refundPurchase($orderData['order_pay_gateway'], $this->post['refund'], $orderData['order_pay_transid']);
+					if ($result === true) {
+						$js->sendTextResponse("Success\n".'Order sucessfully refunded!');
+					}
+					else {
+						$js->sendTextResponse("Error\n" . varset($result, 'Order could\'t be refunded!'));
+					}
+				}
+				*/
+			}
 			// In case that none of the above has handled the ajax request
 			// (which shouldn't happen) just exit
 			exit;
@@ -1518,6 +1549,187 @@ class vstore
 
 
 	/**
+	 * Refund a purchase
+	 *
+	 * @param int  $order_id The order ID of the order to refund
+	 * @param bool $do_log   Update order log
+	 *
+	 * @return bool|string Returns true on success, an error message otherwise
+	 */
+	public function refundPurchase($order_id = null, $do_log = true)
+	{
+
+		// Check inputs
+		if(empty($order_id))
+		{
+			return "Invalid Order ID";
+		}
+
+		$orderData = e107::getDb()->retrieve('vstore_orders', 'order_pay_gateway, order_status, order_pay_status, order_pay_transid, order_pay_amount, order_pay_currency, order_pay_rawdata, order_log', 'order_id = ' . intval($order_id));
+		if (empty($orderData)) {
+			return 'Invalid order id!';
+		}
+		elseif ($orderData['order_status'] == 'R') {
+			return 'Order is already refunded!';
+		}
+		elseif (!in_array($orderData['order_status'], array('P','H','C'))) {
+			return 'Only orders with status "Processing", "On Hold" and "Complete" can be refunded!';
+		}
+
+		$transactionId = $orderData['order_pay_transid'];
+		$amount = $orderData['order_pay_amount'];
+		$currency = $orderData['order_pay_currency'];
+		$type = $orderData['order_pay_gateway'];
+		$log = e107::unserialize($orderData['order_log']);
+
+		e107::getDebug()->log("Processing Gateway: " . $type);
+
+		// Fix $type in case of Mollie Gateway
+		if (self::isMollie($type))
+		{
+			$type = substr($type, 0, 6);
+		}
+
+		// array keeping the data required fore refunding
+		// usually the transactionid
+		$refundDetails = array();
+
+		// Init payment gateway
+		switch($type)
+		{
+			case "mollie":
+				/** @var \Omnipay\Mollie\Gateway $gateway */
+				$gateway = Omnipay::create('Mollie');
+
+				if(!empty($this->pref['mollie']['testmode']))
+				{
+					$gateway->setApiKey($this->pref['mollie']['api_key_test']);
+					$gateway->setTestMode(true);
+				}
+				else
+				{
+					$gateway->setApiKey($this->pref['mollie']['api_key_live']);
+				}
+
+				$refundDetails = array(
+					'transactionReference' => $transactionId,
+					'amount' => $amount,
+					'currency' => $currency);
+				break;
+
+			case "paypal":
+				/** @var \Omnipay\PayPal\ExpressGateway $gateway */
+				$gateway = Omnipay::create('PayPal_Express');
+
+				if(!empty($this->pref['paypal']['testmode']))
+				{
+					$gateway->setTestMode(true);
+				}
+
+				$gateway->setUsername($this->pref['paypal']['username']);
+				$gateway->setPassword($this->pref['paypal']['password']);
+				$gateway->setSignature($this->pref['paypal']['signature']);
+
+				$refundDetails = array(
+					'transactionReference' => $transactionId,
+					'amount' => $amount,
+					'currency' => $currency);
+				break;
+
+			case "paypal_rest":
+				/** @var \Omnipay\PayPal\RestGateway $gateway */
+				$gateway = Omnipay::create('PayPal_Rest');
+
+				if(!empty($this->pref['paypal_rest']['testmode']))
+				{
+					$gateway->setTestMode(true);
+				}
+
+				$gateway->setClientId($this->pref['paypal_rest']['clientId']);
+				$gateway->setSecret($this->pref['paypal_rest']['secret']);
+
+				$refundDetails = array(
+					'transactionReference' => $transactionId,
+					'amount' => $amount,
+					'currency' => $currency);
+				break;
+
+			case "bank_transfer":
+
+				return "Bank transfer doesn't support automatized refunding! You have to do it manually!";
+
+
+			default:
+				return "Missing pament gateway!";
+
+		}
+
+		// Check if selected gateway has it's refunding details set
+		if (empty($refundDetails)) {
+			return "Refunding details not set!";
+
+		}
+
+		// Check if selected gateway supports refunding
+		if (!$gateway->supportsRefund()) {
+			return $type . " doesn't support refunding! You have to do it manually!";
+		}
+
+		try{
+			$request = $gateway->refund($refundDetails);
+			$response = $request->send();
+			if ($response->isSuccessful()) {
+				$data = $response->getData();
+
+				// append the rawdata
+				$rawdata = array();
+				if ($orderData['order_pay_rawdata']) {
+					$rawdata = e107::unserialize($orderData['order_pay_rawdata']);
+					if (!isset($rawdata['purchase'])) {
+						$rawdata = array('purchase' => $rawdata);
+					}
+				}
+				$rawdata['refund'] = $data;
+				$rawdata = e107::serialize($rawdata, 'json');
+
+				$add_log = '';
+				if ($do_log) {
+					$now = time();
+
+					$log[] = array(
+						'datestamp' => $now,
+						'user_id' => USERID,
+						'user_name' => USERNAME,
+						'text' => e107::getParser()->lanVars('Changed [x] from [y] to [z].', array('x' => 'Status', 'y' => self::getStatus($orderData['order_status']), 'z' => self::getStatus('R')))
+					);
+
+					$log[] = array(
+						'datestamp' => $now,
+						'user_id' => USERID,
+						'user_name' => USERNAME,
+						'text' => e107::getParser()->lanVars('Changed [x] from [y] to [z].', array('x' => 'Pay Status', 'y' => $orderData['order_pay_status'], 'z' => 'refunded'))
+					);
+					$log = e107::serialize($log, 'json');
+					$add_log = ", order_log = '".$log."'";
+				}
+				if (!e107::getDb()->update('vstore_orders', "order_status = 'R', order_pay_status = 'refunded', order_pay_rawdata = '".$rawdata."' ".$add_log." WHERE order_id = ".$order_id, false, 'vstore', 'refund')) {
+					return "Amount was refunded successfully, but the update of the database failed! Please check the error log!";
+				}
+				return true;
+			}
+			else {
+				return $response->getMessage();
+			}
+		}
+		catch( Exception $ex ) {
+			return"Refunding failed! " . $ex->getMessage();
+		}
+
+		return true;
+	}
+
+
+	/**
 	 * Process the payment via selected payment gateway
 	 *
 	 * @see http://stackoverflow.com/questions/20756067/omnipay-paypal-integration-with-laravel-4
@@ -1869,7 +2081,7 @@ class vstore
 		$insert['order_pay_shipping']     = $cartData['totals']['cart_shippingTotal'];
 		$insert['order_pay_coupon_code']  = $cartData['totals']['cart_coupon']['code'];
 		$insert['order_pay_coupon_amount']= $cartData['totals']['cart_coupon']['amount'];
-		$insert['order_pay_rawdata']      = e107::serialize($transData, 'json');
+		$insert['order_pay_rawdata']      = e107::serialize(array('purchase' => $transData), 'json');
 
 		$log = array(array(
 			'datestamp' => time(),

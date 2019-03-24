@@ -35,9 +35,10 @@ class vstore_order_ui extends e_admin_ui
 			'order_items'     		=> array ( 'title' => 'Items', 'type' => 'method', 'data' => false, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'right', 'thclass' => 'right',  ),
 			'order_e107_user'     	=> array ( 'title' => LAN_AUTHOR, 'type' => 'method', 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 			'order_pay_gateway'     => array ( 'title' => 'Gateway', 'type' => 'method', 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
-			'order_pay_status'      => array ( 'title' => 'Pay Status', 'type' => 'text',  'data' => 'str',  'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+			'order_pay_status'      => array ( 'title' => 'Pay Status', 'type' => 'method',  'data' => 'str',  'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 			'order_pay_transid'     => array ( 'title' => 'TransID', 'type' => 'text', 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 			'order_pay_amount' 		=> array ( 'title' => 'Total', 'type' => 'method', 'data' => 'float', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+			'refund' 		        => array ( 'title' => 'Refund', 'type' => 'method', 'data' => 'null', 'nolist'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 			'order_pay_shipping' 	=> array ( 'title' => 'Shipping', 'type' => 'number', 'data' => 'float', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 			'order_pay_currency' 	=> array ( 'title' => 'Currency', 'type' => 'text', 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 
@@ -140,9 +141,49 @@ class vstore_order_ui extends e_admin_ui
 						}
 					}
 				}
+				elseif ($old_data['order_status'] !== 'R' && $new_data['order_status'] === 'R')
+				{
+					// Check if order can be refunded...
+					if (!in_array($old_data['order_status'], array('P', 'H', 'C'))) {
+						// refund not allowed: reset to old value
+						unset($new_data['order_status']);
+					}
+					else {
+						// Refund order
+						$order_id = $old_data['order_id'];
+						if ($order_id > 0)
+						{
+							$vs = e107::getSingleton('vstore', e_PLUGIN . 'vstore/vstore.class.php');
+							// Now do the actual refunding
+							$result = $vs->refundPurchase($order_id, true);
+			//$result = 'yiehaaa';
+							if(is_string($result))
+							{
+								$msg = vartrue($result, 'Order could\'t be refunded!');
+								if (e_AJAX_REQUEST)
+								{
+									$response_msg = e107::getMessage()->addWarning($msg)->render();
+									$new_data['etrigger_submit'] = 'Update';
+
+									$response = $this->getResponse();
+									$response->getJsHelper()->addResponse($response_msg);
+								}
+								else
+								{
+									e107::getMessage()->addWarning($msg);
+								}
+							}
+							else{
+								// Refund was successfull, set the pay status also to "refunded"
+								$new_data['order_pay_status'] = 'refunded';
+							}
+						}
+					}
+				}
 			}
 
 			// Check for changes and add to the log
+			$log = e107::unserialize($old_data['order_log']);
 			$now = time();
 			foreach ($new_data as $key => $value) {
 				$oldval = $old_data[$key];
@@ -160,13 +201,13 @@ class vstore_order_ui extends e_admin_ui
 						'datestamp' => $now,
 						'user_id' => USERID,
 						'user_name' => USERNAME,
-						'text' => $tp->lanVars('Changed [x] from "[y]" to "[z]".', array('x' => $title, 'y' => $oldval, 'z' => $value))
+						'text' => $tp->lanVars('Changed [x] from [y] to [z].', array('x' => $title, 'y' => $oldval, 'z' => $value))
 					);
 					
 				}
 			}
 
-			$new_data['order_log'] = $log;
+			$new_data['order_log'] = e107::serialize($log, 'json');
 			return $new_data;
 		}
 
@@ -279,9 +320,31 @@ class vstore_order_form_ui extends e_admin_form_ui
 		{
 			case 'read': // List Page
 				return vstore::getStatus($curVal);
+				/*
+				switch($curVal)
+				{
+					case 'N':
+						return '<span class="label label-info">'.vstore::getStatus($curVal).'</span>';
+					case 'P':
+						return '<span class="label label-primary">'.vstore::getStatus($curVal).'</span>';
+					case 'H':
+						return '<span class="label label-warning">'.vstore::getStatus($curVal).'</span>';
+					case 'C':
+						return '<span class="label label-success">'.vstore::getStatus($curVal).'</span>';
+					case 'R':
+						return '<span class="label label-danger">'.vstore::getStatus($curVal).'</span>';
+					case 'X':
+						return '<span class="label label-danger">'.vstore::getStatus($curVal).'</span>';
+					default:
+						return $curVal;
+				}
+*/
 				break;
 
 			case 'write': // Edit Page
+				if ($curVal == 'R') {
+					return vstore::getStatus($curVal);
+				}
 				return $this->select('order_status', vstore::getStatus(), $curVal);
 				break;
 
@@ -476,19 +539,49 @@ class vstore_order_form_ui extends e_admin_form_ui
 
 				if(!empty($curVal))
 				{
-					$data = json_decode($curVal, true);
-					$text = "<table class='table table-bordered table-striped table-condensed'>
+					$data = e107::unserialize($curVal);
+					if (!isset($data['purchase'])) {
+						// Fix for older data
+						$data = array('purchase' => $data);
+					}
+					foreach($data as $section=>$row)
+					{
+
+						$text = "<table class='table table-bordered table-striped table-condensed'>
 					<colgroup>
 						<col style='width:50%' />
 						<col />
 					</colgroup>
 					";
-					foreach($data as $k=>$v)
-					{
-						$text .= "<tr><td>".$k."</td><td>".$v."</td></tr>";
-					}
+						$text .= "<tr><th colspan='2'><b>" . ucfirst($section ). "</b></th></tr>";
+						foreach($row as $k => $v)
+						{
+							if(is_array($v))
+							{
+								$val = array();
+								foreach($v as $x => $y)
+								{
+									if(is_array($y))
+									{
+										$val[] = sprintf("%s:<br/>", $x);
+										foreach($y as $a => $b)
+										{
+											$val[] = sprintf("&nbsp;&nbsp;%s: %s<br/>", $a, $b);
+										}
+									}
+									else
+									{
+										$val[] = sprintf("%s: %s<br/>", $x, $y);
+									}
+								}
 
-					$text .= "</table>";
+								$v = implode('', $val);
+							}
+							$text .= "<tr><td>" . $k . "</td><td>" . $v . "</td></tr>";
+						}
+
+						$text .= "</table>";
+					}
 					return $text;
 				}
 
@@ -535,5 +628,55 @@ class vstore_order_form_ui extends e_admin_form_ui
 		return vstore::getGatewayTitle($curVal);
 	}
 
+	function order_pay_status($curVal)
+	{
+		switch($curVal)
+		{
+			case 'incomplete':
+				return '<span class="label label-warning">'.$curVal.'</span>';
+			case 'complete':
+				return '<span class="label label-success">'.$curVal.'</span>';
+			case 'refunded':
+				return '<span class="label label-danger">'.$curVal.'</span>';
+			default:
+				return $curVal;
+		}
+	}
+
+	function refund(){
+		$order_id = $this->getController()->getFieldVar('order_id');
+		$order_status = $this->getController()->getFieldVar('order_status');
+		$order_pay_transid = $this->getController()->getFieldVar('order_pay_transid');
+
+
+
+		e107::js('footer-inline', "
+		
+		$(function(){
+			$('#btnrefund').click(function(e){
+				e.preventDefault();
+				
+				var url = 'vstore.php';
+				var data = {
+					'refund': {$order_id}
+				};
+				
+				$.post(url, data, function(response){
+					alert(response);
+					location.reload();
+				}).fail(function(response){
+					alert(response);
+				});
+			});
+		});
+		");
+
+		if (in_array($order_status, array('P','H','C')) && !empty($order_pay_transid)) {
+			return $this->button('btnRefund', '1', 'button', 'Refund order');
+		}
+		else {
+			return 'Order can not be refunded!';
+		}
+	}
 }
 ?>
