@@ -616,28 +616,6 @@ class vstore
 				{
 					$js->sendTextResponse("Error\n" . varset($result, 'Order could\'t be refunded!'));
 				}
-				/*
-				$orderData = e107::getDb()->retrieve('vstore_orders', 'order_pay_gateway, order_status, order_pay_status, order_pay_transid', 'order_id = ' . intval($this->post['refund']));
-				if (empty($orderData)) {
-					$js->sendTextResponse("Error\n".'Invalid order id!');
-				}
-				elseif ($orderData['order_status'] == 'R') {
-					$js->sendTextResponse("Error\n".'Order is already refunded!');
-				}
-				elseif (!in_array($orderData['order_status'], array('P','H','C'))) {
-					$js->sendTextResponse("Error\n".'Only orders with status "Processing", "On Hold" and "Complete" can be refunded!');
-				}
-				else {
-					// Do the actual refunding
-					$result = $this->refundPurchase($orderData['order_pay_gateway'], $this->post['refund'], $orderData['order_pay_transid']);
-					if ($result === true) {
-						$js->sendTextResponse("Success\n".'Order sucessfully refunded!');
-					}
-					else {
-						$js->sendTextResponse("Error\n" . varset($result, 'Order could\'t be refunded!'));
-					}
-				}
-				*/
 			}
 			// In case that none of the above has handled the ajax request
 			// (which shouldn't happen) just exit
@@ -1686,7 +1664,9 @@ class vstore
 				if ($orderData['order_pay_rawdata']) {
 					$rawdata = e107::unserialize($orderData['order_pay_rawdata']);
 					if (!isset($rawdata['purchase'])) {
-						$rawdata = array('purchase' => $rawdata);
+						$tmp = $rawdata;
+						$rawdata = array('purchase' => $tmp);
+						unset($tmp);
 					}
 				}
 				$rawdata['refund'] = $data;
@@ -1712,7 +1692,22 @@ class vstore
 					$log = e107::serialize($log, 'json');
 					$add_log = ", order_log = '".$log."'";
 				}
-				if (!e107::getDb()->update('vstore_orders', "order_status = 'R', order_pay_status = 'refunded', order_pay_rawdata = '".$rawdata."' ".$add_log." WHERE order_id = ".$order_id, false, 'vstore', 'refund')) {
+
+				$update = array(
+					'data' => array(
+						'order_status' => 'R',
+						'order_pay_status' => 'refunded',
+						'order_pay_rawdata' => $rawdata,
+						'order_refund_date' => time()
+					),
+					'WHERE' => 'order_id = '.$order_id
+				);
+				if ($do_log) {
+					$update['data']['order_log'] = $log;
+				}
+
+				//if (!e107::getDb()->update('vstore_orders', "order_status = 'R', order_pay_status = 'refunded', order_pay_rawdata = '".$rawdata."' ".$add_log." WHERE order_id = ".$order_id, false, 'vstore', 'refund')) {
+				if (!e107::getDb()->update('vstore_orders', $update, false, 'vstore', 'refund')) {
 					return "Amount was refunded successfully, but the update of the database failed! Please check the error log!";
 				}
 				return true;

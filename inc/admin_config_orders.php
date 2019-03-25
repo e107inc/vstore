@@ -26,8 +26,10 @@ class vstore_order_ui extends e_admin_ui
 		protected $fields 		= array (
 			'checkboxes'           	=> array ( 'title' => '', 'type' => null, 'data' => null, 'width' => '5%', 'thclass' => 'center', 'forced' => '1', 'class' => 'center', 'toggle' => 'e-multiselect',  ),
 			'order_id'            	=> array ( 'title' => LAN_ID, 'data' => 'int', 'width' => '5%', 'help' => '', 'readonly'=>true, 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
-			'order_status'          => array ( 'title' => 'Status', 'type'=>'method', 'data'=>'str', 'inline'=>true, 'filter'=>true, 'batch'=>true,'width'=>'5%'),
 			'order_date'          	=> array ( 'title' => LAN_DATESTAMP, 'type' => 'datestamp', 'data' => 'str',  'readonly'=>true, 'width' => 'auto', 'filter' => true, 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+			'order_status'          => array ( 'title' => 'Status', 'type'=>'method', 'data'=>'str', 'inline'=>false, 'filter'=>true, 'batch'=>false,'width'=>'5%'),
+			'refund' 		        => array ( 'title' => 'Refund', 'type' => 'method', 'data' => 'null', 'nolist'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+			'order_refund_date' 	=> array ( 'title' => 'Refund date', 'type' => 'method', 'tab'=>0, 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 
 			'order_invoice_nr'     	=> array ( 'title' => 'Invoice Nr', 'type'=>'method', 'data'=>false, 'width'=>'20%'),
 			'order_billing'      	=> array ( 'title' => 'Billing to', 'type'=>'method', 'data'=>false, 'width'=>'20%'),
@@ -38,7 +40,6 @@ class vstore_order_ui extends e_admin_ui
 			'order_pay_status'      => array ( 'title' => 'Pay Status', 'type' => 'method',  'data' => 'str',  'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 			'order_pay_transid'     => array ( 'title' => 'TransID', 'type' => 'text', 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 			'order_pay_amount' 		=> array ( 'title' => 'Total', 'type' => 'method', 'data' => 'float', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
-			'refund' 		        => array ( 'title' => 'Refund', 'type' => 'method', 'data' => 'null', 'nolist'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 			'order_pay_shipping' 	=> array ( 'title' => 'Shipping', 'type' => 'number', 'data' => 'float', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 			'order_pay_currency' 	=> array ( 'title' => 'Currency', 'type' => 'text', 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 
@@ -176,6 +177,7 @@ class vstore_order_ui extends e_admin_ui
 							else{
 								// Refund was successfull, set the pay status also to "refunded"
 								$new_data['order_pay_status'] = 'refunded';
+								$new_data['order_refund_date'] = time();
 							}
 						}
 					}
@@ -271,6 +273,20 @@ class vstore_order_ui extends e_admin_ui
 
 class vstore_order_form_ui extends e_admin_form_ui
 {
+	static $status_classes = array(
+				'N' => 'primary',
+				'P' => 'info',
+				'H' => 'warning',
+				'C' => 'success',
+				'X' => 'danger',
+				'R' => 'default'
+			);
+
+	static $pay_status_classes = array(
+				'incomplete' => 'warning',
+				'complete' => 'success',
+				'refunded' => 'default'
+			);
 
 	function order_invoice_nr($curVal, $mode)
 	{
@@ -319,33 +335,16 @@ class vstore_order_form_ui extends e_admin_form_ui
 		switch($mode)
 		{
 			case 'read': // List Page
-				return vstore::getStatus($curVal);
-				/*
-				switch($curVal)
-				{
-					case 'N':
-						return '<span class="label label-info">'.vstore::getStatus($curVal).'</span>';
-					case 'P':
-						return '<span class="label label-primary">'.vstore::getStatus($curVal).'</span>';
-					case 'H':
-						return '<span class="label label-warning">'.vstore::getStatus($curVal).'</span>';
-					case 'C':
-						return '<span class="label label-success">'.vstore::getStatus($curVal).'</span>';
-					case 'R':
-						return '<span class="label label-danger">'.vstore::getStatus($curVal).'</span>';
-					case 'X':
-						return '<span class="label label-danger">'.vstore::getStatus($curVal).'</span>';
-					default:
-						return $curVal;
-				}
-*/
+				return '<span class="label label-'.self::$status_classes[$curVal].'">'.vstore::getStatus($curVal).'</span>';
 				break;
 
 			case 'write': // Edit Page
 				if ($curVal == 'R') {
-					return vstore::getStatus($curVal);
+					return '<span class="label label-default">'.vstore::getStatus($curVal).'</span>';
 				}
-				return $this->select('order_status', vstore::getStatus(), $curVal);
+				$items = vstore::getStatus();
+				unset($items['R']);
+				return $this->select('order_status', $items, $curVal);
 				break;
 
 			case 'inline': // Inline Edit Page
@@ -539,43 +538,34 @@ class vstore_order_form_ui extends e_admin_form_ui
 
 				if(!empty($curVal))
 				{
-					$data = e107::unserialize($curVal);
-					if (!isset($data['purchase'])) {
-						// Fix for older data
-						$data = array('purchase' => $data);
+					if (!is_array($curVal)) {
+						$data = e107::unserialize($curVal);
+						$json_err = json_last_error_msg();
+						echo $json_err;
+					} else {
+						$data = $curVal;
 					}
+					if (!empty($data) && !isset($data['purchase'])) {
+						// Fix for older data
+						$tmp = $data;
+						$data = array('purchase' => $tmp);
+						unset($tmp);
+					}
+					$text = '';
 					foreach($data as $section=>$row)
 					{
 
-						$text = "<table class='table table-bordered table-striped table-condensed'>
-					<colgroup>
-						<col style='width:50%' />
-						<col />
-					</colgroup>
-					";
+						$text .= "<table class='table table-bordered table-striped table-condensed'>
+							<colgroup>
+								<col style='width:40%' />
+								<col />
+							</colgroup>
+							";
 						$text .= "<tr><th colspan='2'><b>" . ucfirst($section ). "</b></th></tr>";
 						foreach($row as $k => $v)
 						{
-							if(is_array($v))
-							{
-								$val = array();
-								foreach($v as $x => $y)
-								{
-									if(is_array($y))
-									{
-										$val[] = sprintf("%s:<br/>", $x);
-										foreach($y as $a => $b)
-										{
-											$val[] = sprintf("&nbsp;&nbsp;%s: %s<br/>", $a, $b);
-										}
-									}
-									else
-									{
-										$val[] = sprintf("%s: %s<br/>", $x, $y);
-									}
-								}
-
-								$v = implode('', $val);
+							if(is_array($v)) {
+								$v = '<pre>' . e107::serialize($v, 'json') . '</pre>';
 							}
 							$text .= "<tr><td>" . $k . "</td><td>" . $v . "</td></tr>";
 						}
@@ -630,17 +620,7 @@ class vstore_order_form_ui extends e_admin_form_ui
 
 	function order_pay_status($curVal)
 	{
-		switch($curVal)
-		{
-			case 'incomplete':
-				return '<span class="label label-warning">'.$curVal.'</span>';
-			case 'complete':
-				return '<span class="label label-success">'.$curVal.'</span>';
-			case 'refunded':
-				return '<span class="label label-danger">'.$curVal.'</span>';
-			default:
-				return $curVal;
-		}
+		return '<span class="label label-'.self::$pay_status_classes[$curVal].'">'.ucfirst($curVal).'</span>';
 	}
 
 	function refund(){
@@ -674,9 +654,20 @@ class vstore_order_form_ui extends e_admin_form_ui
 		if (in_array($order_status, array('P','H','C')) && !empty($order_pay_transid)) {
 			return $this->button('btnRefund', '1', 'button', 'Refund order');
 		}
+		elseif ($order_status == 'R') {
+			return 'Order is already refunded!';
+		}
 		else {
 			return 'Order can not be refunded!';
 		}
+	}
+
+	function order_refund_date($curVal)
+	{
+		if (empty($curVal)) {
+			return '---';
+		}
+		return e107::getDateConvert()->convert_date($curVal, 'short');
 	}
 }
 ?>
