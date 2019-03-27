@@ -42,6 +42,81 @@ class vstore
 		'bank_transfer' => array('title'=>'Bank Transfer', 'icon'=>'fa-bank'),
 	);
 
+	protected static $mollie_payment_methods = array(
+		'mollie_bancontact' => array(
+			'title' => 'Bancontact',
+			'icon' => 'images/bancontact.svg'
+		),
+		'mollie_banktransfer' => array(
+			'title' => 'SEPA Bank transfer',
+			'icon' => 'images/sepa.svg'
+		),
+		'mollie_belfius' => array(
+			'title' => 'Belfius Direct Net',
+			'icon' => 'images/belfius.svg'
+		),
+//		'mollie_bitcoin' => array(
+//			'title' => 'Bitcoin',
+//			'icon' => 'bitcoin'
+//		),
+		'mollie_creditcard' => array(
+			'title' => 'Creditcard',
+			'icon' => 'images/amex.svg'
+		),
+		'mollie_directdebit' => array(
+			'title' => 'SEPA Direct debit',
+			'icon' => 'images/sepa.svg'
+		),
+		'mollie_eps' => array(
+			'title' => 'EPS',
+			'icon' => 'images/eps.svg'
+		),
+		'mollie_giftcard' => array(
+			'title' => 'Gift Cards',
+			'icon' => 'images/giftcards.svg'
+		),
+		'mollie_giropay' => array(
+			'title' => 'Giropay',
+			'icon' => 'images/giropay.svg'
+		),
+		'mollie_ideal' => array(
+			'title' => 'iDeal',
+			'icon' => 'images/ideal.svg'
+		),
+		'mollie_inghomepay' => array(
+			'title' => 'Ing Homepay',
+			'icon' => 'images/inghomepay.svg'
+		),
+		'mollie_kbc' => array(
+			'title' => 'Kbc Payment Button',
+			'icon' => 'images/kbc.svg'
+		),
+		'mollie_klarnapaylater' => array(
+			'title' => 'Klarna Pay Later',
+			'icon' => 'images/klarnapaylater.svg'
+		),
+		'mollie_klarnasliceit' => array(
+			'title' => 'Klarna Slice it',
+			'icon' => 'images/klarnasliceit.svg'
+		),
+		'mollie_paypal' => array(
+			'title' => 'Paypal',
+			'icon' => 'images/paypal.svg'
+		),
+		'mollie_paysafecard' => array(
+			'title' => 'Paysafecard',
+			'icon' => 'images/paysafecard.svg'
+		),
+//		'mollie_przelewy24' => array(
+//			'title' => 'Przelewy24',
+//			'icon' => 'images/klarnasliceit.svg'
+//		),
+		'mollie_sofort' => array(
+			'title' => 'SOFORT Banking',
+			'icon' => 'images/sofort.svg'
+		),
+	);
+
 	protected static $status = array(
 		'N' => 'New',
 		'P' => 'Processing',
@@ -179,13 +254,20 @@ class vstore
 		$this->categoriesTotal = $count;
 
 		$active = array();
-
+		$tp = e107::getParser();
 		foreach(self::$gateways as $k=>$icon)
 		{
 			$key = $k."_active";
 			if(!empty($this->pref[$key]))
 			{
-				$active[$k] = $this->getGatewayIcon($k);
+				if (self::isMollie($k)) {
+					$paymentMethods = array_keys($this->pref['mollie_payment_methods']);
+					foreach($paymentMethods as $method) {
+						$active[$method] = $this->getMolliePaymentMethodIcon($method);
+					}
+				} else {
+					$active[$k] = $this->getGatewayIcon($k);
+				}
 
 				foreach($this->pref as $key=>$v) // get gateway prefs.
 				{
@@ -295,6 +377,88 @@ class vstore
 		return self::$customerFields;
 	}
 
+	/**
+	 * Return the $mollie_payment_methods or a single entry
+	 *
+	 * @param string $method Name of the payment method or null
+	 *
+	 * @return array|string
+	 */
+	public static function getMolliePaymentMethods($method=null)
+	{
+		if (!empty($method))
+		{
+			return self::$mollie_payment_methods[$method];
+		}
+		return self::$mollie_payment_methods;
+	}
+
+
+	/**
+	 * Return the icon for the given gateway
+	 *
+	 * @param string $type Payment method
+	 * @param string $size 5x (1x, 2x, 3x, 4x, 5x)
+	 *
+	 * @return string Icon of the payment method
+	 */
+	public static function getMolliePaymentMethodIcon($type='', $size='5x')
+	{
+		$size = vartrue($size, '5x');
+		if (preg_match('^[0-9.]+x$', $size)) {
+			// convert '1x' sizes to '1em'
+			$size = floatval($size) . 'em';
+		}
+		$size = vartrue(intval($size), 1) . 'em';
+		$text = !empty(self::$mollie_payment_methods[$type]) ? e_PLUGIN_ABS . 'vstore/' . self::$mollie_payment_methods[$type]['icon'] : '';
+		return e107::getParser()->toImage($text, array('style' => "width: ".$size."; height: ".$size.";", 'class' => 'vstore-mollie-payment-icon img-circle'));
+	}
+
+	/**
+	 * Return the title for the given gateway
+	 *
+	 * @param string $type Payment method
+	 *
+	 * @return string Title of the payment method
+	 */
+	public static function getMolliePaymentMethodTitle($type='')
+	{
+		return !empty(self::$mollie_payment_methods[$type]) ? self::$mollie_payment_methods[$type]['title'] : '';
+	}
+
+	/**
+	 * Return if gateway type is Mollie
+	 *
+	 * @param string $type
+	 *
+	 * @return bool true if is mollie gateway
+	 */
+	public static function isMollie($type='')
+	{
+		return substr($type, 0, 6) == 'mollie';
+	}
+
+	/**
+	 * Parse and return Mollie Error message
+	 *
+	 * @param $str    JSON string
+	 *
+	 * @return string Error message
+	 */
+	private function getMollieErrorMessage($str)
+	{
+		if ($json = e107::unserialize($str)) {
+			if (vartrue($json['status'], '') == 'canceled') {
+				return 'You have canceled your payment, but your cart is still available for further reference.';
+			} elseif (vartrue($json['status'], '') == 'failed') {
+				return 'Your payment failed for some reason, but your cart is still available for further reference.';
+			} elseif(vartrue($json['detail'], '')) {
+				return $json['detail'];
+			}
+			return 'Generic error';
+		}
+		return $str;
+	}
 
 	/**
 	 * Handle & process all ajax requests 
@@ -1175,13 +1339,12 @@ class vstore
 			}
 			foreach($active as $gateway => $icon)
 			{
-
 				$text .= "
 						<div class='col-6 col-xs-6 col-sm-4'>
-							<label class='btn btn-default btn-light btn-block btn-".$gateway." ".($curGateway == $gateway ? 'active' : '')." vstore-gateway'>
+							<label class='btn btn-default btn-light btn-block btn-".$gateway." ".($curGateway == $gateway ? 'active' : '')." vstore-gateway text-center'>
 								<input type='radio' name='gateway' value='".$gateway."' style='display:none;' class='vstore-gateway-radio' required ".($curGateway == $gateway ? 'checked' : '').">
 								".$icon."
-								<h4>".$this->getGatewayTitle($gateway)."</h4>
+								<h4>".(self::isMollie($gateway) ? $this->getMolliePaymentMethodTitle($gateway) : $this->getGatewayTitle($gateway))."</h4>
 							</label>
 						</div>";
 
@@ -1289,6 +1452,13 @@ class vstore
 			return false;
 		}
 
+		$paymentMethod = '';
+		if (self::isMollie($type))
+		{
+			$paymentMethod = substr($type, 7);
+			$type = substr($type, 0, 6);
+		}
+
 		switch($type)
 		{
 //			case "amazon":
@@ -1313,12 +1483,13 @@ class vstore
 //				break;
 
 			case "mollie":
-
+				/** @var \Omnipay\Mollie\Gateway $gateway */
 				$gateway = Omnipay::create('Mollie');
 
 				if(!empty($this->pref['mollie']['testmode']))
 				{
 					$gateway->setApiKey($this->pref['mollie']['api_key_test']);
+					$gateway->setTestMode(true);
 				}
 				else
 				{
@@ -1443,8 +1614,13 @@ class vstore
 				'items'          => $items,
 				'transactionId'  => $this->getCheckoutData('id'),
 				'clientIp'       => USERIP,
-				'description'    => 'Order Ref #' . $this->getCheckoutData('id'), // required for Mollie
+				'description'    => 'Order date: ' . e107::getDateConvert()->convert_date(time(), 'inputdate'), // required for Mollie
 			);
+
+			if ($type == 'mollie') {
+				$_data['paymentMethod'] = $paymentMethod;
+			}
+
 
 			$_SESSION['vstore']['_data'] = $_data;
 		}
@@ -1472,9 +1648,11 @@ class vstore
 		{
 			/** @var \Omnipay\Common\Message\AbstractResponse $response */
 			$response = $gateway->$method($_data)->send();
-		} catch(Exception $e)
-		{
+		} catch(Exception $e) {
 			$message = $e->getMessage();
+			if ($type == 'mollie') {
+-				$message = $this->getMollieErrorMessage($message);
+			}
 			e107::getMessage()->addError($message,'vstore');
 			return false;
 		}
@@ -1502,6 +1680,9 @@ class vstore
 			$transData = $response->getData();
 			$transID = $response->getTransactionReference();
 			$message = $response->getMessage();
+			if ($type == 'mollie') {
+				$message = $this->getMollieErrorMessage($message);
+			}
 
 			e107::getMessage()->addSuccess($message,'vstore');
 
@@ -1512,7 +1693,10 @@ class vstore
 		}
 		else
 		{
-			$message = stripslashes($response->getMessage());
+			$message = $response->getMessage();
+			if ($type == 'mollie') {
+				$message = $this->getMollieErrorMessage($message);
+			}
 			e107::getMessage()->addError($message,'vstore');
 		}
 	}
@@ -1992,7 +2176,7 @@ class vstore
 	 * @param string $size default 5x (2x, 3x, 4x, 5x)
 	 * @return string
 	 */
-	private function getGatewayIcon($type='', $size='5x')
+	public static function getGatewayIcon($type='', $size='5x')
 	{
 		$text = !empty(self::$gateways[$type]) ? self::$gateways[$type]['icon'] : '';
 		return e107::getParser()->toGlyph($text, array('size'=>$size));

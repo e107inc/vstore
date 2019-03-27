@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="120px" height="120px" viewBox="0 0 120 120" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 51.2 (57519) - http://www.bohemiancoding.com/sketch -->
+    <title>kbc copy</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="master" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="payments" transform="translate(-960.000000, -3233.000000)">
+            <g id="kbc-copy" transform="translate(960.000000, 3233.000000)">
+                <rect id="Rectangle-15" fill="#2576CC" x="0" y="0" width="120" height="120" rx="33.6"></rect>
+                <path d="M49.1919736,69.0552751 C51.9993042,70.7572108 55.4328039,71.7818182 59.2581818,71.7818182 C63.2467689,71.7818182 67.0821625,69.9722692 69.9492873,67.1682466 L100.8,64.3636364 L100.8,79.2 L19.2,79.2 L19.2,71.7818182 L49.1919736,69.0552751 Z M61.8545455,64.3636364 C54.6848852,64.3636364 48.8727273,58.5514784 48.8727273,51.3818182 C48.8727273,44.212158 54.6848852,38.4 61.8545455,38.4 C69.0242057,38.4 74.8363636,44.212158 74.8363636,51.3818182 C74.8363636,58.5514784 69.0242057,64.3636364 61.8545455,64.3636364 Z" id="Combined-Shape" fill="#FFFFFF"></path>
+            </g>
+        </g>
+    </g>
+</svg>
