@@ -604,10 +604,10 @@ class vstore
 				exit;
 			}
 
-			// Refund a payment, $refund contains the orderId, access only for Admins!
-			if (isset($this->post['refund']) && intval($this->post['refund']) > 0 && ADMIN) {
+			// Refund a payment, $order_refund contains the orderId, access only for Admins!
+			if (isset($this->post['order_refund']) && intval($this->post['order_refund']) > 0 && ADMIN) {
 
-				$result = $this->refundPurchase((int) $this->post['refund']);
+				$result = $this->refundPurchase((int) $this->post['order_refund']);
 				if($result === true)
 				{
 					$js->sendTextResponse("Success\n" . 'Order sucessfully refunded!');
@@ -615,6 +615,37 @@ class vstore
 				else
 				{
 					$js->sendTextResponse("Error\n" . varset($result, 'Order could\'t be refunded!'));
+				}
+			}
+
+			// Complete a payment, $order_complete contains the orderId, access only for Admins!
+			if (isset($this->post['order_complete']) && intval($this->post['order_complete']) > 0 && ADMIN) {
+
+				$order = e107::getDb()->retrieve('vstore_orders', 'order_e107_user, order_status, order_items, order_log', 'order_id='.intval($this->post['order_complete']));
+				$result = '';
+				if ($order)
+				{
+					$log = e107::unserialize($order['order_log']);
+					$log[] = array(
+						'datestamp' => time(),
+						'user_id' => USERID,
+						'user_name' => USERNAME,
+						'text' => e107::getParser()->lanVars('Changed [x] from [y] to [z].', array('x' => 'Status', 'y' => self::getStatus($order['order_status']), 'z' => self::getStatus('C')))
+					);
+					if (e107::getDb()->update('vstore_orders', 'order_status="C", order_log="'.e107::serialize($log, 'json').'" WHERE order_id='.intval($this->post['order_complete'])))
+					{
+						$items = e107::unserialize($order['order_items']);
+						self::setCustomerUserclass($order['order_e107_user'], $items);
+						$this->emailCustomerOnStatusChange($this->post['order_complete']);
+						$js->sendTextResponse("Success\n" . 'Order sucessfully completed!');
+					}
+					else {
+						$js->sendTextResponse("Error\n" . 'Order could\'t be completed! ' . ve107::getDb()->getLastErrorText());
+					}
+				}
+				else
+				{
+					$js->sendTextResponse("Error\n" . varset($result, 'Order could\'t be completed!'));
 				}
 			}
 			// In case that none of the above has handled the ajax request
@@ -2235,11 +2266,20 @@ class vstore
 			if (!empty($items) && is_array($items))
 			{
 				$sql = e107::getDb();
-				foreach ($items as $item) {
-					$uc = $sql->retrieve('vstore_items', 'item_userclass', 'item_id='.intval($item['id']));
-					if ($uc > 0 && $uc != 255)
+				$ids = array();
+				foreach ($items as $item) $ids[] = intval($item['id']);
+
+				if ($sql->select('vstore_items', 'item_userclass', 'FIND_IN_SET(item_id, "'.implode(',', $ids).'")'))
+				{
+					//foreach ($items as $item) {
+					while($row = $sql->fetch(FETCH_ASSOC))
 					{
-						$usr->addClass($uc);
+						//$uc = $sql->retrieve('vstore_items', 'item_userclass', 'item_id='.intval($item['id']));
+						$uc = intval($row['item_userclass']);
+						if($uc > 0 && $uc != 255)
+						{
+							$usr->addClass($uc);
+						}
 					}
 				}
 			}
