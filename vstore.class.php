@@ -2283,20 +2283,18 @@ class vstore
 		if($np === true)
 		{
 
+			// Check if SEF urls are deactivated for vstore
+			$sefActive = e107::getPref('e_url_list');
+
 			$nextprev = array(
 					'tmpl'			=>'bootstrap',
 					'total'			=> $count,
 					'amount'		=> intval($this->perPage),
 					'current'		=> $this->from,
-					'url'			=> e107::url('vstore','base')."?frm=[FROM]"
+					//'url'			=> e107::url('vstore','base')."?frm=[FROM]"
+					'url'			=> e107::url('vstore','category', $row, array('legacy' => empty($sefActive['vstore'])))
+						. (empty($sefActive['vstore']) ? '&' : '?') . "frm=[FROM]"
 			);
-
-			// Check if SEF urls are deactivated for vstore
-			$sefActive = e107::getPref('e_url_list');
-			if (empty($sefActive['vstore'])) {
-				// SEF Urls deactivated, update url
-				$nextprev['url'] = e107::url('vstore','base')."?catsef={$categoryRow['cat_sef']}&frm=[FROM]";
-			}
 
 			global $nextprev_parms;
 		
