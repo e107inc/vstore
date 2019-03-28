@@ -52,7 +52,8 @@ class vstore_gateways_ui extends e_admin_ui
 			'mollie_active'         => array('title'=>"Mollie Payments", 'type'=>'boolean', 'tab'=>2, 'data'=>'int', 'help'=>''),
 			'mollie_testmode'       => array('title'=>"Mollie Testmode", 'type'=>'boolean', 'tab'=>2, 'data'=>'int', 'writeParms'=>array(),'help'=>'Use Mollie Testmode'),
 			'mollie_api_key_live'   => array('title'=>"Mollie Live API key", 'type'=>'text', 'tab'=>2, 'data'=>'str', 'note'=>'Get your api keys <a href="https://www.mollie.com/dashboard/developers/api-keys">here</a>', 'writeParms'=>array('size'=>'xxlarge')),
-			'mollie_api_key_test'   => array('title'=>"Mollie Test API key", 'type'=>'text', 'tab'=>2, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
+			'mollie_api_key_test'   => array('title'=>"Mollie Test API key", 'type'=>'text', 'tab'=>2, 'data'=>'str', 'note' => '', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
+			'mollie_payment_methods'=> array('title'=>"Mollie Payment methods", 'type'=>'checkboxes', 'tab'=>2, 'data'=>'str', 'note' => 'Select at least 1 payment method.\nThe payment method MUST BE enabled in your Mollie dashoard BEFORE you can use it with vstore!\nBe aware, that not all methods support all currencies!', 'help'=>'', 'writeParms'=>array('__options' => array('multiple' => true, 'size' => 'xxlarge'))),
 
 //			'amazon_active'         => array('title'=>"Amazon Payments", 'type'=>'boolean', 'tab'=>3, 'data'=>'int', 'help'=>''),
 //			'amazon_merchant_id'    => array('title'=>"Amazon Merchant ID", 'type'=>'text', 'tab'=>3, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
@@ -63,7 +64,7 @@ class vstore_gateways_ui extends e_admin_ui
 //			'skrill_email'          => array('title'=>"Skrill Email", 'type'=>'text', 'tab'=>4, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
 
 			'bank_transfer_active'    => array('title'=>"Bank Transfer", 'type'=>'boolean', 'tab'=>5, 'data'=>'int', 'help'=>''),
-			'bank_transfer_details'    => array('title'=>"Bank Transfer", 'type'=>'textarea', 'tab'=>5, 'data'=>'str', 'writeParms'=>array('placeholder'=>"Bank Account Details"), 'help'=>''),
+			'bank_transfer_details'   => array('title'=>"Bank Transfer", 'type'=>'textarea', 'tab'=>5, 'data'=>'str', 'writeParms'=>array('placeholder'=>"Bank Account Details"), 'help'=>''),
 
 		);
 
@@ -73,8 +74,15 @@ class vstore_gateways_ui extends e_admin_ui
 		{
 			if(e_DEBUG !== true)
 			{
-				unset($this->preftabs[3],$this->preftabs[4]); // Disable Mollie, Amazon and Skrill for Now until they work. // TODO //FIXME
+				unset($this->preftabs[3],$this->preftabs[4]); // Disable Amazon and Skrill for Now until they work. // TODO //FIXME
 			}
+			$paymentMethods = vstore::getMolliePaymentMethods();
+			foreach($paymentMethods as $k => $row) {
+				//$this->prefs['mollie_payment_methods']['writeParms'][$k] = $row['title'];
+				$this->prefs['mollie_payment_methods']['writeParms'][$k] = vstore::getMolliePaymentMethodIcon($k, '2x') . '  ' . $row['title'];
+			}
+			asort($this->prefs['mollie_payment_methods']['writeParms']);
+			$this->prefs['mollie_payment_methods']['note'] = str_replace('\n', '<br/>', $this->prefs['mollie_payment_methods']['note']);
 		}
 
 }

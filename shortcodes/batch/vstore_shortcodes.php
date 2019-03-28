@@ -149,7 +149,11 @@
 					break;
 
 				case 'order_gateway':
-					$text = vstore::getGatewayTitle($this->var['order_pay_gateway']);
+					if (vstore::isMollie($this->var['order_pay_gateway'])) {
+						$text = vstore::getMolliePaymentMethodTitle($this->var['order_pay_gateway']);
+					} else {
+						$text = vstore::getGatewayTitle($this->var['order_pay_gateway']);
+					}
 					break;
 
 				case 'order_ref':
@@ -405,23 +409,25 @@
 
 		function sc_order_gateway_title($parm=null)
 		{
-			$gateways = vstore::getGateways();
-			$gatewayType = $this->var['order_pay_gateway'];
-			return $gateways[$gatewayType]['title'];
+			if (vstore::isMollie($this->var['order_pay_gateway'])) {
+				$text = vstore::getMolliePaymentMethodTitle($this->var['order_pay_gateway']);
+			} else {
+				$text = vstore::getGatewayTitle($this->var['order_pay_gateway']);
+			}
+			return $text;
 		}
 
 		function sc_order_gateway_icon($parm=null)
 		{
-			$gateways = vstore::getGateways();
-			$gatewayType = $this->var['order_pay_gateway'];
-			$icon = $gateways[$gatewayType]['icon'];
-			if (empty($icon)) return '';
-
-			if (empty($parm['size']))
-			{
-				return e107::getParser()->toGlyph($icon, array('size'=>'2x'));
+			if (!isset($parm['size'])) {
+				$parm['size'] = '2x';
 			}
-			return e107::getParser()->toGlyph($icon, array('size'=>$parm['size']));
+			if (vstore::isMollie($this->var['order_pay_gateway'])) {
+				$text = vstore::getMolliePaymentMethodIcon($this->var['order_pay_gateway'], $parm['size']);
+			} else {
+				$text = vstore::getGatewayIcon($this->var['order_pay_gateway'], $parm);
+			}
+			return $text;
 		}
 
 		function sc_sender_name()

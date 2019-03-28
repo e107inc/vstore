@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="120px" height="120px" viewBox="0 0 120 120" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 51.2 (57519) - http://www.bohemiancoding.com/sketch -->
+    <title>giftcard</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <path d="M45,52.5 L56.25,52.5 L56.25,46.604515 C56.25,45.2940689 56.9340698,44.0786803 58.054328,43.3987607 L73.054328,34.2947943 C74.8248173,33.2202294 77.1311893,33.7843875 78.2057543,35.5548767 C78.5617522,36.1414308 78.75,36.8144144 78.75,37.5005486 L78.75,64.7133711 C78.75,66.784439 77.0710678,68.4633711 75,68.4633711 C74.4797239,68.4633711 73.96514,68.3551087 73.4889699,68.1454679 L60,62.2067543 L60,78.75 L50.625,71.25 L41.25,78.75 L41.25,62.2067543 L27.7610301,68.1454679 C27.28486,68.3551087 26.7702761,68.4633711 26.25,68.4633711 C24.1789322,68.4633711 22.5,66.784439 22.5,64.7133711 L22.5,37.5005486 C22.5,36.8144144 22.6882478,36.1414308 23.0442457,35.5548767 C24.1188107,33.7843875 26.4251827,33.2202294 28.195672,34.2947943 L43.195672,43.3987607 C44.3159302,44.0786803 45,45.2940689 45,46.604515 L45,52.5 Z" id="path-1"></path>
+        <filter x="-15.1%" y="-14.4%" width="130.2%" height="137.8%" filterUnits="objectBoundingBox" id="filter-2">
+            <feOffset dx="0" dy="2" in="SourceAlpha" result="shadowOffsetOuter1"></feOffset>
+            <feGaussianBlur stdDeviation="2.5" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>
+            <feColorMatrix values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.09 0" type="matrix" in="shadowBlurOuter1"></feColorMatrix>
+        </filter>
+        <circle id="path-3" cx="50.625" cy="50.625" r="13.125"></circle>
+        <filter x="-30.5%" y="-26.7%" width="161.0%" height="161.0%" filterUnits="objectBoundingBox" id="filter-4">
+            <feOffset dx="0" dy="1" in="SourceAlpha" result="shadowOffsetOuter1"></feOffset>
+            <feGaussianBlur stdDeviation="2.5" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>
+            <feColorMatrix values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.09 0" type="matrix" in="shadowBlurOuter1"></feColorMatrix>
+        </filter>
+    </defs>
+    <g id="master" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="payments" transform="translate(-538.000000, -3593.000000)">
+            <g id="giftcard" transform="translate(538.000000, 3593.000000)">
+                <rect id="Rectangle" fill="#00B2FF" x="0" y="0" width="120" height="120" rx="33.6"></rect>
+                <rect id="Rectangle-3" fill="#FFFFFF" x="0" y="45" width="120" height="11.25"></rect>
+                <g id="Combined-Shape">
+                    <use fill="black" fill-opacity="1" filter="url(#filter-2)" xlink:href="#path-1"></use>
+                    <use fill="#FFFFFF" fill-rule="evenodd" xlink:href="#path-1"></use>
+                </g>
+                <g id="Oval">
+                    <use fill="black" fill-opacity="1" filter="url(#filter-4)" xlink:href="#path-3"></use>
+                    <use fill="#FFFFFF" fill-rule="evenodd" xlink:href="#path-3"></use>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>
