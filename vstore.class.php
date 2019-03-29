@@ -2473,9 +2473,10 @@ class vstore
 					'total'			=> $count,
 					'amount'		=> intval($this->perPage),
 					'current'		=> $this->from,
-					//'url'			=> e107::url('vstore','base')."?frm=[FROM]"
-					'url'			=> e107::url('vstore','category', $row, array('legacy' => empty($sefActive['vstore'])))
-						. (empty($sefActive['vstore']) ? '&' : '?') . "frm=[FROM]"
+					'url'			=> e107::url('vstore','category', $row, array(
+						'legacy' => empty($sefActive['vstore']), 
+						'query' => array('frm' => '--FROM--')
+						))
 			);
 
 			global $nextprev_parms;
