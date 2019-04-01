@@ -604,50 +604,79 @@ class vstore
 				exit;
 			}
 
-			// Refund a payment, $order_refund contains the orderId, access only for Admins!
-			if (isset($this->post['order_refund']) && intval($this->post['order_refund']) > 0 && ADMIN) {
-
-				$result = $this->refundPurchase((int) $this->post['order_refund']);
-				if($result === true)
+			// Order processing
+			if (isset($this->post['order']) && intval($this->post['id']) > 0 && ADMIN)
+			{
+				if($this->post['order'] === 'refund')
 				{
-					$js->sendTextResponse("Success\n" . 'Order sucessfully refunded!');
-				}
-				else
-				{
-					$js->sendTextResponse("Error\n" . varset($result, 'Order could\'t be refunded!'));
-				}
-			}
-
-			// Complete a payment, $order_complete contains the orderId, access only for Admins!
-			if (isset($this->post['order_complete']) && intval($this->post['order_complete']) > 0 && ADMIN) {
-
-				$order = e107::getDb()->retrieve('vstore_orders', 'order_e107_user, order_status, order_items, order_log', 'order_id='.intval($this->post['order_complete']));
-				$result = '';
-				if ($order)
-				{
-					$log = e107::unserialize($order['order_log']);
-					$log[] = array(
-						'datestamp' => time(),
-						'user_id' => USERID,
-						'user_name' => USERNAME,
-						'text' => e107::getParser()->lanVars('Changed [x] from [y] to [z].', array('x' => 'Status', 'y' => self::getStatus($order['order_status']), 'z' => self::getStatus('C')))
-					);
-					if (e107::getDb()->update('vstore_orders', 'order_status="C", order_log="'.e107::serialize($log, 'json').'" WHERE order_id='.intval($this->post['order_complete'])))
+					// Refund a payment, $order_refund contains the orderId, access only for Admins!
+					$result = $this->refundOrder(intval($this->post['id']));
+					if($result === true)
 					{
-						$items = e107::unserialize($order['order_items']);
-						self::setCustomerUserclass($order['order_e107_user'], $items);
-						$this->emailCustomerOnStatusChange($this->post['order_complete']);
+						$js->sendTextResponse("Success\n" . 'Order sucessfully refunded!');
+					}
+					else
+					{
+						$js->sendTextResponse("Error\n" . varset($result, 'Order could\'t be refunded!'));
+					}
+				}
+				elseif($this->post['order'] === 'complete')
+				{
+					// Complete an order, $order_complete contains the orderId, access only for Admins!
+					$result = $this->setOrderStatus(intval($this->post['id']), 'C');
+					if($result === true)
+					{
 						$js->sendTextResponse("Success\n" . 'Order sucessfully completed!');
 					}
-					else {
-						$js->sendTextResponse("Error\n" . 'Order could\'t be completed! ' . ve107::getDb()->getLastErrorText());
+					else
+					{
+						$js->sendTextResponse("Error\n" . varset($result, 'Order could\'t be completed!'));
 					}
 				}
-				else
+				elseif($this->post['order'] === 'cancel')
 				{
-					$js->sendTextResponse("Error\n" . varset($result, 'Order could\'t be completed!'));
+					// Cancel an order, $order_cancel contains the orderId, access only for Admins!
+					$result = $this->setOrderStatus(intval($this->post['id']), 'X');
+
+					if($result === true)
+					{
+						$js->sendTextResponse("Success\n" . 'Order sucessfully cancelled!');
+					}
+					else
+					{
+						$js->sendTextResponse("Error\n" . varset($result, 'Order could\'t be cancelled!'));
+					}
+				}
+				elseif($this->post['order'] === 'process')
+				{
+					// Cancel an order, $order_cancel contains the orderId, access only for Admins!
+					$result = $this->setOrderStatus(intval($this->post['id']), 'P');
+
+					if($result === true)
+					{
+						$js->sendTextResponse("Success\n" . 'Order sucessfully set to processing!');
+					}
+					else
+					{
+						$js->sendTextResponse("Error\n" . varset($result, 'Order could\'t be set to processing!'));
+					}
+				}
+				elseif($this->post['order'] === 'hold')
+				{
+					// Hold an order, $order_cancel contains the orderId, access only for Admins!
+					$result = $this->setOrderStatus(intval($this->post['id']), 'H');
+
+					if($result === true)
+					{
+						$js->sendTextResponse("Success\n" . 'Order sucessfully set to on hold!');
+					}
+					else
+					{
+						$js->sendTextResponse("Error\n" . varset($result, 'Order could\'t be set to on hold!'));
+					}
 				}
 			}
+
 			// In case that none of the above has handled the ajax request
 			// (which shouldn't happen) just exit
 			exit;
@@ -1558,14 +1587,14 @@ class vstore
 
 
 	/**
-	 * Refund a purchase
+	 * Refund an order
 	 *
 	 * @param int  $order_id The order ID of the order to refund
 	 * @param bool $do_log   Update order log
 	 *
 	 * @return bool|string Returns true on success, an error message otherwise
 	 */
-	public function refundPurchase($order_id = null, $do_log = true)
+	public function refundOrder($order_id = null, $do_log = true)
 	{
 
 		// Check inputs
@@ -1589,7 +1618,6 @@ class vstore
 		$amount = $orderData['order_pay_amount'];
 		$currency = $orderData['order_pay_currency'];
 		$type = $orderData['order_pay_gateway'];
-		$log = e107::unserialize($orderData['order_log']);
 
 		e107::getDebug()->log("Processing Gateway: " . $type);
 
@@ -1703,25 +1731,9 @@ class vstore
 				$rawdata['refund'] = $data;
 				$rawdata = e107::serialize($rawdata, 'json');
 
-				$add_log = '';
 				if ($do_log) {
-					$now = time();
-
-					$log[] = array(
-						'datestamp' => $now,
-						'user_id' => USERID,
-						'user_name' => USERNAME,
-						'text' => e107::getParser()->lanVars('Changed [x] from [y] to [z].', array('x' => 'Status', 'y' => self::getStatus($orderData['order_status']), 'z' => self::getStatus('R')))
-					);
-
-					$log[] = array(
-						'datestamp' => $now,
-						'user_id' => USERID,
-						'user_name' => USERNAME,
-						'text' => e107::getParser()->lanVars('Changed [x] from [y] to [z].', array('x' => 'Pay Status', 'y' => $orderData['order_pay_status'], 'z' => 'refunded'))
-					);
-					$log = e107::serialize($log, 'json');
-					$add_log = ", order_log = '".$log."'";
+					$log = self::addToOrderLog($orderData['order_log'], 'Status', self::getStatus($orderData['order_status']), self::getStatus('R'), true);
+					$log = self::addToOrderLog($log, 'Pay Status', $orderData['order_pay_status'], 'refunded', false);
 				}
 
 				$update = array(
@@ -1737,7 +1749,6 @@ class vstore
 					$update['data']['order_log'] = $log;
 				}
 
-				//if (!e107::getDb()->update('vstore_orders', "order_status = 'R', order_pay_status = 'refunded', order_pay_rawdata = '".$rawdata."' ".$add_log." WHERE order_id = ".$order_id, false, 'vstore', 'refund')) {
 				if (!e107::getDb()->update('vstore_orders', $update, false, 'vstore', 'refund')) {
 					return "Amount was refunded successfully, but the update of the database failed! Please check the error log!";
 				}
@@ -1754,6 +1765,66 @@ class vstore
 		return true;
 	}
 
+	/**
+	 * Set the new order status
+	 *
+	 * @param int    $order_id   The order id
+	 * @param string $new_status The new order status code
+	 *
+	 * @return bool|string true on success, string otherwise
+	 */
+	public function setOrderStatus($order_id, $new_status)
+	{
+		// get current record
+		$order = e107::getDb()->retrieve('vstore_orders', 'order_e107_user, order_status, order_pay_status, order_items, order_log', 'order_id='.$order_id);
+
+		// record found and new status is different to new one
+		if ($order && $order['order_status'] !== $new_status) {
+			// save current payment status
+			$order_pay_status = $order['order_pay_status'];
+			if ($new_status === 'C') {
+				// if new status is complete, assume the payment also be complete
+				$order_pay_status = 'complete';
+			}
+			elseif ($new_status === 'R') {
+				// if new status is refunded, set payment to refunded
+				$order_pay_status = 'refunded';
+			}
+
+			// define update array
+			$update = array(
+				'data' => array(
+					'order_status' => $new_status,
+					'order_pay_status' => $order_pay_status,
+					'order_log' => self::addToOrderLog($order['order_log'], 'Status', self::getStatus($order['order_status']), self::getStatus($new_status), false)
+				),
+				'WHERE' => 'order_id='.$order_id
+			);
+
+			// Run the update query
+			$result = e107::getDb()->update('vstore_orders', $update, false, 'vstore', "setOrderStatus({$order_id}, {$new_status})");
+
+			if ($result && $new_status === 'C') {
+				// In case of a positive update and the order has been set to 'C' (complete)
+				// set the customer userclass
+				$items = e107::unserialize($order['order_items']);
+				self::setCustomerUserclass($order['order_e107_user'], $items);
+			} elseif (intval(e107::getDb()->getLastErrorNumber()) != 0) {
+				// There was an error, return the last database error
+				return e107::getDb()->getLastErrorText();
+			}
+
+			// send out the "OnChange" emails
+			$this->emailCustomerOnStatusChange($order_id);
+			return true;
+		}
+		elseif (!$order) {
+			return "Order could't be found!";
+		}
+
+		// nothing to change (old status == new status)
+		return true;
+	}
 
 	/**
 	 * Process the payment via selected payment gateway
@@ -2229,8 +2300,8 @@ class vstore
 
 		if ($order && is_array($order))
 		{
-			$order['order_items'] = json_decode($order['order_items'], true);
-			$receiver = json_decode($order['order_billing'], true);
+			$order['order_items'] = e107::unserialize($order['order_items']);
+			//$receiver = e107::unserialize($order['order_billing']);
 			$refId = $order['order_refcode'];
 
 			// Attach the invoice in case the order status is New, Complete or Processing
@@ -2272,7 +2343,7 @@ class vstore
 				if ($sql->select('vstore_items', 'item_userclass', 'FIND_IN_SET(item_id, "'.implode(',', $ids).'")'))
 				{
 					//foreach ($items as $item) {
-					while($row = $sql->fetch(FETCH_ASSOC))
+					while($row = $sql->fetch())
 					{
 						//$uc = $sql->retrieve('vstore_items', 'item_userclass', 'item_id='.intval($item['id']));
 						$uc = intval($row['item_userclass']);
@@ -4587,4 +4658,36 @@ class vstore
 
 		return $asArray ? $result : implode(',', $result);
 	}
+
+
+	/**
+	 * Add a order log entry to the log array
+	 *
+	 * @param array|string $log     The log as string or array
+	 * @param string       $title   The title to use in the log string
+	 * @param variant      $oldVal  The old value
+	 * @param variant      $newVal  The new value
+	 * @param bool         $asArray Return as array or string (default)
+	 *
+	 * @return array|string
+	 */
+	public static function addToOrderLog($log, $title, $oldVal, $newVal, $asArray = false)
+	{
+		if (is_string($log)) {
+			$log = e107::unserialize($log);
+		}
+		if (!is_array($log)) {
+			$log = array();
+		}
+
+		$log[] = array(
+			'datestamp' => time(),
+			'user_id' => USERID,
+			'user_name' => USERNAME,
+			'text' => e107::getParser()->lanVars('Changed [x] from [y] to [z].', array('x' => $title, 'y' => $oldVal, 'z' => $newVal))
+		);
+
+		return $asArray ? $log : e107::serialize($log, 'json');
+	}
+
 }
