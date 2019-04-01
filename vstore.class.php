@@ -2464,14 +2464,21 @@ class vstore
 
 		if($np === true)
 		{
+
+			// Check if SEF urls are deactivated for vstore
+			$sefActive = e107::getPref('e_url_list');
+
 			$nextprev = array(
 					'tmpl'			=>'bootstrap',
 					'total'			=> $count,
 					'amount'		=> intval($this->perPage),
 					'current'		=> $this->from,
-					'url'			=> e107::url('vstore','base')."?frm=[FROM]"
+					'url'			=> e107::url('vstore','category', $row, array(
+						'legacy' => empty($sefActive['vstore']), 
+						'query' => array('frm' => '--FROM--')
+						))
 			);
-	
+
 			global $nextprev_parms;
 		
 			$nextprev_parms  = http_build_query($nextprev,false,'&'); // 'tmpl_prefix='.deftrue('NEWS_NEXTPREV_TMPL', 'default').'&total='. $total_downloads.'&amount='.$amount.'&current='.$newsfrom.$nitems.'&url='.$url;
