@@ -144,7 +144,11 @@
 					break;
 
 				case 'order_gateway':
-					$text = vstore::getGatewayTitle($this->var['order_pay_gateway']);
+					if (vstore::isMollie($this->var['order_pay_gateway'])) {
+						$text = vstore::getMolliePaymentMethodTitle($this->var['order_pay_gateway']);
+					} else {
+						$text = vstore::getGatewayTitle($this->var['order_pay_gateway']);
+					}
 					break;
 
 				case 'order_ref':
@@ -399,7 +403,11 @@
 
 		function sc_order_gateway_title($parm=null)
 		{
-			$text = vstore::getGatewayTitle($this->var['order_pay_gateway']);
+			if (vstore::isMollie($this->var['order_pay_gateway'])) {
+				$text = vstore::getMolliePaymentMethodTitle($this->var['order_pay_gateway']);
+			} else {
+				$text = vstore::getGatewayTitle($this->var['order_pay_gateway']);
+			}
 			return $text;
 		}
 
@@ -408,7 +416,11 @@
 			if (!isset($parm['size'])) {
 				$parm['size'] = '2x';
 			}
-			$text = vstore::getGatewayIcon($this->var['order_pay_gateway'], $parm);
+			if (vstore::isMollie($this->var['order_pay_gateway'])) {
+				$text = vstore::getMolliePaymentMethodIcon($this->var['order_pay_gateway'], $parm['size']);
+			} else {
+				$text = vstore::getGatewayIcon($this->var['order_pay_gateway'], $parm);
+			}
 			return $text;
 		}
 

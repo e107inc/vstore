@@ -99,6 +99,7 @@ class vstore_url // plugin-folder + '_url'
 		$config['category'] = array(
 			'regex'			=> '^{alias}\/([^\/\?\=]*)\/?\??',
 			'redirect'		=> '{e_PLUGIN}vstore/vstore.php?catsef=$1&',
+			'legacy'		=> '{e_PLUGIN}vstore/vstore.php?catsef={cat_sef}',
 			'sef'			=> '{alias}/{cat_sef}/'
 		);
 

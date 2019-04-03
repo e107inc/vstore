@@ -166,9 +166,6 @@ class vstore
 		),
 	);
 
-	/**
-	 * @var array Array with payment status
-	 */
 	protected static $status = array(
 		'N' => 'New',
 		'P' => 'Processing',
@@ -463,7 +460,8 @@ class vstore
 		}
 		return '';
 	}
-	/**
+
+  /**
 	 * Return the $mollie_payment_methods or a single entry
 	 *
 	 * @param string $method Name of the payment method or null
@@ -491,10 +489,11 @@ class vstore
 	public static function getMolliePaymentMethodIcon($type='', $size='5x')
 	{
 		$size = vartrue($size, '5x');
-		if (preg_match('/[0-9.]+x/', $size)) {
+		if (preg_match('^[0-9.]+x$', $size)) {
 			// convert '1x' sizes to '1em'
 			$size = floatval($size) . 'em';
 		}
+		$size = vartrue(intval($size), 1) . 'em';
 		$text = !empty(self::$mollie_payment_methods[$type]) ? e_PLUGIN_ABS . 'vstore/' . self::$mollie_payment_methods[$type]['icon'] : '';
 		return e107::getParser()->toImage($text, array('style' => "width: ".$size."; height: ".$size.";", 'class' => 'vstore-mollie-payment-icon img-circle'));
 	}
@@ -1498,7 +1497,7 @@ class vstore
 							<label class='btn btn-default btn-light btn-block btn-".$gateway." ".($curGateway == $gateway ? 'active' : '')." vstore-gateway text-center'>
 								<input type='radio' name='gateway' value='".$gateway."' style='display:none;' class='vstore-gateway-radio' required ".($curGateway == $gateway ? 'checked' : '').">
 								".$icon."
-								<h4>".$this->getGatewayTitle($gateway)."</h4>
+								<h4>".(self::isMollie($gateway) ? $this->getMolliePaymentMethodTitle($gateway) : $this->getGatewayTitle($gateway))."</h4>
 							</label>
 						</div>";
 
@@ -2874,14 +2873,21 @@ class vstore
 
 		if($np === true)
 		{
+
+			// Check if SEF urls are deactivated for vstore
+			$sefActive = e107::getPref('e_url_list');
+
 			$nextprev = array(
 					'tmpl'			=>'bootstrap',
 					'total'			=> $count,
 					'amount'		=> intval($this->perPage),
 					'current'		=> $this->from,
-					'url'			=> e107::url('vstore','base')."?frm=[FROM]"
+					'url'			=> e107::url('vstore','category', $row, array(
+						'legacy' => empty($sefActive['vstore']), 
+						'query' => array('frm' => '--FROM--')
+						))
 			);
-	
+
 			global $nextprev_parms;
 		
 			$nextprev_parms  = http_build_query($nextprev,false,'&'); // 'tmpl_prefix='.deftrue('NEWS_NEXTPREV_TMPL', 'default').'&total='. $total_downloads.'&amount='.$amount.'&current='.$newsfrom.$nitems.'&url='.$url;
