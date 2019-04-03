@@ -33,15 +33,64 @@ class vstore
 	protected   $parentData         = array();
 	protected   $currency           = 'USD';
 
-	protected static $gateways    = array(
-		'paypal'        => array('title'=>'Paypal', 'icon'=>'fa-paypal'),
-		'paypal_rest'   => array('title'=>'Paypal', 'icon'=>'fa-paypal'),
-		'mollie'        => array('title'=>'Mollie', 'icon'=>'fa-laptop'),
-//		'amazon'        => array('title'=> 'Amazon', 'icon'=>'fa-amazon'),
-//		'coinbase'      => array('title'=> 'Bitcoin', 'icon'=>'fa-btc'),
-		'bank_transfer' => array('title'=>'Bank Transfer', 'icon'=>'fa-bank'),
+	/**
+	 * Array with the available currencies
+	 * 'key' is the 3-char ISO 4217 code of the currency
+	 *    'title' is the name of the currency
+	 *    'symbol' is the currency sign (usually only 1 letter)
+	 *    'glyph' If no symbol is available, use the 'glyph' key to define a fontawesome or glyphicon symbol
+	 *    Use only 'symbol' of 'glyph', not both!
+	 *
+	 * @var array
+	 */
+	protected static $currencies = array(
+		'USD' => array(
+			'title' => 'US Dollars',
+			'symbol' => '$'
+		),
+		'CAN' => array(
+			'title' => 'Canadian Dollars',
+			'symbol' => '$'
+		),
+		'EUR' => array(
+			'title' => 'Euros',
+			'symbol' => '€'
+		),
+		'GBP' => array(
+			'title' => 'GB Pounds',
+			'symbol' => '£'
+		),
+		'BTC' => array(
+			'title' => 'Bitcoin',
+			'glyph' => 'fa-btc'
+		),
 	);
 
+	/**
+	 * Array with the available gateways and their corresponding icons
+	 *
+	 * @var array The available gateways
+	 */
+	protected static $gateways    = array(
+		'paypal'        => array('title'=>'Paypal',         'icon'=>'fa-paypal'),
+		'paypal_rest'   => array('title'=>'Paypal',         'icon'=>'fa-paypal'),
+		'mollie'        => array('title'=>'Mollie',         'icon'=>'fa-laptop'),
+//		'amazon'        => array('title'=> 'Amazon',        'icon'=>'fa-amazon'),
+//		'coinbase'      => array('title'=> 'Bitcoin',       'icon'=>'fa-btc'),
+		'bank_transfer' => array('title'=>'Bank Transfer',  'icon'=>'fa-bank'),
+	);
+
+	/**
+	 * Array with the payment methods of Mollie
+	 *
+	 * 'key' The payment method prefixed with mollie_
+	 *     'title' The name of the payment method
+	 *     'icon'  The icon of the payment methods (usually an svg in the images folder)
+	 *
+	 * All values are required when adding a new payment method!
+	 *
+	 * @var array The available payment methods of the Mollie gateway
+	 */
 	protected static $mollie_payment_methods = array(
 		'mollie_bancontact' => array(
 			'title' => 'Bancontact',
@@ -126,6 +175,9 @@ class vstore
 		'R' => 'Refunded'
 	);
 
+	/**
+	 * @var array Array with email types
+	 */
 	protected static $emailTypes = array(
 		'default' => 'Order confirmation', 
 		'completed' => 'Order completed',
@@ -133,11 +185,12 @@ class vstore
 		'refunded' => 'Order refunded'
 	);
 
-	
+	/**
+	 * @var array Array with shipping fieldnames
+	 */
 	protected static $shippingFields = array(
 		 'firstname',
 		 'lastname',
-		//  'email',
 		 'phone',
 		 'company',
 		 'address',
@@ -148,6 +201,9 @@ class vstore
 		 'notes' // Shipping notes
 	);
 
+	/**
+	 * @var array Array with customer fieldnames
+	 */
 	protected static $customerFields = array(
 		 'title',
 		 'firstname',
@@ -167,6 +223,9 @@ class vstore
 		//  'notes' // Customer notes are for internal use only
 	);
 
+	/**
+	 * @var array Array with official tay classes
+	 */
 	protected static $official_tax_classes = array(
 		'none',
 		'reduced',
@@ -177,6 +236,9 @@ class vstore
 		'parking'
 	);
 
+	/**
+	 * @var array This array keeps track of the item vars types during inventory checks
+	 */
 	protected static $itemVarsTypes = array();
 
 
@@ -194,10 +256,7 @@ class vstore
 
 		$this->pref = e107::pref('vstore');
 
-		if(!empty($this->pref['currency']))
-		{
-			$this->currency = $this->pref['currency'];
-		}
+		$this->currency = vartrue($this->pref['currency'], 'USD');
 
 		if(!empty($this->pref['caption']) && !empty($this->pref['caption'][e_LANGUAGE]))
 		{
@@ -377,7 +436,32 @@ class vstore
 		return self::$customerFields;
 	}
 
-	/**
+	public static function getCurrencies()
+	{
+		return self::$currencies;
+	}
+
+	public static function getCurrencyTitle($currency)
+	{
+		return vartrue(self::$currencies[$currency]['title'], '');
+	}
+
+	public static function getCurrencySymbol($currency, $size='1x')
+	{
+		$size = vartrue($size, '1x');
+		if (isset(self::$currencies[$currency]['symbol'])) {
+			if (preg_match('/[0-9.]+x/', $size)) {
+				// convert '1x' sizes to '1em'
+				$size = floatval($size) . 'em';
+			}
+			return '<span style="font-size: '.$size.';">'.self::$currencies[$currency]['symbol'].'</span>';
+		} elseif (isset(self::$currencies[$currency]['glyph'])) {
+			return e107::getParser()->toGlyph(self::$currencies[$currency]['glyph'], array('size' => $size));
+		}
+		return '';
+	}
+
+  /**
 	 * Return the $mollie_payment_methods or a single entry
 	 *
 	 * @param string $method Name of the payment method or null
@@ -469,19 +553,19 @@ class vstore
 	{
 		if(e_AJAX_REQUEST)
 		{
+			$js = e107::getJshelper();
+			$js->_reset();
 			// Process only ajax requests
 			if($this->get['add'])
 			{
 				// Add item to cart
-				$js = e107::getJshelper();
-				$js->_reset();
 				$itemid = $this->get['add'];
 				$itemvars = $this->get['itemvar'];
 				if (!$this->addToCart($itemid, $itemvars))
 				{
 					$msg = e107::getMessage()->render('vstore');
 					ob_clean();
-					$js->addTextResponse($msg)->sendResponse();
+					$js->sendTextResponse($msg);
 					exit;
 				}
 				else
@@ -491,7 +575,7 @@ class vstore
 					$msg = $sl->storeCart();
 				}
 				ob_clean();
-				$js->addTextResponse('ok '.$msg)->sendResponse();
+				$js->sendTextResponse('ok '.$msg);
 				exit;
 			}
 				
@@ -503,9 +587,7 @@ class vstore
 				$sl = new vstore_sitelink();
 				$msg = $sl->storeCart();
 				ob_clean();
-				$js = e107::getJshelper();
-				$js->_reset();
-				$js->addTextResponse('ok '.$msg)->sendResponse();
+				$js->sendTextResponse('ok '.$msg);
 				exit;
 			}
 		
@@ -517,10 +599,81 @@ class vstore
 				$sl = new vstore_sitelink();
 				$msg = $sl->storeCart();
 				ob_clean();
-				$js = e107::getJshelper();
-				$js->_reset();
-				$js->addTextResponse('ok '.$msg)->sendResponse();
+				$js->sendTextResponse('ok '.$msg);
 				exit;
+			}
+
+			// Order processing
+			if (isset($this->post['order']) && intval($this->post['id']) > 0 && ADMIN)
+			{
+				if($this->post['order'] === 'refund')
+				{
+					// Refund a payment, $order_refund contains the orderId, access only for Admins!
+					$result = $this->refundOrder(intval($this->post['id']));
+					if($result === true)
+					{
+						$js->sendTextResponse("Success\n" . 'Order sucessfully refunded!');
+					}
+					else
+					{
+						$js->sendTextResponse("Error\n" . varset($result, 'Order could\'t be refunded!'));
+					}
+				}
+				elseif($this->post['order'] === 'complete')
+				{
+					// Complete an order, $order_complete contains the orderId, access only for Admins!
+					$result = $this->setOrderStatus(intval($this->post['id']), 'C');
+					if($result === true)
+					{
+						$js->sendTextResponse("Success\n" . 'Order sucessfully completed!');
+					}
+					else
+					{
+						$js->sendTextResponse("Error\n" . varset($result, 'Order could\'t be completed!'));
+					}
+				}
+				elseif($this->post['order'] === 'cancel')
+				{
+					// Cancel an order, $order_cancel contains the orderId, access only for Admins!
+					$result = $this->setOrderStatus(intval($this->post['id']), 'X');
+
+					if($result === true)
+					{
+						$js->sendTextResponse("Success\n" . 'Order sucessfully cancelled!');
+					}
+					else
+					{
+						$js->sendTextResponse("Error\n" . varset($result, 'Order could\'t be cancelled!'));
+					}
+				}
+				elseif($this->post['order'] === 'process')
+				{
+					// Cancel an order, $order_cancel contains the orderId, access only for Admins!
+					$result = $this->setOrderStatus(intval($this->post['id']), 'P');
+
+					if($result === true)
+					{
+						$js->sendTextResponse("Success\n" . 'Order sucessfully set to processing!');
+					}
+					else
+					{
+						$js->sendTextResponse("Error\n" . varset($result, 'Order could\'t be set to processing!'));
+					}
+				}
+				elseif($this->post['order'] === 'hold')
+				{
+					// Hold an order, $order_cancel contains the orderId, access only for Admins!
+					$result = $this->setOrderStatus(intval($this->post['id']), 'H');
+
+					if($result === true)
+					{
+						$js->sendTextResponse("Success\n" . 'Order sucessfully set to on hold!');
+					}
+					else
+					{
+						$js->sendTextResponse("Error\n" . varset($result, 'Order could\'t be set to on hold!'));
+					}
+				}
 			}
 
 			// In case that none of the above has handled the ajax request
@@ -1433,6 +1586,246 @@ class vstore
 
 
 	/**
+	 * Refund an order
+	 *
+	 * @param int  $order_id The order ID of the order to refund
+	 * @param bool $do_log   Update order log
+	 *
+	 * @return bool|string Returns true on success, an error message otherwise
+	 */
+	public function refundOrder($order_id = null, $do_log = true)
+	{
+
+		// Check inputs
+		if(empty($order_id))
+		{
+			return "Invalid Order ID";
+		}
+
+		$orderData = e107::getDb()->retrieve('vstore_orders', 'order_pay_gateway, order_status, order_pay_status, order_pay_transid, order_pay_amount, order_pay_currency, order_pay_rawdata, order_log', 'order_id = ' . intval($order_id));
+		if (empty($orderData)) {
+			return 'Invalid order id!';
+		}
+		elseif ($orderData['order_status'] == 'R') {
+			return 'Order is already refunded!';
+		}
+		elseif (!in_array($orderData['order_status'], array('P','H','C'))) {
+			return 'Only orders with status "Processing", "On Hold" and "Complete" can be refunded!';
+		}
+
+		$transactionId = $orderData['order_pay_transid'];
+		$amount = $orderData['order_pay_amount'];
+		$currency = $orderData['order_pay_currency'];
+		$type = $orderData['order_pay_gateway'];
+
+		e107::getDebug()->log("Processing Gateway: " . $type);
+
+		// Fix $type in case of Mollie Gateway
+		if (self::isMollie($type))
+		{
+			$type = substr($type, 0, 6);
+		}
+
+		// array keeping the data required fore refunding
+		// usually the transactionid
+		$refundDetails = array();
+
+		// Init payment gateway
+		switch($type)
+		{
+			case "mollie":
+				/** @var \Omnipay\Mollie\Gateway $gateway */
+				$gateway = Omnipay::create('Mollie');
+
+				if(!empty($this->pref['mollie']['testmode']))
+				{
+					$gateway->setApiKey($this->pref['mollie']['api_key_test']);
+					$gateway->setTestMode(true);
+				}
+				else
+				{
+					$gateway->setApiKey($this->pref['mollie']['api_key_live']);
+				}
+
+				$refundDetails = array(
+					'transactionReference' => $transactionId,
+					'amount' => $amount,
+					'currency' => $currency);
+				break;
+
+			case "paypal":
+				/** @var \Omnipay\PayPal\ExpressGateway $gateway */
+				$gateway = Omnipay::create('PayPal_Express');
+
+				if(!empty($this->pref['paypal']['testmode']))
+				{
+					$gateway->setTestMode(true);
+				}
+
+				$gateway->setUsername($this->pref['paypal']['username']);
+				$gateway->setPassword($this->pref['paypal']['password']);
+				$gateway->setSignature($this->pref['paypal']['signature']);
+
+				$refundDetails = array(
+					'transactionReference' => $transactionId,
+					'amount' => $amount,
+					'currency' => $currency);
+				break;
+
+			case "paypal_rest":
+				/** @var \Omnipay\PayPal\RestGateway $gateway */
+				$gateway = Omnipay::create('PayPal_Rest');
+
+				if(!empty($this->pref['paypal_rest']['testmode']))
+				{
+					$gateway->setTestMode(true);
+				}
+
+				$gateway->setClientId($this->pref['paypal_rest']['clientId']);
+				$gateway->setSecret($this->pref['paypal_rest']['secret']);
+
+				$refundDetails = array(
+					'transactionReference' => $transactionId,
+					'amount' => $amount,
+					'currency' => $currency);
+				break;
+
+			case "bank_transfer":
+
+				return "Bank transfer doesn't support automatized refunding! You have to do it manually!";
+
+
+			default:
+				return "Missing pament gateway!";
+
+		}
+
+		// Check if selected gateway has it's refunding details set
+		if (empty($refundDetails)) {
+			return "Refunding details not set!";
+
+		}
+
+		// Check if selected gateway supports refunding
+		if (!$gateway->supportsRefund()) {
+			return $type . " doesn't support refunding! You have to do it manually!";
+		}
+
+		try{
+			$request = $gateway->refund($refundDetails);
+			$response = $request->send();
+			if ($response->isSuccessful()) {
+				$data = $response->getData();
+
+				// append the rawdata
+				$rawdata = array();
+				if ($orderData['order_pay_rawdata']) {
+					$rawdata = e107::unserialize($orderData['order_pay_rawdata']);
+					if (!isset($rawdata['purchase'])) {
+						$tmp = $rawdata;
+						$rawdata = array('purchase' => $tmp);
+						unset($tmp);
+					}
+				}
+				$rawdata['refund'] = $data;
+				$rawdata = e107::serialize($rawdata, 'json');
+
+				if ($do_log) {
+					$log = self::addToOrderLog($orderData['order_log'], 'Status', self::getStatus($orderData['order_status']), self::getStatus('R'), true);
+					$log = self::addToOrderLog($log, 'Pay Status', $orderData['order_pay_status'], 'refunded', false);
+				}
+
+				$update = array(
+					'data' => array(
+						'order_status' => 'R',
+						'order_pay_status' => 'refunded',
+						'order_pay_rawdata' => $rawdata,
+						'order_refund_date' => time()
+					),
+					'WHERE' => 'order_id = '.$order_id
+				);
+				if ($do_log) {
+					$update['data']['order_log'] = $log;
+				}
+
+				if (!e107::getDb()->update('vstore_orders', $update, false, 'vstore', 'refund')) {
+					return "Amount was refunded successfully, but the update of the database failed! Please check the error log!";
+				}
+				return true;
+			}
+			else {
+				return $response->getMessage();
+			}
+		}
+		catch( Exception $ex ) {
+			return"Refunding failed! " . $ex->getMessage();
+		}
+
+		return true;
+	}
+
+	/**
+	 * Set the new order status
+	 *
+	 * @param int    $order_id   The order id
+	 * @param string $new_status The new order status code
+	 *
+	 * @return bool|string true on success, string otherwise
+	 */
+	public function setOrderStatus($order_id, $new_status)
+	{
+		// get current record
+		$order = e107::getDb()->retrieve('vstore_orders', 'order_e107_user, order_status, order_pay_status, order_items, order_log', 'order_id='.$order_id);
+
+		// record found and new status is different to new one
+		if ($order && $order['order_status'] !== $new_status) {
+			// save current payment status
+			$order_pay_status = $order['order_pay_status'];
+			if ($new_status === 'C') {
+				// if new status is complete, assume the payment also be complete
+				$order_pay_status = 'complete';
+			}
+			elseif ($new_status === 'R') {
+				// if new status is refunded, set payment to refunded
+				$order_pay_status = 'refunded';
+			}
+
+			// define update array
+			$update = array(
+				'data' => array(
+					'order_status' => $new_status,
+					'order_pay_status' => $order_pay_status,
+					'order_log' => self::addToOrderLog($order['order_log'], 'Status', self::getStatus($order['order_status']), self::getStatus($new_status), false)
+				),
+				'WHERE' => 'order_id='.$order_id
+			);
+
+			// Run the update query
+			$result = e107::getDb()->update('vstore_orders', $update, false, 'vstore', "setOrderStatus({$order_id}, {$new_status})");
+
+			if ($result && $new_status === 'C') {
+				// In case of a positive update and the order has been set to 'C' (complete)
+				// set the customer userclass
+				$items = e107::unserialize($order['order_items']);
+				self::setCustomerUserclass($order['order_e107_user'], $items);
+			} elseif (intval(e107::getDb()->getLastErrorNumber()) != 0) {
+				// There was an error, return the last database error
+				return e107::getDb()->getLastErrorText();
+			}
+
+			// send out the "OnChange" emails
+			$this->emailCustomerOnStatusChange($order_id);
+			return true;
+		}
+		elseif (!$order) {
+			return "Order could't be found!";
+		}
+
+		// nothing to change (old status == new status)
+		return true;
+	}
+
+	/**
 	 * Process the payment via selected payment gateway
 	 *
 	 * @see http://stackoverflow.com/questions/20756067/omnipay-paypal-integration-with-laravel-4
@@ -1769,21 +2162,22 @@ class vstore
 			'order_status'        => varset($order_status, 'N') // New
 		);
 
-		$insert['order_items'] = json_encode($items, JSON_PRETTY_PRINT);
+		$insert['order_items']            = e107::serialize($items, 'json');
 
-		$insert['order_use_shipping']    = $this->getShippingType();
-		$insert['order_billing']    	= e107::serialize($customerData, 'json');
-		$insert['order_shipping']    	= e107::serialize($shippingData, 'json');
+		$insert['order_use_shipping']     = $this->getShippingType();
+		$insert['order_billing']    	   = e107::serialize($customerData, 'json');
+		$insert['order_shipping']    	   = e107::serialize($shippingData, 'json');
 
-		$insert['order_pay_gateway']    = $this->getGatewayType(true);
-		$insert['order_pay_status']     = empty($transData) ? 'incomplete' : 'complete';
-		$insert['order_pay_transid']    = $id;
-		$insert['order_pay_amount']     = $cartData['totals']['cart_grandTotal'];
-		$insert['order_pay_tax']     	= e107::serialize($cartData['totals']['cart_taxTotal'], 'json');
-		$insert['order_pay_shipping']   = $cartData['totals']['cart_shippingTotal'];
-		$insert['order_pay_coupon_code']= $cartData['totals']['cart_coupon']['code'];
+		$insert['order_pay_gateway']      = $this->getGatewayType(true);
+		$insert['order_pay_status']       = empty($transData) ? 'incomplete' : 'complete';
+		$insert['order_pay_transid']      = $id;
+		$insert['order_pay_amount']       = $cartData['totals']['cart_grandTotal'];
+		$insert['order_pay_currency']     = $cartData['currency'];
+		$insert['order_pay_tax']     	   = e107::serialize($cartData['totals']['cart_taxTotal'], 'json');
+		$insert['order_pay_shipping']     = $cartData['totals']['cart_shippingTotal'];
+		$insert['order_pay_coupon_code']  = $cartData['totals']['cart_coupon']['code'];
 		$insert['order_pay_coupon_amount']= $cartData['totals']['cart_coupon']['amount'];
-		$insert['order_pay_rawdata']    = e107::serialize($transData, 'json');
+		$insert['order_pay_rawdata']      = e107::serialize(array('purchase' => $transData), 'json');
 
 		$log = array(array(
 			'datestamp' => time(),
@@ -1905,8 +2299,8 @@ class vstore
 
 		if ($order && is_array($order))
 		{
-			$order['order_items'] = json_decode($order['order_items'], true);
-			$receiver = json_decode($order['order_billing'], true);
+			$order['order_items'] = e107::unserialize($order['order_items']);
+			//$receiver = e107::unserialize($order['order_billing']);
 			$refId = $order['order_refcode'];
 
 			// Attach the invoice in case the order status is New, Complete or Processing
@@ -1942,11 +2336,20 @@ class vstore
 			if (!empty($items) && is_array($items))
 			{
 				$sql = e107::getDb();
-				foreach ($items as $item) {
-					$uc = $sql->retrieve('vstore_items', 'item_userclass', 'item_id='.intval($item['id']));
-					if ($uc > 0 && $uc != 255)
+				$ids = array();
+				foreach ($items as $item) $ids[] = intval($item['id']);
+
+				if ($sql->select('vstore_items', 'item_userclass', 'FIND_IN_SET(item_id, "'.implode(',', $ids).'")'))
+				{
+					//foreach ($items as $item) {
+					while($row = $sql->fetch())
 					{
-						$usr->addClass($uc);
+						//$uc = $sql->retrieve('vstore_items', 'item_userclass', 'item_id='.intval($item['id']));
+						$uc = intval($row['item_userclass']);
+						if($uc > 0 && $uc != 255)
+						{
+							$usr->addClass($uc);
+						}
 					}
 				}
 			}
@@ -2178,6 +2581,9 @@ class vstore
 	 */
 	public static function getGatewayIcon($type='', $size='5x')
 	{
+		if (self::isMollie($type)) {
+			return self::getMolliePaymentMethodIcon($type, $size);
+		}
 		$text = !empty(self::$gateways[$type]) ? self::$gateways[$type]['icon'] : '';
 		return e107::getParser()->toGlyph($text, array('size'=>$size));
 
@@ -2191,6 +2597,9 @@ class vstore
 	 */
 	public static function getGatewayTitle($type)
 	{
+		if (self::isMollie($type)) {
+			return self::getMolliePaymentMethodTitle($type);
+		}
 		return self::$gateways[$type]['title'];
 
 	}
@@ -4255,4 +4664,36 @@ class vstore
 
 		return $asArray ? $result : implode(',', $result);
 	}
+
+
+	/**
+	 * Add a order log entry to the log array
+	 *
+	 * @param array|string $log     The log as string or array
+	 * @param string       $title   The title to use in the log string
+	 * @param variant      $oldVal  The old value
+	 * @param variant      $newVal  The new value
+	 * @param bool         $asArray Return as array or string (default)
+	 *
+	 * @return array|string
+	 */
+	public static function addToOrderLog($log, $title, $oldVal, $newVal, $asArray = false)
+	{
+		if (is_string($log)) {
+			$log = e107::unserialize($log);
+		}
+		if (!is_array($log)) {
+			$log = array();
+		}
+
+		$log[] = array(
+			'datestamp' => time(),
+			'user_id' => USERID,
+			'user_name' => USERNAME,
+			'text' => e107::getParser()->lanVars('Changed [x] from [y] to [z].', array('x' => $title, 'y' => $oldVal, 'z' => $newVal))
+		);
+
+		return $asArray ? $log : e107::serialize($log, 'json');
+	}
+
 }

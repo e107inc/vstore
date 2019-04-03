@@ -124,7 +124,8 @@ var e107 = e107 || {'settings': {}, 'behaviors': {}};
 				$(this).click(function(e){
 					e.preventDefault();
 
-					if ($(this).hasClass('disabled'))
+					var $btn = $(this);
+					if ($btn.hasClass('disabled'))
 					{
 						return;
 					}
@@ -171,6 +172,9 @@ var e107 = e107 || {'settings': {}, 'behaviors': {}};
 							}
 							$('li.dropdown.vstore-storecart').addClass('open');
 							return;
+						}
+						else {
+							$btn.removeClass('btn-success').addClass('disabled btn-default').html(e107.settings.vstore.cart.outofstock);
 						}
 						// Print our any (error) message 
 						// $('#uiAlert').html(msg);
@@ -407,5 +411,5 @@ function vstorePrintMessage(msg)
 		$('#breadcrumb').after('<div id="uiAlert">' + msg + '</div>');	
 	}
 	$('.s-message.fade').removeClass('fade');
-	$('.notifications.center > div').css('width', '50%');	
+	$('#uiAlert.notifications').css({'width': 'auto', 'left': 'auto', 'margin': 'auto 10%' });
 }
