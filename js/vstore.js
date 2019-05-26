@@ -124,7 +124,8 @@ var e107 = e107 || {'settings': {}, 'behaviors': {}};
 				$(this).click(function(e){
 					e.preventDefault();
 
-					if ($(this).hasClass('disabled'))
+					var $btn = $(this);
+					if ($btn.hasClass('disabled'))
 					{
 						return;
 					}
@@ -172,6 +173,9 @@ var e107 = e107 || {'settings': {}, 'behaviors': {}};
 							$('li.dropdown.vstore-storecart').addClass('open');
 							return;
 						}
+						else {
+							$btn.removeClass('btn-success').addClass('disabled btn-default').html(e107.settings.vstore.cart.outofstock);
+						}
 						// Print our any (error) message 
 						// $('#uiAlert').html(msg);
 						vstorePrintMessage(msg);
@@ -193,16 +197,21 @@ var e107 = e107 || {'settings': {}, 'behaviors': {}};
 			{
 				$(this).change(function(e){
 					var itemid = $(this).data('id');
+					var varid = $(this).data('item');
 					var baseprice = parseFloat($('.vstore-item-baseprice-'+itemid).val());
 					var varprice = baseprice;
 					var itemvars = [];
 
 					$('select.vstore-item-var').each(function(i, v){
+					var selected=true;
 
 						if ($(v).data('id') == itemid)
 						{
 							var $option = $('#' + $(v).attr('id') + ' option:selected');
-							itemvars.push($(v).val());
+							if (selected) {
+								itemvars.push({'id': $option.data('item'), 'item': $option.data('id'), 'val': $option.val()});
+							}
+							selected = false;
 							var val = parseFloat($option.data('val'));
 							if (val > 0.0)
 							{
@@ -223,7 +232,7 @@ var e107 = e107 || {'settings': {}, 'behaviors': {}};
 
 					});
 					
-					var inStock = vstoreCheckInventory(itemid, itemvars);
+					var inStock = vstoreCheckInventory(itemid, varid, itemvars);
 					if (inStock)
 					{
 						$('.vstore-add-item-' + itemid).removeClass('btn-default disabled').addClass('btn-success').html('<span class="glyphicon glyphicon-shopping-cart"></span> ' + settings.vstore.cart.addtocart);
@@ -238,9 +247,9 @@ var e107 = e107 || {'settings': {}, 'behaviors': {}};
 					// fixes #92: missing currency symbol after selecting a new variation
 					var currency = $('#vstore-currency-symbol').text();
 					if (currency.substr(0, 1) == 1) {
-                        $('.vstore-item-price-'+itemid).text(varprice.toFixed(2) + ' ' + currency.substr(1));
+						$('.vstore-item-price-'+itemid).text(varprice.toFixed(2) + ' ' + currency.substr(1));
 					}else{
-                        $('.vstore-item-price-' + itemid).text(currency.substr(1) + ' ' + varprice.toFixed(2));
+						$('.vstore-item-price-' + itemid).text(currency.substr(1) + ' ' + varprice.toFixed(2));
 					}
 
 				});
@@ -338,13 +347,13 @@ function vstoreCartRefresh()
  * @param {int} itemid 
  * @param {array} itemvars 
  */
-function vstoreCheckInventory(itemid, itemvars)
+function vstoreCheckInventory(itemid, varid, itemvars)
 {
 	if (typeof itemid == 'undefined' || parseInt(itemid, 10) <= 0)
 	{
 		return false;
 	}
-	var stock = e107.settings.vstore.stock['x'+itemid];
+	var stock = e107.settings.vstore.stock['x'+itemid+'-'+varid];
 	if (typeof stock == 'undefined')
 	{
 		return false;
@@ -357,27 +366,29 @@ function vstoreCheckInventory(itemid, itemvars)
 	}
 	else if ($.isArray(itemvars))
 	{
-		if (itemvars.length == 1)
+		for(var i=0; i<itemvars.length; i++)
 		{
-			var x = itemvars[0];
-			result = stock[x];
+			if (itemvars[i].item == varid)
+			{
+				if (typeof stock == 'object'){
+					result = stock[itemvars[i].val];
+					if (typeof result == 'object'){
+						result = result[itemvars[i+1].val];
+					}
+				}
+				else
+				{
+					result = stock;
+				}
+				break;
+			}
 		}
-		else if (itemvars.length == 2)
-		{
-			var x = itemvars[0];
-			var y = itemvars[1];
-			result = stock[x][y];
-		}
-		else
-		{
-			restult = 0;
-		}
-
 	}
+
 
 	if (typeof result == 'undefined')
 	{
-		return 0;
+		return false;
 	}
 
 
@@ -400,5 +411,5 @@ function vstorePrintMessage(msg)
 		$('#breadcrumb').after('<div id="uiAlert">' + msg + '</div>');	
 	}
 	$('.s-message.fade').removeClass('fade');
-	$('.notifications.center > div').css('width', '50%');	
+	$('#uiAlert.notifications').css({'width': 'auto', 'left': 'auto', 'margin': 'auto 10%' });
 }

@@ -15,7 +15,7 @@ CREATE TABLE vstore_cart (
   `cart_paygross` decimal(10,2) NOT NULL DEFAULT '0.00',
   `cart_payshipping` decimal(10,2) NOT NULL DEFAULT '0.00',
   `cart_payshipto` text,
-  `cart_lastupdate` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP() ON UPDATE CURRENT_TIMESTAMP(),
+  `cart_lastupdate` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`cart_id`)
 ) ENGINE=MyISAM;
 
@@ -40,9 +40,11 @@ CREATE TABLE vstore_orders (
   `order_pay_amount` decimal(10,2) NOT NULL DEFAULT '0.00',
   `order_pay_tax` text,
   `order_pay_shipping` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `order_pay_currency` varchar(10) DEFAULT NULL,
   `order_pay_coupon_code` varchar(50) DEFAULT NULL,
   `order_pay_coupon_amount` decimal(10,2) NOT NULL DEFAULT '0.00',
   `order_pay_rawdata` text,
+  `order_refund_date` int(10) DEFAULT NULL,
   `order_log` text,
   PRIMARY KEY (`order_id`),
   UNIQUE KEY `order_invoice_nr` (`order_invoice_nr`)

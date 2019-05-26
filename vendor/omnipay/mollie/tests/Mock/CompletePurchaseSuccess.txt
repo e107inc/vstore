@@ -1,0 +1,51 @@
+HTTP/1.1 200 OK
+Content-Type: application/hal+json; charset=utf-8
+
+{
+  "resource": "payment",
+  "id": "tr_Qzin4iTWrU",
+  "mode": "test",
+  "createdAt": "2018-07-19T12:38:21+00:00",
+  "amount": {
+    "value": "10.00",
+    "currency": "EUR"
+  },
+  "description": "Order #1234",
+  "method": "ideal",
+  "metadata": null,
+  "status": "paid",
+  "paidAt": "2018-07-19T12:38:34+00:00",
+  "amountRefunded": {
+    "value": "0.00",
+    "currency": "EUR"
+  },
+  "amountRemaining": {
+    "value": "35.00",
+    "currency": "EUR"
+  },
+  "locale": "nl_NL",
+  "countryCode": "NL",
+  "profileId": "pfl_7N5qjbu42V",
+  "sequenceType": "oneoff",
+  "redirectUrl": "http://mollie.com",
+  "webhookUrl": "http://mollie.com",
+  "settlementAmount": {
+    "value": "10.00",
+    "currency": "EUR"
+  },
+  "details": {
+    "consumerName": "T. TEST",
+    "consumerAccount": "NL17RABO0213698412",
+    "consumerBic": "INGBNL2A"
+  },
+  "_links": {
+    "self": {
+      "href": "https://api.mollie.com/v2/payments/tr_2bMMNCF5A2",
+      "type": "application/hal+json"
+    },
+    "documentation": {
+      "href": "https://docs.mollie.com/reference/v2/payments-api/get-payment",
+      "type": "text/html"
+    }
+  }
+}
