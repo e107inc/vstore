@@ -1349,7 +1349,7 @@ class vstore
 				if (!empty($this->pref['bank_transfer']['details']))
 				{
 					$message = '<br />Use the following bank account information for your payment:<br />';
-					$message .= e107::getParser()->toHtml($this->pref['bank_transfer']['details'],true);
+					$message .= e107::getParser()->toHTML($this->pref['bank_transfer']['details'],true);
 				}
 
 				break;

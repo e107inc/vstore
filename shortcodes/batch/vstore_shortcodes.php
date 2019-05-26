@@ -386,7 +386,7 @@
 				}
 			}
 
-			return e107::getParser()->toHtml($info, true);
+			return e107::getParser()->toHTML($info, true);
 
 		}
 
@@ -399,7 +399,7 @@
 
 			$bankTransfer = e107::pref('vstore','bank_transfer_details');
 
-			return e107::getParser()->toHtml($bankTransfer,true);
+			return e107::getParser()->toHTML($bankTransfer,true);
 
 		}
 
@@ -430,10 +430,10 @@
 
 			if(empty($info))
 			{
-				return e107::getParser()->toHtml(e107::pref('core', 'siteadmin'), true);;
+				return e107::getParser()->toHTML(e107::pref('core', 'siteadmin'), true);;
 			}
 
-			return e107::getParser()->toHtml($info, true);
+			return e107::getParser()->toHTML($info, true);
 		}
 
 
@@ -499,12 +499,12 @@
 
 		function sc_item_name($parm=null)
 		{
-			return e107::getParser()->toHtml($this->var['item_name'], true,'TITLE');
+			return e107::getParser()->toHTML($this->var['item_name'], true,'TITLE');
 		}
 
 		function sc_item_var_string($parm=null)
 		{
-			return e107::getParser()->toHtml($this->var['itemvarstring'], true,'BODY');
+			return e107::getParser()->toHTML($this->var['itemvarstring'], true,'BODY');
 		}
 
 		function sc_item_description($parm=null)
@@ -519,12 +519,12 @@
 				$text = $tp->text_truncate($text,$parm['limit']);
 			}
 
-			return $tp->toHtml($text, false, 'BODY');
+			return $tp->toHTML($text, false, 'BODY');
 		}
 
 		function sc_item_details($parm=null)
 		{
-			return e107::getParser()->toHtml($this->var['item_details'], true,'BODY');
+			return e107::getParser()->toHTML($this->var['item_details'], true,'BODY');
 		}
 
 
@@ -659,7 +659,7 @@
 			}
 
 			return $text;
-			//return e107::getParser()->toHtml($this->var['item_reviews'], true, 'BODY');
+			//return e107::getParser()->toHTML($this->var['item_reviews'], true, 'BODY');
 		}
 
 		function sc_item_related($parm=null)
@@ -705,7 +705,7 @@
 
 		function sc_item_brand($parm=null)
 		{
-			return e107::getParser()->toHtml($this->var['cat_name'], true,'TITLE');
+			return e107::getParser()->toHTML($this->var['cat_name'], true,'TITLE');
 		}
 
 		function sc_item_brand_url($parm=null)
@@ -779,22 +779,22 @@
 
 		function sc_cat_name($parm=null)
 		{
-			return e107::getParser()->toHtml($this->var['cat_name'], true,'TITLE');
+			return e107::getParser()->toHTML($this->var['cat_name'], true,'TITLE');
 		}
 
 		function sc_cat_sef($parm=null)
 		{
-			return e107::getParser()->toHtml($this->var['cat_sef'], true,'TITLE');
+			return e107::getParser()->toHTML($this->var['cat_sef'], true,'TITLE');
 		}
 
 		function sc_cat_description($parm=null)
 		{
-			return e107::getParser()->toHtml($this->var['cat_description'], true, 'BODY');
+			return e107::getParser()->toHTML($this->var['cat_description'], true, 'BODY');
 		}
 
 		function sc_cat_info($parm=null)
 		{
-			return e107::getParser()->toHtml($this->var['cat_info'], true,'BODY');
+			return e107::getParser()->toHTML($this->var['cat_info'], true,'BODY');
 		}
 
 		function sc_cat_image($parm=0)
@@ -837,7 +837,7 @@
 
 		function sc_pref_howtoorder()
 		{
-			return e107::getParser()->toHtml($this->vpref['howtoorder'],true,'BODY');
+			return e107::getParser()->toHTML($this->vpref['howtoorder'],true,'BODY');
 		}
 
 		/**
@@ -883,7 +883,7 @@
 			foreach($files as $i)
 			{
 				$bb = '[file='.$i['media_id'].']'.$i['media_name'].'[/file]';
-				$text .= '<li>'.$tp->toHtml($bb, true).'</li>';
+				$text .= '<li>'.$tp->toHTML($bb, true).'</li>';
 			}
 			$text .= '</ul>';
 

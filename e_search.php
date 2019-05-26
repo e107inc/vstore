@@ -77,7 +77,7 @@ class vstore_search extends e_search // include plugin-folder in the name.
 				'item_sef' => eHelper::title2sef($row['item_name'], 'dashl')));
 
 		$res['link'] 		= $link;
-		$res['pre_title'] 	= $tp->toHtml($row['cat_name'],false,'TITLE')." | ";
+		$res['pre_title'] 	= $tp->toHTML($row['cat_name'],false,'TITLE')." | ";
 		$res['title'] 		= $row['item_name'];
 		$res['summary'] 	= $row['news_desc'];
 		$res['detail'] 		= ''; //LAN_SEARCH_3.$tp->toDate($row['news_datestamp'], "long");
@@ -93,7 +93,7 @@ class vstore_search extends e_search // include plugin-folder in the name.
 	 * Optional - Advanced Where
 	 * @param $parm - data returned from $parm (ie. advanced fields included. in this case 'date' and 'author' )
 	 */
-	function where($parm='')
+	function where($parm=null)
 	{
 		$tp = e107::getParser();
 	
