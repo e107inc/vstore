@@ -9,11 +9,14 @@
 		protected $currency = null;
 		protected $displayCurrency = false;
 		protected $categories = array();
-		public $captionOutOfStock = LAN_VSTORE_003; // 'Out of Stock';
+		public $captionOutOfStock = null; // 'Out of Stock';
 		protected $halt = false;
 
 		public function __construct()
 		{
+
+			$this->captionOutOfStock = defset("LAN_VSTORE_003", "Out of Stock");
+
 			$this->vpref = e107::pref('vstore');
 
 			$currency = !empty($this->vpref['currency']) ? $this->vpref['currency'] : 'USD';
