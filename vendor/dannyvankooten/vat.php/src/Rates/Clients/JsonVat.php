@@ -24,6 +24,8 @@ class JsonVat implements Client{
         curl_setopt($curl_handle, CURLOPT_URL, $url);
         curl_setopt($curl_handle, CURLOPT_CONNECTTIMEOUT, 10);
         curl_setopt($curl_handle, CURLOPT_RETURNTRANSFER, true);
+        // Added the following line to fix error due to missing local certificate
+        curl_setopt($curl_handle, CURLOPT_SSL_VERIFYPEER, false);
         $response_body = curl_exec($curl_handle);
         curl_close($curl_handle);
 
