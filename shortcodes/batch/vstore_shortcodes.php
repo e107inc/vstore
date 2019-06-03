@@ -265,7 +265,7 @@
 
 		function sc_order_date()
 		{
-			return e107::getParser()->toDate($this->var['order_date']);
+			return $this->tp->toDate($this->var['order_date']);
 		}
 
 		function sc_order_items()
@@ -279,7 +279,7 @@
 
 			$template = e107::getTemplate('vstore', 'vstore', 'order_items');
 
-			$text = e107::getParser()->parseTemplate($template['header'], true, $this);
+			$text = $this->tp->parseTemplate($template['header'], true, $this);
 
 			foreach($items as $key=>$item)
 			{
@@ -306,10 +306,10 @@
 				$item['item_total'] = $item['price'] * $item['quantity'];
 
 				$this->addVars(array('item' => $item));
-				$text .= e107::getParser()->parseTemplate($template['row'], true, $this);
+				$text .= $this->tp->parseTemplate($template['row'], true, $this);
 			}
 
-			$text .= e107::getParser()->parseTemplate($template['footer'], true, $this);
+			$text .= $this->tp->parseTemplate($template['footer'], true, $this);
 
 			return $text;
 
@@ -325,7 +325,7 @@
 
 			$template = e107::getTemplate('vstore', 'vstore', 'order_items');
 
-			$text = e107::getParser()->parseTemplate($template['coupon'], true, $this);
+			$text = $this->tp->parseTemplate($template['coupon'], true, $this);
 			return $text;
 		}
 
@@ -351,7 +351,7 @@
 
 			if ($x != '')
 			{
-				$text .= e107::getParser()->lanVars($template['tax'], array('x' => $x, 'y' => $y));
+				$text .= $this->tp->lanVars($template['tax'], array('x' => $x, 'y' => $y));
 			}
 
 			return $text;
@@ -385,7 +385,7 @@
 				}
 			}
 
-			return e107::getParser()->toHTML($info, true);
+			return $this->tp->toHTML($info, true);
 
 		}
 
@@ -398,7 +398,7 @@
 
 			$bankTransfer = e107::pref('vstore','bank_transfer_details');
 
-			return e107::getParser()->toHTML($bankTransfer,true);
+			return $this->tp->toHTML($bankTransfer,true);
 
 		}
 
@@ -423,10 +423,10 @@
 
 			if(empty($info))
 			{
-				return e107::getParser()->toHTML(e107::pref('core', 'siteadmin'), true);;
+				return $this->tp->toHTML(e107::pref('core', 'siteadmin'), true);;
 			}
 
-			return e107::getParser()->toHTML($info, true);
+			return $this->tp->toHTML($info, true);
 		}
 
 
@@ -493,32 +493,30 @@
 
 		function sc_item_name($parm=null)
 		{
-			return e107::getParser()->toHTML($this->var['item_name'], true,'TITLE');
+			return $this->tp->toHTML($this->var['item_name'], true,'TITLE');
 		}
 
 		function sc_item_var_string($parm=null)
 		{
-			return e107::getParser()->toHTML($this->var['itemvarstring'], true,'BODY');
+			return $this->tp->toHTML($this->var['itemvarstring'], true,'BODY');
 		}
 
 		function sc_item_description($parm=null)
 		{
 
-			$tp = e107::getParser();
-
 			$text = $this->var['item_desc'];
 
 			if(!empty($parm['limit']) && !empty($text))
 			{
-				$text = $tp->text_truncate($text,$parm['limit']);
+				$text = $this->tp->text_truncate($text,$parm['limit']);
 			}
 
-			return $tp->toHTML($text, false, 'BODY');
+			return $this->tp->toHTML($text, false, 'BODY');
 		}
 
 		function sc_item_details($parm=null)
 		{
-			return e107::getParser()->toHTML($this->var['item_details'], true,'BODY');
+			return $this->tp->toHTML($this->var['item_details'], true,'BODY');
 		}
 
 
@@ -653,7 +651,7 @@
 			}
 
 			return $text;
-			//return e107::getParser()->toHTML($this->var['item_reviews'], true, 'BODY');
+			//return $this->tp->toHTML($this->var['item_reviews'], true, 'BODY');
 		}
 
 		function sc_item_related($parm=null)
@@ -663,7 +661,7 @@
 			{
 				return false;
 			}
-			$tp = e107::getParser();
+
 			$row = e107::unserialize($this->var['item_related']);
 
 			//	return print_a($row, true);
@@ -684,7 +682,7 @@
 					{
 						$sc->setVars($row);
 
-						$text .= $tp->parseTemplate("<li>{CPAGELINK}</li>",true,$sc);
+						$text .= $this->tp->parseTemplate("<li>{CPAGELINK}</li>",true,$sc);
 
 
 					}
@@ -699,7 +697,7 @@
 
 		function sc_item_brand($parm=null)
 		{
-			return e107::getParser()->toHTML($this->var['cat_name'], true,'TITLE');
+			return $this->tp->toHTML($this->var['cat_name'], true,'TITLE');
 		}
 
 		function sc_item_brand_url($parm=null)
@@ -711,12 +709,11 @@
 		{
 			$index = (!empty($parm['item'])) ? intval($parm['item']) : 0; // intval($parm);
 			$ival = e107::unserialize($this->var['item_pic']);
-			$tp = e107::getParser();
 
 			$images = array();
 			foreach($ival as $i)
 			{
-				if($tp->isImage($i['path']))
+				if($this->tp->isImage($i['path']))
 				{
 					$images[] = $i['path'];
 				}
@@ -730,14 +727,14 @@
 			if(!empty($parm['link']))
 			{
 				$parm['scale']= '3x';
-				$link = $tp->thumbUrl($path, $parm);
+				$link = $this->tp->thumbUrl($path, $parm);
 				unset($parm['scale'],$parm['link']);
-				$pre = "<a href='".$link."' data-standard='".$tp->thumbUrl($path, $parm)."'>";
+				$pre = "<a href='".$link."' data-standard='".$this->tp->thumbUrl($path, $parm)."'>";
 				$post = "</a>";
 
 			}
 
-			return $pre. e107::getParser()->toImage($path,$parm) . $post;
+			return $pre. $this->tp->toImage($path,$parm) . $post;
 		}
 
 		function sc_item_video($parm=0)
@@ -755,7 +752,7 @@
 			}
 
 			$path = vartrue($videos[$index]);
-			return e107::getParser()->toVideo($path);
+			return $this->tp->toVideo($path);
 
 		}
 
@@ -773,32 +770,32 @@
 
 		function sc_cat_name($parm=null)
 		{
-			return e107::getParser()->toHTML($this->var['cat_name'], true,'TITLE');
+			return $this->tp->toHTML($this->var['cat_name'], true,'TITLE');
 		}
 
 		function sc_cat_sef($parm=null)
 		{
-			return e107::getParser()->toHTML($this->var['cat_sef'], true,'TITLE');
+			return $this->tp->toHTML($this->var['cat_sef'], true,'TITLE');
 		}
 
 		function sc_cat_description($parm=null)
 		{
-			return e107::getParser()->toHTML($this->var['cat_description'], true, 'BODY');
+			return $this->tp->toHTML($this->var['cat_description'], true, 'BODY');
 		}
 
 		function sc_cat_info($parm=null)
 		{
-			return e107::getParser()->toHTML($this->var['cat_info'], true,'BODY');
+			return $this->tp->toHTML($this->var['cat_info'], true,'BODY');
 		}
 
 		function sc_cat_image($parm=0)
 		{
-			return e107::getParser()->thumbUrl($this->var['cat_image']);
+			return $this->tp->thumbUrl($this->var['cat_image']);
 		}
 
 		function sc_cat_pic($parm=null)
 		{
-			return e107::getParser()->toImage($this->var['cat_image']);
+			return $this->tp->toImage($this->var['cat_image']);
 		}
 
 		function sc_cat_url($parm=null)
@@ -831,7 +828,7 @@
 
 		function sc_pref_howtoorder()
 		{
-			return e107::getParser()->toHTML($this->vpref['howtoorder'],true,'BODY');
+			return $this->tp->toHTML($this->vpref['howtoorder'],true,'BODY');
 		}
 
 		/**
@@ -871,13 +868,11 @@
 			$qry = 'SELECT media_id,media_name FROM #core_media WHERE media_id IN ('.implode(',',$id).') ORDER BY media_name ';
 			$files = e107::getDb()->retrieve($qry,true);
 
-			$tp = e107::getParser();
-
 			$text = '<ul>';
 			foreach($files as $i)
 			{
 				$bb = '[file='.$i['media_id'].']'.$i['media_name'].'[/file]';
-				$text .= '<li>'.$tp->toHTML($bb, true).'</li>';
+				$text .= '<li>'.$this->tp->toHTML($bb, true).'</li>';
 			}
 			$text .= '</ul>';
 
@@ -941,7 +936,7 @@
 
 			$label = LAN_VSTORE_001; // 'Add to cart';
 
-			return '<a class="'.$class.'" '.$itemid.' href="#">'.e107::getParser()->toGlyph('fa-shopping-cart').' '.$label.'</a>';
+			return '<a class="'.$class.'" '.$itemid.' href="#">'.$this->tp->toGlyph('fa-shopping-cart').' '.$label.'</a>';
 		}
 
 
@@ -1214,15 +1209,15 @@
 
 			$template = e107::getTemplate('vstore', 'vstore', 'confirm_items');
 
-			$text = e107::getParser()->parseTemplate($template['header'], true, $this);
+			$text = $this->tp->parseTemplate($template['header'], true, $this);
 
 			foreach($items as $key=>$item)
 			{
 				$this->addVars(array('item' => $item));
-				$text .= e107::getParser()->parseTemplate($template['row'], true, $this);
+				$text .= $this->tp->parseTemplate($template['row'], true, $this);
 			}
 
-			$text .= e107::getParser()->parseTemplate($template['footer'], true, $this);
+			$text .= $this->tp->parseTemplate($template['footer'], true, $this);
 
 			return $text;
 
@@ -1247,7 +1242,7 @@
 
 			if ($x != '')
 			{
-				$text .= e107::getParser()->lanVars($template['tax'], array('x' => $x, 'y' => $y));
+				$text .= $this->tp->lanVars($template['tax'], array('x' => $x, 'y' => $y));
 			}
 
 			return $text;
@@ -1263,7 +1258,7 @@
 
 			$template = e107::getTemplate('vstore', 'vstore', 'confirm_items');
 
-			$text = e107::getParser()->parseTemplate($template['coupon'], true, $this);
+			$text = $this->tp->parseTemplate($template['coupon'], true, $this);
 			return $text;
 		}
 
@@ -1385,7 +1380,7 @@
 		{
 
 			return '<button type="submit" name="cartRemove['.$this->var['cart_id'].']" class="btn btn-default btn-secondary vstore-cart-remove-item" title="Remove">
-			'.e107::getParser()->toGlyph('fa-trash').'</button>';
+			'.$this->tp->toGlyph('fa-trash').'</button>';
 
 		}
 
@@ -1416,7 +1411,7 @@
 		function sc_cart_checkout_button()
 		{
 			$text = '<a href="'.e107::url('vstore','checkout').'" id="cart-checkout"  class="btn btn-success">
-		                            Checkout '.e107::getParser()->toGlyph('fa-play').'
+		                            Checkout '.$this->tp->toGlyph('fa-play').'
 		                        </a>
 		                        <button id="cart-qty-submit" style="display:none" type="submit" class="btn btn-warning">Re-Calculate</button>
 
@@ -1433,7 +1428,7 @@
 
 			return '
 		<a href="'.$link.'" class="btn btn-default btn-secondary">
-		'.e107::getParser()->toGlyph('fa-shopping-cart').' Continue Shopping
+		'.$this->tp->toGlyph('fa-shopping-cart').' Continue Shopping
 		</a>';
 		}
 
@@ -1441,7 +1436,7 @@
 		{
 			$template = e107::getTemplate('vstore', 'vstore', 'cart');
 
-			$text = e107::getParser()->parseTemplate($template['coupon'], true, $this);
+			$text = $this->tp->parseTemplate($template['coupon'], true, $this);
 			return $text;
 		}
 
@@ -1496,7 +1491,7 @@
 
 			if ($x != '')
 			{
-				$text .= e107::getParser()->lanVars($template['tax'], array('x' => $x, 'y' => $y));
+				$text .= $this->tp->lanVars($template['tax'], array('x' => $x, 'y' => $y));
 			}
 
 			return $text;
@@ -1530,7 +1525,6 @@
 			if ($key) $key = $key[0];
 
 			$frm = e107::getForm();
-			$ns = e107::getParser();
 			$text = '';
 
 			switch($key)
@@ -1544,33 +1538,28 @@
 					{
 						$this->vpref['invoice_footer'] = e107::unserialize($this->vpref['invoice_footer']);
 					}
-					// if (!empty($this->vpref['invoice_footer'][$i]['title'][e_LANGUAGE]))
-					// {
-					// 	$text = "<b>" . $ns->toHTML($this->vpref['invoice_footer'][$i]['title'][e_LANGUAGE], true) . "</b>";
-					// }
-					// $text .= $ns->toHTML($this->vpref['invoice_footer'][$i]['text'][e_LANGUAGE], true);
-					$text = $ns->toHTML($this->vpref['invoice_footer'][$i], true);
+					$text = $this->tp->toHTML($this->vpref['invoice_footer'][$i], true);
 					break;
 
 				case 'title':
-					$text = $ns->toHTML($this->vpref['invoice_title'][e_LANGUAGE], true);
+					$text = $this->tp->toHTML($this->vpref['invoice_title'][e_LANGUAGE], true);
 					break;
 
 				case 'info_title':
-					$text = $ns->toHTML($this->vpref['invoice_info_title'][e_LANGUAGE], true);
+					$text = $this->tp->toHTML($this->vpref['invoice_info_title'][e_LANGUAGE], true);
 					break;
 
 				case 'subject':
-					$text = $ns->parseTemplate($this->vpref['invoice_subject'][e_LANGUAGE], true, $this);
+					$text = $this->tp->parseTemplate($this->vpref['invoice_subject'][e_LANGUAGE], true, $this);
 					break;
 
 				case 'hint':
-					$text = $ns->toHTML($this->vpref['invoice_hint'][e_LANGUAGE], true);
+					$text = $this->tp->toHTML($this->vpref['invoice_hint'][e_LANGUAGE], true);
 					$text = ($text ? '<p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p>' : '') . $text;
 					break;
 
 				case 'finish_phrase':
-					$text = $ns->toHTML($this->vpref['invoice_finish_phrase'], true);
+					$text = $this->tp->toHTML($this->vpref['invoice_finish_phrase'], true);
 					$text = ($text ? '<p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p>' : '') . $text;
 					break;
 
@@ -1590,7 +1579,7 @@
 
 			$template = e107::getTemplate('vstore', 'vstore_invoice', 'invoice_items');
 
-			$text = e107::getParser()->parseTemplate($template['header'], true, $this);
+			$text = $this->tp->parseTemplate($template['header'], true, $this);
 
 			foreach($items as $key=>$item)
 			{
@@ -1618,10 +1607,10 @@
 				$item['item_total'] = $item['price'] * $item['quantity'];
 
 				$this->addVars(array('item' => $item));
-				$text .= e107::getParser()->parseTemplate($template['row'], true, $this);
+				$text .= $this->tp->parseTemplate($template['row'], true, $this);
 			}
 
-			$text .= e107::getParser()->parseTemplate($template['footer'], true, $this);
+			$text .= $this->tp->parseTemplate($template['footer'], true, $this);
 
 			return $text;
 
@@ -1637,7 +1626,7 @@
 
 			$template = e107::getTemplate('vstore', 'vstore_invoice', 'invoice_items');
 			$data = array('x' => $this->var['order_pay_coupon_code'], 'y' => $this->format_amount($this->var['order_pay_coupon_amount']));
-			$text = e107::getParser()->lanVars($template['coupon'], $data);
+			$text = $this->tp->lanVars($template['coupon'], $data);
 			return $text;
 		}
 
@@ -1663,7 +1652,7 @@
 
 			if ($x != '')
 			{
-				$text .= e107::getParser()->lanVars($template['tax'], array('x' => $x, 'y' => $y));
+				$text .= $this->tp->lanVars($template['tax'], array('x' => $x, 'y' => $y));
 			}
 
 			return $text;
@@ -1672,15 +1661,14 @@
 		function sc_invoice_logo($parm)
 		{
 			// Paths to image file, link are relative to site base
-			$tp = e107::getParser();
 
 			$logopref = e107::getConfig('core')->get('sitelogo');
-			$logop = $tp->replaceConstants($logopref);
+			$logop = $this->tp->replaceConstants($logopref);
 
 			if(vartrue($logopref) && is_readable($logop))
 			{
-				$logo = $tp->replaceConstants($logopref,'abs');
-				$path = $tp->replaceConstants($logopref);
+				$logo = $this->tp->replaceConstants($logopref,'abs');
+				$path = $this->tp->replaceConstants($logopref);
 			}
 			elseif (isset($file) && $file && is_readable($file))
 			{
