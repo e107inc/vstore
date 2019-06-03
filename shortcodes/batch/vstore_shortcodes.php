@@ -11,6 +11,7 @@
 		protected $categories = array();
 		public $captionOutOfStock = null; // 'Out of Stock';
 		protected $halt = false;
+		protected $tp;
 
 		public function __construct()
 		{
@@ -23,7 +24,8 @@
 
 			$this->curSymbol = vstore::getCurrencySymbol($currency);
 			$this->currency = ($this->displayCurrency === true) ? $currency : '';
-
+			$this->tp = e107::getParser();
+			
 		}
 
 		public function getCurrencySymbol()
@@ -31,24 +33,10 @@
 			return vstore::getCurrencySymbol($this->currency);
 		}
 
-		public function toFloat($val)
-		{
-			$comma = strpos($val, ',');
-			$dot = strpos($val, '.');
-			if (($comma !== false && $dot !== false)) {
-				if ($comma < $dot) {
-					$val = str_replace(',', '', $val);
-				} else {
-					$val = str_replace('.', '', $val);
-				}
-			}
-			return floatval(str_replace(',', '.', $val));
-		}
-
 		function format_amount($amount)
 		{
 			$format = varset($this->vpref['amount_format'], 0);
-			$amount = $this->toFloat($amount);
+			$amount = $this->tp->toNumber($amount);
 			if ($format == 1)
 			{
 				return number_format($amount, 2).'&nbsp;'.$this->curSymbol/*.$this->currency*/;
@@ -356,8 +344,8 @@
 			$text = $x = $y = '';
 			foreach($this->var['order_pay_tax'] as $tax_rate => $value)
 			{
-				if ($this->toFloat($tax_rate) <= 0) continue;
-				$x .= ($x != '' ? '<br />' : '').($this->toFloat($tax_rate) * 100).'%';
+				if ($this->tp->toNumber($tax_rate) <= 0) continue;
+				$x .= ($x != '' ? '<br />' : '').($this->tp->toNumber($tax_rate) * 100).'%';
 				$y .= ($y != '' ? '<br />' : '').$this->format_amount($value);
 			}
 
@@ -555,7 +543,7 @@
 				}
 			}
 
-			$baseprice = $this->toFloat($this->var['item_price']);
+			$baseprice = $this->tp->toNumber($this->var['item_price']);
 			$this->var['item_var_price'] = $baseprice;
 
 			if (isset($this->var['item_vars']))
@@ -581,28 +569,28 @@
 						foreach($attributes as $var)
 						{
 							$varname = $var['name'];
-							if($this->toFloat($var['value']) > 0.0)
+							if($this->tp->toNumber($var['value']) > 0.0)
 							{
 								switch($var['operator'])
 								{
 									case '%':
 										if($selected)
 										{
-											$this->var['item_var_price'] *= ($this->toFloat($var['value']) / 100.0);
+											$this->var['item_var_price'] *= ($this->tp->toNumber($var['value']) / 100.0);
 										}
-										$varname .= ' (+ ' . $this->toFloat($var['value']) . '%)';
+										$varname .= ' (+ ' . $this->tp->toNumber($var['value']) . '%)';
 										break;
 									case '+':
 										if($selected)
 										{
-											$this->var['item_var_price'] += $this->toFloat($var['value']);
+											$this->var['item_var_price'] += $this->tp->toNumber($var['value']);
 										}
 										$varname .= ' (+ ' . $this->format_amount($var['value']) . ')';
 										break;
 									case '-':
 										if($selected)
 										{
-											$this->var['item_var_price'] -= $this->toFloat($var['value']);
+											$this->var['item_var_price'] -= $this->tp->toNumber($var['value']);
 										}
 										$varname .= ' (- ' . $this->format_amount($var['value']) . ')';
 										break;
@@ -613,7 +601,7 @@
 								$varname,
 								$frm->name2id($var['name']),
 								$selected,
-								array('data-op' => $var['operator'], 'data-val' => $this->toFloat($var['value']), 'data-id' => $varid, 'data-item' => $itemid)
+								array('data-op' => $var['operator'], 'data-val' => $this->tp->toNumber($var['value']), 'data-id' => $varid, 'data-item' => $itemid)
 							);
 							$selected = false;
 
@@ -900,8 +888,8 @@
 		function sc_item_price($parm=null)
 		{
 			$itemid = intval($this->var['item_id']);
-			$baseprice = $price = $this->toFloat($this->var['item_price']);
-			$varprice = $this->toFloat($this->var['item_var_price']);
+			$baseprice = $price = $this->tp->toNumber($this->var['item_price']);
+			$varprice = $this->tp->toNumber($this->var['item_var_price']);
 
 			if ($varprice >= 0.0 && $varprice != $baseprice)
 			{
@@ -1252,8 +1240,8 @@
 			$text = $x = $y = '';
 			foreach($this->var['totals']['cart_taxTotal'] as $tax_rate => $value)
 			{
-				if ($this->toFloat($tax_rate) <= 0) continue;
-				$x .= ($x != '' ? '<br />' : '').($this->toFloat($tax_rate) * 100).'%';
+				if ($this->tp->toNumber($tax_rate) <= 0) continue;
+				$x .= ($x != '' ? '<br />' : '').($this->tp->toNumber($tax_rate) * 100).'%';
 				$y .= ($y != '' ? '<br />' : '').$this->format_amount($value);
 			}
 
@@ -1501,8 +1489,8 @@
 			$text = $x = $y = '';
 			foreach($this->var['cart_taxTotal'] as $tax_rate => $value)
 			{
-				if ($this->toFloat($tax_rate) <= 0) continue;
-				$x .= ($x != '' ? '<br />' : '').($this->toFloat($tax_rate) * 100).'%';
+				if ($this->tp->toNumber($tax_rate) <= 0) continue;
+				$x .= ($x != '' ? '<br />' : '').($this->tp->toNumber($tax_rate) * 100).'%';
 				$y .= ($y != '' ? '<br />' : '').$this->format_amount($value);
 			}
 
@@ -1668,8 +1656,8 @@
 			$text = $x = $y = '';
 			foreach($this->var['order_pay_tax'] as $tax_rate => $value)
 			{
-				if ($this->toFloat($tax_rate) <= 0) continue;
-				$x .= ($x != '' ? '<br />' : '').($this->toFloat($tax_rate) * 100).'%';
+				if ($this->tp->toNumber($tax_rate) <= 0) continue;
+				$x .= ($x != '' ? '<br />' : '').($this->tp->toNumber($tax_rate) * 100).'%';
 				$y .= ($y != '' ? '<br />' : '').$this->format_amount($value);
 			}
 
