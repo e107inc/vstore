@@ -4,42 +4,58 @@
 
 		protected $vpref = array();
 		protected $videos = array();
-		protected $symbols = array();
+		//protected $symbols = array();
 		protected $curSymbol = null;
 		protected $currency = null;
 		protected $displayCurrency = false;
 		protected $categories = array();
-		public $captionOutOfStock = LAN_VSTORE_003; // 'Out of Stock';
+		public $captionOutOfStock = null; // 'Out of Stock';
 		protected $halt = false;
 
 		public function __construct()
 		{
+
+			$this->captionOutOfStock = defset("LAN_VSTORE_003", "Out of Stock");
+
 			$this->vpref = e107::pref('vstore');
 
-			$this->symbols = array('USD'=>'$','EUR'=>'€','CAN'=>'$','GBP'=>'£', "BTC"=> e107::getParser()->toGlyph('fa-btc'));
 			$currency = !empty($this->vpref['currency']) ? $this->vpref['currency'] : 'USD';
 
-			$this->curSymbol = vartrue($this->symbols[$currency],'$');
+			$this->curSymbol = vstore::getCurrencySymbol($currency);
 			$this->currency = ($this->displayCurrency === true) ? $currency : '';
 
 		}
 
 		public function getCurrencySymbol()
 		{
-			return $this->curSymbol;
+			return vstore::getCurrencySymbol($this->currency);
+		}
+
+		public function toFloat($val)
+		{
+			$comma = strpos($val, ',');
+			$dot = strpos($val, '.');
+			if (($comma !== false && $dot !== false)) {
+				if ($comma < $dot) {
+					$val = str_replace(',', '', $val);
+				} else {
+					$val = str_replace('.', '', $val);
+				}
+			}
+			return floatval(str_replace(',', '.', $val));
 		}
 
 		function format_amount($amount)
 		{
 			$format = varset($this->vpref['amount_format'], 0);
-			$amount = floatval($amount);
+			$amount = $this->toFloat($amount);
 			if ($format == 1)
 			{
-				return number_format($amount, 2).'&nbsp;'.$this->curSymbol.$this->currency;
+				return number_format($amount, 2).'&nbsp;'.$this->curSymbol/*.$this->currency*/;
 			}
 			else
 			{
-				return $this->currency.$this->curSymbol.'&nbsp;'.number_format($amount, 2);
+				return /*$this->currency.*/$this->curSymbol.'&nbsp;'.number_format($amount, 2);
 			}
 		}
 
@@ -80,7 +96,6 @@
 			}
 
 			$cancellable = in_array($this->var['order_status'], array('N', 'P', 'H'));
-			$order_id = $this->var['order_id'];
 
 			if (!empty($key))
 			{
@@ -92,9 +107,6 @@
 				}
 				return $text;
 			}
-
-
-
 
 			$actions = array(
 				sprintf('<a href="%s">%s</a>',
@@ -149,11 +161,7 @@
 					break;
 
 				case 'order_gateway':
-					if (vstore::isMollie($this->var['order_pay_gateway'])) {
-						$text = vstore::getMolliePaymentMethodTitle($this->var['order_pay_gateway']);
-					} else {
-						$text = vstore::getGatewayTitle($this->var['order_pay_gateway']);
-					}
+					$text = vstore::getGatewayTitle($this->var['order_pay_gateway']);
 					break;
 
 				case 'order_ref':
@@ -208,7 +216,6 @@
 					if (!is_array($log)) $log = e107::unserialize($log);
 
 					$dt = e107::getDateConvert();
-					$tp = e107::getParser();
 					$text = '<table class="table table-bordered table-striped">
 				<tr>
 					<th>'.LAN_DATE.'</th>
@@ -349,8 +356,8 @@
 			$text = $x = $y = '';
 			foreach($this->var['order_pay_tax'] as $tax_rate => $value)
 			{
-				if (floatval($tax_rate) <= 0) continue;
-				$x .= ($x != '' ? '<br />' : '').($tax_rate * 100).'%';
+				if ($this->toFloat($tax_rate) <= 0) continue;
+				$x .= ($x != '' ? '<br />' : '').($this->toFloat($tax_rate) * 100).'%';
 				$y .= ($y != '' ? '<br />' : '').$this->format_amount($value);
 			}
 
@@ -390,7 +397,7 @@
 				}
 			}
 
-			return e107::getParser()->toHtml($info, true);
+			return e107::getParser()->toHTML($info, true);
 
 		}
 
@@ -403,17 +410,13 @@
 
 			$bankTransfer = e107::pref('vstore','bank_transfer_details');
 
-			return e107::getParser()->toHtml($bankTransfer,true);
+			return e107::getParser()->toHTML($bankTransfer,true);
 
 		}
 
 		function sc_order_gateway_title($parm=null)
 		{
-			if (vstore::isMollie($this->var['order_pay_gateway'])) {
-				$text = vstore::getMolliePaymentMethodTitle($this->var['order_pay_gateway']);
-			} else {
-				$text = vstore::getGatewayTitle($this->var['order_pay_gateway']);
-			}
+			$text = vstore::getGatewayTitle($this->var['order_pay_gateway']);
 			return $text;
 		}
 
@@ -422,11 +425,7 @@
 			if (!isset($parm['size'])) {
 				$parm['size'] = '2x';
 			}
-			if (vstore::isMollie($this->var['order_pay_gateway'])) {
-				$text = vstore::getMolliePaymentMethodIcon($this->var['order_pay_gateway'], $parm['size']);
-			} else {
-				$text = vstore::getGatewayIcon($this->var['order_pay_gateway'], $parm);
-			}
+			$text = vstore::getGatewayIcon($this->var['order_pay_gateway'], $parm);
 			return $text;
 		}
 
@@ -436,10 +435,10 @@
 
 			if(empty($info))
 			{
-				return e107::getParser()->toHtml(e107::pref('core', 'siteadmin'), true);;
+				return e107::getParser()->toHTML(e107::pref('core', 'siteadmin'), true);;
 			}
 
-			return e107::getParser()->toHtml($info, true);
+			return e107::getParser()->toHTML($info, true);
 		}
 
 
@@ -506,12 +505,12 @@
 
 		function sc_item_name($parm=null)
 		{
-			return e107::getParser()->toHtml($this->var['item_name'], true,'TITLE');
+			return e107::getParser()->toHTML($this->var['item_name'], true,'TITLE');
 		}
 
 		function sc_item_var_string($parm=null)
 		{
-			return e107::getParser()->toHtml($this->var['itemvarstring'], true,'BODY');
+			return e107::getParser()->toHTML($this->var['itemvarstring'], true,'BODY');
 		}
 
 		function sc_item_description($parm=null)
@@ -526,12 +525,12 @@
 				$text = $tp->text_truncate($text,$parm['limit']);
 			}
 
-			return $tp->toHtml($text, false, 'BODY');
+			return $tp->toHTML($text, false, 'BODY');
 		}
 
 		function sc_item_details($parm=null)
 		{
-			return e107::getParser()->toHtml($this->var['item_details'], true,'BODY');
+			return e107::getParser()->toHTML($this->var['item_details'], true,'BODY');
 		}
 
 
@@ -556,7 +555,7 @@
 				}
 			}
 
-			$baseprice = floatval($this->var['item_price']);
+			$baseprice = $this->toFloat($this->var['item_price']);
 			$this->var['item_var_price'] = $baseprice;
 
 			if (isset($this->var['item_vars']))
@@ -582,28 +581,28 @@
 						foreach($attributes as $var)
 						{
 							$varname = $var['name'];
-							if(floatval($var['value']) > 0.0)
+							if($this->toFloat($var['value']) > 0.0)
 							{
 								switch($var['operator'])
 								{
 									case '%':
 										if($selected)
 										{
-											$this->var['item_var_price'] *= (floatval($var['value']) / 100.0);
+											$this->var['item_var_price'] *= ($this->toFloat($var['value']) / 100.0);
 										}
-										$varname .= ' (+ ' . floatval($var['value']) . '%)';
+										$varname .= ' (+ ' . $this->toFloat($var['value']) . '%)';
 										break;
 									case '+':
 										if($selected)
 										{
-											$this->var['item_var_price'] += floatval($var['value']);
+											$this->var['item_var_price'] += $this->toFloat($var['value']);
 										}
 										$varname .= ' (+ ' . $this->format_amount($var['value']) . ')';
 										break;
 									case '-':
 										if($selected)
 										{
-											$this->var['item_var_price'] -= floatval($var['value']);
+											$this->var['item_var_price'] -= $this->toFloat($var['value']);
 										}
 										$varname .= ' (- ' . $this->format_amount($var['value']) . ')';
 										break;
@@ -614,7 +613,7 @@
 								$varname,
 								$frm->name2id($var['name']),
 								$selected,
-								array('data-op' => $var['operator'], 'data-val' => floatval($var['value']), 'data-id' => $varid, 'data-item' => $itemid)
+								array('data-op' => $var['operator'], 'data-val' => $this->toFloat($var['value']), 'data-id' => $varid, 'data-item' => $itemid)
 							);
 							$selected = false;
 
@@ -624,7 +623,7 @@
 
 						$text .= '
 						<div>
-							<label>' . $row['item_var_name'] . '
+							<label style="width: 100%;">' . $row['item_var_name'] . '
 							' . $select . '
 							</label>
 							<!-- fix #92: currency symbol used with product variations --> 
@@ -666,7 +665,7 @@
 			}
 
 			return $text;
-			//return e107::getParser()->toHtml($this->var['item_reviews'], true, 'BODY');
+			//return e107::getParser()->toHTML($this->var['item_reviews'], true, 'BODY');
 		}
 
 		function sc_item_related($parm=null)
@@ -712,7 +711,7 @@
 
 		function sc_item_brand($parm=null)
 		{
-			return e107::getParser()->toHtml($this->var['cat_name'], true,'TITLE');
+			return e107::getParser()->toHTML($this->var['cat_name'], true,'TITLE');
 		}
 
 		function sc_item_brand_url($parm=null)
@@ -786,22 +785,22 @@
 
 		function sc_cat_name($parm=null)
 		{
-			return e107::getParser()->toHtml($this->var['cat_name'], true,'TITLE');
+			return e107::getParser()->toHTML($this->var['cat_name'], true,'TITLE');
 		}
 
 		function sc_cat_sef($parm=null)
 		{
-			return e107::getParser()->toHtml($this->var['cat_sef'], true,'TITLE');
+			return e107::getParser()->toHTML($this->var['cat_sef'], true,'TITLE');
 		}
 
 		function sc_cat_description($parm=null)
 		{
-			return e107::getParser()->toHtml($this->var['cat_description'], true, 'BODY');
+			return e107::getParser()->toHTML($this->var['cat_description'], true, 'BODY');
 		}
 
 		function sc_cat_info($parm=null)
 		{
-			return e107::getParser()->toHtml($this->var['cat_info'], true,'BODY');
+			return e107::getParser()->toHTML($this->var['cat_info'], true,'BODY');
 		}
 
 		function sc_cat_image($parm=0)
@@ -844,7 +843,7 @@
 
 		function sc_pref_howtoorder()
 		{
-			return e107::getParser()->toHtml($this->vpref['howtoorder'],true,'BODY');
+			return e107::getParser()->toHTML($this->vpref['howtoorder'],true,'BODY');
 		}
 
 		/**
@@ -890,7 +889,7 @@
 			foreach($files as $i)
 			{
 				$bb = '[file='.$i['media_id'].']'.$i['media_name'].'[/file]';
-				$text .= '<li>'.$tp->toHtml($bb, true).'</li>';
+				$text .= '<li>'.$tp->toHTML($bb, true).'</li>';
 			}
 			$text .= '</ul>';
 
@@ -901,14 +900,14 @@
 		function sc_item_price($parm=null)
 		{
 			$itemid = intval($this->var['item_id']);
-			$baseprice = $price = floatval($this->var['item_price']);
-			$varprice = floatval($this->var['item_var_price']);
+			$baseprice = $price = $this->toFloat($this->var['item_price']);
+			$varprice = $this->toFloat($this->var['item_var_price']);
 
 			if ($varprice >= 0.0 && $varprice != $baseprice)
 			{
 				$price = $varprice;
 			}
-			// return $this->currency.$this->curSymbol.' <span class="vstore-item-price-'.$itemid.'">'.number_format($price, 2).'</span><input type="hidden" class="vstore-item-baseprice-'.$itemid.'" value="'.$baseprice.'"/>';
+
 			return ' <span class="vstore-item-price-'.$itemid.'">'.$this->format_amount($price).'</span><input type="hidden" class="vstore-item-baseprice-'.$itemid.'" value="'.$baseprice.'"/>';
 		}
 
@@ -1253,8 +1252,8 @@
 			$text = $x = $y = '';
 			foreach($this->var['totals']['cart_taxTotal'] as $tax_rate => $value)
 			{
-				if (floatval($tax_rate) <= 0) continue;
-				$x .= ($x != '' ? '<br />' : '').($tax_rate * 100).'%';
+				if ($this->toFloat($tax_rate) <= 0) continue;
+				$x .= ($x != '' ? '<br />' : '').($this->toFloat($tax_rate) * 100).'%';
 				$y .= ($y != '' ? '<br />' : '').$this->format_amount($value);
 			}
 
@@ -1502,8 +1501,8 @@
 			$text = $x = $y = '';
 			foreach($this->var['cart_taxTotal'] as $tax_rate => $value)
 			{
-				if (floatval($tax_rate) <= 0) continue;
-				$x .= ($x != '' ? '<br />' : '').($tax_rate * 100).'%';
+				if ($this->toFloat($tax_rate) <= 0) continue;
+				$x .= ($x != '' ? '<br />' : '').($this->toFloat($tax_rate) * 100).'%';
 				$y .= ($y != '' ? '<br />' : '').$this->format_amount($value);
 			}
 
@@ -1669,8 +1668,8 @@
 			$text = $x = $y = '';
 			foreach($this->var['order_pay_tax'] as $tax_rate => $value)
 			{
-				if (floatval($tax_rate) <= 0) continue;
-				$x .= ($x != '' ? '<br />' : '').($tax_rate * 100).'%';
+				if ($this->toFloat($tax_rate) <= 0) continue;
+				$x .= ($x != '' ? '<br />' : '').($this->toFloat($tax_rate) * 100).'%';
 				$y .= ($y != '' ? '<br />' : '').$this->format_amount($value);
 			}
 
