@@ -34,15 +34,15 @@
 
 		function format_amount($amount)
 		{
-			$format = varset($this->vpref['amount_format'], 0);
-			$amount = $this->tp->toNumber($amount);
+			$format = (int) varset($this->vpref['amount_format'], 0);
+			$amount = (float) $this->tp->toNumber($amount);
 			if ($format == 1)
 			{
-				return number_format($amount, 2).'&nbsp;'.$this->curSymbol/*.$this->currency*/;
+				return number_format($amount, 2).'&nbsp;'.$this->curSymbol;
 			}
 			else
 			{
-				return /*$this->currency.*/$this->curSymbol.'&nbsp;'.number_format($amount, 2);
+				return $this->curSymbol.'&nbsp;'.number_format($amount, 2);
 			}
 		}
 
