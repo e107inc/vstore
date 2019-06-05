@@ -12,6 +12,8 @@
 		public $captionOutOfStock = null; // 'Out of Stock';
 		protected $halt = false;
 		protected $tp;
+		protected $locale_decimals;
+		protected $locale_thousands;
 
 		public function __construct()
 		{
@@ -25,6 +27,12 @@
 			$this->curSymbol = vstore::getCurrencySymbol($currency);
 			$this->currency = ($this->displayCurrency === true) ? $currency : '';
 			$this->tp = e107::getParser();
+
+			// get the locale settings for decimal point and thousands separator
+			// will be used a lot by format_amount()
+			$lc = localeconv();
+			$this->locale_decimals = vartrue($lc['decimal_point'], '.');
+			$this->locale_thousands = vartrue($lc['thousands_sep'], ',');
 		}
 
 		public function getCurrencySymbol()
@@ -36,13 +44,13 @@
 		{
 			$format = (int) varset($this->vpref['amount_format'], 0);
 			$amount = (float) $this->tp->toNumber($amount);
-			if ($format == 1)
-			{
-				return number_format($amount, 2).'&nbsp;'.$this->curSymbol;
-			}
-			else
-			{
-				return $this->curSymbol.'&nbsp;'.number_format($amount, 2);
+			// Format number according locale settings
+			// depends on defined language
+			$value = number_format($amount, 2, $this->locale_decimals, $this->locale_thousands);
+			if ($format == 1) {
+				return $value . '&nbsp;' . $this->curSymbol;
+			} else {
+				return $this->curSymbol . '&nbsp;' . $value;
 			}
 		}
 
