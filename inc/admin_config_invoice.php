@@ -14,6 +14,7 @@ class vstore_invoice_pref_ui extends e_admin_ui
 
 
 		protected $prefs = array(
+			'invoice_create_pdf'   		=> array('title'=> 'Create Pdf invoice', 'tab'=>0, 'type'=>'boolean', 'data' => 'int', 'writeParms'=>array('default'=>'0'),'help' => 'Enable to create the invoiceas pdf (pdf plugin required!)'),
 			'invoice_title'        		=> array('title'=> 'Title', 'tab'=>0, 'type'=>'text', 'data' => 'str', 'writeParms'=>array('placeholder'=>'Title', 'default'=>'INVOICE'),'multilan'=>true, 'help' => 'Title of the invoice'),
 			'invoice_info_title'        => array('title'=> 'Information section caption', 'tab'=>0, 'type'=>'text', 'data' => 'str', 'writeParms'=>array('placeholder'=>'Information block title', 'default'=>'Information'),'multilan'=>true, 'help' => 'Title of the information block on the top right side of the invoice.'),
 			'invoice_subject'        	=> array('title'=> 'Subject', 'tab'=>0, 'type'=>'text', 'data' => 'str', 'writeParms'=>array('size'=>'block-level', 'placeholder'=>'Subject', 'default'=>'This is the invoice for your order #{ORDER_DATA: order_ref} from {ORDER_DATA: order_date}'),'multilan'=>true, 'help'=>'This is rendered right above the items.'),
@@ -34,41 +35,34 @@ class vstore_invoice_pref_ui extends e_admin_ui
 		public function init()
 		{
 
-			// $email_fields = array(
-			// 	'{ORDER_DATA: order_ref}'		=> 'The order reference number',
-			// 	'{ORDER_DATA: cust_firstname}'	=> 'The billing firstname',
-			// 	'{ORDER_DATA: cust_lastname}' 	=> 'The billing lastname',
-			// 	'{ORDER_DATA: cust_company}'	=> 'The billing company name',
-			// 	'{ORDER_DATA: cust_address}'	=> 'The billing street',
-			// 	'{ORDER_DATA: cust_city}'		=> 'The billing city',
-			// 	'{ORDER_DATA: cust_state}'		=> 'The billing state',
-			// 	'{ORDER_DATA: cust_zip}'		=> 'The billing zip code',
-			// 	'{ORDER_DATA: cust_country}'	=> 'The billing country',
-			// 	'{ORDER_DATA: ship_firstname}'	=> 'The shipping firstname',
-			// 	'{ORDER_DATA: ship_lastname}' 	=> 'The shipping lastname',
-			// 	'{ORDER_DATA: ship_company}'	=> 'The shipping company name',
-			// 	'{ORDER_DATA: ship_address}'	=> 'The shipping street',
-			// 	'{ORDER_DATA: ship_city}'		=> 'The shipping city',
-			// 	'{ORDER_DATA: ship_state}'		=> 'The shipping state',
-			// 	'{ORDER_DATA: ship_zip}'		=> 'The shipping zip code',
-			// 	'{ORDER_DATA: ship_country}'	=> 'The shipping country',
-			// 	'{ORDER_ITEMS}'					=> 'The ordered items',
-			// 	'{ORDER_PAYMENT_INSTRUCTIONS}' 	=> 'In case of payment method "bank transfer", the bank transfer details',
-			// 	'{ORDER_MERCHANT_INFO}'			=> 'Merchant name & adress',
-			// 	'{SENDER_NAME}'					=> 'Sender name es defined in the vstore prefs'
-			// );
-	
-			// foreach ($email_fields as $key => $value) {
-			// 	$field_notes[] = sprintf('<div>%s</div><div class="col-sm-offset-1">%s</div>', $key, $value);
-			// }
-	
-			// $text = '<div>'.$this->prefs['email_templates']['title'].'<br/><br/>Available fields<br/>';
-			// $text .= '<div class="small">'.implode("\n", $field_notes).'</div></div>';
-	
-			// $this->prefs['email_templates']['title'] = $text;
-			
 		}
 
+
+		/**
+		 * User defined before pref saving logic
+		 * @param $new_data
+		 * @param $old_data
+		 */
+		public function beforePrefsSave($new_data, $old_data)
+		{
+			// Has the invoice_create_pdf setting be changed?
+			if (vartrue($new_data['invoice_create_pdf'])
+				&& !vstore::checkPdfPlugin(false)
+			) {
+				// pdf plugin not installed: reset setting
+				$new_data['invoice_create_pdf'] = 0;
+				e107::getMessage()->addInfo('Pdf creation has been disabled!');
+			}
+			return $new_data;
+		}
+
+		/**
+		 * User defined before pref saving logic
+		 */
+		public function afterPrefsSave()
+		{
+
+		}
 
 		
 		// public function customPage()
@@ -88,6 +82,11 @@ class vstore_invoice_pref_form_ui extends e_admin_form_ui
 
 	public function init()
 	{
+		if (empty($_POST)) {
+			// Just opened the prefs page...
+			// check if pdf plugin is installed
+			vstore::checkPdfPlugin(false);
+		}
 
         $js = "
 		$(function(){
@@ -96,7 +95,6 @@ class vstore_invoice_pref_form_ui extends e_admin_form_ui
 
 				var id = 'invoice-template';
 				$('#'+id).val(template);
-			//	$(tinymce.get(id).getBody()).html(template);
 			});
 		});
 		";
