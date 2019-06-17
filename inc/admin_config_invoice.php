@@ -85,7 +85,7 @@ class vstore_invoice_pref_form_ui extends e_admin_form_ui
 		if (empty($_POST)) {
 			// Just opened the prefs page...
 			// check if pdf plugin is installed
-			vstore::checkPdfPlugin(false);
+			vstore::checkPdfPlugin();
 		}
 
         $js = "
