@@ -1,1 +1,9 @@
+# Ignore PhpStorm IDE files
+.idea
+.project
+
+# Ignore VS Code settings folder/files
+.vscode
+
+# Ignore any generated invoice pdf's
 invoices/*.pdf
