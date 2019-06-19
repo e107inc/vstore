@@ -4173,32 +4173,37 @@ class vstore
 			return false;
 		}
 
-		$vat_country = strtoupper(substr($vat_id, 0, 2));
-
-		$countries = new DvK\Vat\Countries();
-		if (!$countries->inEurope($vat_country))
-		{
-			// VAT ID is only used in the EU
-			return true;
-		}
-
+		// Should the VAT ID be checked?
 		if ($this->pref['tax_check_vat'])
 		{
-			$validator = new DvK\Vat\Validator();
-			// check if VAT ID is valid
-			if ($validator->validate($vat_id)) // false (checks format + existence)
+			$country = trim(strtoupper($country));
+			$vat_country = trim(strtoupper(substr($vat_id, 0, 2)));
+
+			// Check if the countries match
+			if ($vat_country != $country)
 			{
-				// Is VAT ID from the customers country?
-				if (strtoupper($country) != $vat_country)
-				{
-					return false;
-				}
+				// countrycode of the given vat_id
+				// doesn't match the given country
+				return false;
 			}
-			else
+	
+			// Check if the VAT ID is from a EU country
+			$countries = new DvK\Vat\Countries();
+			if (!$countries->inEurope($vat_country))
 			{
+				// VAT ID is only used in the EU
+				return true;
+			}
+	
+			// Validate the given VAT ID
+			$validator = new DvK\Vat\Validator();
+			if (!$validator->validate($vat_id))
+			{
+				// Invalid VAT ID (checks format + existence)
 				return false;
 			}
 		}
+		// VAT ID ok, or not checked => return true
 		return true;
 	}
 
