@@ -13,6 +13,7 @@ class vstore_dashboard extends vstore
     protected $id;
     protected $limit_from;
     protected $tp;
+    protected $frm;
     protected $sql;
     protected $template;
 
@@ -44,7 +45,8 @@ class vstore_dashboard extends vstore
         $this->id = intval(vartrue($this->get['id'], 0));
 
 		$this->tp = e107::getParser();
-		$this->sql = e107::getDb();
+        $this->sql = e107::getDb();
+        $this->frm = e107::getForm();
 
         $this->template = e107::getTemplate('vstore', 'vstore_dashboard');
 		$this->from = vartrue($this->get['page'],1);
@@ -225,13 +227,13 @@ class vstore_dashboard extends vstore
         else
         {
             // render cancel order confirmation
-            $text .= $this->open('confirm-cancel','post', null, array('class'=>'form'));
+            $text .= $this->frm->open('confirm-cancel', 'post', null, array('class'=>'form'));
             $text .= '
                 <div class="alert alert-warning" role="alert">Do you really want to cancel your order '.$data['order_refcode'].'?</div>
                 <a href="'.e107::url('vstore', 'dashboard', array('dash' => 'orders')).'" class="btn btn-primary" name="cancel_cancel" id="cancel_cancel">No, take me back</a>
                 <button type="submit" class="btn btn-warning" name="cancel_order" id="cancel_order" value="'.$data['order_id'].'">Yes, cancel this order!</button>
             ';
-            $text .= $this->close();
+            $text .= $this->frm->close();
 
         }
         return $text;
@@ -324,7 +326,7 @@ class vstore_dashboard extends vstore
         $data = $this->sql->retrieve('vstore_customer', '*', 'cust_e107_user = '.USERID);
         if ($data)
         {
-			$text .= $this->open('address_edit', 'post');
+			$text .= $this->frm->open('address_edit', 'post');
 
 			if ($this->id === 1) // Billing address
 			{
@@ -426,10 +428,10 @@ class vstore_dashboard extends vstore
 				<hr/>
 				<div class="text-center">
 				<a href="'.e107::url('vstore', 'dashboard', array('dash' => 'addresses')).'"  class="btn btn-default">Back</a>&nbsp;';
-			$text .= $this->button('edit_address', $this->id, 'submit', 'Save', array('class' => 'btn btn-primary'));
+			$text .= $this->frm->button('edit_address', $this->id, 'submit', 'Save', array('class' => 'btn btn-primary'));
 			$text .= '</div>';
 
-			$text .= $this->close();
+			$text .= $this->frm->close();
         }
         else
         {
