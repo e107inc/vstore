@@ -4084,7 +4084,7 @@ class vstore
 			return '';
 		}
 
-		$periods = $map[$country];
+		$periods = $map[$country]['periods'];
 		if (empty($periods))
 		{
 			// Country not in table
@@ -4096,7 +4096,7 @@ class vstore
             return new \DateTime($period1['effective_from']) > new \DateTime($period2['effective_from']) ? -1 : 1;
         });
 		
-		$tax_classes = array_keys($periods[0][0]['rates']);
+		$tax_classes = array_keys($periods[0]['rates']);
 
 		if (!in_array($tax_class, $tax_classes))
 		{
