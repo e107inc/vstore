@@ -1,12 +1,22 @@
 <?php
-
+/**
+ * e107 website system
+ *
+ * Copyright (C) 2008-2013 e107 Inc (e107.org)
+ * Released under the terms and conditions of the
+ * GNU General Public License (http://www.gnu.org/licenses/gpl.txt)
+ *
+ * Vstore shopping cart plugin
+ *
+ * @author CaMerOn <cameron@e107.org>
+ * @author Achim Ennenbach <achim@simsync.de>
+ * @copyright 2019 e107inc
+ */
 
 e107::css('vstore', 'vstore.css');
 e107::js('vstore', 'js/vstore.js');
 
-
 require_once('vendor/autoload.php');
-
 
 use Omnipay\Omnipay;
 use DvK\Vat\Rates\Exceptions\Exception;
@@ -947,13 +957,8 @@ class vstore
      */
     private function renderConfirmOrder()
     {
-
         $cust = $this->getCustomerData(true);
-        // $isBusiness = !empty($cust['vat_id']);
-        // $isLocal = (varset($cust['country'], $this->pref['tax_business_country']) == $this->pref['tax_business_country']);
-
         $ship = $this->getShippingData(true);
-
         $data = $this->prepareCheckoutData($this->getCheckoutData(), true);
 
         $template = e107::getTemplate('vstore', 'vstore', 'orderconfirm');
@@ -1466,7 +1471,12 @@ class vstore
             return "Invalid Order ID";
         }
 
-        $orderData = e107::getDb()->retrieve('vstore_orders', 'order_pay_gateway, order_status, order_pay_status, order_pay_transid, order_pay_amount, order_pay_currency, order_pay_rawdata, order_log', 'order_id = ' . intval($order_id));
+        $orderData = e107::getDb()->retrieve(
+            'vstore_orders',
+            'order_pay_gateway, order_status, order_pay_status, order_pay_transid, ' .
+            'order_pay_amount, order_pay_currency, order_pay_rawdata, order_log',
+            'order_id = ' . intval($order_id)
+        );
         if (empty($orderData)) {
             return 'Invalid order id!';
         } elseif ($orderData['order_status'] == 'R') {
@@ -1586,7 +1596,13 @@ class vstore
                 $rawdata = e107::serialize($rawdata, 'json');
 
                 if ($do_log) {
-                    $log = self::addToOrderLog($orderData['order_log'], 'Status', self::getStatus($orderData['order_status']), self::getStatus('R'), true);
+                    $log = self::addToOrderLog(
+                        $orderData['order_log'],
+                        'Status',
+                        self::getStatus($orderData['order_status']),
+                        self::getStatus('R'),
+                        true
+                    );
                     $log = self::addToOrderLog($log, 'Pay Status', $orderData['order_pay_status'], 'refunded', false);
                 }
 
@@ -1604,7 +1620,8 @@ class vstore
                 }
 
                 if (!e107::getDb()->update('vstore_orders', $update, false, 'vstore', 'refund')) {
-                    return "Amount was refunded successfully, but the update of the database failed! Please check the error log!";
+                    return "Amount was refunded successfully, but the update of the database failed! ".
+                        "Please check the error log!";
                 }
                 return true;
             } else {
@@ -1628,7 +1645,11 @@ class vstore
     public function setOrderStatus($order_id, $new_status)
     {
         // get current record
-        $order = e107::getDb()->retrieve('vstore_orders', 'order_e107_user, order_status, order_pay_status, order_items, order_log', 'order_id=' . $order_id);
+        $order = e107::getDb()->retrieve(
+            'vstore_orders',
+            'order_e107_user, order_status, order_pay_status, order_items, order_log',
+            'order_id=' . $order_id
+        );
 
         // record found and new status is different to new one
         if ($order && $order['order_status'] !== $new_status) {
@@ -1647,13 +1668,25 @@ class vstore
                 'data' => array(
                     'order_status' => $new_status,
                     'order_pay_status' => $order_pay_status,
-                    'order_log' => self::addToOrderLog($order['order_log'], 'Status', self::getStatus($order['order_status']), self::getStatus($new_status), false)
+                    'order_log' => self::addToOrderLog(
+                        $order['order_log'],
+                        'Status',
+                        self::getStatus($order['order_status']),
+                        self::getStatus($new_status),
+                        false
+                    )
                 ),
                 'WHERE' => 'order_id=' . $order_id
             );
 
             // Run the update query
-            $result = e107::getDb()->update('vstore_orders', $update, false, 'vstore', "setOrderStatus({$order_id}, {$new_status})");
+            $result = e107::getDb()->update(
+                'vstore_orders',
+                $update,
+                false,
+                'vstore',
+                "setOrderStatus({$order_id}, {$new_status})"
+            );
 
             if ($result && $new_status === 'C') {
                 // In case of a positive update and the order has been set to 'C' (complete)
@@ -1956,7 +1989,12 @@ class vstore
         $add = array();
         foreach ($fields as $key => $value) {
             if (isset($customerData['add_field' . $key])) {
-                $add['add_field' . $key] = array('caption' => strip_tags($value['caption'][e_LANGUAGE]), 'value' => ($value['type'] == 'text'  ? $customerData['add_field' . $key] : ($customerData['add_field' . $key] ? 'X' : '-')));
+                $add['add_field' . $key] = array(
+                    'caption' => strip_tags($value['caption'][e_LANGUAGE]),
+                    'value' => ($value['type'] == 'text'
+                        ? $customerData['add_field' . $key]
+                        : ($customerData['add_field' . $key] ? 'X' : '-'))
+                    );
                 unset($customerData['add_field' . $key]);
             }
         }
@@ -2010,7 +2048,12 @@ class vstore
 
         $nid = e107::getDb()->insert('vstore_orders', $insert);
         if ($nid !== false) {
-            if (USER && !$this->saveCustomer($customerData, $shippingData, $this->getShippingType(), $this->getGatewayType(true))) {
+            if (USER && !$this->saveCustomer(
+                $customerData,
+                $shippingData,
+                $this->getShippingType(),
+                $this->getGatewayType(true)
+            )) {
                 $mes->addError('Unable to save/Update customer data!', 'vstore');
             }
 
@@ -2025,7 +2068,14 @@ class vstore
 
             $invoice_nr = vstore::getNextInvoiceNr();
 
-            e107::getDb()->update('vstore_orders', array('data' => array('order_refcode' => $refId, 'order_log' => e107::serialize($log, 'json'), 'order_invoice_nr' => $invoice_nr), 'WHERE' => 'order_id=' . $nid));
+            e107::getDb()->update('vstore_orders', array(
+                'data' => array(
+                    'order_refcode' => $refId,
+                    'order_log' => e107::serialize($log, 'json'),
+                    'order_invoice_nr' => $invoice_nr
+                ),
+                'WHERE' => 'order_id=' . $nid
+            ));
 
             $insert['order_refcode'] = $refId;
             $insert['order_invoice_nr'] = $invoice_nr;
@@ -2037,7 +2087,9 @@ class vstore
                 $pdf_file = $this->pathToInvoicePdf($invoice_nr, $pdf_data['userid']);
             }
 
-            $mes->addSuccess("Your order <b>#" . $refId . "</b> is complete and you will receive a order confirmation with all details within the next few minutes!", 'vstore');
+            $mes->addSuccess("Your order <b>#" . $refId .
+                "</b> is complete and you will receive a order confirmation " .
+                "with all details within the next few minutes!", 'vstore');
             $this->updateInventory($insert['order_items']);
             $this->emailCustomer('default', $refId, $insert, $pdf_file);
 
@@ -2073,7 +2125,10 @@ class vstore
             $result = $sql->insert('vstore_customer', $data);
             if ($result) {
                 $ref = $this->getOrderRef($result, $customerData['firstname'], $customerData['lastname']);
-                $result = $sql->update('vstore_customer', array('data' => array('cust_refcode' => $ref), 'WHERE' => 'cust_e107_user=' . USERID));
+                $result = $sql->update('vstore_customer', array(
+                    'data' => array('cust_refcode' => $ref),
+                    'WHERE' => 'cust_e107_user=' . USERID
+                ));
             }
         }
 
@@ -2090,7 +2145,10 @@ class vstore
     public function emailCustomerOnStatusChange($order_id)
     {
         if (intval($order_id) <= 0) {
-            e107::getMessage()->addDebug('No order_id supplied or order_id "' . intval($order_id) . '" is invalid!', 'vstore');
+            e107::getMessage()->addDebug(
+                'No order_id supplied or order_id "' . intval($order_id) . '" is invalid!',
+                'vstore'
+            );
             return;
         }
 
@@ -2136,9 +2194,12 @@ class vstore
                     $ids[] = intval($item['id']);
                 }
 
-                if ($sql->select('vstore_items', 'item_userclass', 'FIND_IN_SET(item_id, "' . implode(',', $ids) . '")')) {
+                if ($sql->select(
+                    'vstore_items',
+                    'item_userclass',
+                    'FIND_IN_SET(item_id, "' . implode(',', $ids) . '")'
+                )) {
                     while ($row = $sql->fetch()) {
-                        //$uc = $sql->retrieve('vstore_items', 'item_userclass', 'item_id='.intval($item['id']));
                         $uc = intval($row['item_userclass']);
                         if ($uc > 0 && $uc != 255) {
                             $usr->addClass($uc);
@@ -2257,7 +2318,10 @@ class vstore
         $receiver = e107::unserialize($insert['order_billing']);
 
         $insert['is_business'] = !empty($receiver['vat_id']);
-        $insert['is_local'] = (varset($receiver['country'], $this->pref['tax_business_country']) == $this->pref['tax_business_country']);
+        $insert['is_local'] = (varset(
+            $receiver['country'],
+            $this->pref['tax_business_country']
+        ) == $this->pref['tax_business_country']);
 
         $insert['order_ref'] = (empty($ref) ? $insert['order_refcode'] : $ref);
 
@@ -2312,19 +2376,34 @@ class vstore
 
         foreach ($arr as $row) {
             if (!empty($row['quantity']) && !empty($row['id']) && !empty($row['name'])) {
-                $curQuantity = $sql->retrieve('vstore_items', 'item_inventory', 'item_id=' . intval($row['id']) . ' AND item_code="' . $row['name'] . '"');
+                $curQuantity = $sql->retrieve(
+                    'vstore_items',
+                    'item_inventory',
+                    'item_id=' . intval($row['id']) . ' AND item_code="' . $row['name'] . '"'
+                );
                 if ($curQuantity > 0) {
                     $reduceBy = intval($row['quantity']);
                     if ($reduceBy > $curQuantity) {
                         $reduceBy = $curQuantity;
                     }
-                    if ($sql->update('vstore_items', 'item_inventory = item_inventory - ' . $reduceBy . ' WHERE item_id=' . intval($row['id']) . ' AND item_code="' . $row['name'] . '" LIMIT 1')) {
-                        e107::getMessage()->addDebug("Reduced inventory of " . $row['name'] . " by " . $row['quantity']);
+                    if ($sql->update(
+                        'vstore_items',
+                        'item_inventory = item_inventory - ' . $reduceBy .
+                        ' WHERE item_id=' . intval($row['id']) . ' AND item_code="' . $row['name'] . '" LIMIT 1'
+                    )) {
+                        e107::getMessage()->addDebug(
+                            "Reduced inventory of " . $row['name'] . " by " . $row['quantity']
+                        );
                     } else {
-                        e107::getMessage()->addDebug("Was UNABLE to reduce inventory of " . $row['name'] . " (" . $row['id'] . ") by " . $row['quantity']);
+                        e107::getMessage()->addDebug(
+                            "Was UNABLE to reduce inventory of " . $row['name'] .
+                            " (" . $row['id'] . ") by " . $row['quantity']
+                        );
                     }
                 } else {
-                    e107::getMessage()->addDebug("Unlimited item not reduced: " . $row['name'] . " (" . $row['id'] . ")");
+                    e107::getMessage()->addDebug(
+                        "Unlimited item not reduced: " . $row['name'] . " (" . $row['id'] . ")"
+                    );
                 }
             }
         }
@@ -2437,8 +2516,15 @@ class vstore
 
                 if ($iteminfo && $iteminfo['item_active'] == 0) {
                     // Item not found or not longer active => Remove from cart
-                    e107::getMessage()->addWarning('We\'re sorry, but we could\'t find the selected item "' . $iteminfo['item_name'] . '" or it is no longer active!', 'vstore');
-                    $sql->delete('vstore_cart', 'cart_id = ' . intval($id) . ' AND cart_item = ' . intval($itemid) . ' LIMIT 1');
+                    e107::getMessage()->addWarning(
+                        'We\'re sorry, but we could\'t find the selected item "' . $iteminfo['item_name'] .
+                        '" or it is no longer active!',
+                        'vstore'
+                    );
+                    $sql->delete(
+                        'vstore_cart',
+                        'cart_id = ' . intval($id) . ' AND cart_item = ' . intval($itemid) . ' LIMIT 1'
+                    );
                     continue;
                 }
 
@@ -2457,10 +2543,17 @@ class vstore
                         }
                     }
                     $itemname .= $itemvarstring;
-                    e107::getMessage()->addWarning('The entered quantity for "' . $itemname . '" exceeds the number of items in stock!<br/>The quantity has been adjusted!', 'vstore');
+                    e107::getMessage()->addWarning(
+                        'The entered quantity for "' . $itemname .
+                        '" exceeds the number of items in stock!<br/>The quantity has been adjusted!',
+                        'vstore'
+                    );
                 }
 
-                $sql->update('vstore_cart', 'cart_qty = ' . intval($qty) . ' WHERE cart_id = ' . intval($id) . ' LIMIT 1');
+                $sql->update(
+                    'vstore_cart',
+                    'cart_qty = ' . intval($qty) . ' WHERE cart_id = ' . intval($id) . ' LIMIT 1'
+                );
             }
         }
 
@@ -2524,7 +2617,11 @@ class vstore
 
         $this->from = vartrue($this->get['frm'], 0);
 
-        $query = 'SELECT * FROM #vstore_cat WHERE cat_class IN (' . USERCLASS_LIST . ') AND cat_parent = ' . $parent . ' ORDER BY cat_order LIMIT ' . $this->from . "," . $this->perPage;
+        $query = 'SELECT *
+        FROM #vstore_cat
+        WHERE cat_class IN (' . USERCLASS_LIST . ') AND cat_parent = ' . $parent . '
+        ORDER BY cat_order
+        LIMIT ' . $this->from . "," . $this->perPage;
         if ((!$data = e107::getDb()->retrieve($query, true)) &&  intval($parent) == 0) {
             return e107::getMessage()->addInfo('No categories available!', 'vstore')->render('vstore');
         } elseif (!$data) {
@@ -2582,7 +2679,14 @@ class vstore
             $this->perPage = $item_count;
         }
 
-        if (!$data = e107::getDb()->retrieve('SELECT SQL_CALC_FOUND_ROWS *, cat_class FROM #vstore_items LEFT JOIN #vstore_cat ON (item_cat = cat_id) WHERE cat_class IN (' . USERCLASS_LIST . ') AND item_active=1 AND item_cat = ' . intval($category) . ' ORDER BY item_order LIMIT ' . $this->from . ',' . $this->perPage, true)) {
+        if (!$data = e107::getDb()->retrieve(
+            'SELECT SQL_CALC_FOUND_ROWS *, cat_class
+            FROM #vstore_items
+            LEFT JOIN #vstore_cat ON (item_cat = cat_id)
+            WHERE cat_class IN (' . USERCLASS_LIST . ') AND item_active=1 AND item_cat = ' . intval($category) . '
+            ORDER BY item_order LIMIT ' . $this->from . ',' . $this->perPage,
+            true
+        )) {
             return e107::getMessage()->addInfo("No products available in this category", 'vstore')->render('vstore');
         }
 
@@ -2627,7 +2731,7 @@ class vstore
 
             global $nextprev_parms;
 
-            $nextprev_parms  = http_build_query($nextprev, false, '&'); // 'tmpl_prefix='.deftrue('NEWS_NEXTPREV_TMPL', 'default').'&total='. $total_downloads.'&amount='.$amount.'&current='.$newsfrom.$nitems.'&url='.$url;
+            $nextprev_parms  = http_build_query($nextprev, false, '&');
 
             $text .= $tp->parseTemplate("{NEXTPREV: " . $nextprev_parms . "}", true);
         }
@@ -2645,7 +2749,10 @@ class vstore
      */
     protected function productView($id = 0)
     {
-        if (!$row = e107::getDb()->retrieve('SELECT * FROM #vstore_items WHERE item_active=1 AND item_id = ' . intval($id) . '  LIMIT 1', true)) {
+        if (!$row = e107::getDb()->retrieve(
+            'SELECT * FROM #vstore_items WHERE item_active=1 AND item_id = ' . intval($id) . '  LIMIT 1',
+            true
+        )) {
             e107::getMessage()->addInfo("No products available in this category", 'vstore');
             return null;
         }
@@ -2691,7 +2798,10 @@ class vstore
         if (!empty($data['item_related'])) {
             $tmp = e107::unserialize($data['item_related']);
             if (!empty($tmp['src'])) {
-                $tabData['related'] = array('caption' => varset($tmp['caption'], 'Related'), 'text' => $tmpl['item']['related']);
+                $tabData['related'] = array(
+                    'caption' => varset($tmp['caption'], 'Related'),
+                    'text' => $tmpl['item']['related']
+                );
             }
         }
 
@@ -2759,7 +2869,8 @@ class vstore
                     return true;
                 }
             }
-            e107::getMessage()->addWarning('Quantity of selected product exceeds the number of items in stock!<br/>The quantity has been adjusted!', 'vstore');
+            e107::getMessage()->addWarning('Quantity of selected product exceeds the number of items in stock!<br/>'.
+                'The quantity has been adjusted!', 'vstore');
             return false;
         }
 
@@ -2890,7 +3001,11 @@ class vstore
      */
     public function getCartData()
     {
-        return e107::getDb()->retrieve('SELECT c.*, i.*, cat.cat_name, cat.cat_sef FROM `#vstore_cart` AS c LEFT JOIN `#vstore_items` as i ON (c.cart_item = i.item_id) LEFT JOIN `#vstore_cat` as cat ON (i.item_cat = cat.cat_id) WHERE c.cart_session = "' . $this->cartId . '" AND c.cart_status ="" ', true);
+        return e107::getDb()->retrieve('SELECT c.*, i.*, cat.cat_name, cat.cat_sef
+        FROM `#vstore_cart` AS c
+        LEFT JOIN `#vstore_items` as i ON (c.cart_item = i.item_id)
+        LEFT JOIN `#vstore_cat` as cat ON (i.item_cat = cat.cat_id)
+        WHERE c.cart_session = "' . $this->cartId . '" AND c.cart_status ="" ', true);
     }
 
 
@@ -2955,7 +3070,8 @@ class vstore
         $sql = e107::getDb();
         $cust = $this->getCustomerData();
         $isBusiness = !empty($cust['vat_id']);
-        $isLocal = (varset($cust['country'], $this->pref['tax_business_country']) == $this->pref['tax_business_country']);
+        $isLocal = (varset($cust['country'], $this->pref['tax_business_country']) ==
+            $this->pref['tax_business_country']);
 
         $coupon = '';
         $checkoutData['coupon'] = array('code' => '', 'amount' => 0.0, 'amount_net' => 0.0);
@@ -2963,7 +3079,11 @@ class vstore
         $hasCoupon = false;
         if (!$isCheckoutData && !empty(trim($this->post['cart_coupon_code']))) {
             // coupon code was posted
-            $coupon = e107::getDb()->retrieve('vstore_coupons', '*', sprintf('coupon_code="%s"', trim($this->post['cart_coupon_code'])));
+            $coupon = e107::getDb()->retrieve(
+                'vstore_coupons',
+                '*',
+                sprintf('coupon_code="%s"', trim($this->post['cart_coupon_code']))
+            );
             $hasCoupon = true;
         } elseif ($isCheckoutData || !isset($this->post['cart_coupon_code'])) {
             // data is cart data
@@ -3006,7 +3126,8 @@ class vstore
 
         foreach ($items as $row) {
             if (!$this->isItemActive($row['cart_item'])) {
-                e107::getMessage()->addWarning('We\'re sorry, but the item "' . $row['item_name'] . '" is missing or not longer active and has been removed from the cart!', 'vstore');
+                e107::getMessage()->addWarning('We\'re sorry, but the item "' . $row['item_name'] .
+                    '" is missing or not longer active and has been removed from the cart!', 'vstore');
                 $sql->delete('vstore_cart', 'cart_id=' . $row['cart_id'] . ' AND cart_item=' . $row['cart_item']);
                 continue;
             }
@@ -3056,7 +3177,9 @@ class vstore
 
 
         if ($count_active == 0) {
-            return ($fromSitelink ? null : e107::getMessage()->addInfo("Your cart is empty.", 'vstore')->render('vstore'));
+            return ($fromSitelink
+                ? null
+                : e107::getMessage()->addInfo("Your cart is empty.", 'vstore')->render('vstore'));
         }
 
 
@@ -3134,7 +3257,11 @@ class vstore
         if (!empty($_SESSION['vstore']['shipping']) || $forceSession) {
             return $_SESSION['vstore']['shipping'];
         }
-        return e107::unserialize(e107::getDb()->retrieve('vstore_customer', 'cust_shipping', 'cust_e107_user=' . USERID));
+        return e107::unserialize(e107::getDb()->retrieve(
+            'vstore_customer',
+            'cust_shipping',
+            'cust_e107_user=' . USERID
+        ));
     }
 
 
@@ -3222,7 +3349,8 @@ class vstore
     private function downloadFile($item_id = null)
     {
         if ($item_id == null || intval($item_id) <= 0) {
-            e107::getMessage()->addDebug('Download id "' . intval($item_id) . '" to download missing or invalid!', 'vstore');
+            e107::getMessage()->addDebug('Download id "' . intval($item_id) .
+                '" to download missing or invalid!', 'vstore');
             return false;
         }
 
@@ -3240,7 +3368,10 @@ class vstore
             e107::getFile()->send($filepath);
             return true;
         } else {
-            e107::getMessage()->addError('Download id  "' . intval($item_id) . '" doesn\'t contain a file to download!', 'vstore');
+            e107::getMessage()->addError(
+                'Download id  "' . intval($item_id) . '" doesn\'t contain a file to download!',
+                'vstore'
+            );
             return false;
         }
     }
@@ -3263,11 +3394,19 @@ class vstore
             return false;
         }
         $sql = e107::getDb();
-        $order = $sql->select('vstore_orders', '*', 'order_e107_user=' . USERID . ' AND order_items LIKE \'%"id": "' . intval($item_id) . '",%\' ORDER BY order_id DESC');
+        $order = $sql->select(
+            'vstore_orders',
+            '*',
+            'order_e107_user=' . USERID .' AND order_items LIKE \'%"id": "' . intval($item_id) . '",%\'
+            ORDER BY order_id DESC'
+        );
 
 
         if (!$order) {
-            e107::getMessage()->addError('We were unable to find your order and therefore the download has been denied!', 'vstore');
+            e107::getMessage()->addError(
+                'We were unable to find your order and therefore the download has been denied!',
+                'vstore'
+            );
             return false;
         }
 
@@ -3283,7 +3422,11 @@ class vstore
             }
         }
         // Order not completed or payment not complete + order_status = New
-        e107::getMessage()->addError('Your order is still in a state (' . vstore::getStatus($order_status) . ') which doesn\'t allow to download the file!', 'vstore');
+        e107::getMessage()->addError(
+            'Your order is still in a state (' . vstore::getStatus($order_status) .
+                ') which doesn\'t allow to download the file!',
+            'vstore'
+        );
         return false;
     }
 
@@ -3300,7 +3443,10 @@ class vstore
         }
         $sql = e107::getDb();
 
-        if ($sql->gen('SELECT item_id FROM `#vstore_items` LEFT JOIN `#vstore_cat` ON (item_cat = cat_id) WHERE item_active=1 AND cat_class IN (' . USERCLASS_LIST . ') AND item_id=' . intval($itemid))) {
+        if ($sql->gen('SELECT item_id
+        FROM `#vstore_items`
+        LEFT JOIN `#vstore_cat` ON (item_cat = cat_id)
+        WHERE item_active=1 AND cat_class IN (' . USERCLASS_LIST . ') AND item_id=' . intval($itemid))) {
             return true;
         }
         return false;
@@ -3329,7 +3475,11 @@ class vstore
         $result = array('price' => 0.0, 'variation' => array());
 
         $sql = e107::getDb();
-        if ($sql->select('vstore_items_vars', 'item_var_id, item_var_name, item_var_attributes', 'FIND_IN_SET(item_var_id, "' . implode(',', array_keys($itemvars)) . '")')) {
+        if ($sql->select(
+            'vstore_items_vars',
+            'item_var_id, item_var_name, item_var_attributes',
+            'FIND_IN_SET(item_var_id, "' . implode(',', array_keys($itemvars)) . '")'
+        )) {
             while ($itemvar = $sql->fetch()) {
                 $attr = e107::unserialize($itemvar['item_var_attributes']);
                 $text = $itemvar['item_var_name'];
@@ -3399,7 +3549,10 @@ class vstore
             $weight += (double)($item['item_weight'] * $item['cart_qty']);
         }
 
-        if (varset($pref['shipping_method']) == 'staggered' && varset($pref['shipping_limit']) && varset($pref['shipping_data'])) {
+        if (varset($pref['shipping_method']) == 'staggered'
+            && varset($pref['shipping_limit'])
+            && varset($pref['shipping_data'])
+            ) {
             $data = e107::unserialize($pref['shipping_data']);
             unset($data['%ROW%']);
             $val = $subtotal;
@@ -3465,18 +3618,32 @@ class vstore
         $sql = e107::getDb();
         // Check how often this code was used so far
         if ($coupon['coupon_limit_coupon'] > -1) {
-            $usage = $sql->retrieve('vstore_orders', 'count(order_id) AS count_coupon', sprintf('order_pay_coupon_code="%s"', $coupon['coupon_code']));
+            $usage = $sql->retrieve(
+                'vstore_orders',
+                'count(order_id) AS count_coupon',
+                sprintf('order_pay_coupon_code="%s"', $coupon['coupon_code'])
+            );
             if ($usage >= $coupon['coupon_limit_coupon']) {
-                e107::getMessage()->addError('Coupon is no longer available!<br />It has exceeded it\'s allowed number of usage!', 'vstore');
+                e107::getMessage()->addError(
+                    'Coupon is no longer available!<br />It has exceeded it\'s allowed number of usage!',
+                    'vstore'
+                );
                 return 0.0;
             }
         }
 
         // Check how often the current user has used this code
         if ($coupon['coupon_limit_user'] > -1) {
-            $usage = $sql->retrieve('vstore_orders', 'count(order_id) AS count_coupon', sprintf('order_e107_user="%s" AND order_pay_coupon_code="%s"', USERID, $coupon['coupon_code']));
+            $usage = $sql->retrieve(
+                'vstore_orders',
+                'count(order_id) AS count_coupon',
+                sprintf('order_e107_user="%s" AND order_pay_coupon_code="%s"', USERID, $coupon['coupon_code'])
+            );
             if ($usage >= $coupon['coupon_limit_user']) {
-                e107::getMessage()->addError('Coupon is no longer available!<br />It has exceeded it\'s allowed number of usage!', 'vstore');
+                e107::getMessage()->addError(
+                    'Coupon is no longer available!<br />It has exceeded it\'s allowed number of usage!',
+                    'vstore'
+                );
                 return 0.0;
             }
         }
@@ -3516,7 +3683,16 @@ class vstore
         if ($coupon['coupon_limit_item'] > -1) {
             // Query database only the first time for this item (item_id can be duplicate due to item_variations)
             if (!isset($usage[$item['item_id']])) {
-                $data = $sql->retrieve('vstore_orders', 'order_items', sprintf('order_items LIKE \'%%"id": "%d"%%\' AND order_pay_coupon_code="%s"', $item['item_id'], $coupon['coupon_code']), true);
+                $data = $sql->retrieve(
+                    'vstore_orders',
+                    'order_items',
+                    sprintf(
+                        'order_items LIKE \'%%"id": "%d"%%\' AND order_pay_coupon_code="%s"',
+                        $item['item_id'],
+                        $coupon['coupon_code']
+                    ),
+                    true
+                );
                 if ($data) {
                     foreach ($data as $row) {
                         $item_info = e107::unserialize($row['order_items']);
@@ -3536,9 +3712,17 @@ class vstore
             if ($usage[$item['item_id']] > $coupon['coupon_limit_item']) {
                 if (($usage[$item['item_id']] - $item['cart_qty']) < $coupon['coupon_limit_item']) {
                     $max_usage = $coupon['coupon_limit_item'] - ($usage[$item['item_id']] - $item['cart_qty']);
-                    e107::getMessage()->addWarning('Item quantity exceeds the allowed number of coupon code usage for this item "' . $item['item_name'] . '"!<br />The coupon will only used for remaining number of usages (' . $max_usage . 'x).', 'vstore');
+                    e107::getMessage()->addWarning(
+                        'Item quantity exceeds the allowed number of coupon code usage for this item "' .
+                        $item['item_name'] . '"!<br />The coupon will only used for remaining number of usages (' .
+                        $max_usage . 'x).',
+                        'vstore'
+                    );
                 } else {
-                    e107::getMessage()->addError('Coupon exceeds the allowed number of usage for this item "' . $item['item_name'] . '"!', 'vstore');
+                    e107::getMessage()->addError(
+                        'Coupon exceeds the allowed number of usage for this item "' . $item['item_name'] . '"!',
+                        'vstore'
+                    );
                     return 0.0;
                 }
             }
@@ -3964,7 +4148,13 @@ class vstore
 
         // check status of order: Invoice should be rendered only in status: N=New, C=Complete, P=Processing
         if (!self::validInvoiceOrderState($order['order_status'])) {
-            e107::getMessage()->addError(e107::getParser()->lanVars('Order in status "[x]". Invoice not available!', self::getStatus($order['order_status'])), 'vstore');
+            e107::getMessage()->addError(
+                e107::getParser()->lanVars(
+                    'Order in status "[x]". Invoice not available!',
+                    self::getStatus($order['order_status'])
+                ),
+                'vstore'
+            );
             return false;
         }
 
@@ -3999,7 +4189,10 @@ class vstore
         $order['order_pay_tax'] = e107::unserialize($order['order_pay_tax']);
 
         $order['is_business'] = !empty($order['order_billing']['vat_id']);
-        $order['is_local'] = (varset($order['order_billing']['country'], $this->pref['tax_business_country']) == $this->pref['tax_business_country']);
+        $order['is_local'] = (varset(
+            $order['order_billing']['country'],
+            $this->pref['tax_business_country']
+        ) == $this->pref['tax_business_country']);
 
 
         $ns = e107::getParser();
@@ -4016,11 +4209,17 @@ class vstore
 
         $result = array(
             'userid' => $order['order_e107_user'],
-            'subject' => varset($this->pref['invoice_title'][e_LANGUAGE], 'Invoice') . ' ' . self::formatInvoiceNr($order['order_invoice_nr']),
+            'subject' => varset($this->pref['invoice_title'][e_LANGUAGE], 'Invoice') . ' ' .
+                self::formatInvoiceNr($order['order_invoice_nr']),
             'text' => $text,
             'footer' => $footer,
             'logo' => $logo,
-            'url' => e107::url('vstore', 'invoice', array('order_invoice_nr' => $order['order_invoice_nr']), array('mode' => 'full'))
+            'url' => e107::url(
+                'vstore',
+                'invoice',
+                array('order_invoice_nr' => $order['order_invoice_nr']),
+                array('mode' => 'full')
+            )
         );
 
         return $result;
@@ -4052,7 +4251,12 @@ class vstore
             $pdf->pdf_path = realpath(e107::getFile()->getUserDir($data['userid'], true));
 
             if ($pdf->pdf_path == false || trim($pdf->pdf_path) == '') {
-                e107::getAdminLog()->add('Vstore', 'Unable to create invoice user folder: "' . e107::getFile()->getUserDir($data['userid'], false) . '"', E_LOG_WARNING);
+                e107::getAdminLog()->add(
+                    'Vstore',
+                    'Unable to create invoice user folder: "' .
+                        e107::getFile()->getUserDir($data['userid'], false) . '"',
+                    E_LOG_WARNING
+                );
                 e107::getMessage()->addError('Unable to create invoice user folder!', 'vstore');
                 return;
             }
