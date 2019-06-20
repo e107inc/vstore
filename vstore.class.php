@@ -1227,7 +1227,7 @@ class vstore
         if (!isset($this->get['mode'])) {
             if (!empty($this->get['download'])) {
                 $array[] = array('url' => e107::url('vstore', 'index'), 'text' => 'Download');
-            elseif (!empty($this->get['invoice'])) {
+            } elseif (!empty($this->get['invoice'])) {
                 $array[] = array('url'=> e107::url('vstore','index'), 'text'=>'Invoice');
                 $array[] = array(
                     'url'=> e107::url('vstore', 'invoice', array('order_invoice_nr' => $this->get['invoice'])),
