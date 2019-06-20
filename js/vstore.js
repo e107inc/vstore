@@ -284,24 +284,30 @@ var e107 = e107 || {'settings': {}, 'behaviors': {}};
 function vstoreCartReset()
 {
 	var url = e107.settings.vstore.cart.url;
+	var resetUrl = url + (url.indexOf('?')>=0 ? '&' : '?') + 'reset=1';
+	var redirectUrl = '';
+	if (location.href.indexOf(e107.settings.vstore.url) >= 0) {
+		redirectUrl = e107.settings.vstore.url;
+	}
 
-	url += (url.indexOf('?')>=0 ? '&' : '?') + 'reset=1';
-	
-
-	$.get(url, function(resp){
+	$.get(resetUrl, function(resp){
 		var msg = (typeof resp != 'undefined') ? resp : '';
-		if (msg.substr(0, 2) == 'ok')
-		{
-			// if ok, update cart menu with new content
-			msg = msg.substr(2);
-			$('#vstore-cart-dropdown').html(msg);
-			if ($('#vstore-cart-icon .badge').length>0)
-			{
-				$('#vstore-cart-icon .badge').html(0);
-			}
-			else if ($('#vstore-cart-icon .badge-pill').length>0)
-			{
-				$('#vstore-cart-icon .badge-pill').html(0);
+		if (msg.substr(0, 2) == 'ok') {
+			if (redirectUrl.length > 0) {
+				// Cart resetted => Redirect to shop start page
+				location.href = redirectUrl;
+			} else {
+				// update cart menu with new content if not in the shop
+				msg = msg.substr(2);
+				$('#vstore-cart-dropdown').html(msg);
+				if ($('#vstore-cart-icon .badge').length>0)
+				{
+					$('#vstore-cart-icon .badge').html(0);
+				}
+				else if ($('#vstore-cart-icon .badge-pill').length>0)
+				{
+					$('#vstore-cart-icon .badge-pill').html(0);
+				}
 			}
 			return;
 		}

@@ -26,10 +26,10 @@ e107::js('vstore', 'js/vstore.js');
 $vstore_prefs = e107::pref('vstore');
 
 e107::js('settings', array(
-    'vstore' =>
-    array(
+    'vstore' => array(
+        'url' => e107::url('vstore', 'index'),
         'cart' =>  array(
-            'url' => e107::url('vstore', 'cart') . 'cart.php',
+            'url' => e107::url('vstore', 'cart'),
             'addtocart' => 'Add to cart',
             'outofstock' => empty($vstore_prefs['caption_outofstock'][e_LANGUAGE])
                 ? 'Out of stock'
