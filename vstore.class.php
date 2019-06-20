@@ -23,7 +23,6 @@ use DvK\Vat\Rates\Exceptions\Exception;
 
 class vstore
 {
-
     protected $cartId             = null;
     protected $sc;
     protected $perPage            = 9;
@@ -1131,18 +1130,23 @@ class vstore
         if (intval($this->get['invoice']) > 0) {
             // Display invoice
             $data = $this->renderInvoice($this->getOrderIdFromInvoiceNr($this->get['invoice']));
-
+            $text = '';
             if ($data) {
-                // if invoice is correctly rendered, convert to pdf
-                $this->invoiceToPdf($data, !false);
-                $local_pdf = $this->pathToInvoicePdf($this->get['invoice'], $data['userid']);
-                $this->downloadInvoicePdf($local_pdf);
+                if (vartrue($this->pref['invoice_create_pdf'])) {
+                    // if invoice is correctly rendered, convert to pdf
+                    $this->invoiceToPdf($data, !false);
+                    $local_pdf = $this->pathToInvoicePdf($this->get['invoice'], $data['userid']);
+                    $this->downloadInvoicePdf($local_pdf);
+                } else {
+                    $text = $data;
+                }
             }
 
             $msg = e107::getMessage()->render('vstore');
-            if ($msg) {
+            if (!empty($msg) || !empty($text))
+            {
                 $bread = $this->breadcrumb();
-                $ns->tablerender($this->captionBase, $bread . $msg, 'vstore-invoice');
+                $ns->tablerender($this->captionBase, $bread.$msg.$text, 'vstore-invoice');
             }
 
             return null;
@@ -1223,6 +1227,12 @@ class vstore
         if (!isset($this->get['mode'])) {
             if (!empty($this->get['download'])) {
                 $array[] = array('url' => e107::url('vstore', 'index'), 'text' => 'Download');
+            elseif (!empty($this->get['invoice'])) {
+                $array[] = array('url'=> e107::url('vstore','index'), 'text'=>'Invoice');
+                $array[] = array(
+                    'url'=> e107::url('vstore', 'invoice', array('order_invoice_nr' => $this->get['invoice'])),
+                    'text' => self::formatInvoiceNr($this->get['invoice'])
+                );
             } else {
                 $array[] = array('url' => e107::url('vstore', 'index'), 'text' => $this->captionCategories);
             }
@@ -4158,16 +4168,19 @@ class vstore
             return false;
         }
 
-
-        // Check if invoice already exists
-        $local_pdf = $this->pathToInvoicePdf($order['order_invoice_nr'], $order['order_e107_user']);
-        if ($local_pdf != '' && !$forceUpdate) {
-            $this->downloadInvoicePdf($local_pdf);
-            return;
-        }
-        if ($local_pdf != '') {
-            // Delete old pdf, to make sure it WILL get recreated!
-            @unlink($local_pdf);
+        // Check if the invoice should be created as pdf
+        $pdf_invoice = vartrue($this->pref['invoice_create_pdf'], 0);
+        if($pdf_invoice) {
+            // Check if invoice already exists
+            $local_pdf = $this->pathToInvoicePdf($order['order_invoice_nr'], $order['order_e107_user']);
+            if($local_pdf != '' && !$forceUpdate) {
+                $this->downloadInvoicePdf($local_pdf);
+                return;
+            }
+            if($local_pdf != '') {
+                // Delete old pdf, to make sure it WILL get recreated!
+                @unlink($local_pdf);
+            }
         }
 
         // Load template
@@ -4204,25 +4217,69 @@ class vstore
 
         $logo = $this->sc->sc_invoice_logo('path');
         if (!empty($logo)) {
-            $logo = e_ROOT . $logo;
+            $logo = ($pdf_invoice ? e_ROOT : e_HTTP) . $logo;
         }
 
-        $result = array(
-            'userid' => $order['order_e107_user'],
-            'subject' => varset($this->pref['invoice_title'][e_LANGUAGE], 'Invoice') . ' ' .
-                self::formatInvoiceNr($order['order_invoice_nr']),
-            'text' => $text,
-            'footer' => $footer,
-            'logo' => $logo,
-            'url' => e107::url(
-                'vstore',
-                'invoice',
-                array('order_invoice_nr' => $order['order_invoice_nr']),
-                array('mode' => 'full')
-            )
-        );
+        if ($pdf_invoice) {
+            $result = array(
+                'userid' => $order['order_e107_user'],
+                'subject' => varset($this->pref['invoice_title'][e_LANGUAGE], 'Invoice') . ' ' .
+                    self::formatInvoiceNr($order['order_invoice_nr']),
+                'text' => $text,
+                'footer' => $footer,
+                'logo' => $logo,
+                'url' => e107::url(
+                    'vstore',
+                    'invoice',
+                    array('order_invoice_nr' => $order['order_invoice_nr']),
+                    array('mode' => 'full')
+                )
+            );
+    		} else {
+            $result = e107::getParser()->lanVars(
+                $template['display'],
+                array(
+                    'sitename' => SITENAME,
+                    'body' => $text,
+                    'footer' => $footer
+                )
+            );
+            $result = e107::getParser()->parseTemplate($result, true);
+		    }
 
         return $result;
+    }
+
+    /**
+     * Check if pdf creation ie enabled and
+     * a pdf plugin is installed
+     *
+     * @param bool $checkPref  (optional) true (default) checks first if the pdf creation is enabled
+     *
+     * @return bool true if the pdf plugin is installed,
+     *              false if pdf creation is deactivated or no pdf plugin is installed
+     */
+    public static function checkPdfPlugin($checkPref = true)
+    {
+        // Check if pdf invoices should be created
+        $create_pdf = e107::pref('vstore', 'invoice_create_pdf', '0');
+        if ($checkPref && !vartrue($create_pdf)) {
+          return false;
+        }
+
+        // Check if the pdf plugin is installed
+        if (!e107::isInstalled('pdf')) { // || !is_dir(e_PLUGIN . 'pdf/')) {
+            //e107::getAdminLog()->addWarning(
+            //    'PDF plugin not installed!<br/>This plugin is required by vstore to create invoice pdf\'s!',
+            //    true,
+            //    true
+            //)->save('Vstore Pdf');
+            e107::getMessage()->addWarning(
+                'PDF plugin not installed!<br/>This plugin is required to create invoice pdf\'s!'
+            );
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -4234,12 +4291,8 @@ class vstore
      */
     public function invoiceToPdf($data, $saveToDisk = true)
     {
-
-        if (!e107::isInstalled('pdf') || !is_dir(e_PLUGIN . 'pdf/')) {
-            e107::getAdminLog()->addError('PDF plugin not installed!<br/>This plugin is required by vstore to create invoice pdf\'s!', true, true)->save('Vstore Pdf');
-
-            e107::getMessage()->addError('PDF plugin not installed!<br/>This plugin is required to create invoice pdf\'s!<br/>Please inform the site-admin!', 'vstore');
-            return false;
+        if (!self::checkPdfPlugin(true)) {
+            return;
         }
 
         require_once('inc/vstore_pdf.class.php'); //require the vstore_pdf class
