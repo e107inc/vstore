@@ -892,7 +892,7 @@
 			$baseprice = $price = $this->tp->toNumber($this->var['item_price']);
 			$varprice = $this->tp->toNumber($this->var['item_var_price']);
 
-			if ($varprice >= 0.0 && $varprice != $baseprice)
+			if (!is_null($this->var['item_var_price']) && $varprice >= 0 && $varprice != $baseprice)
 			{
 				$price = $varprice;
 			}
