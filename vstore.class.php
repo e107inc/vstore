@@ -4486,18 +4486,15 @@ class vstore
 				'url'     => e107::url('vstore', 'invoice', array('order_invoice_nr' => $order['order_invoice_nr']), array('mode' => 'full'))
 			);
 		} else {
-			$result = '<table>
-		<thead><tr><td>
-			' . ($logo ? e107::getParser()->toImage($logo, array('w' => '200px')) . ' ' : '') . SITENAME . '
-		</td></tr></thead>
-		<tbody><tr><td>
-			' . $text . '
-		</td></tr></tbody>
-		<tfoot><tr><td>
-			' . $footer . '
-		</td></tr></tfoot>
-		</table>
-			';
+            $result = e107::getParser()->lanVars(
+                $template['display'],
+                array(
+                    'sitename' => SITENAME,
+                    'body' => $text,
+                    'footer' => $footer
+                )
+            );
+            $result = e107::getParser()->parseTemplate($result, true);
 		}
 		return $result;
 	}
