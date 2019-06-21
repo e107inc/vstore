@@ -376,7 +376,6 @@ class vstore_order_form_ui extends e_admin_form_ui
 					$(function(){
 						function updateOrder(type, id) {
 							var url = 'vstore.php';
-							
 							var data = {
 								'order': type,
 								'id': id
@@ -398,16 +397,19 @@ class vstore_order_form_ui extends e_admin_form_ui
 					
 						$('#btnonhold').click(function(e){
 							e.preventDefault();
+							if (!confirm('Do you really want to set the order on hold?')) return;
 							updateOrder('hold', {$order_id});
 						});
 					
 						$('#btncancel').click(function(e){
 							e.preventDefault();
+							if (!confirm('Do you really want to cancel this order?')) return;
 							updateOrder('cancel', {$order_id});
 						});
 					
 						$('#btnrefund').click(function(e){
 							e.preventDefault();
+							if (!confirm('Do you really want to refund this order?')) return;
 							updateOrder('refund', {$order_id});
 						});
 						

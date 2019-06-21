@@ -591,44 +591,44 @@ class vstore
                     // Refund a payment, $order_refund contains the orderId, access only for Admins!
                     $result = $this->refundOrder(intval($this->post['id']));
                     if ($result === true) {
-                        $js->sendTextResponse("Success\n" . 'Order sucessfully refunded!');
+                        $js->sendTextResponse(EMESSLAN_TITLE_SUCCESS . "\nOrder sucessfully refunded!");
                     } else {
-                        $js->sendTextResponse("Error\n" . varset($result, 'Order could\'t be refunded!'));
+                        $js->sendTextResponse(varset($result, "Error\nOrder could't be refunded!"));
                     }
                 } elseif ($this->post['order'] === 'complete') {
                     // Complete an order, $order_complete contains the orderId, access only for Admins!
                     $result = $this->setOrderStatus(intval($this->post['id']), 'C');
                     if ($result === true) {
-                        $js->sendTextResponse("Success\n" . 'Order sucessfully completed!');
+                        $js->sendTextResponse(EMESSLAN_TITLE_SUCCESS . "\nOrder sucessfully completed!");
                     } else {
-                        $js->sendTextResponse("Error\n" . varset($result, 'Order could\'t be completed!'));
+                        $js->sendTextResponse(varset($result, "Error\nOrder could't be set to completed!"));
                     }
                 } elseif ($this->post['order'] === 'cancel') {
                     // Cancel an order, $order_cancel contains the orderId, access only for Admins!
                     $result = $this->setOrderStatus(intval($this->post['id']), 'X');
 
                     if ($result === true) {
-                        $js->sendTextResponse("Success\n" . 'Order sucessfully cancelled!');
+                        $js->sendTextResponse(EMESSLAN_TITLE_SUCCESS . "\nOrder sucessfully cancelled!");
                     } else {
-                        $js->sendTextResponse("Error\n" . varset($result, 'Order could\'t be cancelled!'));
+                        $js->sendTextResponse(varset($result, "Error\nOrder could't be cancelled!"));
                     }
                 } elseif ($this->post['order'] === 'process') {
                     // Cancel an order, $order_cancel contains the orderId, access only for Admins!
                     $result = $this->setOrderStatus(intval($this->post['id']), 'P');
 
                     if ($result === true) {
-                        $js->sendTextResponse("Success\n" . 'Order sucessfully set to processing!');
+                        $js->sendTextResponse(EMESSLAN_TITLE_SUCCESS . "\nOrder sucessfully set to processing!");
                     } else {
-                        $js->sendTextResponse("Error\n" . varset($result, 'Order could\'t be set to processing!'));
+                        $js->sendTextResponse(varset($result, "Error\nOrder could't be set to processing!"));
                     }
                 } elseif ($this->post['order'] === 'hold') {
                     // Hold an order, $order_cancel contains the orderId, access only for Admins!
                     $result = $this->setOrderStatus(intval($this->post['id']), 'H');
 
                     if ($result === true) {
-                        $js->sendTextResponse("Success\n" . 'Order sucessfully set to on hold!');
+                        $js->sendTextResponse(EMESSLAN_TITLE_SUCCESS . "\nOrder sucessfully set to on hold!");
                     } else {
-                        $js->sendTextResponse("Error\n" . varset($result, 'Order could\'t be set to on hold!'));
+                        $js->sendTextResponse( varset($result, "Error\Order could't be set to on hold!"));
                     }
                 }
             }
@@ -1475,12 +1475,19 @@ class vstore
      */
     public function refundOrder($order_id = null, $do_log = true)
     {
+        // $successPrefix = EMESSLAN_TITLE_SUCCESS . "\n";
+        $warnPrefix = EMESSLAN_TITLE_WARNING . "\n";
+        $errorPrefix = EMESSLAN_TITLE_ERROR . "\n";
+
+        // By default, all gateways support automatic refunding
+        $supportsRefund = true;
 
         // Check inputs
         if (empty($order_id)) {
-            return "Invalid Order ID";
+            return $errorPrefix . "Invalid Order ID";
         }
 
+        // Load order data and check the contents
         $orderData = e107::getDb()->retrieve(
             'vstore_orders',
             'order_pay_gateway, order_status, order_pay_status, order_pay_transid, ' .
@@ -1488,31 +1495,31 @@ class vstore
             'order_id = ' . intval($order_id)
         );
         if (empty($orderData)) {
-            return 'Invalid order id!';
+            return $errorPrefix . 'Invalid order id!';
         } elseif ($orderData['order_status'] == 'R') {
-            return 'Order is already refunded!';
+            return $errorPrefix . 'Order is already refunded!';
         } elseif (!in_array($orderData['order_status'], array('P', 'H', 'C'))) {
-            return 'Only orders with status "Processing", "On Hold" and "Complete" can be refunded!';
+            return $errorPrefix . 'Only orders with status "Processing", "On Hold" and "Complete" can be refunded!';
         }
 
         $transactionId = $orderData['order_pay_transid'];
         $amount = $orderData['order_pay_amount'];
         $currency = $orderData['order_pay_currency'];
-        $type = $orderData['order_pay_gateway'];
+        $type = $gateway = $orderData['order_pay_gateway'];
 
         e107::getDebug()->log("Processing Gateway: " . $type);
 
         // Fix $type in case of Mollie Gateway
         if (self::isMollie($type)) {
-            $type = substr($type, 0, 6);
+            $gateway = substr($type, 0, 6);
         }
 
-        // array keeping the data required fore refunding
+        // array keeping the data required for refunding
         // usually the transactionid
         $refundDetails = array();
 
         // Init payment gateway
-        switch ($type) {
+        switch ($gateway) {
             case "mollie":
                 /** @var \Omnipay\Mollie\Gateway $gateway */
                 $gateway = Omnipay::create('Mollie');
@@ -1569,76 +1576,66 @@ class vstore
                 break;
 
             case "bank_transfer":
-                return "Bank transfer doesn't support automatized refunding! You have to do it manually!";
-
+                // Normal bank transfer doesn't support automatic refunding
+                $supportsRefund = false;
+                break;
 
             default:
-                return "Missing pament gateway!";
-        }
-
-        // Check if selected gateway has it's refunding details set
-        if (empty($refundDetails)) {
-            return "Refunding details not set!";
+                return $errorPrefix . "Missing pament gateway!";
         }
 
         // Check if selected gateway supports refunding
-        if (!$gateway->supportsRefund()) {
-            return $type . " doesn't support refunding! You have to do it manually!";
+        if ($supportsRefund && !$gateway->supportsRefund()) {
+            // gateway doesn't support refunding;
+            $supportsRefund = false;
         }
 
         try {
-            $request = $gateway->refund($refundDetails);
-            $response = $request->send();
-            if ($response->isSuccessful()) {
-                $data = $response->getData();
-
-                // append the rawdata
-                $rawdata = array();
-                if ($orderData['order_pay_rawdata']) {
-                    $rawdata = e107::unserialize($orderData['order_pay_rawdata']);
-                    if (!isset($rawdata['purchase'])) {
-                        $tmp = $rawdata;
-                        $rawdata = array('purchase' => $tmp);
-                        unset($tmp);
-                    }
-                }
-                $rawdata['refund'] = $data;
-                $rawdata = e107::serialize($rawdata, 'json');
-
-                if ($do_log) {
-                    $log = self::addToOrderLog(
-                        $orderData['order_log'],
-                        'Status',
-                        self::getStatus($orderData['order_status']),
-                        self::getStatus('R'),
-                        true
-                    );
-                    $log = self::addToOrderLog($log, 'Pay Status', $orderData['order_pay_status'], 'refunded', false);
+            $data = array();
+            if ($supportsRefund) {
+                // Check if selected gateway has it's refunding details set
+                if (empty($refundDetails)) {
+                    return $errorPrefix . "Refunding details not set!";
                 }
 
-                $update = array(
-                    'data' => array(
-                        'order_status' => 'R',
-                        'order_pay_status' => 'refunded',
-                        'order_pay_rawdata' => $rawdata,
-                        'order_refund_date' => time()
-                    ),
-                    'WHERE' => 'order_id = ' . $order_id
-                );
-                if ($do_log) {
-                    $update['data']['order_log'] = $log;
+                // try to refund the money
+                $request = $gateway->refund($refundDetails);
+                $response = $request->send();
+                if ($response->isSuccessful()) {
+                    $data = $response->getData();
+                } else {
+                    // Refunding failed
+                    return $errorPrefix . $response->getMessage();
                 }
-
-                if (!e107::getDb()->update('vstore_orders', $update, false, 'vstore', 'refund')) {
-                    return "Amount was refunded successfully, but the update of the database failed! ".
-                        "Please check the error log!";
-                }
-                return true;
             } else {
-                return $response->getMessage();
+                // Fill the rawdata with a meaningfull message to be added to rawdata array,
+                // refunding can't be done automatically
+                $data = array(
+                    'Refunded' => e107::getParser()->lanVars(
+                        'Order refunded on [x] by [y] ([z])',
+                        array(
+                            gmdate('Y-m-d H:i:s'),
+                            USERNAME,
+                            USERID
+                        )
+                    )
+                );
             }
+
+            // Update order status (incl.sending out the email to the customer (if nescessary))
+            $result = $this->setOrderStatus($order_id, 'R', array('refund' => $data));
+            if ($result !== true) {
+                return $errorPrefix . $result;
+            } elseif(!$supportsRefund) {
+                // In case of bank_transfers or other payment methods that do not support refunding,
+                // return a warning, that the refunding of the money has to be done manually!
+                return $warnPrefix . "The order has been marked as refunded, but the payment method '" .
+                    self::getGatewayTitle($type) .
+                    "' doesn't support automatic refunding!\nYou have to do it manually!";
+            }
+
         } catch (Exception $ex) {
-            return "Refunding failed! " . $ex->getMessage();
+            return $errorPrefix . "Refunding failed! " . $ex->getMessage();
         }
 
         return true;
@@ -1649,15 +1646,16 @@ class vstore
      *
      * @param int    $order_id   The order id
      * @param string $new_status The new order status code
+     * @param array  $raw_data   (optional) new rawdata data
      *
      * @return bool|string true on success, string otherwise
      */
-    public function setOrderStatus($order_id, $new_status)
+    public function setOrderStatus($order_id, $new_status, $raw_data = null)
     {
         // get current record
         $order = e107::getDb()->retrieve(
             'vstore_orders',
-            'order_e107_user, order_status, order_pay_status, order_items, order_log',
+            'order_e107_user, order_status, order_pay_status, order_items, order_log, order_pay_rawdata',
             'order_id=' . $order_id
         );
 
@@ -1671,6 +1669,22 @@ class vstore
             } elseif ($new_status === 'R') {
                 // if new status is refunded, set payment to refunded
                 $order_pay_status = 'refunded';
+            }
+
+            // Prepare rawdata array
+            $rawdata = array();
+            if (!empty($raw_data)) {
+                if ($order['order_pay_rawdata']) {
+                    $rawdata = e107::unserialize($order['order_pay_rawdata']);
+                    if (!isset($rawdata['purchase']) && !isset($rawdata['refund'])) {
+                        // just in case order_pay_rawdata has the wrong structure
+                        $tmp = $rawdata;
+                        $rawdata = array('purchase' => $tmp);
+                        unset($tmp);
+                    }
+                }
+                $rawdata = array_merge($rawdata, $raw_data);
+                $rawdata = e107::serialize($rawdata, 'json');
             }
 
             // define update array
@@ -1689,6 +1703,9 @@ class vstore
                 'WHERE' => 'order_id=' . $order_id
             );
 
+            if (!empty($rawdata)) {
+                $update['data']['order_pay_rawdata'] = $rawdata;
+            }
             // Run the update query
             $result = e107::getDb()->update(
                 'vstore_orders',
@@ -1711,6 +1728,7 @@ class vstore
             // send out the "OnChange" emails
             $this->emailCustomerOnStatusChange($order_id);
             return true;
+
         } elseif (!$order) {
             return "Order could't be found!";
         }
