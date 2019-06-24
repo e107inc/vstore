@@ -40,6 +40,7 @@ class vstore
     protected $pref               = array();
     protected $parentData         = array();
     protected $currency           = 'USD';
+    protected $order              = null;
 
     /**
      * Array with the available currencies
@@ -263,6 +264,8 @@ class vstore
         $this->post = $_POST;
 
         $this->pref = e107::pref('vstore');
+
+        $this->order = e107::getSingleton('vstore_order', e_PLUGIN . 'vstore/inc/vstore_order.class.php');
 
         $this->currency = vartrue($this->pref['currency'], 'USD');
 
@@ -587,49 +590,56 @@ class vstore
 
             // Order processing
             if (isset($this->post['order']) && intval($this->post['id']) > 0 && ADMIN) {
+                $this->order->load($this->post['id']);
                 if ($this->post['order'] === 'refund') {
                     // Refund a payment, $order_refund contains the orderId, access only for Admins!
-                    $result = $this->refundOrder(intval($this->post['id']));
-                    if ($result === true) {
-                        $js->sendTextResponse(EMESSLAN_TITLE_SUCCESS . "\nOrder sucessfully refunded!");
-                    } else {
-                        $js->sendTextResponse(varset($result, "Error\nOrder could't be refunded!"));
-                    }
+                    $status = 'R';
+                    $result = $this->order->refundOrder();
                 } elseif ($this->post['order'] === 'complete') {
                     // Complete an order, $order_complete contains the orderId, access only for Admins!
-                    $result = $this->setOrderStatus(intval($this->post['id']), 'C');
-                    if ($result === true) {
-                        $js->sendTextResponse(EMESSLAN_TITLE_SUCCESS . "\nOrder sucessfully completed!");
-                    } else {
-                        $js->sendTextResponse(varset($result, "Error\nOrder could't be set to completed!"));
-                    }
+                    $status = 'C';
+                    $result = $this->order->setOrderStatus($status);
                 } elseif ($this->post['order'] === 'cancel') {
                     // Cancel an order, $order_cancel contains the orderId, access only for Admins!
-                    $result = $this->setOrderStatus(intval($this->post['id']), 'X');
-
-                    if ($result === true) {
-                        $js->sendTextResponse(EMESSLAN_TITLE_SUCCESS . "\nOrder sucessfully cancelled!");
-                    } else {
-                        $js->sendTextResponse(varset($result, "Error\nOrder could't be cancelled!"));
-                    }
+                    $status = 'X';
+                    $result = $this->order->setOrderStatus($status);
                 } elseif ($this->post['order'] === 'process') {
                     // Cancel an order, $order_cancel contains the orderId, access only for Admins!
-                    $result = $this->setOrderStatus(intval($this->post['id']), 'P');
-
-                    if ($result === true) {
-                        $js->sendTextResponse(EMESSLAN_TITLE_SUCCESS . "\nOrder sucessfully set to processing!");
-                    } else {
-                        $js->sendTextResponse(varset($result, "Error\nOrder could't be set to processing!"));
-                    }
+                    $status = 'P';
+                    $result = $this->order->setOrderStatus($status);
                 } elseif ($this->post['order'] === 'hold') {
                     // Hold an order, $order_cancel contains the orderId, access only for Admins!
-                    $result = $this->setOrderStatus(intval($this->post['id']), 'H');
+                    $status = 'H';
+                    $result = $this->order->setOrderStatus($status);
+                } else {
+                    // In case that none of the above has handled the ajax request
+                    // (which shouldn't happen) just exit
+                    exit;
+                }
 
-                    if ($result === true) {
-                        $js->sendTextResponse(EMESSLAN_TITLE_SUCCESS . "\nOrder sucessfully set to on hold!");
-                    } else {
-                        $js->sendTextResponse( varset($result, "Error\Order could't be set to on hold!"));
-                    }
+                ob_clean();
+                // send out the results to the browser
+                // will be used in a javascript alert() box
+                if ($result === true) {
+                    // all went well
+                    $js->sendTextResponse(
+                        EMESSLAN_TITLE_SUCCESS . "\n" .
+                        e107::getParser()->lanVars(
+                            'Order updated to "[x]"',
+                            self::getStatus($status)
+                        )
+                    );
+                } else {
+                    // some error occured
+                    $js->sendTextResponse(
+                        ($this->order->getLastError()
+                        ? $this->order->getLastError()
+                        : EMESSLAN_TITLE_ERROR . "\n" . e107::getParser()->lanVars(
+                            'Order couldn\'t be updated to "[x]"', 
+                            self::getStatus($status)
+                            )
+                        )
+                    );
                 }
             }
 
@@ -793,7 +803,6 @@ class vstore
      */
     private function renderGuestForm()
     {
-        $frm = e107::getForm();
         $tp = e107::getParser();
 
         $template = e107::getTemplate('vstore', 'vstore', 'customer');
@@ -922,8 +931,6 @@ class vstore
      */
     private function renderShippingForm()
     {
-
-        $frm = e107::getForm();
         $tp = e107::getParser();
         if (!isset($this->post['ship']['firstname'])) {
             $prefix = '';
@@ -1129,7 +1136,8 @@ class vstore
 
         if (intval($this->get['invoice']) > 0) {
             // Display invoice
-            $data = $this->renderInvoice($this->getOrderIdFromInvoiceNr($this->get['invoice']));
+            $this->order->loadByInvoiceNr($this->get['invoice']);
+            $data = $this->renderInvoice();
             $text = '';
             if ($data) {
                 if (vartrue($this->pref['invoice_create_pdf'])) {
@@ -1221,7 +1229,6 @@ class vstore
 
         $array = array();
 
-        // $array[] = array('url'=> e107::url('vstore','index'), 'text'=>$this->captionCategories);
         $array[] = array('url' => e107::url('vstore', 'index'), 'text' => $this->captionBase);
 
         if (!isset($this->get['mode'])) {
@@ -1462,279 +1469,6 @@ class vstore
         $text .= e107::getForm()->close();
 
         return $text;
-    }
-
-
-    /**
-     * Refund an order
-     *
-     * @param int  $order_id The order ID of the order to refund
-     * @param bool $do_log   Update order log
-     *
-     * @return bool|string Returns true on success, an error message otherwise
-     */
-    public function refundOrder($order_id = null, $do_log = true)
-    {
-        // $successPrefix = EMESSLAN_TITLE_SUCCESS . "\n";
-        $warnPrefix = EMESSLAN_TITLE_WARNING . "\n";
-        $errorPrefix = EMESSLAN_TITLE_ERROR . "\n";
-
-        // By default, all gateways support automatic refunding
-        $supportsRefund = true;
-
-        // Check inputs
-        if (empty($order_id)) {
-            return $errorPrefix . "Invalid Order ID";
-        }
-
-        // Load order data and check the contents
-        $orderData = e107::getDb()->retrieve(
-            'vstore_orders',
-            'order_pay_gateway, order_status, order_pay_status, order_pay_transid, ' .
-            'order_pay_amount, order_pay_currency, order_pay_rawdata, order_log',
-            'order_id = ' . intval($order_id)
-        );
-        if (empty($orderData)) {
-            return $errorPrefix . 'Invalid order id!';
-        } elseif ($orderData['order_status'] == 'R') {
-            return $errorPrefix . 'Order is already refunded!';
-        } elseif (!in_array($orderData['order_status'], array('P', 'H', 'C'))) {
-            return $errorPrefix . 'Only orders with status "Processing", "On Hold" and "Complete" can be refunded!';
-        }
-
-        $transactionId = $orderData['order_pay_transid'];
-        $amount = $orderData['order_pay_amount'];
-        $currency = $orderData['order_pay_currency'];
-        $type = $gateway = $orderData['order_pay_gateway'];
-
-        e107::getDebug()->log("Processing Gateway: " . $type);
-
-        // Fix $type in case of Mollie Gateway
-        if (self::isMollie($type)) {
-            $gateway = substr($type, 0, 6);
-        }
-
-        // array keeping the data required for refunding
-        // usually the transactionid
-        $refundDetails = array();
-
-        // Init payment gateway
-        switch ($gateway) {
-            case "mollie":
-                /** @var \Omnipay\Mollie\Gateway $gateway */
-                $gateway = Omnipay::create('Mollie');
-
-                if (!empty($this->pref['mollie']['testmode'])) {
-                    $gateway->setApiKey($this->pref['mollie']['api_key_test']);
-                    $gateway->setTestMode(true);
-                } else {
-                    $gateway->setApiKey($this->pref['mollie']['api_key_live']);
-                }
-
-                $refundDetails = array(
-                    'transactionReference' => $transactionId,
-                    'amount' => $amount,
-                    'currency' => $currency
-                );
-                break;
-
-            case "paypal":
-                /** @var \Omnipay\PayPal\ExpressGateway $gateway */
-                $gateway = Omnipay::create('PayPal_Express');
-
-                if (!empty($this->pref['paypal']['testmode'])) {
-                    $gateway->setTestMode(true);
-                }
-
-                $gateway->setUsername($this->pref['paypal']['username']);
-                $gateway->setPassword($this->pref['paypal']['password']);
-                $gateway->setSignature($this->pref['paypal']['signature']);
-
-                $refundDetails = array(
-                    'transactionReference' => $transactionId,
-                    'amount' => $amount,
-                    'currency' => $currency
-                );
-                break;
-
-            case "paypal_rest":
-                /** @var \Omnipay\PayPal\RestGateway $gateway */
-                $gateway = Omnipay::create('PayPal_Rest');
-
-                if (!empty($this->pref['paypal_rest']['testmode'])) {
-                    $gateway->setTestMode(true);
-                }
-
-                $gateway->setClientId($this->pref['paypal_rest']['clientId']);
-                $gateway->setSecret($this->pref['paypal_rest']['secret']);
-
-                $refundDetails = array(
-                    'transactionReference' => $transactionId,
-                    'amount' => $amount,
-                    'currency' => $currency
-                );
-                break;
-
-            case "bank_transfer":
-                // Normal bank transfer doesn't support automatic refunding
-                $supportsRefund = false;
-                break;
-
-            default:
-                return $errorPrefix . "Missing pament gateway!";
-        }
-
-        // Check if selected gateway supports refunding
-        if ($supportsRefund && !$gateway->supportsRefund()) {
-            // gateway doesn't support refunding;
-            $supportsRefund = false;
-        }
-
-        try {
-            $data = array();
-            if ($supportsRefund) {
-                // Check if selected gateway has it's refunding details set
-                if (empty($refundDetails)) {
-                    return $errorPrefix . "Refunding details not set!";
-                }
-
-                // try to refund the money
-                $request = $gateway->refund($refundDetails);
-                $response = $request->send();
-                if ($response->isSuccessful()) {
-                    $data = $response->getData();
-                } else {
-                    // Refunding failed
-                    return $errorPrefix . $response->getMessage();
-                }
-            } else {
-                // Fill the rawdata with a meaningfull message to be added to rawdata array,
-                // refunding can't be done automatically
-                $data = array(
-                    'Refunded' => e107::getParser()->lanVars(
-                        'Order refunded on [x] by [y] ([z])',
-                        array(
-                            gmdate('Y-m-d H:i:s'),
-                            USERNAME,
-                            USERID
-                        )
-                    )
-                );
-            }
-
-            // Update order status (incl.sending out the email to the customer (if nescessary))
-            $result = $this->setOrderStatus($order_id, 'R', array('refund' => $data));
-            if ($result !== true) {
-                return $errorPrefix . $result;
-            } elseif(!$supportsRefund) {
-                // In case of bank_transfers or other payment methods that do not support refunding,
-                // return a warning, that the refunding of the money has to be done manually!
-                return $warnPrefix . "The order has been marked as refunded, but the payment method '" .
-                    self::getGatewayTitle($type) .
-                    "' doesn't support automatic refunding!\nYou have to do it manually!";
-            }
-
-        } catch (Exception $ex) {
-            return $errorPrefix . "Refunding failed! " . $ex->getMessage();
-        }
-
-        return true;
-    }
-
-    /**
-     * Set the new order status
-     *
-     * @param int    $order_id   The order id
-     * @param string $new_status The new order status code
-     * @param array  $raw_data   (optional) new rawdata data
-     *
-     * @return bool|string true on success, string otherwise
-     */
-    public function setOrderStatus($order_id, $new_status, $raw_data = null)
-    {
-        // get current record
-        $order = e107::getDb()->retrieve(
-            'vstore_orders',
-            'order_e107_user, order_status, order_pay_status, order_items, order_log, order_pay_rawdata',
-            'order_id=' . $order_id
-        );
-
-        // record found and new status is different to new one
-        if ($order && $order['order_status'] !== $new_status) {
-            // save current payment status
-            $order_pay_status = $order['order_pay_status'];
-            if ($new_status === 'C') {
-                // if new status is complete, assume the payment also be complete
-                $order_pay_status = 'complete';
-            } elseif ($new_status === 'R') {
-                // if new status is refunded, set payment to refunded
-                $order_pay_status = 'refunded';
-            }
-
-            // Prepare rawdata array
-            $rawdata = array();
-            if (!empty($raw_data)) {
-                if ($order['order_pay_rawdata']) {
-                    $rawdata = e107::unserialize($order['order_pay_rawdata']);
-                    if (!isset($rawdata['purchase']) && !isset($rawdata['refund'])) {
-                        // just in case order_pay_rawdata has the wrong structure
-                        $tmp = $rawdata;
-                        $rawdata = array('purchase' => $tmp);
-                        unset($tmp);
-                    }
-                }
-                $rawdata = array_merge($rawdata, $raw_data);
-                $rawdata = e107::serialize($rawdata, 'json');
-            }
-
-            // define update array
-            $update = array(
-                'data' => array(
-                    'order_status' => $new_status,
-                    'order_pay_status' => $order_pay_status,
-                    'order_log' => self::addToOrderLog(
-                        $order['order_log'],
-                        'Status',
-                        self::getStatus($order['order_status']),
-                        self::getStatus($new_status),
-                        false
-                    )
-                ),
-                'WHERE' => 'order_id=' . $order_id
-            );
-
-            if (!empty($rawdata)) {
-                $update['data']['order_pay_rawdata'] = $rawdata;
-            }
-            // Run the update query
-            $result = e107::getDb()->update(
-                'vstore_orders',
-                $update,
-                false,
-                'vstore',
-                "setOrderStatus({$order_id}, {$new_status})"
-            );
-
-            if ($result && $new_status === 'C') {
-                // In case of a positive update and the order has been set to 'C' (complete)
-                // set the customer userclass
-                $items = e107::unserialize($order['order_items']);
-                self::setCustomerUserclass($order['order_e107_user'], $items);
-            } elseif (intval(e107::getDb()->getLastErrorNumber()) != 0) {
-                // There was an error, return the last database error
-                return e107::getDb()->getLastErrorText();
-            }
-
-            // send out the "OnChange" emails
-            $this->emailCustomerOnStatusChange($order_id);
-            return true;
-
-        } elseif (!$order) {
-            return "Order could't be found!";
-        }
-
-        // nothing to change (old status == new status)
-        return true;
     }
 
     /**
@@ -2036,46 +1770,36 @@ class vstore
 
         $cartData     = $this->getCheckoutData();
 
-        $insert =  array(
-            'order_id'        => 0,
-            'order_date'      => time(),
-            'order_session'   => $cartData['id'],
-            'order_e107_user' => USERID,
-            'order_cust_id'   => '',
-            'order_status'    => varset($order_status, 'N') // New
-        );
+        $this->order->clear();
 
-        $insert['order_items']              = e107::serialize($items, 'json');
+        $this->order->order_date = time();
+        $this->order->order_session = $cartData['id'];
+        $this->order->order_e107_user = USERID;
+        $this->order->order_cust_id = '';
+        $this->order->order_status = varset($order_status, 'N'); // New
+        $this->order->order_items = $items;
 
-        $insert['order_use_shipping']       = $this->getShippingType();
-        $insert['order_billing']            = e107::serialize($customerData, 'json');
-        $insert['order_shipping']           = e107::serialize($shippingData, 'json');
+        $this->order->order_use_shipping = $this->getShippingType();
+        $this->order->order_billing = $customerData;
+        $this->order->order_shipping = $shippingData;
 
-        $insert['order_pay_gateway']        = $this->getGatewayType(true);
-        $insert['order_pay_status']         = empty($transData) ? 'incomplete' : 'complete';
-        $insert['order_pay_transid']        = $id;
-        $insert['order_pay_amount']         = $cartData['totals']['cart_grandTotal'];
-        $insert['order_pay_currency']       = $cartData['currency'];
-        $insert['order_pay_tax']            = e107::serialize($cartData['totals']['cart_taxTotal'], 'json');
-        $insert['order_pay_shipping']       = $cartData['totals']['cart_shippingTotal'];
-        $insert['order_pay_coupon_code']    = $cartData['totals']['cart_coupon']['code'];
-        $insert['order_pay_coupon_amount']  = $cartData['totals']['cart_coupon']['amount'];
-        $insert['order_pay_rawdata']        = e107::serialize(array('purchase' => $transData), 'json');
+        $this->order->order_pay_gateway = $this->getGatewayType(true);
+        $this->order->order_pay_status = empty($transData) ? 'incomplete' : 'complete';
+        $this->order->order_pay_transid = $id;
+        $this->order->order_pay_amount = $cartData['totals']['cart_grandTotal'];
+        $this->order->order_pay_currency = $cartData['currency'];
+        $this->order->order_pay_tax = $cartData['totals']['cart_taxTotal'];
+        $this->order->order_pay_shipping = $cartData['totals']['cart_shippingTotal'];
+        $this->order->order_pay_coupon_code = $cartData['totals']['cart_coupon']['code'];
+        $this->order->order_pay_coupon_amount = $cartData['totals']['cart_coupon']['amount'];
+        $this->order->order_pay_rawdata = array('purchase' => $transData);
 
-        $log = array(array(
-            'datestamp' => time(),
-            'user_id' => USERID,
-            'user_name' => (USER ? USERNAME : 'Guest'),
-            'text' => 'Order created' . (empty($transData) ? '' : ' and paid') . '.'
-        ));
-        $insert['order_log']    = e107::serialize($log, 'json');
+        $this->order->setOrderLog('Order created' . (empty($transData) ? '' : ' and paid') . '.');
 
         $mes = e107::getMessage();
+        if ($this->order->save()) {
+            $nid = $this->order->order_id;
 
-        // e107::getDebug()->log($insert);
-
-        $nid = e107::getDb()->insert('vstore_orders', $insert);
-        if ($nid !== false) {
             if (USER && !$this->saveCustomer(
                 $customerData,
                 $shippingData,
@@ -2085,32 +1809,18 @@ class vstore
                 $mes->addError('Unable to save/Update customer data!', 'vstore');
             }
 
-            $refId = $this->getOrderRef($nid, $customerData['firstname'], $customerData['lastname']);
+            $this->order->setOrderRef();
+            $this->order->setInvoiceNr();
+            if (!$this->order->save()) {
+                $mes->addError('Unable to update order! ' . $this->order->getLastError(), 'vstore');
+            }
 
-            $log[] = array(
-                'datestamp' => time(),
-                'user_id' => USERID,
-                'user_name' => (USER ? USERNAME : 'Guest'),
-                'text' => 'Order Ref-Nr. assigned: ' . $refId
-            );
+            $refId = $this->order->order_refcode;
+            $invoice_nr = $this->order->order_invoice_nr;
 
-            $invoice_nr = vstore::getNextInvoiceNr();
-
-            e107::getDb()->update('vstore_orders', array(
-                'data' => array(
-                    'order_refcode' => $refId,
-                    'order_log' => e107::serialize($log, 'json'),
-                    'order_invoice_nr' => $invoice_nr
-                ),
-                'WHERE' => 'order_id=' . $nid
-            ));
-
-            $insert['order_refcode'] = $refId;
-            $insert['order_invoice_nr'] = $invoice_nr;
-
-            $pdf_data = $this->renderInvoice($nid);
+            $pdf_data = $this->renderInvoice();
             $pdf_file = '';
-            if ($pdf_data) {
+            if ($this->pref['invoice_create_pdf'] && $pdf_data) {
                 $this->invoiceToPdf($pdf_data);
                 $pdf_file = $this->pathToInvoicePdf($invoice_nr, $pdf_data['userid']);
             }
@@ -2118,15 +1828,15 @@ class vstore
             $mes->addSuccess("Your order <b>#" . $refId .
                 "</b> is complete and you will receive a order confirmation " .
                 "with all details within the next few minutes!", 'vstore');
-            $this->updateInventory($insert['order_items']);
-            $this->emailCustomer('default', $refId, $insert, $pdf_file);
+            $this->updateInventory($this->order->order_items);
+            $this->order->emailCustomer('default', $pdf_file);
 
             if (!empty($transData)) {
                 $this->setCustomerUserclass(USERID, $items);
             }
         } else {
             $mes->addError("Unable to save transaction");
-            $this->emailCustomer('error', null, $insert);
+            $this->order->emailCustomer('error');
         }
     }
 
@@ -2161,44 +1871,6 @@ class vstore
         }
 
         return $result;
-    }
-
-    /**
-     * Send an email to the customer with a template depending on the order_status
-     * This is used on the sales admin pages, when changing the order_status
-     *
-     * @param int $order_id
-     * @return void
-     */
-    public function emailCustomerOnStatusChange($order_id)
-    {
-        if (intval($order_id) <= 0) {
-            e107::getMessage()->addDebug(
-                'No order_id supplied or order_id "' . intval($order_id) . '" is invalid!',
-                'vstore'
-            );
-            return;
-        }
-
-        $sql = e107::getDB();
-
-        $order = $sql->retrieve('vstore_orders', '*', 'order_id=' . intval($order_id));
-
-        if ($order && is_array($order)) {
-            $order['order_items'] = e107::unserialize($order['order_items']);
-            //$receiver = e107::unserialize($order['order_billing']);
-            $refId = $order['order_refcode'];
-
-            // Attach the invoice in case the order status is New, Complete or Processing
-            $pdf_file = '';
-            if (self::validInvoiceOrderState($order['order_status'])) {
-                $pdf_file = $this->pathToInvoicePdf($order['order_invoice_nr'], $order['order_e107_user']);
-            }
-
-            $this->emailCustomer(strtolower($this->getStatus($order['order_status'])), $refId, $order, $pdf_file);
-        } else {
-            e107::getMessage()->addDebug('No order with given order_id "' . intval($order_id) . '" found!', 'vstore');
-        }
     }
 
     /**
@@ -2274,123 +1946,6 @@ class vstore
         return false;
     }
 
-
-    /**
-     * Get the current email template
-     * If it isn't defined in the admin area, load the template from the template folder
-     *
-     * @todo add a pref (multilan) containing the entire template which can be edited from within the admin area.
-     * @param string $type email type
-     * @return string the template
-     */
-    private function getEmailTemplate($type = 'default')
-    {
-        if (empty($type)) {
-            $type = 'default';
-        }
-        $template = $this->pref['email_templates'];
-        if (isset($template[$type]['active']) && ($template[$type]['active'] ? false : true)) {
-            return '';
-        }
-        if (empty($template[$type]['template'])) {
-            $template = e107::getTemplate('vstore', 'vstore_email', $type);
-            if (empty($template)) {
-                return '';
-            }
-        } else {
-            $template = str_ireplace(array('[html]', '[/html]'), '', $template[$type]['template']);
-        }
-        return $template;
-    }
-
-
-
-    /**
-     * Send an email to the customer
-     *
-     * @param string $templateKey the email type
-     * @param string $ref the order ref.
-     * @param array $insert email contents
-     * @return void
-     */
-    private function emailCustomer($templateKey = 'default', $ref = null, $insert = array(), $pdf_file = '')
-    {
-        $tp = e107::getParser();
-        $template = $this->getEmailTemplate($templateKey);
-
-        if (empty($template)) {
-            // No template available... No mail to send ...
-            e107::getMessage()->addDebug('No template found or template is empty!', 'vstore');
-            return;
-        }
-
-        $sender_name = $this->pref['sender_name'];
-        $sender_email = $this->pref['sender_email'];
-        if (empty($sender_email)) {
-            e107::getMessage()->addDebug('No explicit shop email defined!<br/>Will use siteadmin email!', 'vstore');
-            $sender_email = e107::pref('core', 'siteadminemail');
-        }
-
-        if (empty($sender_name)) {
-            e107::getMessage()->addDebug('No explicit shop email name defined!<br/>Will use siteadmin name!', 'vstore');
-            $sender_name = e107::pref('core', 'siteadmin');
-        }
-
-
-        $templates = $this->pref['email_templates'];
-        $cc = '';
-        if (vartrue($templates[$templateKey]['cc'])) {
-            $cc = $sender_email;
-        }
-
-        $receiver = e107::unserialize($insert['order_billing']);
-
-        $insert['is_business'] = !empty($receiver['vat_id']);
-        $insert['is_local'] = (varset(
-            $receiver['country'],
-            $this->pref['tax_business_country']
-        ) == $this->pref['tax_business_country']);
-
-        $insert['order_ref'] = (empty($ref) ? $insert['order_refcode'] : $ref);
-
-        $this->sc->setVars($insert);
-
-        //todo add to template
-        $subject    = "Your Order #[x] at " . SITENAME;
-
-        $email      = $receiver['email'];
-        $name       = $receiver['firstname'] . " " . $receiver['lastname'];
-
-        $eml = array(
-            'subject'       => $tp->lanVars($subject, array('x' => $insert['order_ref'])),
-            'sender_email'  => $sender_email,
-            'sender_name'   => $sender_name,
-            'html'          => true,
-            'template'      => 'default',
-            'body'          => $tp->parseTemplate($template, true, $this->sc)
-        );
-
-        if (!empty($cc)) {
-            $eml['cc'] = $cc;
-        }
-
-        if (!empty($pdf_file)) {
-            $eml['attach'] = $pdf_file;
-        }
-
-        // die(e107::getEmail()->preview($eml));
-
-        // $debug = e107::getEmail()->preview($eml);
-        // e107::getDebug()->log($debug);
-
-
-
-        e107::getEmail()->sendEmail($email, $name, $eml);
-    }
-
-
-
-
     /**
      * Update the items inventory based on the given json string
      *
@@ -2400,7 +1955,11 @@ class vstore
     private function updateInventory($json)
     {
         $sql = e107::getDb();
-        $arr = json_decode($json, true);
+        if (!is_array($json)) {
+            $arr = json_decode($json, true);
+        } else {
+            $arr = $json;
+        }
 
         foreach ($arr as $row) {
             if (!empty($row['quantity']) && !empty($row['id']) && !empty($row['name'])) {
@@ -2677,7 +2236,9 @@ class vstore
                 'total'     => $this->categoriesTotal,
                 'amount'    => intval($this->perPage),
                 'current'   => $this->from,
-                'url'       => e107::url('vstore', 'base') . "?frm=[FROM]"
+                'url'       => e107::url('vstore', 'base', null, array(
+                    'query'     => array('frm' => '--FROM--')
+                ))
             );
 
             global $nextprev_parms;
@@ -3422,7 +2983,7 @@ class vstore
             return false;
         }
         $sql = e107::getDb();
-        $order = $sql->select(
+        $orders = $sql->select(
             'vstore_orders',
             '*',
             'order_e107_user=' . USERID .' AND order_items LIKE \'%"id": "' . intval($item_id) . '",%\'
@@ -3430,7 +2991,7 @@ class vstore
         );
 
 
-        if (!$order) {
+        if (!$orders) {
             e107::getMessage()->addError(
                 'We were unable to find your order and therefore the download has been denied!',
                 'vstore'
@@ -4144,29 +3705,19 @@ class vstore
     /**
      * render the invoice by a given order_id
      *
-     * @param int $order_id
      * @return boolean/array
      */
-    public function renderInvoice($order_id, $forceUpdate = false)
+    public function renderInvoice($forceUpdate = false)
     {
 
-        if (!vartrue($order_id)) {
+        if (!$this->order->isLoaded()) {
             // Order ID missing or invalid
-            e107::getMessage()->addDebug('Order id "' . $order_id . '" missing or invalid!', 'vstore');
+            e107::getMessage()->addDebug('No order loaded!', 'vstore');
             return false;
         }
-
-        // Get order data
-        $order = e107::getDb()->retrieve('vstore_orders', '*', 'order_id=' . $order_id);
-        if (!$order) {
-            // Order not found!
-            e107::getMessage()->addDebug('Order id "' . $order_id . '" not found!', 'vstore');
-            return false;
-        }
-
 
         // check if the invoice belongs to the user (or is admin)
-        if ($order['order_e107_user'] != USERID) {
+        if ($this->order->order_e107_user != USERID) {
             // is user an admin
             if (!ADMIN) {
                 e107::getMessage()->addError('Access denied!', 'vstore');
@@ -4175,11 +3726,11 @@ class vstore
         }
 
         // check status of order: Invoice should be rendered only in status: N=New, C=Complete, P=Processing
-        if (!self::validInvoiceOrderState($order['order_status'])) {
+        if (!self::validInvoiceOrderState($this->order->order_status)) {
             e107::getMessage()->addError(
                 e107::getParser()->lanVars(
                     'Order in status "[x]". Invoice not available!',
-                    self::getStatus($order['order_status'])
+                    self::getStatus($this->order->order_status)
                 ),
                 'vstore'
             );
@@ -4190,7 +3741,7 @@ class vstore
         $pdf_invoice = vartrue($this->pref['invoice_create_pdf'], 0);
         if($pdf_invoice) {
             // Check if invoice already exists
-            $local_pdf = $this->pathToInvoicePdf($order['order_invoice_nr'], $order['order_e107_user']);
+            $local_pdf = $this->pathToInvoicePdf($this->order->order_invoice_nr, $this->order->order_e107_user);
             if($local_pdf != '' && !$forceUpdate) {
                 $this->downloadInvoicePdf($local_pdf);
                 return;
@@ -4207,28 +3758,22 @@ class vstore
         if (empty($invoice)) {
             if (!vartrue($template['default'])) {
                 // Template not found!
-                e107::getMessage()->addDebug('Order id "' . $order_id . '" not found!', 'vstore');
+                e107::getMessage()->addDebug('Invoice template "default" not found!', 'vstore');
                 return false;
             }
             $invoice = $template['default'];
         }
 
-
-        $order['order_items'] = e107::unserialize($order['order_items']);
-        $order['order_billing'] = e107::unserialize($order['order_billing']);
-        $order['order_shipping'] = e107::unserialize($order['order_shipping']);
-        $order['order_pay_tax'] = e107::unserialize($order['order_pay_tax']);
-
-        $order['is_business'] = !empty($order['order_billing']['vat_id']);
-        $order['is_local'] = (varset(
-            $order['order_billing']['country'],
+        $this->order->is_business = !empty($this->order->order_billing['vat_id']);
+        $this->order->is_local = (varset(
+            $this->order->order_billing['country'],
             $this->pref['tax_business_country']
         ) == $this->pref['tax_business_country']);
 
 
         $ns = e107::getParser();
 
-        $this->sc->addVars($order);
+        $this->sc->addVars($this->order->getData());
 
         $text = $ns->parseTemplate($invoice, true, $this->sc);
         $footer = $ns->parseTemplate($template['footer'], true, $this->sc);
@@ -4240,16 +3785,16 @@ class vstore
 
         if ($pdf_invoice) {
             $result = array(
-                'userid' => $order['order_e107_user'],
+                'userid' => $this->order->order_e107_user,
                 'subject' => varset($this->pref['invoice_title'][e_LANGUAGE], 'Invoice') . ' ' .
-                    self::formatInvoiceNr($order['order_invoice_nr']),
+                    self::formatInvoiceNr($this->order->order_invoice_nr),
                 'text' => $text,
                 'footer' => $footer,
                 'logo' => $logo,
                 'url' => e107::url(
                     'vstore',
                     'invoice',
-                    array('order_invoice_nr' => $order['order_invoice_nr']),
+                    array('order_invoice_nr' => $this->order->order_invoice_nr),
                     array('mode' => 'full')
                 )
             );
@@ -4293,7 +3838,12 @@ class vstore
             //    true
             //)->save('Vstore Pdf');
             e107::getMessage()->addWarning(
-                'PDF plugin not installed!<br/>This plugin is required to create invoice pdf\'s!'
+                e107::getParser()->lanVars(
+                    'PDF plugin not installed!\n' .
+                    'This plugin is required to create invoice pdf\'s!\n' .
+                    'You can download it from here: [x]',
+                    '<a href="https://github.com/e107inc/pdf">e107inc/pdf</a>'
+                )
             );
             return false;
         }
