@@ -632,10 +632,9 @@ class vstore
                 } else {
                     // some error occured
                     $js->sendTextResponse(
-                        EMESSLAN_TITLE_ERROR . "\n" .
                         ($this->order->getLastError()
                         ? $this->order->getLastError()
-                        : e107::getParser()->lanVars(
+                        : EMESSLAN_TITLE_ERROR . "\n" . e107::getParser()->lanVars(
                             'Order couldn\'t be updated to "[x]"', 
                             self::getStatus($status)
                             )

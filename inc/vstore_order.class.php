@@ -21,6 +21,12 @@ class vstore_order extends vstore
      * @var array
      */
     private $data = array();
+
+    /**
+     * Unchanged order data array
+     *
+     * @var array
+     */
     private $old_data = array();
 
     /**
@@ -37,6 +43,11 @@ class vstore_order extends vstore
      */
     private $loaded = false;
 
+    /**
+     * The db object
+     *
+     * @var object
+     */
     private $sql;
     
 
@@ -48,6 +59,9 @@ class vstore_order extends vstore
      */
     public function __construct($id = null)
     {
+        /** @var vstore_shortcodes sc */
+        $this->sc = e107::getScParser()->getScObject('vstore_shortcodes', 'vstore', false);
+
         $this->sql = e107::getDb();
         if (!empty($id)) {
             $this->load($id);
@@ -94,6 +108,13 @@ class vstore_order extends vstore
     {
         return isset($this->data[$name]);
     }
+
+    /**
+     * Prevent cloning of the object
+     *
+     * @return void
+     */
+    public function __clone() { }
 
     /**
      * Replace the current order data array with the given array
@@ -148,7 +169,7 @@ class vstore_order extends vstore
             return false;
         }
         return true;
-}
+    }
 
     /**
      * Load an order from the database
@@ -520,18 +541,18 @@ class vstore_order extends vstore
             return false;
         }
 
-        if ($this->order->order_status == 'R') {
+        if ($this->order_status == 'R') {
             $this->last_error = $errorPrefix . 'Order is already refunded!';
             return false;
-        } elseif (!in_array($this->order->order_status, array('P', 'H', 'C'))) {
+        } elseif (!in_array($this->order_status, array('P', 'H', 'C'))) {
             $this->last_error = $errorPrefix . 'Only orders with status "Processing", "On Hold" and "Complete" can be refunded!';
             return false;
         }
 
-        $transactionId = $this->order->order_pay_transid;
-        $amount = $this->order->order_pay_amount;
-        $currency = $this->order->order_pay_currency;
-        $type = $gateway = $this->order->order_pay_gateway;
+        $transactionId = $this->order_pay_transid;
+        $amount = $this->order_pay_amount;
+        $currency = $this->order_pay_currency;
+        $type = $gateway = $this->order_pay_gateway;
 
         e107::getDebug()->log("Processing Gateway: " . $type);
 
