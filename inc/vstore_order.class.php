@@ -738,7 +738,7 @@ class vstore_order extends vstore
      *
      * @return void
      */
-    private function emailCustomer($templateKey = 'default', $pdf_file = '')
+    public function emailCustomer($templateKey = 'default', $pdf_file = '')
     {
         if (!$this->loaded) {
             // No order loaded... Load order first...
