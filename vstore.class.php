@@ -1003,15 +1003,12 @@ class vstore
      */
     public function render()
     {
-
         $ns = e107::getRender();
-
-        // Set breadcrumb using new magic shortcode
-        $this->setBreadcrumb();
 
         if (!empty($this->get['download'])) {
             if (!$this->downloadFile($this->get['download'])) {
                 // $bread = $this->setBreadcrumb();
+                $this->setBreadcrumb();
                 $msg = e107::getMessage()->render('vstore');
 
                 // $ns->tablerender($this->captionBase, $bread . $msg, 'vstore-download-failed');
@@ -1020,6 +1017,7 @@ class vstore
             } else {
                 // Not needed but ...
                 // $bread = $this->setBreadcrumb();
+                $this->setBreadcrumb();
                 $msg = e107::getMessage()->addSuccess('File successfully downloaded!')->render('vstore');
 
                 // $ns->tablerender($this->captionBase, $bread . $msg, 'vstore-download-done');
@@ -1031,6 +1029,7 @@ class vstore
         if ($this->getMode() == 'return') {
             // print_a($this->post);
             // $bread = $this->setBreadcrumb();
+            $this->setBreadcrumb();
             $text = $this->checkoutComplete();
             $msg = e107::getMessage()->render('vstore');
 
@@ -1072,6 +1071,7 @@ class vstore
             if ($this->post['mode'] == 'shipping') {
                 // Shipping data form
                 // $bread = $this->setBreadcrumb();
+                $this->setBreadcrumb();
 
                 if (!empty($this->post['cust']['firstname'])) {
                     $this->setCustomerData($this->post['cust']);
@@ -1110,6 +1110,7 @@ class vstore
                 }
 
                 // $bread = $this->setBreadcrumb();
+                $this->setBreadcrumb();
                 // $ns->tablerender($this->captionBase, $bread . $text, 'vstore-cart-list');
                 $ns->tablerender($this->captionBase, $text, 'vstore-cart-list');
 
@@ -1117,6 +1118,7 @@ class vstore
             } else {
                 // Customer Data Form
                 // $bread = $this->setBreadcrumb();
+                $this->setBreadcrumb();
 
                 if (empty($this->getCheckoutData())) {
                     $text .= e107::getMessage()->addError('No items to checkout!', 'vstore')->render('vstore');
@@ -1135,6 +1137,7 @@ class vstore
 
             if ($msg) {
                 // $bread = $this->setBreadcrumb();
+                $this->setBreadcrumb();
                 // $ns->tablerender($this->captionBase, $bread . $msg, 'vstore-cart-list');
                 $ns->tablerender($this->captionBase, $msg, 'vstore-cart-list');
             }
@@ -1163,6 +1166,7 @@ class vstore
             if (!empty($msg) || !empty($text))
             {
                 // $bread = $this->setBreadcrumb();
+                $this->setBreadcrumb();
                 // $ns->tablerender($this->captionBase, $bread.$msg.$text, 'vstore-invoice');
                 $ns->tablerender($this->captionBase, $msg . $text, 'vstore-invoice');
             }
@@ -1178,6 +1182,7 @@ class vstore
             $text = $dashboard->render();
 
             // $bread = $this->setBreadcrumb();
+            $this->setBreadcrumb();
             $msg = e107::getMessage()->render('vstore');
             // $ns->tablerender($this->captionBase, $bread . $msg . $text, 'vstore-dashboard');
             $ns->tablerender($this->captionBase, $msg . $text, 'vstore-dashboard');
@@ -1189,6 +1194,7 @@ class vstore
         if ($this->getMode() == 'cart') {
             // print_a($this->post);
             // $bread = $this->setBreadcrumb();
+            $this->setBreadcrumb();
             $text = $this->cartView();
             $msg = e107::getMessage()->render('vstore');
             // $ns->tablerender($this->captionBase, $bread . $msg . $text, 'vstore-cart-list');
@@ -1200,6 +1206,7 @@ class vstore
         if ($this->get['item']) {
             $text = $this->productView($this->get['item']);
             // $bread = $this->setBreadcrumb();
+            $this->setBreadcrumb();
             $msg = e107::getMessage()->render('vstore');
             // $ns->tablerender($this->captionBase, $bread . $msg . $text, 'vstore-product-view');
             $ns->tablerender($this->captionBase, $msg . $text, 'vstore-product-view');
@@ -1215,6 +1222,7 @@ class vstore
 
             $text = $this->productList($this->get['cat'], true);
             // $bread = $this->setBreadcrumb();
+            $this->setBreadcrumb();
             $msg = e107::getMessage()->render('vstore');
             // $ns->tablerender($this->captionBase, $bread . $msg . $subCategoryText . $text, 'vstore-product-list');
             $ns->tablerender($this->captionBase, $msg . $subCategoryText . $text, 'vstore-product-list');
@@ -1222,6 +1230,7 @@ class vstore
             // No category set, render root category
             $text = $this->categoryList(0, true);
             // $bread = $this->setBreadcrumb();
+            $this->setBreadcrumb();
             $msg = e107::getMessage()->render('vstore');
             // $ns->tablerender($this->captionBase, $bread . $msg . $text, 'vstore-category-list');
             $ns->tablerender($this->captionBase, $msg . $text, 'vstore-category-list');
