@@ -1003,34 +1003,38 @@ class vstore
      */
     public function render()
     {
-
         $ns = e107::getRender();
-
 
         if (!empty($this->get['download'])) {
             if (!$this->downloadFile($this->get['download'])) {
-                $bread = $this->breadcrumb();
+                // $bread = $this->setBreadcrumb();
+                $this->setBreadcrumb();
                 $msg = e107::getMessage()->render('vstore');
 
-                $ns->tablerender($this->captionBase, $bread . $msg, 'vstore-download-failed');
+                // $ns->tablerender($this->captionBase, $bread . $msg, 'vstore-download-failed');
+                $ns->tablerender($this->captionBase, $msg, 'vstre-download-failed');
                 return null;
             } else {
                 // Not needed but ...
-                $bread = $this->breadcrumb();
+                // $bread = $this->setBreadcrumb();
+                $this->setBreadcrumb();
                 $msg = e107::getMessage()->addSuccess('File successfully downloaded!')->render('vstore');
 
-                $ns->tablerender($this->captionBase, $bread . $msg, 'vstore-download-done');
+                // $ns->tablerender($this->captionBase, $bread . $msg, 'vstore-download-done');
+                $ns->tablerender($this->captionBase, $msg, 'vstore-download-done');
                 return null;
             }
         }
 
         if ($this->getMode() == 'return') {
             // print_a($this->post);
-            $bread = $this->breadcrumb();
+            // $bread = $this->setBreadcrumb();
+            $this->setBreadcrumb();
             $text = $this->checkoutComplete();
             $msg = e107::getMessage()->render('vstore');
 
-            $ns->tablerender($this->captionBase, $bread . $msg . $text, 'vstore-cart-complete');
+            // $ns->tablerender($this->captionBase, $bread . $msg . $text, 'vstore-cart-complete');
+            $ns->tablerender($this->captionBase, $msg . $text, 'vstore-cart-complete');
             return null;
         }
 
@@ -1066,7 +1070,8 @@ class vstore
             // Render pages
             if ($this->post['mode'] == 'shipping') {
                 // Shipping data form
-                $bread = $this->breadcrumb();
+                // $bread = $this->setBreadcrumb();
+                $this->setBreadcrumb();
 
                 if (!empty($this->post['cust']['firstname'])) {
                     $this->setCustomerData($this->post['cust']);
@@ -1076,7 +1081,8 @@ class vstore
                     $text .= e107::getMessage()->addError('Billing address is missing!', 'vstore')->render('vstore');
                 }
 
-                $ns->tablerender($this->captionBase, $bread . $text, 'vstore-cart-list');
+                // $ns->tablerender($this->captionBase, $bread . $text, 'vstore-cart-list');
+                $ns->tablerender($this->captionBase, $text, 'vstore-cart-list');
                 return null;
             } elseif ($this->post['mode'] == 'confirm') {
                 // Confirm order form
@@ -1103,20 +1109,24 @@ class vstore
                     $text .= $this->confirmOrderView();
                 }
 
-                $bread = $this->breadcrumb();
-                $ns->tablerender($this->captionBase, $bread . $text, 'vstore-cart-list');
+                // $bread = $this->setBreadcrumb();
+                $this->setBreadcrumb();
+                // $ns->tablerender($this->captionBase, $bread . $text, 'vstore-cart-list');
+                $ns->tablerender($this->captionBase, $text, 'vstore-cart-list');
 
                 return null;
             } else {
                 // Customer Data Form
-                $bread = $this->breadcrumb();
+                // $bread = $this->setBreadcrumb();
+                $this->setBreadcrumb();
 
                 if (empty($this->getCheckoutData())) {
                     $text .= e107::getMessage()->addError('No items to checkout!', 'vstore')->render('vstore');
                 } else {
                     $text .= $this->checkoutView();
                 }
-                $ns->tablerender($this->captionBase, $bread . $text, 'vstore-cart-list');
+                // $ns->tablerender($this->captionBase, $bread . $text, 'vstore-cart-list');
+                $ns->tablerender($this->captionBase, $text, 'vstore-cart-list');
                 return null;
             }
         }
@@ -1126,8 +1136,10 @@ class vstore
             $msg = e107::getMessage()->render('vstore');
 
             if ($msg) {
-                $bread = $this->breadcrumb();
-                $ns->tablerender($this->captionBase, $bread . $msg, 'vstore-cart-list');
+                // $bread = $this->setBreadcrumb();
+                $this->setBreadcrumb();
+                // $ns->tablerender($this->captionBase, $bread . $msg, 'vstore-cart-list');
+                $ns->tablerender($this->captionBase, $msg, 'vstore-cart-list');
             }
 
             return null;
@@ -1153,8 +1165,10 @@ class vstore
             $msg = e107::getMessage()->render('vstore');
             if (!empty($msg) || !empty($text))
             {
-                $bread = $this->breadcrumb();
-                $ns->tablerender($this->captionBase, $bread.$msg.$text, 'vstore-invoice');
+                // $bread = $this->setBreadcrumb();
+                $this->setBreadcrumb();
+                // $ns->tablerender($this->captionBase, $bread.$msg.$text, 'vstore-invoice');
+                $ns->tablerender($this->captionBase, $msg . $text, 'vstore-invoice');
             }
 
             return null;
@@ -1167,9 +1181,11 @@ class vstore
             $dashboard = new vstore_dashboard();
             $text = $dashboard->render();
 
-            $bread = $this->breadcrumb();
+            // $bread = $this->setBreadcrumb();
+            $this->setBreadcrumb();
             $msg = e107::getMessage()->render('vstore');
-            $ns->tablerender($this->captionBase, $bread . $msg . $text, 'vstore-dashboard');
+            // $ns->tablerender($this->captionBase, $bread . $msg . $text, 'vstore-dashboard');
+            $ns->tablerender($this->captionBase, $msg . $text, 'vstore-dashboard');
 
             return null;
         }
@@ -1177,19 +1193,23 @@ class vstore
 
         if ($this->getMode() == 'cart') {
             // print_a($this->post);
-            $bread = $this->breadcrumb();
+            // $bread = $this->setBreadcrumb();
+            $this->setBreadcrumb();
             $text = $this->cartView();
             $msg = e107::getMessage()->render('vstore');
-            $ns->tablerender($this->captionBase, $bread . $msg . $text, 'vstore-cart-list');
+            // $ns->tablerender($this->captionBase, $bread . $msg . $text, 'vstore-cart-list');
+            $ns->tablerender($this->captionBase, $msg . $text, 'vstore-cart-list');
             return null;
         }
 
 
         if ($this->get['item']) {
             $text = $this->productView($this->get['item']);
-            $bread = $this->breadcrumb();
+            // $bread = $this->setBreadcrumb();
+            $this->setBreadcrumb();
             $msg = e107::getMessage()->render('vstore');
-            $ns->tablerender($this->captionBase, $bread . $msg . $text, 'vstore-product-view');
+            // $ns->tablerender($this->captionBase, $bread . $msg . $text, 'vstore-product-view');
+            $ns->tablerender($this->captionBase, $msg . $text, 'vstore-product-view');
             return null;
         }
 
@@ -1201,15 +1221,19 @@ class vstore
             }
 
             $text = $this->productList($this->get['cat'], true);
-            $bread = $this->breadcrumb();
+            // $bread = $this->setBreadcrumb();
+            $this->setBreadcrumb();
             $msg = e107::getMessage()->render('vstore');
-            $ns->tablerender($this->captionBase, $bread . $msg . $subCategoryText . $text, 'vstore-product-list');
+            // $ns->tablerender($this->captionBase, $bread . $msg . $subCategoryText . $text, 'vstore-product-list');
+            $ns->tablerender($this->captionBase, $msg . $subCategoryText . $text, 'vstore-product-list');
         } else {
             // No category set, render root category
             $text = $this->categoryList(0, true);
-            $bread = $this->breadcrumb();
+            // $bread = $this->setBreadcrumb();
+            $this->setBreadcrumb();
             $msg = e107::getMessage()->render('vstore');
-            $ns->tablerender($this->captionBase, $bread . $msg . $text, 'vstore-category-list');
+            // $ns->tablerender($this->captionBase, $bread . $msg . $text, 'vstore-category-list');
+            $ns->tablerender($this->captionBase, $msg . $text, 'vstore-category-list');
         }
     }
 
@@ -1217,16 +1241,13 @@ class vstore
 
 
     /**
-     * Render breadcrumb
+     * Custom function to calculate breadcrumb for the current page.
      *
-     * @return string the breadcrumb
+     * @return void
      */
-    private function breadcrumb()
+    private function setBreadcrumb()
     {
-        $frm = e107::getForm();
-
-
-
+        // $frm = e107::getForm();
         $array = array();
 
         $array[] = array('url' => e107::url('vstore', 'index'), 'text' => $this->captionBase);
@@ -1306,7 +1327,10 @@ class vstore
             // print_a($this->item);
             // print_a($array);
         }
-        return $frm->breadcrumb($array);
+        // return $frm->breadcrumb($array);
+
+         // assign values to the Magic Shortcode:  {---BREADCRUMB---}
+        e107::breadcrumb($array);
     }
 
 
@@ -1317,7 +1341,6 @@ class vstore
      */
     private function getActiveGateways()
     {
-
         return $this->active;
     }
 
