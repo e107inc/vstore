@@ -10,8 +10,36 @@
 
  if(e107::isInstalled('vstore'))
  {
-
-
+    if(deftrue('USER_AREA')) {
+        // prevents inclusion of JS/CSS/meta in the admin area.
+        e107::js('vstore', 'js/vstore.js');
+        e107::lan('vstore', false, true); // e107_plugins/vstore/languages/English_front.php
+        
+        $vstore_prefs = e107::pref('vstore');
+        
+        e107::js('settings', array('vstore' => array(
+                'url' => e107::url('vstore', 'index'),
+                'cart' =>  array(
+                    'url' => e107::url('vstore', 'cart'),
+                    'addtocart' => LAN_VSTORE_001, // 'Add to cart',
+                    'outofstock' => empty($vstore_prefs['caption_outofstock'][e_LANGUAGE])
+                        ? 'Out of stock'
+                        : $vstore_prefs['caption_outofstock'][e_LANGUAGE],
+                    'available' => 'In stock',
+                ),
+                'ImageZoom' => array('url'=>'')
+            )
+        ));
+        
+        
+        if (!empty($vstore_prefs['custom_css']))
+        {
+            // Add any custom css to the page
+            e107::css('inline', "
+            /* vstore custom css */
+            " . $vstore_prefs['custom_css']);
+        }
+    }
 
     class vstore_cart_icon
     {
