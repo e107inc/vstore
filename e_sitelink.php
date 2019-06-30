@@ -52,9 +52,9 @@ class vstore_sitelink // include plugin-folder in the name.
 		while($row = $sql->fetch())
 		{
 			$sublinks[] = array(
-				'link_name'			=> $tp->toHTML($row['cat_name'],'','TITLE'),
+				'link_name'			=> $tp->toHTML($row['cat_name'], '', 'TITLE'),
 				'link_url'			=> e107::url('vstore','category', $row),
-				'link_description'	=> '',
+				'link_description'	=> $tp->toHTML($row['cat_description'], '', 'DESCRIPTION'),
 				'link_button'		=> '',
 				'link_category'		=> '',
 				'link_order'		=> '',
