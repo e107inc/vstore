@@ -1764,5 +1764,37 @@
 			return $text;
 		}
 
+		function sc_menu_cat($parm = null)
+		{
+			if (empty($parm)) return '';
+			$key = key($parm);
+			if (empty($key)) return '';
+
+			$text = '';
+
+			switch($key)
+			{
+				case 'active':
+					if (varset($this->var['link_url'])) {
+						if (substr(e_REQUEST_URI, 0, strlen($this->var['link_url'])) == $this->var['link_url']) {
+							$text = ' active ';
+						}
+					}
+					break;
+
+				case 'url':
+					$text = vartrue($this->var['link_url'], '#');
+					break;
+
+				case 'name':
+					$text = vartrue($this->var['link_name'], '');
+					break;
+
+				case 'description':
+					$text = vartrue($this->var['link_description'], '');
+					break;
+			}
+			return $text;
+		}
 
 	}
