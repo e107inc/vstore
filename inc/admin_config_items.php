@@ -193,7 +193,6 @@
 
 		public function beforeUpdate($new_data, $old_data, $id)
 		{
-
 			if(isset($new_data['item_inventory'])){
 				$new_data['item_inventory'] = intval($new_data['item_inventory']);
 				$new_data['item_inventory'] = $new_data['item_inventory'] < 0 ? -1 : $new_data['item_inventory'];
@@ -216,6 +215,29 @@
 						$new_data['item_vars_inventory'] = '';
 
 					}
+				} else {
+					$inventory = 0;
+					foreach ($new_data['item_vars_inventory'] as $key => $value) {
+						if (count($new_data['item_vars']) == 1) {
+							$inventory += $value;
+							if ($value < 0) {
+								$inventory = -1;
+								break;
+							}
+						} elseif (count($new_data['item_vars']) == 2) {
+							foreach ($value as $k => $v) {
+								$inventory += $v;
+								if ($v < 0) {
+									$inventory = -1;
+									break;
+								}
+							}
+						}
+						if ($inventory < 0) {
+							break;
+						}
+					}
+					$new_data['item_inventory'] = $inventory;
 				}
 			}else{
 				$new_data['item_vars'] = array();
@@ -427,11 +449,14 @@
 
 				case 'write': // Edit Page
 					$inventory = $this->getController()->getFieldVar('item_vars_inventory');
-
-					$text = $this->number('item_inventory', varset($curVal, -1), null, array('class'=>'pull-left', 'decimals' => 0, 'min' => -1, 'readonly' => !empty($inventory))); // to allow also negative values (<0 = Item will not run out of stock)
-
 					$icon = e107::getParser()->toGlyph('fa-info-circle');
-					$text .= ' <span style="display:inline-block;padding:6px" title="In case of any Product Variations selected, this setting will ignored! You have to fill out the Variations Inventory instead!">'.$icon.'</span>';
+					if (empty($inventory)) {
+						$text = $this->number('item_inventory', varset($curVal, -1), null, array('class'=>'pull-left', 'decimals' => 0, 'min' => -1, 'readonly' => !empty($inventory))); // to allow also negative values (<0 = Item will not run out of stock)
+						$text .= ' <span style="display:inline-block;padding:6px" title="In case of any Product Variations selected, this setting will ignored! You have to fill out the Variations Inventory instead!">'.$icon.'</span>';
+					} else {
+						$text = $this->hidden('item_inventory', varset($curVal, -1));
+						$text .= ' <span class="help">The inventory is controlled by product variations inventory!</span>';
+					}
 
 					return $text;
 					break;

@@ -43,8 +43,9 @@ class vstore_pref_ui extends e_admin_ui
 			'amount_format'	            => array('title'=> 'Amount format', 'tab'=>0, 'type'=>'dropdown', 'data' => 'string','help'=>'Select a format to be used to format the amount'),
 			'weight_unit'		        => array('title'=> 'Weight unit', 'tab'=>0, 'type'=>'dropdown', 'data' => 'string','help'=>'Select a weight unit'),
 			'customer_userclass'        => array('title'=> 'Assign userclass', 'tab'=>0, 'type' => 'method', 'help' => 'Assign userclass to customer on purchase'),
+			'show_outofstock'     		=> array('title'=> 'Show/hide out-of-stock products', 'tab'=>0, 'type' => 'bool', 'help' => 'Show or hide "Out-of-stock" products in product listings', 'writeParms' => array('enabled' => LAN_SHOW, 'disabled' => 'Hide')), 
 			
-			'shipping'		            => array('title'=> 'Calculate Shipping', 'tab'=>1, 'type'=>'boolean', 'data' => 'int','help'=>'Including shipping calculation at checkout.'),
+			'shipping'		            => array('title'=> 'Calculate Shipping', 'tab'=>1, 'type'=>'bool', 'data' => 'int','help'=>'Including shipping calculation at checkout.', 'writeParms' => array('label' => 'yesno')),
 			'shipping_method'	        => array('title'=> 'Calculation method', 'tab'=>1, 'type'=>'dropdown', 'data' => 'string', 'help'=>'Define a method to calculate the shipping cost.', 'writeParms' => array('size' => 'xxlarge')),
 			'shipping_unit'	        	=> array('title'=> 'Value based on', 'tab'=>1, 'type'=>'dropdown', 'data' => 'string', 'help'=>'Define which value (subtotal or weight) will be used to calculate shipping costs.', 'writeParms' => array('money'=>'Cart subtotal', 'weight'=>'Cart total weight')),
 			'shipping_limit'        	=> array('title'=> 'Cost are', 'tab'=>1, 'type'=>'dropdown', 'data' => 'string', 'help'=>'Define if the shipping cost are fixed to the spcified cost or limited to that value', 'writeParms' => array('fixed'=>'Fixed shipping costs', 'max'=>'Up to (max.) shipping costs')),
@@ -63,9 +64,9 @@ class vstore_pref_ui extends e_admin_ui
 			
 			'custom_css'	            => array('title'=> 'Custom CSS', 'tab'=>6, 'type' => 'textarea', 'data' => 'str', 'width' => '100%', 'readParms' => array(), 'writeParms' => array('cols'=> 80, 'rows' => 10, 'size'=>'block-level'), 'help'=>'Use this field to enter any vstore related custom css, without the need to edit any source files.'),
 
-			'tax_calculate'	            => array('title'=> 'Calculate tax', 'tab'=>7, 'type'=>'boolean', 'data' => 'int','help'=>'Enable to activate tax calculation.'),
+			'tax_calculate'	            => array('title'=> 'Calculate tax', 'tab'=>7, 'type'=>'bool', 'data' => 'int','help'=>'Enable to activate tax calculation.', 'writeParms' => array('label' => 'yesno')),
 			'tax_business_country'		=> array('title'=> 'Business country', 'tab'=>7, 'type'=>'country', 'data' => 'string', 'help'=>'The country where the business is located.', 'writeParms' => array()),
-			'tax_check_vat'	            => array('title'=> 'Check VAT id online (EU only!)', 'tab'=>7, 'type'=>'boolean', 'data' => 'int','help'=>'Enable to activate online VAT id checking. (EU only!)'),
+			'tax_check_vat'	            => array('title'=> 'Check VAT id online (EU only!)', 'tab'=>7, 'type'=>'bool', 'data' => 'int','help'=>'Enable to activate online VAT id checking. (EU only!)', 'writeParms' => array('label' => 'yesno')),
 			'tax_classes'				=> array('title'=> 'Tax classes', 'tab'=>7, 'type'=>'method', 'data' => 'json', 'help'=>'', 'writeParms' => array()),
 			
 			'menu_cat'				    => array('title'=> 'Product category', 'tab'=>8, 'type'=>'dropdown', 'data' => 'int', 'help'=>'', 'writeParms' => array()),
@@ -105,10 +106,19 @@ class vstore_pref_ui extends e_admin_ui
 				}
 			}
 
+			if (!isset($this->prefs['show_outofstock'])) {
+				// new pref... set default value
+				$this->prefs['show_outofstock'] = 1;
+			}
+
+		}
+
+		public function beforePrefsSave($new_data, $old_data)
+		{
 			// Fix the shipping data array
-			if (isset($_POST['shipping_data']))
+			if (isset($new_data['shipping_data']))
 			{
-				$sd = $_POST['shipping_data'];
+				$sd = $new_data['shipping_data'];
 				if (!is_array($sd))
 				{
 					$sd = e107::unserialize($sd);
@@ -122,13 +132,13 @@ class vstore_pref_ui extends e_admin_ui
 					$tmp[] = array('cost' => floatval($value['cost']), 'unit' => floatval($value['unit']));
 				}
 
-				$_POST['shipping_data'] = $tmp;
+				$new_data['shipping_data'] = $tmp;
 			}
 
 			// Fix the tax_classes array
-			if (isset($_POST['tax_classes']))
+			if (isset($new_data['tax_classes']))
 			{
-				$tc = $_POST['tax_classes'];
+				$tc = $new_data['tax_classes'];
 				if (!is_array($tc))
 				{
 					$tc = e107::unserialize($tc);
@@ -142,11 +152,9 @@ class vstore_pref_ui extends e_admin_ui
 				// Make sure that the array is correctly indexed
 				$tmp = array();
 				$used = array();
-				$forceSave = false;
 				foreach ($tc as $key => $value) {
 					if (empty($value['name'])) 
 					{
-						$forceSave = true;
 						continue;
 					}
 					if ($key < count($defaultKeys) && $value['name'] != $defaultKeys[$key])
@@ -157,7 +165,6 @@ class vstore_pref_ui extends e_admin_ui
 					}
 					if (in_array($value['name'], $used))
 					{
-						$forceSave = true;
 						continue;
 					}
 					$used[] = $value['name'];
@@ -168,12 +175,11 @@ class vstore_pref_ui extends e_admin_ui
 						'value' => floatval($value['value']));
 				}
 
-				$_POST['tax_classes'] = $tmp;
+				$new_data['tax_classes'] = $tmp;
 
 			}			
-
+			
 		}
-
 
 		
 		// public function customPage()
