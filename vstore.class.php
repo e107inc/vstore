@@ -2371,17 +2371,18 @@ class vstore
             $this->perPage = $item_count;
         }
 
-        $show_outofstock = '';
+        // Check if out-of-stock products should be displayed or not (default: show)
+        $hide_outofstock = '';
         if (!varset($this->pref['show_outofstock'], true)) {
-            $show_outofstock = ' AND item_inventory != 0';
+            $hide_outofstock = ' AND item_inventory != 0';
         }
 
         if (!$data = e107::getDb()->retrieve(
             'SELECT SQL_CALC_FOUND_ROWS *, cat_class
             FROM #vstore_items
             LEFT JOIN #vstore_cat ON (item_cat = cat_id)
-            WHERE cat_class IN (' . USERCLASS_LIST . ') AND item_active=1 AND item_cat = ' .
-            intval($category) . $show_outofstock . '
+            WHERE cat_class IN (' . USERCLASS_LIST . ') AND item_active=1 AND item_cat = ' . (int) $category . 
+            $hide_outofstock . '
             ORDER BY item_order LIMIT ' . $this->from . ',' . $this->perPage,
             true
         )) {
