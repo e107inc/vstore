@@ -41,6 +41,7 @@ class vstore
     protected $parentData         = array();
     protected $currency           = 'USD';
     protected $order              = null;
+    private   $html_invoice       = null;
 
     /**
      * Array with the available currencies
@@ -1352,9 +1353,14 @@ class vstore
      */
     private function checkoutComplete()
     {
+        e107::getMessage()->addSuccess('<br/>' . plugin_vstore_vstore_shortcodes::sc_cart_continueshop(), 'vstore');
         $text = e107::getMessage()->render('vstore');
 
-        $text .= "<div class='alert-block'>" . plugin_vstore_vstore_shortcodes::sc_cart_continueshop() . "</div>";
+        if (!empty($this->html_invoice)) {
+            $text .= $this->html_invoice;
+        }
+
+        // $text .= "<div class='alert-block'>" . plugin_vstore_vstore_shortcodes::sc_cart_continueshop() . "</div>";
 
         return $text;
     }
@@ -1762,6 +1768,7 @@ class vstore
      */
     private function saveTransaction($id, $transData, $items, $order_status = 'N')
     {
+        $this->html_invoice = null;
 
         if (intval($transData['L_ERRORCODE0']) == 11607) {
             // Duplicate REquest.
@@ -1784,7 +1791,7 @@ class vstore
                 unset($customerData['add_field' . $key]);
             }
         }
-        $customerData['additional_fields'] = json_encode($add, JSON_PRETTY_PRINT);
+        $customerData['additional_fields'] = e107::serialize($add, 'json');
 
 
         if (!$this->getShippingType()) {
@@ -1817,12 +1824,13 @@ class vstore
         $this->order->order_pay_coupon_code = $cartData['totals']['cart_coupon']['code'];
         $this->order->order_pay_coupon_amount = $cartData['totals']['cart_coupon']['amount'];
         $this->order->order_pay_rawdata = array('purchase' => $transData);
-
+        $this->order->setInvoiceNr();
         $this->order->setOrderLog('Order created' . (empty($transData) ? '' : ' and paid') . '.');
 
         $mes = e107::getMessage();
         if ($this->order->save()) {
-            $nid = $this->order->order_id;
+            // Order saved, update inventory before doing any "secondary" work...
+            $this->updateInventory($this->order->order_items);
 
             if (USER && !$this->saveCustomer(
                 $customerData,
@@ -1833,26 +1841,22 @@ class vstore
                 $mes->addError('Unable to save/Update customer data!', 'vstore');
             }
 
-            $this->order->setOrderRef();
-            $this->order->setInvoiceNr();
-            if (!$this->order->save()) {
-                $mes->addError('Unable to update order! ' . $this->order->getLastError(), 'vstore');
+            // Set order ref code
+            if (!$this->order->setOrderRef() || !$this->order->save()) {
+                $mes->addDebug('Unable to update order ref code!' . $this->order->getLastError(), 'vstore');
             }
 
-            $refId = $this->order->order_refcode;
-            $invoice_nr = $this->order->order_invoice_nr;
-
+            // Render the in
             $pdf_data = $this->renderInvoice();
             $pdf_file = '';
-            if ($this->pref['invoice_create_pdf'] && $pdf_data) {
+            if ($this->pref['invoice_create_pdf'] && is_array($pdf_data)) {
                 $this->invoiceToPdf($pdf_data);
-                $pdf_file = $this->pathToInvoicePdf($invoice_nr, $pdf_data['userid']);
+                $pdf_file = $this->pathToInvoicePdf($this->order->order_invoice_nr, $pdf_data['userid']);
             }
 
-            $mes->addSuccess("Your order <b>#" . $refId .
+            $mes->addSuccess("Your order <b>#" . $this->order->order_refcode .
                 "</b> is complete and you will receive a order confirmation " .
-                "with all details within the next few minutes!", 'vstore');
-            $this->updateInventory($this->order->order_items);
+                "with all details within the next few minutes by email!", 'vstore');
             $this->order->emailCustomer('default', $pdf_file);
 
             if (!empty($transData)) {
@@ -1862,7 +1866,11 @@ class vstore
             $mes->addError("Unable to save transaction");
             $this->order->emailCustomer('error');
         }
-    }
+        if (!$this->pref['invoice_create_pdf'] && !empty($pdf_data) && !is_array($pdf_data)) {
+            $this->html_invoice = $pdf_data;
+        }
+        return null;
+}
 
     private function saveCustomer($customerData, $shippingData, $use_shipping, $gateway)
     {
@@ -1973,46 +1981,114 @@ class vstore
     /**
      * Update the items inventory based on the given json string
      *
-     * @param string $json
+     * @param string|array $json json formatted string or array containing the data
      * @return void
      */
     private function updateInventory($json)
     {
         $sql = e107::getDb();
         if (!is_array($json)) {
-            $arr = json_decode($json, true);
+            $arr = e107::unserialize($json);
         } else {
             $arr = $json;
         }
 
 
-        // todo: update item_vars_inventory (from cart_item_vars)
+        // todo: update item_vars_inventory (item_vars = cart_item_vars)
 
         foreach ($arr as $row) {
+            // Update inventory 
+            // item_vars: e.g. 1,2|iuitz,black
+            // item_vars_inventory: e.g. {"balu": {"black": "10", "white": "20"}, "iuitz": {"black": "30", "white": "40"}}
+
             if (!empty($row['quantity']) && !empty($row['id']) && !empty($row['name'])) {
-                $curQuantity = $sql->retrieve(
+                $reduceBy = (int) $row['quantity'];
+
+                $itemdata = $sql->retrieve(
                     'vstore_items',
-                    'item_inventory',
-                    'item_id=' . intval($row['id']) . ' AND item_code="' . $row['name'] . '"'
+                    'item_inventory, item_vars_inventory',
+                    'item_id = ' . (int) $row['id']
                 );
-                if ($curQuantity > 0) {
-                    $reduceBy = intval($row['quantity']);
-                    if ($reduceBy > $curQuantity) {
-                        $reduceBy = $curQuantity;
+                $curQuantity = (int) $itemdata['item_inventory'];
+
+                $varsdata = '';
+                if (!empty($row['item_vars'])) {
+                    $item_vars = array_values($this->item_vars_toArray($row['item_vars']));
+                    $varsdata = e107::unserialize($itemdata['item_vars_inventory']);
+                    $vars_quantity = -1;
+                    if (count($item_vars) == 1) {
+                        $vars_quantity = (int) varset($varsdata[$item_vars[0]], -1);
+                        if ($vars_quantity > 0) {
+                            if ($vars_quantity == -1) {
+                                $reduceToVars = -1;
+                            } elseif ($reduceBy > $vars_quantity) {
+                                $reduceToVars = 0;
+                            } else {
+                                $reduceToVars = $vars_quantity - $reduceBy;
+                            }
+                            $varsdata[$item_vars[0]] = $reduceToVars;
+                        }
+                    } elseif (count($item_vars) == 2) {
+                        $vars_quantity = (int) varset($varsdata[$item_vars[0]][$item_vars[1]], -1);
+                        if ($vars_quantity > 0) {
+                            if ($vars_quantity == -1) {
+                                $reduceToVars = -1;
+                            } elseif ($reduceBy > $vars_quantity) {
+                                $reduceToVars = 0;
+                            } else {
+                                $reduceToVars = $vars_quantity - $reduceBy;
+                            }
+                            $varsdata[$item_vars[0]][$item_vars[1]] = $reduceToVars;
+                        }
                     }
-                    if ($sql->update(
-                        'vstore_items',
-                        'item_inventory = item_inventory - ' . $reduceBy .
-                        ' WHERE item_id=' . intval($row['id']) . ' AND item_code="' . $row['name'] . '" LIMIT 1'
-                    )) {
+                    $varsdata = e107::serialize($varsdata, 'json');
+                }
+                
+
+                if ($curQuantity > 0 || !empty($varsdata)) {
+                    if ($curQuantity == -1) {
+                        $reduceTo = -1;
+                    } elseif ($reduceBy > $curQuantity) {
+                        $reduceTo = 0;
+                    } else {
+                        $reduceTo = $curQuantity - $reduceBy;
+                    }
+
+                    $update = array(
+                        'data' => array(
+                            'item_inventory' => $reduceTo,
+                        ),
+                        'WHERE' => 'item_id = "' . intval($row['id']) . '"'
+                    );
+                    if (!empty($varsdata)) {
+                        $update['data']['item_vars_inventory'] = $varsdata;
+                    }
+
+                    // if ($sql->update(
+                    //     'vstore_items',
+                    //     'item_inventory = item_inventory - ' . $reduceBy .
+                    //     ' WHERE item_id=' . intval($row['id']) . ' AND item_code="' . $row['name'] . '" LIMIT 1'
+                    // )) {
+                    if ($sql->update('vstore_items', $update)) {
                         e107::getMessage()->addDebug(
-                            "Reduced inventory of " . $row['name'] . " by " . $row['quantity']
+                            "Updated item_inventory of " . $row['name'] . " to " . $reduceTo
                         );
+                        if (!empty($varsdata)) {
+                            e107::getMessage()->addDebug(
+                                "Updated item_vars_inventory of " . $row['name'] . " to " . $reduceToVars
+                            );
+                        }
                     } else {
                         e107::getMessage()->addDebug(
-                            "Was UNABLE to reduce inventory of " . $row['name'] .
-                            " (" . $row['id'] . ") by " . $row['quantity']
+                            "Was UNABLE to update item_inventory of " . $row['name'] .
+                            " (" . $row['id'] . ") to " . $reduceTo
                         );
+                        if (!empty($varsdata)) {
+                            e107::getMessage()->addDebug(
+                                "Was UNABLE to update item_vars_inventory of " . $row['name'] .
+                                " (" . $row['id'] . ") to " . $reduceToVars
+                            );
+                        }
                     }
                 } else {
                     e107::getMessage()->addDebug(
