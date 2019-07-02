@@ -1709,8 +1709,8 @@
 		{
 			if (empty($parm)) return '';
 
-			$key = array_keys($parm);
-			if ($key) $key = $key[0];
+			$key = key($parm);
+			if (empty($key)) return '';
 
 			switch($key)
 			{
@@ -1719,16 +1719,23 @@
 					break;
 
 				case 'nav':
-					$text = '<ul class="nav nav-tabs">
-				';
+					$template = e107::getTemplate('vstore', 'vstore_dashboard', 'nav');
+
+					$text = $template['start'];
 					$nav = $this->var['nav'];
 					foreach($nav as $a => $caption)
 					{
-						$active = ($this->var['area'] == $a ? 'class="active"': '') ;
-						$text .= '<li role="presentation" '.$active.'><a href="'.e107::url('vstore', 'dashboard', array('dash' => $a)).'">'.$caption.'</a></li>
-					';
+						$active = ($this->var['area'] == $a ? 'active': '') ;
+						$text .= e107::getParser()->lanVars(
+							$template['item'], 
+							array(
+								'active' => $active,
+								'url' => e107::url('vstore', 'dashboard', array('dash' => $a)),
+								'caption' => $caption
+							)
+						);
 					}
-					$text .= '</ul>';
+					$text .= $template['end'];
 					break;
 
 				case 'shipping_address':

@@ -15,6 +15,17 @@ $VSTORE_DASHBOARD_TEMPLATE['footer'] = '
     </div>
 ';
 
+/**
+ * Dashboard navigation
+ */
+$VSTORE_DASHBOARD_TEMPLATE['nav']['start'] = '
+	<ul class="nav nav-tabs">';
+$VSTORE_DASHBOARD_TEMPLATE['nav']['end'] = '
+	</ul>
+';
+$VSTORE_DASHBOARD_TEMPLATE['nav']['item'] = '
+		<li role="presentation" class="nav-item [active]"><a class="nav-link" href="[url]">[caption]</a></li>';
+
 
 /**
  * Dashboard
