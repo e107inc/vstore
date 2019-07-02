@@ -43,6 +43,7 @@ class vstore_pref_ui extends e_admin_ui
 			'amount_format'	            => array('title'=> 'Amount format', 'tab'=>0, 'type'=>'dropdown', 'data' => 'string','help'=>'Select a format to be used to format the amount'),
 			'weight_unit'		        => array('title'=> 'Weight unit', 'tab'=>0, 'type'=>'dropdown', 'data' => 'string','help'=>'Select a weight unit'),
 			'customer_userclass'        => array('title'=> 'Assign userclass', 'tab'=>0, 'type' => 'method', 'help' => 'Assign userclass to customer on purchase'),
+			'show_outofstock'     		=> array('title'=> 'Show out-of-stock', 'tab'=>0, 'type' => 'bool', 'help' => 'Show "Out-of-stock" products in product listings', 'writeParms' => array('default' => true)),
 			
 			'shipping'		            => array('title'=> 'Calculate Shipping', 'tab'=>1, 'type'=>'boolean', 'data' => 'int','help'=>'Including shipping calculation at checkout.'),
 			'shipping_method'	        => array('title'=> 'Calculation method', 'tab'=>1, 'type'=>'dropdown', 'data' => 'string', 'help'=>'Define a method to calculate the shipping cost.', 'writeParms' => array('size' => 'xxlarge')),

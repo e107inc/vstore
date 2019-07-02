@@ -1625,6 +1625,7 @@ class vstore
                     'tax_rate'    => $var['tax_rate'],
                     'file'        => $var['item_download'],
                     'vars'        => $itemvarstring,
+                    'item_vars'   => $var['cart_item_vars']
                 );
             }
         }
@@ -1984,6 +1985,9 @@ class vstore
             $arr = $json;
         }
 
+
+        // todo: update item_vars_inventory (from cart_item_vars)
+
         foreach ($arr as $row) {
             if (!empty($row['quantity']) && !empty($row['id']) && !empty($row['name'])) {
                 $curQuantity = $sql->retrieve(
@@ -2291,11 +2295,17 @@ class vstore
             $this->perPage = $item_count;
         }
 
+        $show_outofstock = '';
+        if (!varset($this->pref['show_outofstock'], true)) {
+            $show_outofstock = ' AND item_inventory != 0';
+        }
+
         if (!$data = e107::getDb()->retrieve(
             'SELECT SQL_CALC_FOUND_ROWS *, cat_class
             FROM #vstore_items
             LEFT JOIN #vstore_cat ON (item_cat = cat_id)
-            WHERE cat_class IN (' . USERCLASS_LIST . ') AND item_active=1 AND item_cat = ' . intval($category) . '
+            WHERE cat_class IN (' . USERCLASS_LIST . ') AND item_active=1 AND item_cat = ' .
+            intval($category) . $show_outofstock . '
             ORDER BY item_order LIMIT ' . $this->from . ',' . $this->perPage,
             true
         )) {
