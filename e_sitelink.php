@@ -47,7 +47,13 @@ class vstore_sitelink // include plugin-folder in the name.
 		$tp = e107::getParser();
 		$sublinks = array();
 		
-		$sql->select("vstore_cat","*","cat_id != '' ORDER BY cat_order,cat_name");
+		//$sql->select("vstore_cat","*","cat_id != '' ORDER BY cat_order,cat_name");
+		$sql->gen('SELECT c.*, COUNT(i.item_id) AS items_count
+			FROM e107_vstore_cat c
+			LEFT JOIN e107_vstore_items i ON (c.cat_id = i.item_cat)
+			WHERE i.item_inventory != 0 AND i.item_active = 1
+			GROUP BY c.cat_id
+			ORDER BY cat_order');
 		
 		while($row = $sql->fetch())
 		{
@@ -60,7 +66,8 @@ class vstore_sitelink // include plugin-folder in the name.
 				'link_order'		=> '',
 				'link_parent'		=> '',
 				'link_open'			=> '',
-				'link_class'		=> 0
+				'link_class'		=> 0,
+				'link_badge'		=> $row['items_count']
 			);
 		}
 		

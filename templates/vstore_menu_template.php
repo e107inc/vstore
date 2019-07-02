@@ -20,9 +20,10 @@
     ';
 
 	$VSTORE_MENU_TEMPLATE['categories']['item'] = '
-    <a href="{MENU_CAT:url}" class="list-group-item vstore-categories-item {MENU_CAT:active}">
-        {MENU_CAT:name}
-        <p class="list-group-item-text vstore-categories-item-text">{MENU_CAT:description}</p>
-    </a>
+		<a href="{MENU_CAT:url}" class="list-group-item vstore-categories-item {MENU_CAT:active}">
+			{MENU_CAT:name}
+			<span class="badge badge-primary badge-pill">{MENU_CAT:badge}</span>
+			<p class="list-group-item-text vstore-categories-item-text">{MENU_CAT:description}</p>
+		</a>
     ';
 
