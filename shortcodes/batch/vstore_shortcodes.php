@@ -1800,6 +1800,10 @@
 				case 'description':
 					$text = vartrue($this->var['link_description'], '');
 					break;
+
+				case 'badge':
+					$text = vartrue($this->var['link_badge'], '');
+					break;
 			}
 			return $text;
 		}
