@@ -169,4 +169,3 @@ class vstore_setup
 	}
 	
 }
-?>

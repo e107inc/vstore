@@ -708,4 +708,3 @@ class vstore_order_form_ui extends e_admin_form_ui
 		return e107::getDateConvert()->convert_date($curVal, 'short');
 	}
 }
-?>

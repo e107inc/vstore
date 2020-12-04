@@ -228,4 +228,3 @@ class vstore_cart_form_ui extends e_admin_form_ui
 
 }		
 
-?>

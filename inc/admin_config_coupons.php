@@ -358,4 +358,3 @@ class vstore_coupons_form_ui extends e_admin_form_ui
 	}
 }
 
-?>

@@ -24,4 +24,3 @@ class vstore_shortcodes extends e_shortcode
 //
 //	}
 }
-?>

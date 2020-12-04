@@ -454,4 +454,3 @@ class vstore_dashboard extends vstore
     }
 }
 
-?>

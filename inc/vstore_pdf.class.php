@@ -363,4 +363,3 @@ class vstore_pdf extends TCPDF
 
 }
 
-?>

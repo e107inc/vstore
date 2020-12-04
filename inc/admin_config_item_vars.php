@@ -235,4 +235,3 @@ class vstore_items_vars_form_ui extends e_admin_form_ui
 	}
 
 }
-?>

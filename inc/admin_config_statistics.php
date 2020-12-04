@@ -403,5 +403,5 @@ class vstore_statistics_form_ui extends e_admin_form_ui
 {
 }
 
-?>
+
 

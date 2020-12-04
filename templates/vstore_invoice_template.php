@@ -218,4 +218,3 @@ $VSTORE_INVOICE_TEMPLATE['display'] = '
 </table>
 </div>
 ';
-?>

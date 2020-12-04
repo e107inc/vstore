@@ -194,4 +194,3 @@ class vstore_email_templates_form_ui extends e_admin_form_ui
 
 }		
 
-?>

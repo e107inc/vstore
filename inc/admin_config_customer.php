@@ -223,4 +223,3 @@ class vstore_customer_form_ui extends e_admin_form_ui
 	}
 	
 }		
-?>
