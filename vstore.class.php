@@ -482,7 +482,8 @@ class vstore
             // convert '1x' sizes to '1em'
             $size = floatval($size) . 'em';
         }
-        $size = vartrue(intval($size), 1) . 'em';
+        $size = intval($size);
+        $size = vartrue($size, 1) . 'em';
         $text = (!empty(self::$mollie_payment_methods[$type])
             ? e_PLUGIN_ABS . 'vstore/' . self::$mollie_payment_methods[$type]['icon']
             : '');
