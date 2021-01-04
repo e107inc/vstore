@@ -889,6 +889,16 @@
 		function sc_item_price($parm=null)
 		{
 			$itemid = intval($this->var['item_id']);
+			if(empty($this->var['item_price']))
+			{
+				$this->var['item_price'] = 0;
+			}
+
+			if(empty($this->var['item_var_price']))
+			{
+				$this->var['item_var_price'] = 0;
+			}
+
 			$baseprice = $price = $this->tp->toNumber($this->var['item_price']);
 			$varprice = $this->tp->toNumber($this->var['item_var_price']);
 

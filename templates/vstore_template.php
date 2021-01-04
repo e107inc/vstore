@@ -78,7 +78,7 @@ $VSTORE_TEMPLATE['menu']['start'] =  '';
 
 $VSTORE_TEMPLATE['menu']['item'] =  '
 			{SETIMAGE: w=100&h=100&crop=1}
-			<div class="vstore-product-list col-sm-12 col-lg-12 col-md-12">
+			<div class="vstore-product-list">
 				<div class="thumbnail" style="height:auto;">
 					<div class="caption">
 						<div class="row">
@@ -90,7 +90,7 @@ $VSTORE_TEMPLATE['menu']['item'] =  '
 							<div class="col-xs-12 col-sm-6 col-md-6 col-lg-6">
 								<p class="lead">{ITEM_PRICE}</p>
 							</div>
-							<div class="col-xs-12 col-sm-6 col-md-6 col-lg-6">
+							<div class="col-xs-12 col-sm-6 col-md-6 col-lg-6 text-right">
 								{ITEM_ADDTOCART: class=btn btn-sm btn-success vstore-add&class0=btn btn-sm btn-default disabled}
 							</div>
 						</div>

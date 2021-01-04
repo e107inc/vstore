@@ -204,8 +204,14 @@ class vstore_pref_form_ui extends e_admin_form_ui
 
 	public function init()
 	{
-		
-		$max = (int) max(array_keys(e107::unserialize(e107::pref('vstore','shipping_data'))));
+		$d = e107::unserialize(e107::pref('vstore','shipping_data'));
+		$max = 0;
+
+		if(!empty($d))
+		{
+			$max = (int) max(array_keys($d));
+		}
+
 		$max++;
 
 		$js = "
