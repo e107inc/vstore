@@ -478,9 +478,10 @@ class vstore
     public static function getMolliePaymentMethodIcon($type = '', $size = '5x')
     {
         $size = vartrue($size, '5x');
-        if (preg_match('^[0-9.]+x$', $size)) {
+        if (preg_match('^[0-9.]+x$', $size))
+        {
             // convert '1x' sizes to '1em'
-            $size = floatval($size) . 'em';
+            $size = (float) $size . 'em';
         }
         $size = intval($size);
         $size = vartrue($size, 1) . 'em';
