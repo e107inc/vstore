@@ -15,7 +15,7 @@ $VSTORE_TEMPLATE['cat']['item']   = '
 		<div class="vstore-category-list col-sm-4 col-lg-4 col-md-4">
 			<div class="thumbnail">
 				<a href="{CAT_URL}">{CAT_PIC}</a>
-				<div class="caption text-center">
+				<div class="vstore-caption text-center">
 					<h4><a href="{CAT_URL}">{CAT_NAME}</a></h4>
 					<p class="cat-description"><small>{CAT_DESCRIPTION}</small></p>
 					
@@ -80,7 +80,7 @@ $VSTORE_TEMPLATE['menu']['item'] =  '
 			{SETIMAGE: w=100&h=100&crop=1}
 			<div class="vstore-product-list">
 				<div class="thumbnail" style="height:auto;">
-					<div class="caption">
+					<div class="vstore-caption">
 						<div class="row">
 							<a href="{ITEM_URL}" class="col-xs-4">{ITEM_PIC}</a>
 							<h4 class="col-xs-8"><a href="{ITEM_URL}">{ITEM_NAME}</a></h4>

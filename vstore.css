@@ -21,7 +21,7 @@
 #vstore-cart-dropdown-empty                 { margin:0 }
 
 .vstore-category-list  > .col-md-4:nth-child(3n+1) {  clear:both; }
-.vstore-category-list .thumbnail .caption   { min-height:80px }
+.vstore-category-list .thumbnail .vstore-caption   { min-height:80px }
 
 .vstore-zoom::after                         { content: ''; display: block; width: 33px; height: 33px; position: absolute; top: 0; right: 0; background: url(https://raw.github.com/jackmoore/zoom/master/icon.png); }
 
