@@ -1452,7 +1452,7 @@ class vstore
 		{
 			if(!empty($this->get['download']))
 			{
-				$array[] = array('url' => e107::url('vstore', 'index'), 'text' => 'Download');
+				$array[] = array('url' => e107::url('vstore', 'index'), 'text' => LAN_DOWNLOAD);
 			}
 			elseif(!empty($this->get['invoice']))
 			{
@@ -1537,11 +1537,16 @@ class vstore
 		{
 			// print_a($this->categories);
 			// print_a($this->item);
-			// print_a($array);
+			//	$last = end($array);
+		//	 print_a($last);
+			/* @todo add caonical by taking the last breadcrumb and using e107::link  */
 		}
 		// return $frm->breadcrumb($array);
 
 		// assign values to the Magic Shortcode:  {---BREADCRUMB---}
+
+
+
 		e107::breadcrumb($array);
 	}
 
