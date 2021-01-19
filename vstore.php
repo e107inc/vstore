@@ -36,7 +36,7 @@ e107::js('vstore', 'js/jquery.zoom.min.js');
 // 	" . $vstore_prefs['custom_css']);
 // }
 
-
+/** @var vstore $vstore */
 $vstore = e107::getSingleton('vstore', e_PLUGIN.'vstore/vstore.class.php');
 $vstore->init();
 require_once(HEADERF);

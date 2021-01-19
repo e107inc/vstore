@@ -97,8 +97,6 @@ class vstore_sitelink // include plugin-folder in the name.
 
 		//TODO Move into class.
 
-		e107::getDebug()->log($data);
-
 		$text = '';
 		if (!e_AJAX_REQUEST)
 		{
