@@ -120,5 +120,250 @@
 			return $var;
 		}
 
+		public function revenue()
+		{
+			$cht = e107::getChart()->setProvider('google');
+			$sql = e107::getDb();
+			$id = 'vstore'.ucfirst(__FUNCTION__);
 
+			$width='100%';
+			$height = 400;
+
+			$amt = array();
+
+			$month_start = strtotime('first day of -12 months');
+			$month_end = strtotime("last day of this month"); // strtotime('+9 months');
+
+			if(!$sql->gen("SELECT * FROM #vstore_orders WHERE order_pay_status = 'complete' AND  order_date BETWEEN ".$month_start." AND ".$month_end."  "))
+			{
+				return "<div class='alert alert-block alert-info'>No Transactions Found</div>";
+			}
+
+			$total = 0;
+
+			while($row = $sql->fetch())
+			{
+
+				$month      = date('Y-n', $row['order_date']); //  'Y-n' for monthly, 'Y-n-j' for daily.
+			//	$num        = (int) 1; // $row['invoice_total'];
+				$value      =  $row['order_pay_amount']; // ($num - $tax);
+				$type       = $row['order_pay_status'];
+
+				if(!isset($amt[$month][$type]))
+				{
+					$amt[$month][$type] = 0;
+					$amt[$month]['total'] = 0;
+				}
+
+				$amt[$month][$type] += $value; // increment 'complete' or other type.
+
+				if($type === 'complete')
+				{
+					$amt[$month]['total'] += $value;
+				}
+
+				$total += $value;
+			}
+
+			$sum = $total;
+
+			$data = array();
+			$data[0] = array('Day', "Complete", /*'Tentative', 'To Reschedule', 'Discounts Given'*/);
+			$data[0][] = array('type'=>'string', 'label'=>'Total', 'role'=>'annotation', 'p'=> array('html'=>true));
+
+
+		//	$this->title = 'Revenue ('.$sum.')';
+
+			$range = $this->dateRange($month_start, $month_end, 'first day of next month', 'Y-n');
+
+		//	e107::getDebug()->log($range);
+		//	e107::getDebug()->log($amt);
+
+			$c = 0;
+		//	foreach($amt as $k=>$v)
+			foreach($range as $unix => $k)
+			{
+				$diz = date("M 'y", $unix);
+				$total = (float) varset($amt[$k]['total']);
+				$data[] = array(
+						(string) $diz,
+						(int) varset($amt[$k]['complete']),
+					/*	(int) $amt[$k]['pending'],
+						(int) $amt[$k]['reschedule'],
+						(int) $amt[$k]['discount'],*/
+
+						(string) round($total), // annotation
+
+						);
+
+				$ticks[] = $k;
+				$c++;
+			}
+
+		//	e107::getDebug()->log($data);
+			$label = "Monthly Revenue ";
+			$label .= date('M Y', $month_start)." - ".date('M Y', $month_end)." (".number_format($sum).")";
+
+			$options = array(
+				'chartArea'	=>array('left'=>80, 'right'=>40, 'width'=>'100%', 'top'=>60, 'bottom'=>130),
+				'legend'	=> array('position'=> 'top', 'alignment'=>'center', 'textStyle' => array('fontSize' => 11, 'color' => '#ccc')),
+				'vAxis'		=> array('title'=>null, /*'minValue'=>0, 'maxValue'=>10,*/ 'titleFontSize'=>16, 'titleTextStyle'=>array('color' => '#ccc'), 'gridlines'=>array('color'=>'#696969', 'count'=>5), 'minorGridlines'=>array('color'=>'transparent', 'count'=>0), 'format'=>'short', 'textStyle'=>array('color' => '#ccc') ),
+				'hAxis'		=> array('title'=>$label, 'slantedText'=>true, 'slantedTextAngle'=>60, 'ticks'=>$ticks, 'titleFontSize'=>14, 'titleTextStyle'=>array('color' => '#ccc'), 'gridlines' => array('color'=>'transparent'), 'textStyle'=>array('color' => '#ccc') ),
+				'colors'	=> array('#5CB85C', '#f89406', '#5bc0de',  '#ee5f5b', '#ffffff'),
+				'animation'	=> array('duration'=>1000, 'easing' => 'out'),
+				'areaOpacity'	=> 0.8,
+				'isStacked' => true,
+				'annotations'   => array('textStyle'=> array('color'=>'white', 'fontSize' => 11), 'format'=>'short', 'alwaysOutside' => true, 'stem' => array('color' => 'transparent')),
+				'backgroundColor' => array('fill' => 'transparent' )
+			);
+
+			$cht->setType('column');
+			$cht->setOptions($options);
+			$cht->setData($data);
+
+
+
+			return "<div>".$cht->render($id, $width, $height)."</div>";
+
+
+		}
+
+
+		public function orders()
+		{
+			$cht = e107::getChart()->setProvider('google');
+			$sql = e107::getDb();
+			$id = 'vstore'.ucfirst(__FUNCTION__);
+
+			$width='100%';
+			$height = 400;
+
+			$amt = array();
+
+			$month_start = strtotime('first day of this month');
+			$month_end = strtotime("last day of this month"); // strtotime('+9 months');
+
+			if(!$sql->gen("SELECT * FROM #vstore_orders WHERE order_date BETWEEN ".$month_start." AND ".$month_end."  "))
+			{
+				return "<div class='alert alert-block alert-info'>No Transactions Found</div>";
+			}
+
+			$total = 0;
+
+			while($row = $sql->fetch())
+			{
+
+				$month      = date('Y-n-j', $row['order_date']); //  'Y-n' for monthly, 'Y-n-j' for daily.
+				$num        = (int) 1; // $row['invoice_total'];
+				$value      =  $row['order_pay_amount']; // ($num - $tax);
+				$type       = $row['order_status'];
+
+				if(!isset($amt[$month][$type]))
+				{
+					$amt[$month][$type] = 0;
+					$amt[$month]['total'] = 0;
+				}
+
+				$amt[$month][$type] += $num; // increment 'complete' or other type.
+				$amt[$month]['total'] += $num;
+
+			/*	if($type === 'complete')
+				{
+					$amt[$month]['total'] += $num;
+				}*/
+
+				$total += $num;
+			}
+
+
+			$sum = $total;
+
+			$data = array();
+			$data[0] = array('Day', "New", "Processing", "Completed", "On Hold", "Cancelled", "Refunded");
+	//		$data[0][] = array('type'=>'string', 'label'=>'Total', 'role'=>'annotation', 'p'=> array('html'=>true));
+
+			// Create items for each day of the month.
+			$range = $this->dateRange($month_start, $month_end, '+1 day', 'Y-n-j');
+
+			$c = 0;
+
+			foreach($range as $unix=>$k)
+			{
+				$diz = date("jS", $unix);
+
+				$data[] = array(
+						(string) $diz,
+						(int) varset($amt[$k]['N']),
+						(int) varset($amt[$k]['P']),
+						(int) varset($amt[$k]['C']),
+						(int) varset($amt[$k]['H']),
+						(int) varset($amt[$k]['X']),
+						(int) varset($amt[$k]['R']),
+
+						/*
+						(int) $amt[$k]['reschedule'],
+						(int) $amt[$k]['discount'],*/
+
+					//	(string) round($amt[$k]['total']), // annotation
+
+						);
+
+				$ticks[] = $k;
+				$c++;
+			}
+
+		//	e107::getDebug()->log($data);
+			$label = "Number of Sales ";
+		//	$label .= date('M Y', $month_start)." - ".date('M Y', $month_end)." (".number_format($sum).")";
+
+			$options = array(
+				'chartArea'	=>array('left'=>80, 'right'=>40, 'width'=>'100%', 'top'=>60, 'bottom'=>130),
+				'legend'	=> array('position'=> 'top', 'alignment'=>'center', 'textStyle' => array('fontSize' => 11, 'color' => '#ccc')),
+				'vAxis'		=> array('title'=>null, /*'minValue'=>0, 'maxValue'=>10,*/ 'titleFontSize'=>16, 'titleTextStyle'=>array('color' => '#ccc'), 'gridlines'=>array('color'=>'#696969', 'count'=>5), 'minorGridlines'=>array('color'=>'transparent', 'count'=>0), 'format'=>'short', 'textStyle'=>array('color' => '#ccc') ),
+				'hAxis'		=> array('title'=>$label, 'slantedText'=>true, 'slantedTextAngle'=>60, 'ticks'=>$ticks, 'titleFontSize'=>14, 'titleTextStyle'=>array('color' => '#ccc'), 'gridlines' => array('color'=>'transparent'), 'textStyle'=>array('color' => '#ccc') ),
+				'colors'	=> array(
+					'#337ab7', // New
+					'#5bc0de', // Processing
+					'#5CB85C', // Completed
+					'#f89406', // On Hold
+					'#ee5f5b', // Cancelled
+					'#555555' // Refunded
+					),
+				'animation'	=> array('duration'=>1000, 'easing' => 'out'),
+				'areaOpacity'	=> 0.8,
+				'isStacked' => true,
+				'annotations'   => array('textStyle'=> array('color'=>'white', 'fontSize' => 11), 'format'=>'short', 'alwaysOutside' => true, 'stem' => array('color' => 'transparent')),
+				'backgroundColor' => array('fill' => 'transparent' )
+			);
+
+			$cht->setType('column');
+			$cht->setOptions($options);
+			$cht->setData($data);
+
+
+
+			return "<div>".$cht->render($id, $width, $height)."</div>";
+
+
+		}
+
+
+
+
+	private function dateRange( $first, $last, $step = '+1 day', $format = 'Y-n-j' )
+	{
+
+		$dates = array();
+		$current = $first;
+		//$last = strtotime( $last );
+
+		while( $current <= $last )
+		{
+			$dates[$current] = date( $format, $current );
+			$current = strtotime( $step, $current );
+		}
+
+		return $dates;
 	}
+
+}

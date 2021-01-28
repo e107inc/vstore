@@ -109,17 +109,18 @@
 			//	print_a($_POST);
 
 
-			$data = e107::getDb()->retrieve('SELECT cat_id,cat_name,cat_parent FROM #vstore_cat ORDER BY cat_order', true);
+			$data = e107::getDb()->retrieve('SELECT cat_id, cat_name, cat_parent FROM #vstore_cat ORDER BY cat_order', true);
 			$parent = array();
 
-			foreach($data as $k => $v)
+
+			foreach($data as $k => $row)
 			{
-				$id = $v['cat_id'];
-				$parent[$id] = $v['cat_name'];
-				$pid = $v['cat_parent'];
-				$name = $parent[$pid];
-				$this->categories[$id] = $v['cat_name'];
-				$this->categoriesTree[$name][$id] = $v['cat_name'];
+				$id = $row['cat_id'];
+				$parent[$id] = $row['cat_name'];
+				$pid = (int) $row['cat_parent'];
+				$name = varset($parent[$pid]);
+				$this->categories[$id] = $row['cat_name'];
+				$this->categoriesTree[$name][$id] = $row['cat_name'];
 			}
 
 
