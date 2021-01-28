@@ -80,8 +80,8 @@ class vstore_statistics_ui extends e_admin_ui
 			unset($h);
 
 			// Get data for the top summary boxes
-			$count_open = (int) $sql->retrieve('vstore_orders', 'count(order_id)', 'order_status != "C"');
-			$count_orders_7 = (int) $sql->retrieve('vstore_orders', 'count(order_id)', sprintf('order_date >= %d', $date_7));
+			$count_open = (int) $sql->count('vstore_orders', "(*)", 'order_status != "X"');
+			$count_orders_7 = (int) $sql->count('vstore_orders', '(*)', sprintf('order_date >= %d', $date_7));
 			$gross_7 = (double) $sql->retrieve('vstore_orders', 'SUM(order_pay_amount)', sprintf('order_date >= %d', $date_7));
 			$gross_31 = (double) $sql->retrieve('vstore_orders', 'SUM(order_pay_amount)', sprintf('order_date >= %d', $date_31));
 
@@ -289,7 +289,7 @@ class vstore_statistics_ui extends e_admin_ui
 			// render page
 			$text = $frm->open('vstore-statistics','post', null, array('class'=>'form')) . '
 			<div>
-				<div class="row">
+				<div >
 					<div class="panel panel-default col-6 col-xs-6 col-md-3">
 						<a href="admin_config.php?filter_options=order_status__open&mode=orders&action=list">
 						<div class="panel-body">
