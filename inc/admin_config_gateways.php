@@ -30,7 +30,7 @@ class vstore_gateways_ui extends e_admin_ui
 
 	// protected $fieldpref = array('order_id','order_ship_to', 'order_status', 'order_date', 'order_items', 'order_pay_transid','order_pay_amount','order_pay_status');
 
-
+	// defined the tab order.
 	protected $preftabs = array(
 		'paypal'        => 'Paypal Express',
 		'paypal_rest'   => 'Paypal REST',
@@ -40,8 +40,8 @@ class vstore_gateways_ui extends e_admin_ui
 
 
 	protected $prefs = array(
-		'gateways'          => array('title'=>'Gateways', 'type'=>'hidden', 'tab' => 'paypal', 'data'=>'str'),
-		'paypal_active'    => array('title' => LAN_ACTIVE, 'type' => 'boolean', 'tab' => 'paypal', 'data' => 'int', 'help' => ''),
+	//	'gateways'          => array('title'=>'Gateways', 'type'=>'hidden', 'tab' => 'paypal', 'data'=>'str'),
+	/*	'paypal_active'    => array('title' => LAN_ACTIVE, 'type' => 'boolean', 'tab' => 'paypal', 'data' => 'int', 'help' => ''),
 		'paypal_testmode'  => array('title' => "Paypal Testmode", 'type' => 'boolean', 'tab' => 'paypal', 'data' => 'int', 'writeParms' => array(), 'help' => 'Use Paypal Sandbox'),
 		'paypal_username'  => array('title' => "Paypal Username", 'type' => 'text', 'tab' => 'paypal', 'data' => 'str', 'writeParms' => array('size' => 'xxlarge'), 'help' => ''),
 		'paypal_password'  => array('title' => "Paypal Password", 'type' => 'password', 'tab' => 'paypal', 'data' => 'str', 'help' => '', 'writeParms' => array('size' => 'xxlarge')),
@@ -51,29 +51,17 @@ class vstore_gateways_ui extends e_admin_ui
 		'paypal_rest_testmode' => array('title' => "Paypal REST Testmode", 'type' => 'boolean', 'tab' => 'paypal_rest', 'data' => 'int', 'writeParms' => array(), 'help' => 'Use Paypal Sandbox'),
 		'paypal_rest_clientId' => array('title' => "Paypal Client Id", 'type' => 'text', 'tab' => 'paypal_rest', 'data' => 'str', 'writeParms' => array('size' => 'xxlarge'), 'help' => ''),
 		'paypal_rest_secret'   => array('title' => "Paypal Secret", 'type' => 'password', 'tab' => 'paypal_rest', 'data' => 'str', 'help' => '', 'writeParms' => array('size' => 'xxlarge')),
+	*/
 		//	'paypal_signature'      => array('title'=>"Paypal Signature", 'type'=>'text', 'tab'=>'paypal', 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
 
-//			'coinbase_active'     => array('title'=>"Coinbase Payments", 'type'=>'boolean', 'tab'=>'mollie', 'data'=>'int', 'help'=>''),
-//			'coinbase_account'    => array('title'=>"Coinbase Account ID", 'type'=>'text', 'tab'=>'mollie', 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
-//			'coinbase_api_key'    => array('title'=>"Coinbase API key", 'type'=>'text', 'tab'=>'mollie', 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
-//			'coinbase_secret'     => array('title'=>"Coinbase Secret Key", 'type'=>'password', 'tab'=>'mollie', 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
+		'mollie_active'                 => array('title' => LAN_ACTIVE, 'type' => 'boolean', 'tab' => 'mollie', 'data' => 'int', 'help' => ''),
+		'mollie_testmode'               => array('title' => "Mollie Testmode", 'type' => 'boolean', 'tab' => 'mollie', 'data' => 'int', 'writeParms' => array(), 'help' => 'Use Mollie Testmode'),
+		'mollie_api_key_live'           => array('title' => "Mollie Live API key", 'type' => 'text', 'tab' => 'mollie', 'data' => 'str', 'note' => 'Get your api keys <a href="https://www.mollie.com/dashboard/developers/api-keys">here</a>', 'writeParms' => array('size' => 'xxlarge')),
+		'mollie_api_key_test'           => array('title' => "Mollie Test API key", 'type' => 'text', 'tab' => 'mollie', 'data' => 'str', 'note' => '', 'help' => '', 'writeParms' => array('size' => 'xxlarge')),
+		'mollie_payment_methods'        => array('title' => "Mollie Payment methods", 'type' => 'checkboxes', 'tab' => 'mollie', 'data' => 'str', 'note' => 'Select at least 1 payment method.\nThe payment method MUST BE enabled in your Mollie dashoard BEFORE you can use it with vstore!\nBe aware, that not all methods support all currencies!', 'help' => '', 'writeParms' => array('__options' => array('multiple' => true, 'size' => 'xxlarge'))),
 
-		'mollie_active'          => array('title' => LAN_ACTIVE, 'type' => 'boolean', 'tab' => 'mollie', 'data' => 'int', 'help' => ''),
-		'mollie_testmode'        => array('title' => "Mollie Testmode", 'type' => 'boolean', 'tab' => 'mollie', 'data' => 'int', 'writeParms' => array(), 'help' => 'Use Mollie Testmode'),
-		'mollie_api_key_live'    => array('title' => "Mollie Live API key", 'type' => 'text', 'tab' => 'mollie', 'data' => 'str', 'note' => 'Get your api keys <a href="https://www.mollie.com/dashboard/developers/api-keys">here</a>', 'writeParms' => array('size' => 'xxlarge')),
-		'mollie_api_key_test'    => array('title' => "Mollie Test API key", 'type' => 'text', 'tab' => 'mollie', 'data' => 'str', 'note' => '', 'help' => '', 'writeParms' => array('size' => 'xxlarge')),
-		'mollie_payment_methods' => array('title' => "Mollie Payment methods", 'type' => 'checkboxes', 'tab' => 'mollie', 'data' => 'str', 'note' => 'Select at least 1 payment method.\nThe payment method MUST BE enabled in your Mollie dashoard BEFORE you can use it with vstore!\nBe aware, that not all methods support all currencies!', 'help' => '', 'writeParms' => array('__options' => array('multiple' => true, 'size' => 'xxlarge'))),
-
-//			'amazon_active'         => array('title'=>"Amazon Payments", 'type'=>'boolean', 'tab'=>3, 'data'=>'int', 'help'=>''),
-//			'amazon_merchant_id'    => array('title'=>"Amazon Merchant ID", 'type'=>'text', 'tab'=>3, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
-//			'amazon_secret_key'     => array('title'=>"Amazon Secret Key", 'type'=>'password', 'tab'=>3, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
-//			'amazon_region'         => array('title'=>"Amazon Region", 'type'=>'dropdown', 'tab'=>3, 'data'=>'str', 'writeParms'=>array('optArray'=>array('us'=>'USA','de'=>"Germany",'uk'=>"United Kingdom",'jp'=>"Japan")), 'help'=>''),
-//
-//			'skrill_active'         => array('title'=>"Skrill Payments", 'type'=>'boolean', 'tab'=>4, 'data'=>'int', 'help'=>''),
-//			'skrill_email'          => array('title'=>"Skrill Email", 'type'=>'text', 'tab'=>4, 'data'=>'str', 'help'=>'', 'writeParms'=>array('size'=>'xxlarge')),
-
-		'bank_transfer_active'  => array('title' => LAN_ACTIVE, 'type' => 'boolean', 'tab' => 'bank_transfer', 'data' => 'int', 'help' => ''),
-		'bank_transfer_details' => array('title' => "Bank Transfer", 'type' => 'textarea', 'tab' => 'bank_transfer', 'data' => 'str', 'writeParms' => array('placeholder' => "Bank Account Details"), 'help' => ''),
+		'gateways/bank_transfer/active'  => array('title' => LAN_ACTIVE, 'type' => 'boolean', 'tab' => 'bank_transfer', 'data' => 'int', 'help' => ''),
+		'gateways/bank_transfer/details' => array('title' => "Bank Transfer", 'type' => 'textarea', 'tab' => 'bank_transfer', 'data' => 'str', 'writeParms' => array('placeholder' => "Bank Account Details"), 'help' => ''),
 
 	);
 
@@ -103,13 +91,34 @@ class vstore_gateways_ui extends e_admin_ui
 
 	private function getAvailableGateways()
 	{
-
 		$path = e_PLUGIN . "vstore/vendor/omnipay/";
+		$list = [];
 
+		$fixed = array(
+			'paypal'        => array('paypal/src/ExpressGateway.php','PayPal_Express', 'fa-paypal' ),
+			'paypal_rest'   => array('paypal/src/RestGateway.php', 'PayPal_Rest', 'fa-paypal' ),
+		);
+
+		// Load Paypal.
+		foreach($fixed as $key => $var)
+		{
+			list($file, $class, $icon) = $var;
+
+			require_once($path.$file);
+			/** @var Omnipay\Omnipay $gt  */
+			$gt     = Omnipay::create($class);
+			$name   = $gt->getName();
+			$parms  = $gt->getDefaultParameters();
+
+			$list[$key] = array('name' => $name, 'parms' => $parms, 'icon'=> $icon);
+		}
+
+
+		// Scan for others..
 		$dirs = scandir($path);
 		unset($dirs[0], $dirs[1]);
 
-		$list = [];
+
 		foreach($dirs as $folder)
 		{
 			$srcPath = $path . $folder . '/src/Gateway.php';
@@ -119,6 +128,7 @@ class vstore_gateways_ui extends e_admin_ui
 				continue;
 			}
 
+
 			require_once($srcPath);
 			/** @var Omnipay\Omnipay $gt  */
 			$gt     = Omnipay::create($folder);
@@ -127,10 +137,13 @@ class vstore_gateways_ui extends e_admin_ui
 
 			$list[$folder] = array('name' => $name, 'parms' => $parms);
 		}
-		
+
+
 		return $list;
 
 	}
+
+
 
 	function beforePrefsSave($new_data, $old_data)
 	{
@@ -151,7 +164,7 @@ class vstore_gateways_ui extends e_admin_ui
 		{
 			$this->prefs['gateways/'.$plug.'/active'] = array('title' => LAN_ACTIVE, 'type' => 'bool', 'tab' => $plug, 'data' => 'int', 'writeParms' => array());
 			$this->prefs['gateways/'.$plug.'/title'] = array('title' => LAN_TITLE, 'type' => 'text', 'tab' => $plug,  'data' => 'str', 'writeParms' => array('size'=>'xxlarge'));
-			$this->prefs['gateways/'.$plug.'/icon'] = array('title' => LAN_ICON, 'type' => 'icon', 'tab' => $plug, 'data' => 'str', 'writeParms' => array());
+			$this->prefs['gateways/'.$plug.'/icon'] = array('title' => LAN_ICON, 'type' => 'icon', 'tab' => $plug, 'data' => 'str', 'writeParms' => array('default'=>varset($gates['icon'])));
 			$this->prefs['gateways/'.$plug.'/name'] = array('title' => 'Classname', 'type' => 'hidden', 'tab' => $plug,  'data' => false, 'writeParms' => array('value'=>$gates['name']));
 
 			foreach($gates['parms'] as $pref => $field)

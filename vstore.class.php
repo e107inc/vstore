@@ -4865,27 +4865,6 @@ class vstore
 
 		switch($name)
 		{
-			// case "amazon":
-			//     /** @var \Omnipay\Common\AbstractGateway $gateway */
-			//     $gateway = Omnipay::create('AmazonPayments');
-			//     $defaults = $gateway->getParameters();
-			//     e107::getDebug()->log($defaults);
-			//     break;
-
-			// case "coinbase":
-
-			//     $gateway = Omnipay::create('Coinbase');
-			//     /*
-			//     if (!empty($this->pref['paypal']['testmode'])) {
-			//         $gateway->setTestMode(true);
-			//     }
-			//     */
-
-			//     $gateway->setAccountId($this->pref['coinbase']['account']);
-			//     $gateway->setSecret($this->pref['coinbase']['secret']);
-			//     $gateway->setApiKey($this->pref['coinbase']['api_key']);
-			//     break;
-
 			case "mollie":
 				/** @var \Omnipay\Mollie\Gateway $gateway */
 				$gateway = Omnipay::create('Mollie');
@@ -4900,10 +4879,10 @@ class vstore
 					$gateway->setApiKey($this->pref['mollie']['api_key_live']);
 				}
 				break;
-
+/*
 			case "paypal":
-				/** @var \Omnipay\PayPal\ExpressGateway $gateway */
-				$gateway = Omnipay::create('PayPal_Express');
+
+				$gateway = Omnipay::create('PayPal_Express'); // @var \Omnipay\PayPal\ExpressGateway $gateway
 
 				if(!empty($this->pref['paypal']['testmode']))
 				{
@@ -4916,8 +4895,8 @@ class vstore
 				break;
 
 			case "paypal_rest":
-				/** @var \Omnipay\PayPal\RestGateway $gateway */
-				$gateway = Omnipay::create('PayPal_Rest');
+
+				$gateway = Omnipay::create('PayPal_Rest'); // @var \Omnipay\PayPal\RestGateway $gateway
 
 				if(!empty($this->pref['paypal_rest']['testmode']))
 				{
@@ -4926,23 +4905,22 @@ class vstore
 
 				$gateway->setClientId($this->pref['paypal_rest']['clientId']);
 				$gateway->setSecret($this->pref['paypal_rest']['secret']);
-				break;
+				break;*/
 
 			case "bank_transfer":
 				$mode = 'halt';
 				$this->setMode('return');
 
-				if(!empty($this->pref['bank_transfer']['details']))
+				if(!empty(self::$gateways['bank_transfer']['details']))
 				{
 					$message = '<br />Use the following bank account information for your payment:<br />';
-					$message .= e107::getParser()->toHTML($this->pref['bank_transfer']['details'], true);
+					$message .= e107::getParser()->toHTML(self::$gateways['bank_transfer']['details'], true);
 				}
 
 				break;
 
 
 			default:
-
 
 				if(empty(self::$gateways[$name]['name']))
 				{
@@ -4971,7 +4949,6 @@ class vstore
 							trigger_error('$gateways[$name][\'prefs\'] was empty.');
 						}
 
-
 						foreach(self::$gateways[$name]['prefs'] as $k=>$v)
 						{
 							$method = 'set'.ucfirst($k);
@@ -4983,6 +4960,7 @@ class vstore
 							{
 								$message = "Sorry, there was a configuration issue. Please notify the administrator.";
 							    $message .= (ADMIN) ? $e->getMessage() : '';
+							    trigger_error($message);
 							}
 
 
