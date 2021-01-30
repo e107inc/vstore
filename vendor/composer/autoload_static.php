@@ -37,6 +37,7 @@ class ComposerStaticInit4deb13efb25ac91838f52bb872a68164
             'Omnipay\\PayPal\\' => 15,
             'Omnipay\\Mollie\\' => 15,
             'Omnipay\\Common\\' => 15,
+            'Omnipay\\Braintree\\' => 18,
         ),
         'M' => 
         array (
@@ -63,6 +64,10 @@ class ComposerStaticInit4deb13efb25ac91838f52bb872a68164
         'C' => 
         array (
             'Clue\\StreamFilter\\' => 18,
+        ),
+        'B' => 
+        array (
+            'Braintree\\' => 10,
         ),
     );
 
@@ -106,6 +111,10 @@ class ComposerStaticInit4deb13efb25ac91838f52bb872a68164
         'Omnipay\\Common\\' => 
         array (
             0 => __DIR__ . '/..' . '/omnipay/common/src/Common',
+        ),
+        'Omnipay\\Braintree\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/omnipay/braintree/src',
         ),
         'Money\\' => 
         array (
@@ -151,6 +160,10 @@ class ComposerStaticInit4deb13efb25ac91838f52bb872a68164
         'Clue\\StreamFilter\\' => 
         array (
             0 => __DIR__ . '/..' . '/clue/stream-filter/src',
+        ),
+        'Braintree\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/braintree/braintree_php/lib/Braintree',
         ),
     );
 

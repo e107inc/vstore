@@ -6,7 +6,7 @@
     'aliases' => 
     array (
     ),
-    'reference' => 'b02e8a72f8e65c79193b85741c3b8ddfddea6841',
+    'reference' => 'd79c1575b85a14fbb8c0420b5d98121ec85ff68f',
     'name' => '__root__',
   ),
   'versions' => 
@@ -18,7 +18,16 @@
       'aliases' => 
       array (
       ),
-      'reference' => 'b02e8a72f8e65c79193b85741c3b8ddfddea6841',
+      'reference' => 'd79c1575b85a14fbb8c0420b5d98121ec85ff68f',
+    ),
+    'braintree/braintree_php' => 
+    array (
+      'pretty_version' => '5.5.0',
+      'version' => '5.5.0.0',
+      'aliases' => 
+      array (
+      ),
+      'reference' => '8902a072ac04c9eea2996f2683cb56259cbe46fa',
     ),
     'clue/stream-filter' => 
     array (
@@ -82,6 +91,16 @@
       array (
       ),
       'reference' => '122664c2621a95180a13c1ac81fea1d2ef20781e',
+    ),
+    'omnipay/braintree' => 
+    array (
+      'pretty_version' => 'dev-master',
+      'version' => 'dev-master',
+      'aliases' => 
+      array (
+        0 => '4.0.x-dev',
+      ),
+      'reference' => 'd9471135a2837476687ad7f24e8656c92ce64088',
     ),
     'omnipay/common' => 
     array (

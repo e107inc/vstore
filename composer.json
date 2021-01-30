@@ -1,8 +1,10 @@
 {
     "require": {
-        "league/omnipay": "^3",
+        "league/omnipay": "^3.1",
         "omnipay/paypal": "~3.0",
         "omnipay/mollie": "~5.0.2",
-        "dannyvankooten/vat.php": "1.1.2"
+        "dannyvankooten/vat.php": "1.1.2",
+        "omnipay/stripe": "^3.1",
+        "omnipay/braintree": "~4.0@dev"
     }
 }

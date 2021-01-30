@@ -16,6 +16,7 @@ return array(
     'Omnipay\\PayPal\\' => array($vendorDir . '/omnipay/paypal/src'),
     'Omnipay\\Mollie\\' => array($vendorDir . '/omnipay/mollie/src'),
     'Omnipay\\Common\\' => array($vendorDir . '/omnipay/common/src/Common'),
+    'Omnipay\\Braintree\\' => array($vendorDir . '/omnipay/braintree/src'),
     'Money\\' => array($vendorDir . '/moneyphp/money/src'),
     'Http\\Promise\\' => array($vendorDir . '/php-http/promise/src'),
     'Http\\Message\\' => array($vendorDir . '/php-http/message/src', $vendorDir . '/php-http/message-factory/src'),
@@ -27,4 +28,5 @@ return array(
     'GuzzleHttp\\' => array($vendorDir . '/guzzlehttp/guzzle/src'),
     'DvK\\Vat\\' => array($vendorDir . '/dannyvankooten/vat.php/src'),
     'Clue\\StreamFilter\\' => array($vendorDir . '/clue/stream-filter/src'),
+    'Braintree\\' => array($vendorDir . '/braintree/braintree_php/lib/Braintree'),
 );
