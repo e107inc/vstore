@@ -1490,13 +1490,14 @@ class vstore
 
 	/**
 	 * Render checkout page to enter the customers shipping information
-	 *
+	 * @todo make template.
 	 * @return string
 	 */
 	private function checkoutView()
 	{
 
 		$active = $this->getActiveGateways();
+
 		$curGateway = $this->getGatewayType();
 
 		if(!USER && !isset($_POST['as_guest']))
@@ -1536,7 +1537,7 @@ class vstore
 			foreach($active as $gateway => $icon)
 			{
 				$text .= "
-                        <div class='col-6 col-xs-6 col-sm-4'>
+                        <div class='col-6 col-xs-6 col-sm-4' style='margin-bottom:15px'>
                             <label class='btn btn-default btn-light btn-block btn-" . $gateway . " " . ($curGateway == $gateway ? 'active' : '') . " vstore-gateway text-center'>
                                 <input type='radio' name='gateway' value='" . $gateway . "' style='display:none;' class='vstore-gateway-radio' required " . ($curGateway == $gateway ? 'checked' : '') . ">
                                 " . $icon . "
@@ -1549,9 +1550,11 @@ class vstore
 
 			$text .= '<br/>
             <div class="row">
-                <div class="alert alert-info">
-                <button class="btn btn-default btn-secondary vstore-btn-add-shipping" type="submit" name="mode" value="shipping"><i class="fa fa-truck" aria-hidden="true"></i> Enter shipping address</button>
-                <span class="help-text">Use this button to use or enter a separate shipping address.</span>
+            	<div class="col-md-12">
+	                <div class="alert alert-info">
+	                <button class="btn btn-default btn-secondary vstore-btn-add-shipping" type="submit" name="mode" value="shipping"><i class="fa fa-truck" aria-hidden="true"></i> Enter shipping address</button>
+	                <span class="help-text">Use this button to use or enter a separate shipping address.</span>
+	                </div>
                 </div>
             </div>
             <br />
@@ -4820,10 +4823,13 @@ class vstore
 			{
 				if(self::isMollie($k))
 				{
-					$paymentMethods = array_keys($this->pref['mollie_payment_methods']);
-					foreach($paymentMethods as $method)
+					if(!empty($this->pref['mollie_payment_methods']))
 					{
-						$active[$method] = $this->getMolliePaymentMethodIcon($method);
+						$paymentMethods = array_keys($this->pref['mollie_payment_methods']);
+						foreach($paymentMethods as $method)
+						{
+							$active[$method] = $this->getMolliePaymentMethodIcon($method);
+						}
 					}
 				}
 				else
@@ -4858,7 +4864,7 @@ class vstore
 	 * @param string $name paypal | mollie | etc.
 	 * @return array
 	 */
-	public function loadGateway($name): array
+	public function loadGateway($name)
 	{
 		$mode = '';
 		$message = '';
@@ -4910,6 +4916,7 @@ class vstore
 			case "bank_transfer":
 				$mode = 'halt';
 				$this->setMode('return');
+				$gateway = null;
 
 				if(!empty(self::$gateways['bank_transfer']['details']))
 				{
@@ -4926,7 +4933,7 @@ class vstore
 				{
 					$message = "There was a configuration problem.";
 					$gateway = null;
-					trigger_error($message);
+					trigger_error($message. ' with '.$name);
 				}
 				else
 				{
@@ -4960,7 +4967,7 @@ class vstore
 							{
 								$message = "Sorry, there was a configuration issue. Please notify the administrator.";
 							    $message .= (ADMIN) ? $e->getMessage() : '';
-							    trigger_error($message);
+							    trigger_error($message, E_USER_WARNING);
 							}
 
 

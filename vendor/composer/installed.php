@@ -6,7 +6,7 @@
     'aliases' => 
     array (
     ),
-    'reference' => 'd79c1575b85a14fbb8c0420b5d98121ec85ff68f',
+    'reference' => '267aad9c6f9bae4458d55d4d01d9ea574eb02cf9',
     'name' => '__root__',
   ),
   'versions' => 
@@ -18,7 +18,7 @@
       'aliases' => 
       array (
       ),
-      'reference' => 'd79c1575b85a14fbb8c0420b5d98121ec85ff68f',
+      'reference' => '267aad9c6f9bae4458d55d4d01d9ea574eb02cf9',
     ),
     'braintree/braintree_php' => 
     array (
@@ -46,6 +46,15 @@
       array (
       ),
       'reference' => '1d1d533a35517b78c685e7c1702bcf8958345a8d',
+    ),
+    'financialplugins/omnipay-coinpayments' => 
+    array (
+      'pretty_version' => '1.3.0',
+      'version' => '1.3.0.0',
+      'aliases' => 
+      array (
+      ),
+      'reference' => '61eb274b91f0b382d8e0d2fbee79a39fd300e157',
     ),
     'guzzlehttp/guzzle' => 
     array (
@@ -270,6 +279,15 @@
       ),
       'reference' => '120b605dfeb996808c31b6477290a714d356e822',
     ),
+    'starkpay/omnipay' => 
+    array (
+      'pretty_version' => 'v0.0.3',
+      'version' => '0.0.3.0',
+      'aliases' => 
+      array (
+      ),
+      'reference' => '595e2163d8361d1a028488f0174361070b338ed3',
+    ),
     'symfony/deprecation-contracts' => 
     array (
       'pretty_version' => 'v2.2.0',
@@ -281,12 +299,12 @@
     ),
     'symfony/http-foundation' => 
     array (
-      'pretty_version' => 'v5.2.1',
-      'version' => '5.2.1.0',
+      'pretty_version' => 'v5.2.2',
+      'version' => '5.2.2.0',
       'aliases' => 
       array (
       ),
-      'reference' => 'a1f6218b29897ab52acba58cfa905b83625bef8d',
+      'reference' => '16dfa5acf8103f0394d447f8eea3ea49f9e50855',
     ),
     'symfony/polyfill-mbstring' => 
     array (

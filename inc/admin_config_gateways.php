@@ -4,7 +4,8 @@
  */
 
 use Omnipay\Omnipay;
-
+use Omnipay\Common\Helper;
+use Composer\Autoload\ClassLoader;
 
 class vstore_gateways_ui extends e_admin_ui
 {
@@ -30,10 +31,11 @@ class vstore_gateways_ui extends e_admin_ui
 
 	// protected $fieldpref = array('order_id','order_ship_to', 'order_status', 'order_date', 'order_items', 'order_pay_transid','order_pay_amount','order_pay_status');
 
-	// defined the tab order.
+	// defines the tab order.
 	protected $preftabs = array(
 		'paypal'        => 'Paypal Express',
 		'paypal_rest'   => 'Paypal REST',
+		'paypal_pro'    => 'Paypal Pro',
 		'mollie'        => 'Mollie',
 		'bank_transfer' => 'Bank Transfer'
 	);
@@ -60,7 +62,9 @@ class vstore_gateways_ui extends e_admin_ui
 		'mollie_api_key_test'           => array('title' => "Mollie Test API key", 'type' => 'text', 'tab' => 'mollie', 'data' => 'str', 'note' => '', 'help' => '', 'writeParms' => array('size' => 'xxlarge')),
 		'mollie_payment_methods'        => array('title' => "Mollie Payment methods", 'type' => 'checkboxes', 'tab' => 'mollie', 'data' => 'str', 'note' => 'Select at least 1 payment method.\nThe payment method MUST BE enabled in your Mollie dashoard BEFORE you can use it with vstore!\nBe aware, that not all methods support all currencies!', 'help' => '', 'writeParms' => array('__options' => array('multiple' => true, 'size' => 'xxlarge'))),
 
-		'gateways/bank_transfer/active'  => array('title' => LAN_ACTIVE, 'type' => 'boolean', 'tab' => 'bank_transfer', 'data' => 'int', 'help' => ''),
+		'gateways/bank_transfer/active' => array('title' => LAN_ACTIVE, 'type' => 'boolean', 'tab' => 'bank_transfer', 'data' => 'int', 'help' => ''),
+		'gateways/bank_transfer/title'  => array('title' => LAN_TITLE, 'type' => 'text', 'tab' => 'bank_transfer',  'data' => 'str', 'writeParms' => array('size'=>'xxlarge', 'default'=>'Bank Transfer')),
+		'gateways/bank_transfer/icon'   => array('title' => LAN_ICON, 'type' => 'icon', 'tab' => 'bank_transfer', 'data' => 'str', 'help' => '', 'writeParms'=>array('default'=>'fa-bank.glyph')),
 		'gateways/bank_transfer/details' => array('title' => "Bank Transfer", 'type' => 'textarea', 'tab' => 'bank_transfer', 'data' => 'str', 'writeParms' => array('placeholder' => "Bank Account Details"), 'help' => ''),
 
 	);
@@ -84,19 +88,92 @@ class vstore_gateways_ui extends e_admin_ui
 
 		/** Automatically build the preferences from the Gateway files         * */
 
+
 		$this->loadAdditionalGateways();
+		$this->checkDeprecatedPrefs();
+
+	}
+
+	private function checkDeprecatedPrefs()
+	{
+		$cfg = e107::getPlugConfig('vstore');
+		$list = $cfg->getPref();
+
+		$gateways = array('paypal', 'paypal_rest', 'bank');
+
+		$message = '';
+
+		foreach($list as $pref => $val)
+		{
+			$tmp = explode("_",$pref);
+
+			if(!in_array($tmp[0], $gateways))
+			{
+				continue;
+			}
+
+			$cfg->remove($pref);
+			$message .= "<tr><td>".$pref."</td><td>".$val."</td></tr>";
+		}
+
+
+		if(empty($message))
+		{
+			return null;
+		}
+
+		$cfg->save(false,true,false);
+
+		$text = "<p>The way in which gateway preferences are stored has been changed.</p><p><b>These old preferences have now been deleted.</b></p><p>You may re-enter these values in the form below if you wish. </p>
+		<table class='table table-striped table-bordered table-condensed' style='width:600px'>
+		".$message."
+		</table>";
+
+		e107::getMessage()->setTitle('Important', E_MESSAGE_ERROR)->setIcon('fa-warning', E_MESSAGE_ERROR)->addError($text);
 
 	}
 
 
+	private function loadGatewayPackages()
+	{
+		$composerData = include(e_PLUGIN.'vstore/vendor/composer/autoload_psr4.php');
+
+		unset(
+			$composerData['Omnipay\Common\\'],
+			$composerData['Omnipay\PayPal\\'],
+			$composerData['Omnipay\Mollie\\'],
+			);
+
+		$list = [];
+		foreach($composerData as $package => $path)
+		{
+			if(strpos($package, 'Omnipay\\') === 0)
+			{
+				$tmp = explode('\\', $package);
+				if(isset($tmp[1]))
+				{
+					$key = strtolower($tmp[1]);
+					$list[$key] = ($tmp[1]);
+				}
+			}
+		}
+
+
+		return $list;
+
+	}
+
+
+
 	private function getAvailableGateways()
 	{
-		$path = e_PLUGIN . "vstore/vendor/omnipay/";
+		$path = e_PLUGIN . "vstore/vendor/";
 		$list = [];
 
 		$fixed = array(
-			'paypal'        => array('paypal/src/ExpressGateway.php','PayPal_Express', 'fa-paypal' ),
-			'paypal_rest'   => array('paypal/src/RestGateway.php', 'PayPal_Rest', 'fa-paypal' ),
+			'paypal'        => array('omnipay/paypal/src/ExpressGateway.php','PayPal_Express', 'fa-paypal' ),
+			'paypal_rest'   => array('omnipay/paypal/src/RestGateway.php', 'PayPal_Rest', 'fa-paypal' ),
+			'paypal_pro'   => array('omnipay/paypal/src/ProGateway.php', 'PayPal_Pro', 'fa-paypal' ),
 		);
 
 		// Load Paypal.
@@ -107,37 +184,28 @@ class vstore_gateways_ui extends e_admin_ui
 			require_once($path.$file);
 			/** @var Omnipay\Omnipay $gt  */
 			$gt     = Omnipay::create($class);
-			$name   = $gt->getName();
+			$title   = $gt->getName();
 			$parms  = $gt->getDefaultParameters();
+			$name = $gt->getShortName(); // same as 'class'.
 
-			$list[$key] = array('name' => $name, 'parms' => $parms, 'icon'=> $icon);
+
+			$list[$key] = array('name' => $name, 'title' => $title, 'parms' => $parms, 'icon'=> $icon);
 		}
 
+		$packages = $this->loadGatewayPackages();
 
-		// Scan for others..
-		$dirs = scandir($path);
-		unset($dirs[0], $dirs[1]);
-
-
-		foreach($dirs as $folder)
+		foreach($packages as $folder => $class)
 		{
-			$srcPath = $path . $folder . '/src/Gateway.php';
+			$gt     = Omnipay::create($class);
 
-			if($folder === 'common' || !file_exists($srcPath))
-			{
-				continue;
-			}
-
-
-			require_once($srcPath);
 			/** @var Omnipay\Omnipay $gt  */
 			$gt     = Omnipay::create($folder);
-			$name   = $gt->getName();
+			$title  = $gt->getName();
 			$parms  = $gt->getDefaultParameters();
+			$name   = $gt->getShortName();
 
-			$list[$folder] = array('name' => $name, 'parms' => $parms);
+			$list[$folder] = array('name' => $name, 'title' => str_replace('_', ' ', $title), 'parms' => $parms);
 		}
-
 
 		return $list;
 
@@ -147,7 +215,9 @@ class vstore_gateways_ui extends e_admin_ui
 
 	function beforePrefsSave($new_data, $old_data)
 	{
-		e107::getMessage()->addDebug("<h4>Saving the following prefs:</h4> ".print_a($new_data,true));
+	//	e107::getMessage()->addDebug("<h4>Saving the following prefs:</h4><pre> ".var_export($new_data,true).'</pre>');
+
+		return $new_data;
 	}
 
 	/**
@@ -155,7 +225,6 @@ class vstore_gateways_ui extends e_admin_ui
 	 */
 	private function loadAdditionalGateways()
 	{
-
 		$extraGateways = $this->getAvailableGateways();
 
 		unset($extraGateways['mollie']); // already defined.
@@ -163,9 +232,9 @@ class vstore_gateways_ui extends e_admin_ui
 		foreach($extraGateways as $plug => $gates)
 		{
 			$this->prefs['gateways/'.$plug.'/active'] = array('title' => LAN_ACTIVE, 'type' => 'bool', 'tab' => $plug, 'data' => 'int', 'writeParms' => array());
-			$this->prefs['gateways/'.$plug.'/title'] = array('title' => LAN_TITLE, 'type' => 'text', 'tab' => $plug,  'data' => 'str', 'writeParms' => array('size'=>'xxlarge'));
+			$this->prefs['gateways/'.$plug.'/title'] = array('title' => LAN_TITLE, 'type' => 'text', 'tab' => $plug,  'data' => 'str', 'writeParms' => array('size'=>'xxlarge', 'default'=>varset($gates['title'])));
 			$this->prefs['gateways/'.$plug.'/icon'] = array('title' => LAN_ICON, 'type' => 'icon', 'tab' => $plug, 'data' => 'str', 'writeParms' => array('default'=>varset($gates['icon'])));
-			$this->prefs['gateways/'.$plug.'/name'] = array('title' => 'Classname', 'type' => 'hidden', 'tab' => $plug,  'data' => false, 'writeParms' => array('value'=>$gates['name']));
+			$this->prefs['gateways/'.$plug.'/name'] = array('title' => 'Classname', 'type' => 'hidden', 'tab' => $plug,  'data' => 'str', 'writeParms' => array('value'=>$gates['name']));
 
 			foreach($gates['parms'] as $pref => $field)
 			{
@@ -183,10 +252,12 @@ class vstore_gateways_ui extends e_admin_ui
 				{
 					$type = 'dropdown';
 					$writeParms['optArray'] = $field;
+					$writeParms['useValues'] = true;
 				}
 
-				$name = $plug . "_" . $pref;
 				$title = preg_replace('/([A-Z])/', ' $1', ucfirst($pref));
+				$title = str_replace('_', ' ', $title);
+				$pref = Helper::camelCase($pref);
 				$this->prefs['gateways/'.$plug.'/prefs/'.$pref] = array('title' => ltrim(ucwords($title)), 'type' => $type, 'tab' => $plug, 'data' => $data, 'writeParms' => $writeParms);
 
 				$this->preftabs[$plug] = $gates['name'];
@@ -200,26 +271,7 @@ class vstore_gateways_ui extends e_admin_ui
 
 class vstore_gateways_form_ui extends e_admin_form_ui
 {
-	function gateways($curVal,$mode, $att)
-	{
-		$curVal = e107::pref('vstore', 'gateways');
-
-		list($tmp, $gateway) = explode('|', $att['field']);
-// $curVal[$gateway]
-		if($tmp === 'gateway_icon')
-		{
-			return $this->iconpicker('gateways['.$gateway.'][icon]', varset($curVal[$gateway]['icon']));
-		}
 
 
-		$text =  $this->text('gateways['.$gateway.'][title]', varset($curVal[$gateway]['title']), 50, ['size'=>'xxlarge']);
-
-		if(isset($att['gatewayName'])) // the actual class name used by Omnipay::create().
-		{
-			$text .= $this->hidden('gateways['.$gateway.'][name]', $att['gatewayName']);
-		}
-
-		return $text;
-	}
 }
 

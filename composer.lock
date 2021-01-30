@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "8d9997d1e268d89774e4b03650e1dd06",
+    "content-hash": "e00569e2936dfb7975c18383bc95ddf8",
     "packages": [
         {
             "name": "braintree/braintree_php",
@@ -171,6 +171,57 @@
             },
             "abandoned": "ibericode/vat",
             "time": "2017-12-04T13:33:24+00:00"
+        },
+        {
+            "name": "financialplugins/omnipay-coinpayments",
+            "version": "1.3.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/financialplugins/omnipay-coinpayments.git",
+                "reference": "61eb274b91f0b382d8e0d2fbee79a39fd300e157"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/financialplugins/omnipay-coinpayments/zipball/61eb274b91f0b382d8e0d2fbee79a39fd300e157",
+                "reference": "61eb274b91f0b382d8e0d2fbee79a39fd300e157",
+                "shasum": ""
+            },
+            "require": {
+                "omnipay/common": "^3.0",
+                "php-http/guzzle7-adapter": "*"
+            },
+            "require-dev": {
+                "omnipay/tests": "^3.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Omnipay\\Coinpayments\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "FinancialPlugins",
+                    "email": "info@financialplugins.com"
+                }
+            ],
+            "description": "Coinpayments driver for the Omnipay payment processing library",
+            "homepage": "https://github.com/financialplugins/omnipay-coinpayments",
+            "keywords": [
+                "coinpayments",
+                "crypto",
+                "omnipay",
+                "payment gateway"
+            ],
+            "support": {
+                "issues": "https://github.com/financialplugins/omnipay-coinpayments/issues",
+                "source": "https://github.com/financialplugins/omnipay-coinpayments/tree/1.3.0"
+            },
+            "time": "2020-12-19T10:43:25+00:00"
         },
         {
             "name": "guzzlehttp/guzzle",
@@ -1477,6 +1528,56 @@
             "time": "2019-03-08T08:55:37+00:00"
         },
         {
+            "name": "starkpay/omnipay",
+            "version": "v0.0.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/starkpay/omnipay.git",
+                "reference": "595e2163d8361d1a028488f0174361070b338ed3"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/starkpay/omnipay/zipball/595e2163d8361d1a028488f0174361070b338ed3",
+                "reference": "595e2163d8361d1a028488f0174361070b338ed3",
+                "shasum": ""
+            },
+            "require": {
+                "league/omnipay": "^3"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Omnipay\\Stark\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Mann Matharu",
+                    "email": "mann@starkpayments.com"
+                }
+            ],
+            "description": "Stark driver for the Omnipay payment processing library",
+            "homepage": "https://starkpayments.com/",
+            "keywords": [
+                "bitcoin",
+                "cryptocurrency",
+                "gateway",
+                "merchant",
+                "omnipay",
+                "stark",
+                "starkpayments"
+            ],
+            "support": {
+                "issues": "https://github.com/starkpay/omnipay/issues",
+                "source": "https://github.com/starkpay/omnipay/tree/v0.0.3"
+            },
+            "time": "2020-10-28T14:40:48+00:00"
+        },
+        {
             "name": "symfony/deprecation-contracts",
             "version": "v2.2.0",
             "source": {
@@ -1545,16 +1646,16 @@
         },
         {
             "name": "symfony/http-foundation",
-            "version": "v5.2.1",
+            "version": "v5.2.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/http-foundation.git",
-                "reference": "a1f6218b29897ab52acba58cfa905b83625bef8d"
+                "reference": "16dfa5acf8103f0394d447f8eea3ea49f9e50855"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/http-foundation/zipball/a1f6218b29897ab52acba58cfa905b83625bef8d",
-                "reference": "a1f6218b29897ab52acba58cfa905b83625bef8d",
+                "url": "https://api.github.com/repos/symfony/http-foundation/zipball/16dfa5acf8103f0394d447f8eea3ea49f9e50855",
+                "reference": "16dfa5acf8103f0394d447f8eea3ea49f9e50855",
                 "shasum": ""
             },
             "require": {
@@ -1595,10 +1696,10 @@
                     "homepage": "https://symfony.com/contributors"
                 }
             ],
-            "description": "Symfony HttpFoundation Component",
+            "description": "Defines an object-oriented layer for the HTTP specification",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/http-foundation/tree/v5.2.1"
+                "source": "https://github.com/symfony/http-foundation/tree/v5.2.2"
             },
             "funding": [
                 {
@@ -1614,7 +1715,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2020-12-18T10:00:10+00:00"
+            "time": "2021-01-27T11:19:04+00:00"
         },
         {
             "name": "symfony/polyfill-mbstring",

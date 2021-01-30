@@ -34,9 +34,11 @@ class ComposerStaticInit4deb13efb25ac91838f52bb872a68164
         'O' => 
         array (
             'Omnipay\\Stripe\\' => 15,
+            'Omnipay\\Stark\\' => 14,
             'Omnipay\\PayPal\\' => 15,
             'Omnipay\\Mollie\\' => 15,
             'Omnipay\\Common\\' => 15,
+            'Omnipay\\Coinpayments\\' => 21,
             'Omnipay\\Braintree\\' => 18,
         ),
         'M' => 
@@ -100,6 +102,10 @@ class ComposerStaticInit4deb13efb25ac91838f52bb872a68164
         array (
             0 => __DIR__ . '/..' . '/omnipay/stripe/src',
         ),
+        'Omnipay\\Stark\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/starkpay/omnipay/src',
+        ),
         'Omnipay\\PayPal\\' => 
         array (
             0 => __DIR__ . '/..' . '/omnipay/paypal/src',
@@ -111,6 +117,10 @@ class ComposerStaticInit4deb13efb25ac91838f52bb872a68164
         'Omnipay\\Common\\' => 
         array (
             0 => __DIR__ . '/..' . '/omnipay/common/src/Common',
+        ),
+        'Omnipay\\Coinpayments\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/financialplugins/omnipay-coinpayments/src',
         ),
         'Omnipay\\Braintree\\' => 
         array (

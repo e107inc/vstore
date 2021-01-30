@@ -1,0 +1,29 @@
+{
+    "name": "starkpay/omnipay",
+    "type": "library",
+    "description": "Stark driver for the Omnipay payment processing library",
+    "keywords": [
+        "gateway",
+        "merchant",
+        "starkpayments",
+        "omnipay",
+        "stark",
+        "cryptocurrency",
+        "bitcoin"
+    ],
+    "homepage": "https://starkpayments.com/",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Mann Matharu",
+            "email": "mann@starkpayments.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": { "Omnipay\\Stark\\" : "src/" }
+    },
+    "require": {
+        "league/omnipay": "^3"
+    },
+    "prefer-stable": true
+}
