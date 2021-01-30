@@ -40,6 +40,7 @@ class vstore_gateways_ui extends e_admin_ui
 
 
 	protected $prefs = array(
+		'gateways'          => array('title'=>'Gateways', 'type'=>'hidden', 'tab' => 'paypal', 'data'=>'str'),
 		'paypal_active'    => array('title' => LAN_ACTIVE, 'type' => 'boolean', 'tab' => 'paypal', 'data' => 'int', 'help' => ''),
 		'paypal_testmode'  => array('title' => "Paypal Testmode", 'type' => 'boolean', 'tab' => 'paypal', 'data' => 'int', 'writeParms' => array(), 'help' => 'Use Paypal Sandbox'),
 		'paypal_username'  => array('title' => "Paypal Username", 'type' => 'text', 'tab' => 'paypal', 'data' => 'str', 'writeParms' => array('size' => 'xxlarge'), 'help' => ''),
@@ -126,9 +127,14 @@ class vstore_gateways_ui extends e_admin_ui
 
 			$list[$folder] = array('name' => $name, 'parms' => $parms);
 		}
-
+		
 		return $list;
 
+	}
+
+	function beforePrefsSave($new_data, $old_data)
+	{
+		e107::getMessage()->addDebug("<h4>Saving the following prefs:</h4> ".print_a($new_data,true));
 	}
 
 	/**
@@ -143,20 +149,33 @@ class vstore_gateways_ui extends e_admin_ui
 
 		foreach($extraGateways as $plug => $gates)
 		{
-			$this->prefs[$plug . '_active'] = array('title' => LAN_ACTIVE, 'type' => 'bool', 'tab' => $plug, 'data' => 'int', 'writeParms' => array());
+			$this->prefs['gateways/'.$plug.'/active'] = array('title' => LAN_ACTIVE, 'type' => 'bool', 'tab' => $plug, 'data' => 'int', 'writeParms' => array());
+			$this->prefs['gateways/'.$plug.'/title'] = array('title' => LAN_TITLE, 'type' => 'text', 'tab' => $plug,  'data' => 'str', 'writeParms' => array('size'=>'xxlarge'));
+			$this->prefs['gateways/'.$plug.'/icon'] = array('title' => LAN_ICON, 'type' => 'icon', 'tab' => $plug, 'data' => 'str', 'writeParms' => array());
+			$this->prefs['gateways/'.$plug.'/name'] = array('title' => 'Classname', 'type' => 'hidden', 'tab' => $plug,  'data' => false, 'writeParms' => array('value'=>$gates['name']));
 
 			foreach($gates['parms'] as $pref => $field)
 			{
 				$type = 'text';
+				$data = 'str';
+				$writeParms = array('size' => 'xxlarge');
 
 				if(is_bool($field))
 				{
 					$type = 'bool';
+					$data = 'bool';
+					$writeParms = array();
+				}
+				elseif(is_array($field))
+				{
+					$type = 'dropdown';
+					$writeParms['optArray'] = $field;
 				}
 
 				$name = $plug . "_" . $pref;
 				$title = preg_replace('/([A-Z])/', ' $1', ucfirst($pref));
-				$this->prefs[$name] = array('title' => ltrim(ucwords($title)), 'type' => $type, 'tab' => $plug, 'data' => 'str', 'writeParms' => array('size' => 'xxlarge'));
+				$this->prefs['gateways/'.$plug.'/prefs/'.$pref] = array('title' => ltrim(ucwords($title)), 'type' => $type, 'tab' => $plug, 'data' => $data, 'writeParms' => $writeParms);
+
 				$this->preftabs[$plug] = $gates['name'];
 			}
 
@@ -168,6 +187,26 @@ class vstore_gateways_ui extends e_admin_ui
 
 class vstore_gateways_form_ui extends e_admin_form_ui
 {
+	function gateways($curVal,$mode, $att)
+	{
+		$curVal = e107::pref('vstore', 'gateways');
 
+		list($tmp, $gateway) = explode('|', $att['field']);
+// $curVal[$gateway]
+		if($tmp === 'gateway_icon')
+		{
+			return $this->iconpicker('gateways['.$gateway.'][icon]', varset($curVal[$gateway]['icon']));
+		}
+
+
+		$text =  $this->text('gateways['.$gateway.'][title]', varset($curVal[$gateway]['title']), 50, ['size'=>'xxlarge']);
+
+		if(isset($att['gatewayName'])) // the actual class name used by Omnipay::create().
+		{
+			$text .= $this->hidden('gateways['.$gateway.'][name]', $att['gatewayName']);
+		}
+
+		return $text;
+	}
 }
 

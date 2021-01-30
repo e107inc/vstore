@@ -86,8 +86,7 @@ class vstore
 		'paypal'        => array('title' => 'Paypal', 'icon' => 'fa-paypal'),
 		'paypal_rest'   => array('title' => 'Paypal', 'icon' => 'fa-paypal'),
 		'mollie'        => array('title' => 'Mollie', 'icon' => 'fa-laptop'),
-		// 'amazon'        => array('title'=> 'Amazon',        'icon'=>'fa-amazon'),
-		// 'coinbase'      => array('title'=> 'Bitcoin',       'icon'=>'fa-btc'),
+
 		'bank_transfer' => array('title' => 'Bank Transfer', 'icon' => 'fa-bank'),
 	);
 
@@ -268,104 +267,9 @@ class vstore
 
 		$this->pref = e107::pref('vstore');
 
-		$this->order = e107::getSingleton('vstore_order', e_PLUGIN . 'vstore/inc/vstore_order.class.php');
-
-		$this->currency = vartrue($this->pref['currency'], 'USD');
-
-		if(!empty($this->pref['caption']) && !empty($this->pref['caption'][e_LANGUAGE]))
-		{
-			$this->captionBase = $this->pref['caption'][e_LANGUAGE];
-		}
-
-		if(!empty($this->pref['additional_fields']))
-		{
-			foreach($this->pref['additional_fields'] as $k => $v)
-			{
-				if(vartrue($v['active'], false))
-				{
-					static::$customerFields[] = 'add_field' . $k;
-				}
-			}
-		}
-
-		if(!empty($this->pref['caption_categories']) && !empty($this->pref['caption_categories'][e_LANGUAGE]))
-		{
-			$this->captionCategories = $this->pref['caption_categories'][e_LANGUAGE];
-			//e107::getDebug()->log("caption: ".$this->captionCategories);
-		}
-
-		if(!empty($this->pref['caption_outofstock']) && !empty($this->pref['caption_outofstock'][e_LANGUAGE]))
-		{
-			$this->captionOutOfStock = $this->pref['caption_outofstock'][e_LANGUAGE];
-			$this->sc->captionOutOfStock = $this->captionOutOfStock;
-		}
+		$this->initPrefs();
 
 
-		if(deftrue('e_DEBUG_VSTORE'))
-		{
-			e107::getDebug()->log($this->pref);
-			e107::getDebug()->log("CartID:" . $this->cartId);
-		}
-		// get all category data.
-		$count = 0;
-		$query = 'SELECT * FROM #vstore_cat WHERE cat_class IN (' . USERCLASS_LIST . ') ';
-		if($data = $sql->retrieve($query, true))
-		{
-			foreach($data as $row)
-			{
-				$id = $row['cat_id'];
-				$this->categories[$id] = $row;
-				$sef = vartrue($row['cat_sef'], '--undefined--');
-				$this->categorySEF[$sef] = $id;
-
-				if(empty($row['cat_parent']))
-				{
-					$count++;
-				}
-			}
-		}
-		$this->categoriesTotal = $count;
-
-		$active = array();
-		$tp = e107::getParser();
-		foreach(self::$gateways as $k => $icon)
-		{
-			$key = $k . "_active";
-			if(!empty($this->pref[$key]))
-			{
-				if(self::isMollie($k))
-				{
-					$paymentMethods = array_keys($this->pref['mollie_payment_methods']);
-					foreach($paymentMethods as $method)
-					{
-						$active[$method] = $this->getMolliePaymentMethodIcon($method);
-					}
-				}
-				else
-				{
-					$active[$k] = $this->getGatewayIcon($k);
-				}
-
-				// get gateway prefs.
-				foreach($this->pref as $key => $v)
-				{
-					if(strpos($key, $k) === 0)
-					{
-						$newkey = substr($key, (strlen($k) + 1));
-						$this->pref[$k][$newkey] = $v;
-					}
-				}
-			}
-		}
-
-
-		if(deftrue('e_DEBUG_VSTORE') && getperms('0'))
-		{
-			e107::getDebug()->log($this->pref);
-		}
-
-
-		$this->active = $active;
 	}
 
 
@@ -1556,9 +1460,8 @@ class vstore
 	 *
 	 * @return array
 	 */
-	private function getActiveGateways()
+	public function getActiveGateways()
 	{
-
 		return $this->active;
 	}
 
@@ -1755,87 +1658,7 @@ class vstore
 			$type = substr($type, 0, 6);
 		}
 
-		switch($type)
-		{
-			// case "amazon":
-			//     /** @var \Omnipay\Common\AbstractGateway $gateway */
-			//     $gateway = Omnipay::create('AmazonPayments');
-			//     $defaults = $gateway->getParameters();
-			//     e107::getDebug()->log($defaults);
-			//     break;
-
-			// case "coinbase":
-
-			//     $gateway = Omnipay::create('Coinbase');
-			//     /*
-			//     if (!empty($this->pref['paypal']['testmode'])) {
-			//         $gateway->setTestMode(true);
-			//     }
-			//     */
-
-			//     $gateway->setAccountId($this->pref['coinbase']['account']);
-			//     $gateway->setSecret($this->pref['coinbase']['secret']);
-			//     $gateway->setApiKey($this->pref['coinbase']['api_key']);
-			//     break;
-
-			case "mollie":
-				/** @var \Omnipay\Mollie\Gateway $gateway */
-				$gateway = Omnipay::create('Mollie');
-
-				if(!empty($this->pref['mollie']['testmode']))
-				{
-					$gateway->setApiKey($this->pref['mollie']['api_key_test']);
-					$gateway->setTestMode(true);
-				}
-				else
-				{
-					$gateway->setApiKey($this->pref['mollie']['api_key_live']);
-				}
-				break;
-
-			case "paypal":
-				/** @var \Omnipay\PayPal\ExpressGateway $gateway */
-				$gateway = Omnipay::create('PayPal_Express');
-
-				if(!empty($this->pref['paypal']['testmode']))
-				{
-					$gateway->setTestMode(true);
-				}
-
-				$gateway->setUsername($this->pref['paypal']['username']);
-				$gateway->setPassword($this->pref['paypal']['password']);
-				$gateway->setSignature($this->pref['paypal']['signature']);
-				break;
-
-			case "paypal_rest":
-				/** @var \Omnipay\PayPal\RestGateway $gateway */
-				$gateway = Omnipay::create('PayPal_Rest');
-
-				if(!empty($this->pref['paypal_rest']['testmode']))
-				{
-					$gateway->setTestMode(true);
-				}
-
-				$gateway->setClientId($this->pref['paypal_rest']['clientId']);
-				$gateway->setSecret($this->pref['paypal_rest']['secret']);
-				break;
-
-			case "bank_transfer":
-				$mode = 'halt';
-				$this->setMode('return');
-
-				if(!empty($this->pref['bank_transfer']['details']))
-				{
-					$message = '<br />Use the following bank account information for your payment:<br />';
-					$message .= e107::getParser()->toHTML($this->pref['bank_transfer']['details'], true);
-				}
-
-				break;
-
-
-			default:
-				return false;
-		}
+		list($gateway, $mode, $message) = $this->loadGateway($type);
 
 		$cardInput = null;
 		$data = $this->getCheckoutData();
@@ -2450,7 +2273,7 @@ class vstore
 	/**
 	 * Return the icon for the given gateway
 	 *
-	 * @param string $type
+	 * @param string $type gateway name
 	 * @param string $size default 5x (2x, 3x, 4x, 5x)
 	 * @return string
 	 */
@@ -2463,7 +2286,7 @@ class vstore
 		}
 		$text = !empty(self::$gateways[$type]) ? self::$gateways[$type]['icon'] : '';
 
-		return e107::getParser()->toGlyph($text, array('size' => $size));
+		return e107::getParser()->toGlyph($text, array('size' => $size, 'fw'=>true));
 	}
 
 	/**
@@ -4872,5 +4695,304 @@ class vstore
 		);
 
 		return $asArray ? $log : e107::serialize($log, 'json');
+	}
+
+	/**
+	 * Mostly for unit testing.
+	 * @param (array) $get
+	 */
+	function setGet($get)
+	{
+		$this->get = (array) $get;
+	}
+
+	/**
+	 * Mostly for unit testing.
+	 * @param (array) $post
+	 */
+	function setPost($post)
+	{
+		$this->post = (array) $post;
+	}
+
+	/**
+	 * Set the prefs. - mostly used for unit testing.
+	 * @param $pref
+	 */
+	public function setPrefs($pref)
+	{
+		$this->pref = (array) $pref;
+	}
+
+	public function getPrefs()
+	{
+		return $this->pref;
+	}
+
+
+	/**
+	 * Compiles the prefs for usage within the class.
+	 */
+	public function initPrefs()
+	{
+		$active = array();
+
+
+		// Load generic gateways into $gateways and set active icon status.
+		if(!empty($this->pref['gateways']))
+		{
+			foreach($this->pref['gateways'] as $gate => $var)
+			{
+				self::$gateways[$gate] = $var;
+
+				if(!empty($var['active']))
+				{
+					$active[$gate] = $this->getGatewayIcon($gate);
+				}
+			}
+		}
+
+
+		$this->order = e107::getSingleton('vstore_order', e_PLUGIN . 'vstore/inc/vstore_order.class.php');
+
+		$this->currency = vartrue($this->pref['currency'], 'USD');
+
+		if(!empty($this->pref['caption']) && !empty($this->pref['caption'][e_LANGUAGE]))
+		{
+			$this->captionBase = $this->pref['caption'][e_LANGUAGE];
+		}
+
+		if(!empty($this->pref['additional_fields']))
+		{
+			foreach($this->pref['additional_fields'] as $k => $v)
+			{
+				if(vartrue($v['active'], false))
+				{
+					static::$customerFields[] = 'add_field' . $k;
+				}
+			}
+		}
+
+		if(!empty($this->pref['caption_categories']) && !empty($this->pref['caption_categories'][e_LANGUAGE]))
+		{
+			$this->captionCategories = $this->pref['caption_categories'][e_LANGUAGE];
+			//e107::getDebug()->log("caption: ".$this->captionCategories);
+		}
+
+		if(!empty($this->pref['caption_outofstock']) && !empty($this->pref['caption_outofstock'][e_LANGUAGE]))
+		{
+			$this->captionOutOfStock = $this->pref['caption_outofstock'][e_LANGUAGE];
+			$this->sc->captionOutOfStock = $this->captionOutOfStock;
+		}
+
+
+		if(deftrue('e_DEBUG_VSTORE'))
+		{
+			e107::getDebug()->log($this->pref);
+			e107::getDebug()->log("CartID:" . $this->cartId);
+		}
+		// get all category data.
+		$count = 0;
+		$query = 'SELECT * FROM #vstore_cat WHERE cat_class IN (' . USERCLASS_LIST . ') ';
+		if($data = e107::getDb()->retrieve($query, true))
+		{
+			foreach($data as $row)
+			{
+				$id = $row['cat_id'];
+				$this->categories[$id] = $row;
+				$sef = vartrue($row['cat_sef'], '--undefined--');
+				$this->categorySEF[$sef] = $id;
+
+				if(empty($row['cat_parent']))
+				{
+					$count++;
+				}
+			}
+		}
+		$this->categoriesTotal = $count;
+
+
+		$tp = e107::getParser();
+		foreach(self::$gateways as $k => $icon)
+		{
+			$key = $k . "_active";
+			if(!empty($this->pref[$key]))
+			{
+				if(self::isMollie($k))
+				{
+					$paymentMethods = array_keys($this->pref['mollie_payment_methods']);
+					foreach($paymentMethods as $method)
+					{
+						$active[$method] = $this->getMolliePaymentMethodIcon($method);
+					}
+				}
+				else
+				{
+					$active[$k] = $this->getGatewayIcon($k);
+				}
+
+				// get gateway prefs. eg. paypal_password, paypal_active
+				foreach($this->pref as $key => $v)
+				{
+					if(strpos($key, $k) === 0)
+					{
+						$newkey = substr($key, (strlen($k) + 1));
+						$this->pref[$k][$newkey] = $v;
+					}
+				}
+			}
+		}
+
+
+		if(deftrue('e_DEBUG_VSTORE') && getperms('0'))
+		{
+			e107::getDebug()->log($this->pref);
+		}
+
+
+		$this->active = $active;
+	}
+
+	/**
+	 * Load the Gateway class and set the api keys etc.
+	 * @param string $name paypal | mollie | etc.
+	 * @return array
+	 */
+	public function loadGateway($name): array
+	{
+		$mode = '';
+		$message = '';
+
+		switch($name)
+		{
+			// case "amazon":
+			//     /** @var \Omnipay\Common\AbstractGateway $gateway */
+			//     $gateway = Omnipay::create('AmazonPayments');
+			//     $defaults = $gateway->getParameters();
+			//     e107::getDebug()->log($defaults);
+			//     break;
+
+			// case "coinbase":
+
+			//     $gateway = Omnipay::create('Coinbase');
+			//     /*
+			//     if (!empty($this->pref['paypal']['testmode'])) {
+			//         $gateway->setTestMode(true);
+			//     }
+			//     */
+
+			//     $gateway->setAccountId($this->pref['coinbase']['account']);
+			//     $gateway->setSecret($this->pref['coinbase']['secret']);
+			//     $gateway->setApiKey($this->pref['coinbase']['api_key']);
+			//     break;
+
+			case "mollie":
+				/** @var \Omnipay\Mollie\Gateway $gateway */
+				$gateway = Omnipay::create('Mollie');
+
+				if(!empty($this->pref['mollie']['testmode']))
+				{
+					$gateway->setApiKey($this->pref['mollie']['api_key_test']);
+					$gateway->setTestMode(true);
+				}
+				else
+				{
+					$gateway->setApiKey($this->pref['mollie']['api_key_live']);
+				}
+				break;
+
+			case "paypal":
+				/** @var \Omnipay\PayPal\ExpressGateway $gateway */
+				$gateway = Omnipay::create('PayPal_Express');
+
+				if(!empty($this->pref['paypal']['testmode']))
+				{
+					$gateway->setTestMode(true);
+				}
+
+				$gateway->setUsername($this->pref['paypal']['username']);
+				$gateway->setPassword($this->pref['paypal']['password']);
+				$gateway->setSignature($this->pref['paypal']['signature']);
+				break;
+
+			case "paypal_rest":
+				/** @var \Omnipay\PayPal\RestGateway $gateway */
+				$gateway = Omnipay::create('PayPal_Rest');
+
+				if(!empty($this->pref['paypal_rest']['testmode']))
+				{
+					$gateway->setTestMode(true);
+				}
+
+				$gateway->setClientId($this->pref['paypal_rest']['clientId']);
+				$gateway->setSecret($this->pref['paypal_rest']['secret']);
+				break;
+
+			case "bank_transfer":
+				$mode = 'halt';
+				$this->setMode('return');
+
+				if(!empty($this->pref['bank_transfer']['details']))
+				{
+					$message = '<br />Use the following bank account information for your payment:<br />';
+					$message .= e107::getParser()->toHTML($this->pref['bank_transfer']['details'], true);
+				}
+
+				break;
+
+
+			default:
+
+
+				if(empty(self::$gateways[$name]['name']))
+				{
+					$message = "There was a configuration problem.";
+					$gateway = null;
+					trigger_error($message);
+				}
+				else
+				{
+					$gatewayClass = self::$gateways[$name]['name'];
+
+					try
+					{
+						$gateway = Omnipay::create($gatewayClass);
+					}
+					catch (Exception $e)
+					{
+					     $message = "Sorry, there is a problem loading the ".$name." payment option. Please notify the administrator.";
+					     $message .= (ADMIN) ? $e->getMessage() : '';
+					}
+
+					if(is_object($gateway) && !empty(self::$gateways[$name]))
+					{
+						if(empty(self::$gateways[$name]['prefs']))
+						{
+							trigger_error('$gateways[$name][\'prefs\'] was empty.');
+						}
+
+
+						foreach(self::$gateways[$name]['prefs'] as $k=>$v)
+						{
+							$method = 'set'.ucfirst($k);
+							try
+							{
+								$gateway->$method($v);
+							}
+							catch (Exception $e)
+							{
+								$message = "Sorry, there was a configuration issue. Please notify the administrator.";
+							    $message .= (ADMIN) ? $e->getMessage() : '';
+							}
+
+
+						}
+
+					}
+				}
+				//return false;
+		}
+
+		return array($gateway, $mode, $message);
 	}
 }
