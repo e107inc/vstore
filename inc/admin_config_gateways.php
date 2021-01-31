@@ -89,8 +89,10 @@ class vstore_gateways_ui extends e_admin_ui
 		/** Automatically build the preferences from the Gateway files         * */
 
 
-		$this->loadAdditionalGateways();
+		$this->setGatewayFields();
 		$this->checkDeprecatedPrefs();
+
+		ksort($this->preftabs); // sort the tabs.
 
 	}
 
@@ -134,7 +136,7 @@ class vstore_gateways_ui extends e_admin_ui
 	}
 
 
-	private function loadGatewayPackages()
+	private function getGatewayPackageList()
 	{
 		$composerData = include(e_PLUGIN.'vstore/vendor/composer/autoload_psr4.php');
 
@@ -172,7 +174,7 @@ class vstore_gateways_ui extends e_admin_ui
 
 		$fixed = array(
 			'paypal'        => array('omnipay/paypal/src/ExpressGateway.php','PayPal_Express', 'fa-paypal' ),
-			'paypal_rest'   => array('omnipay/paypal/src/RestGateway.php', 'PayPal_Rest', 'fa-paypal' ),
+			'paypal_rest'   => array('omnipay/paypal/src/RestGateway.php', 'PayPal_Rest', 'fab-cc-paypal' ),
 			'paypal_pro'   => array('omnipay/paypal/src/ProGateway.php', 'PayPal_Pro', 'fa-paypal' ),
 		);
 
@@ -192,19 +194,25 @@ class vstore_gateways_ui extends e_admin_ui
 			$list[$key] = array('name' => $name, 'title' => $title, 'parms' => $parms, 'icon'=> $icon);
 		}
 
-		$packages = $this->loadGatewayPackages();
+		$packages = $this->getGatewayPackageList();
+
+		$defaultIcons = array(
+			'coinpayments'  => 'fa-bitcoin.glyph',
+			'braintree'     => 'fa-apple-pay.glyph',
+			'stripe'        => 'fa-cc-stripe.glyph',
+			'stark'         => 'fab-ethereum.glyph',
+		);
 
 		foreach($packages as $folder => $class)
 		{
-			$gt     = Omnipay::create($class);
 
 			/** @var Omnipay\Omnipay $gt  */
-			$gt     = Omnipay::create($folder);
+			$gt     = Omnipay::create($class);
 			$title  = $gt->getName();
 			$parms  = $gt->getDefaultParameters();
-			$name   = $gt->getShortName();
+		//	$name   = $gt->getShortName();
 
-			$list[$folder] = array('name' => $name, 'title' => str_replace('_', ' ', $title), 'parms' => $parms);
+			$list[$folder] = array('name' => $class, 'title' => str_replace('_', ' ', $title), 'parms' => $parms, 'icon'=>varset($defaultIcons[$folder]));
 		}
 
 		return $list;
@@ -223,7 +231,7 @@ class vstore_gateways_ui extends e_admin_ui
 	/**
 	 * Automatically loads and sets gateway parameter fields based on their their classes.
 	 */
-	private function loadAdditionalGateways()
+	private function setGatewayFields()
 	{
 		$extraGateways = $this->getAvailableGateways();
 

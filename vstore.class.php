@@ -2289,7 +2289,7 @@ class vstore
 		}
 		$text = !empty(self::$gateways[$type]) ? self::$gateways[$type]['icon'] : '';
 
-		return e107::getParser()->toGlyph($text, array('size' => $size, 'fw'=>true));
+		return e107::getParser()->toIcon($text, array('size' => $size, 'fw'=>true));
 	}
 
 	/**
