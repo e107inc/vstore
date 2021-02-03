@@ -117,9 +117,9 @@ class vstore_admin extends e_admin_dispatcher
 	
 	
 	protected $adminMenu = array(
-		'statistics/custom'	=> array('caption'=> "Statistics", 'perm' => 'P'),
+		'statistics/custom'	=> array('caption'=> "Statistics", 'perm' => 'P',  'icon'=>'fas-chart-line'),
 
-		'orders/list'		=> array('caption'=> LAN_VSTORE_ADMIN_001, 'perm' => 'P'), // "Sales"
+		'orders/list'		=> array('caption'=> LAN_VSTORE_ADMIN_001, 'perm' => 'P',  'icon'=>'fas-shopping-cart'), // "Sales"
 		// 'cart/list' 		=> array('caption'=> 'Cart', 'perm' => 'P'),
 		'orders/div'        => array('divider'=>true),
 
@@ -128,27 +128,27 @@ class vstore_admin extends e_admin_dispatcher
 		'products/create'	=> array('caption'=> LAN_VSTORE_ADMIN_003, 'perm' => 'P'),
 		'products/div'      => array('divider'=>true),
 
-		'vars/list'			=> array('caption'=> LAN_VSTORE_ADMIN_004, 'perm' => 'P'), // Product Variations
-		'vars/create'		=> array('caption'=> LAN_VSTORE_ADMIN_005, 'perm' => 'P'),
+		'vars/list'			=> array('caption'=> LAN_VSTORE_ADMIN_004, 'perm' => 'P',  'icon'=>'fas-gifts'), // Product Variations
+		'vars/create'		=> array('caption'=> LAN_VSTORE_ADMIN_005, 'perm' => 'P',  'icon'=>'fas-gift'),
 		'vars/div'          => array('divider'=>true),
 
 		'cat/list'			=> array('caption'=> LAN_CATEGORIES, 'perm' => 'P'),
 		'cat/create'		=> array('caption'=> LAN_CREATE_CATEGORY, 'perm' => 'P'),
 		'cat/div'           => array('divider'=>true),
 
-		'coupons/list'		=> array('caption'=> LAN_VSTORE_ADMIN_006, 'perm' => 'P'),
-		'coupons/create'	=> array('caption'=> LAN_VSTORE_ADMIN_007, 'perm' => 'P'),
+		'coupons/list'		=> array('caption'=> LAN_VSTORE_ADMIN_006, 'perm' => 'P',  'icon'=>'fas-tags'),
+		'coupons/create'	=> array('caption'=> LAN_VSTORE_ADMIN_007, 'perm' => 'P',  'icon'=>'fas-tag'),
 		'coupons/div'      	=> array('divider'=>true),
 
-		'customer/list'		=> array('caption'=> LAN_VSTORE_ADMIN_008, 'perm' => 'P'),
+		'customer/list'		=> array('caption'=> LAN_VSTORE_ADMIN_008, 'perm' => 'P',  'icon'=>'fas-user-tag'),
 	
 		'main/prefs' 		=> array('caption'=> LAN_PREFS, 'perm' => 'P'),
 
-		'email/templates' 	=> array('caption'=> 'Email Templates', 'perm' => 'P'),
+		'email/templates' 	=> array('caption'=> 'Email Templates', 'perm' => 'P', 'icon'=>'fas-envelope'),
 
-		'invoice/prefs' 	=> array('caption'=> 'Invoice settings', 'perm' => 'P'),
+		'invoice/prefs' 	=> array('caption'=> 'Invoice settings', 'perm' => 'P',  'icon'=>'fas-file-invoice'),
 
-		'gateways/prefs'	=> array('caption'=> "Payment Gateways", 'perm' => 'P'),
+		'gateways/prefs'	=> array('caption'=> "Payment Gateways", 'perm' => 'P', 'icon'=>'far-credit-card'),
 
 		// 'main/custom'	=> array('caption'=> 'Custom Page', 'perm' => 'P')
 	);

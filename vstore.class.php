@@ -262,8 +262,8 @@ class vstore
 		/** @var vstore_shortcodes sc */
 		$this->sc = e107::getScParser()->getScObject('vstore_shortcodes', 'vstore', false);
 
-		$this->get = $_GET;
-		$this->post = $_POST;
+		$this->get = varset($_GET);
+		$this->post = varset($_POST);
 
 		$this->pref = e107::pref('vstore');
 
