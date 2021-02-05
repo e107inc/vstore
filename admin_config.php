@@ -148,7 +148,7 @@ class vstore_admin extends e_admin_dispatcher
 
 		'invoice/prefs' 	=> array('caption'=> 'Invoice settings', 'perm' => 'P',  'icon'=>'fas-file-invoice'),
 
-		'gateways/prefs'	=> array('caption'=> "Payment Gateways", 'perm' => 'P', 'icon'=>'far-credit-card'),
+		'gateways/prefs'	=> array('caption'=> "Payment Gateways", 'perm' => 'P', 'icon'=>'fas-dollar-sign'),
 
 		// 'main/custom'	=> array('caption'=> 'Custom Page', 'perm' => 'P')
 	);

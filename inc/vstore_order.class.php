@@ -777,10 +777,7 @@ class vstore_order extends vstore
         $receiver = $this->unserialize('order_billing');
 
         $this->data['is_business'] = !empty($receiver['vat_id']);
-        $this->data['is_local'] = (varset(
-            $receiver['country'],
-            $this->pref['tax_business_country']
-        ) == $this->pref['tax_business_country']);
+        $this->data['is_local'] = (varset($receiver['country'],  $this->pref['tax_business_country']) == $this->pref['tax_business_country']);
 
         $this->sc->setVars($this->data);
 
