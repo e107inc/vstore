@@ -8,7 +8,7 @@
 	 *
 	 */
 
-
+define("LAN_VSTORE_ADMIN_000", "Dashboard");
 define("LAN_VSTORE_ADMIN_001", "Sales");
 define("LAN_VSTORE_ADMIN_002", "Products");
 define("LAN_VSTORE_ADMIN_003", "Add Product");
@@ -17,3 +17,6 @@ define("LAN_VSTORE_ADMIN_005", "Add Product Variations");
 define("LAN_VSTORE_ADMIN_006", "Coupons");
 define("LAN_VSTORE_ADMIN_007", "Add Coupon");
 define("LAN_VSTORE_ADMIN_008", "Customers");
+define("LAN_VSTORE_ADMIN_009", "Email Templates");
+define("LAN_VSTORE_ADMIN_010", "Invoice Settings");
+define("LAN_VSTORE_ADMIN_011", "Payment Gateways");

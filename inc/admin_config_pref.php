@@ -41,8 +41,8 @@ class vstore_pref_ui extends e_admin_ui
 
 			'currency'		            => array('title'=> 'Currency', 'tab'=>0, 'type'=>'dropdown', 'data' => 'string','help'=>'Select a currency'),
 			'amount_format'	            => array('title'=> 'Amount format', 'tab'=>0, 'type'=>'dropdown', 'data' => 'string','help'=>'Select a format to be used to format the amount'),
-			'weight_unit'		        => array('title'=> 'Weight unit', 'tab'=>0, 'type'=>'dropdown', 'data' => 'string','help'=>'Select a weight unit'),
-			'customer_userclass'        => array('title'=> 'Assign userclass', 'tab'=>0, 'type' => 'method', 'help' => 'Assign userclass to customer on purchase'),
+			'weight_unit'		        => array('title'=> 'Weight unit', 'tab'=>0, 'type'=>'dropdown', 'data' => 'string','help'=>'Select a unit of weight'),
+			'customer_userclass'        => array('title'=> 'Assign userclass', 'tab'=>0, 'type' => 'method', 'help' => 'Assign userclass to customer after completing an purchase.'),
 			'show_outofstock'     		=> array('title'=> 'Show/hide out-of-stock products', 'tab'=>0, 'type' => 'bool', 'help' => 'Show or hide "Out-of-stock" products in product listings', 'writeParms' => array('enabled' => LAN_SHOW, 'disabled' => 'Hide')), 
 			
 			'shipping'		            => array('title'=> 'Calculate Shipping', 'tab'=>1, 'type'=>'bool', 'data' => 'int','help'=>'Including shipping calculation at checkout.', 'writeParms' => array('label' => 'yesno')),
@@ -88,7 +88,7 @@ class vstore_pref_ui extends e_admin_ui
 			
 			$this->prefs['amount_format']['writeParms'] = array('0'=>'Currency before number', '1'=>'Currency behind number');
 
-			$this->prefs['weight_unit']['writeParms'] = array('g' => 'Gram', 'kg'=>'Kilogram', 'lb'=>'Pound', 'oz'=>'Ounce', 'carat' => 'Carat');
+			$this->prefs['weight_unit']['writeParms'] = vstore::weightUnits();
 
 			$this->prefs['shipping_method']['writeParms'] = array(
 				'sum_simple'	=> 'Sum up shipping cost for all items', 

@@ -3555,6 +3555,26 @@ class vstore
 	}
 
 	/**
+	 * Returns the weight unit options or the label of the value entered.
+	 * @param null $val
+	 * @return array|string
+	 */
+	public static function weightUnits($val = null)
+	{
+		$opts = array(
+			'g'     => 'Grams',
+			'kg'    => 'Kilograms',
+			'lb'    => 'Pounds',
+			'oz'    => 'Ounces',
+			'carat' => 'Carats'
+		);
+
+		return !empty($val) ? varset($opts[$val]) : $opts;
+
+	}
+
+
+	/**
 	 * calculate the shipping cost depending on the current cart items
 	 *
 	 * @param array $items

@@ -5,11 +5,11 @@
 		protected $vpref = array();
 		protected $videos = array();
 		//protected $symbols = array();
-		protected $curSymbol = null;
-		protected $currency = null;
+		protected $curSymbol;
+		protected $currency;
 		protected $displayCurrency = false;
 		protected $categories = array();
-		public $captionOutOfStock = null; // 'Out of Stock';
+		public $captionOutOfStock; // 'Out of Stock';
 		protected $halt = false;
 		protected $tp;
 		protected $locale_decimals;
@@ -49,9 +49,9 @@
 			$value = number_format($amount, 2, $this->locale_decimals, $this->locale_thousands);
 			if ($format == 1) {
 				return $value . '&nbsp;' . $this->curSymbol;
-			} else {
-				return $this->curSymbol . '&nbsp;' . $value;
 			}
+
+			return $this->curSymbol . '&nbsp;' . $value;
 		}
 
 		function format_address($address, $extended = false)
@@ -119,21 +119,74 @@
 			return e107::getForm()->button('order_actions', $actions, 'dropdown', 'Actions', array('class' => 'btn-default'));
 		}
 
+		/**
+		 * Alias for {ORDER_DATA: cust_xxxx }
+		 * @param $parm
+		 * @return string
+		 */
+		function sc_billing($parm)
+		{
+			$key = key($parm);
+			return $this->sc_order_data(array('cust_'.$key => 1));
+		}
+
+
+		/**
+		 * Alias for {ORDER_DATA: ship_xxxx }
+		 * @param $parm
+		 * @return string
+		 */
+		function sc_shipping($parm)
+		{
+			$key = key($parm);
+			return $this->sc_order_data(array('ship_'.$key => 1));
+		}
+
+		/**
+		 * Alias for {ORDER_DATA: order_ref}
+		 * @param $parm
+		 * @return string
+		 */
+		function sc_ref($parm)
+		{
+			$key = key($parm);
+			return $this->sc_order_data(array('order_ref' => 1));
+		}
+
+
 		function sc_order_data($parm = null)
 		{
-			if (empty($parm)) return '';
+
+			if(empty($parm))
+			{
+				return '';
+			}
 
 			$key = array_keys($parm);
-			if ($key) $key = strtolower($key[0]);
+
+			if($key)
+			{
+				$key = strtolower($key[0]);
+			}
+
 			$area = '';
 
-			if (substr($key, 0, 5) == 'ship_' || substr($key, 0, 5) == 'cust_')
+			if(strpos($key, 'ship_') === 0 || strpos($key, 'cust_') === 0)
 			{
-				if(substr($key, 0, 5) == 'ship_') $area = 'order_shipping';
-				if(substr($key, 0, 5) == 'cust_') $area = 'order_billing';
-				if(is_string($this->var[$area])){
+				if(strpos($key, 'ship_') === 0)
+				{
+					$area = 'order_shipping';
+				}
+				elseif(strpos($key, 'cust_') === 0)
+				{
+					$area = 'order_billing';
+				}
+
+				if(is_string($this->var[$area]))
+				{
 					$this->var[$area] = e107::unserialize($this->var[$area]);
 				}
+
 				$key = substr($key, 5);
 			}
 
@@ -470,7 +523,7 @@
 				elseif(count($itemvars) == 1)
 				{
 					$varX = array_keys($inv)[0];
-					if (intval($inv[$varX]) == 0)
+					if ((int) $inv[$varX] == 0)
 					{
 						$inStock = false;
 					}
@@ -479,7 +532,7 @@
 				{
 					$varX = array_keys($inv)[0];
 					$varY = array_keys($inv[$varX])[0];
-					if (intval($inv[$varX][$varY]) == 0)
+					if ((int) $inv[$varX][$varY] == 0)
 					{
 						$inStock = false;
 					}
@@ -529,7 +582,7 @@
 
 		function sc_item_vars($parm=null)
 		{
-			$itemid = intval($this->var['item_id']);
+			$itemid = (int) $this->var['item_id'];
 			$stock = empty($this->var['item_vars_inventory'])
 				? (isset($this->var['item_inventory']) ? $this->var['item_inventory'] : -1)
 				: e107::unserialize($this->var['item_vars_inventory']);
@@ -563,7 +616,7 @@
 					while($row = $sql->fetch())
 					{
 						$attributes = e107::unserialize($row['item_var_attributes']);
-						$varid = intval($row['item_var_id']);
+						$varid = (int) $row['item_var_id'];
 
 						$select = $frm->select_open(
 							'item_var[' . $itemid . '][' . $varid . ']',
@@ -713,7 +766,7 @@
 
 		function sc_item_pic($parm=null)
 		{
-			$index = (!empty($parm['item'])) ? intval($parm['item']) : 0; // intval($parm);
+			$index = (!empty($parm['item'])) ? (int) $parm['item'] : 0; // intval($parm);
 			$ival = e107::unserialize($this->var['item_pic']);
 
 			$images = array();
@@ -745,7 +798,7 @@
 
 		function sc_item_video($parm=0)
 		{
-			$index = intval($parm);
+			$index = (int) $parm;
 			$ival = e107::unserialize($this->var['item_pic']);
 
 			$videos = array();
@@ -861,7 +914,7 @@
 			{
 				if(!empty($i['path']) && !empty($i['id']))
 				{
-					$id[] = intval($i['id']);
+					$id[] = (int) $i['id'];
 				}
 			}
 
@@ -888,7 +941,7 @@
 
 		function sc_item_price($parm=null)
 		{
-			$itemid = intval($this->var['item_id']);
+			$itemid = (int) $this->var['item_id'];
 			if(empty($this->var['item_price']))
 			{
 				$this->var['item_price'] = 0;
@@ -1130,12 +1183,12 @@
 					break;
 
 				default:
-					if (substr($key, 0, 5) == 'ship_')
+					if (strpos($key, 'ship_') === 0)
 					{
 						$key = substr($key, 5);
 						$text = varset($this->var['ship'][$key]);
 					}
-					elseif (substr($key, 0, 5) == 'cust_')
+					elseif (strpos($key, 'cust_') === 0)
 					{
 						$key = substr($key, 5);
 						$text = varset($this->var['cust'][$key]);
@@ -1310,7 +1363,7 @@
 					//$text = $this->format_amount($this->var['item']['item_total']);
 					break;
 				case 'sub_total':
-					$text = $this->format_amount($this->var['order_pay_amount']-$this->var['order_pay_shipping']-$this->var['cart_coupon']['amount']);
+					$text = $this->format_amount($this->var['order_pay_amount'] - $this->var['order_pay_shipping'] - varset($this->var['cart_coupon']['amount'],0));
 					break;
 				case 'shipping_total':
 					$text = $this->format_amount($this->var['order_pay_shipping']);
@@ -1351,10 +1404,8 @@
 			{
 				return $this->format_amount($this->var['item_price_net']);
 			}
-			else
-			{
-				return $this->format_amount($this->var['item_price']);
-			}
+
+			return $this->format_amount($this->var['item_price']);
 		}
 
 		function sc_cart_total($parm=null)
@@ -1376,7 +1427,7 @@
 			{
 				$readonly = '';
 
-				return '<input type="input" '.$readonly.' name="cartQty['.$this->var['cart_id'].'][qty]" class="form-control text-right cart-qty" id="cart-'.$this->var['cart_id'].'" value="'.intval($this->var['cart_qty']).'">';
+				return '<input type="input" '.$readonly.' name="cartQty['.$this->var['cart_id'].'][qty]" class="form-control text-right cart-qty" id="cart-'.$this->var['cart_id'].'" value="'. (int) $this->var['cart_qty'] .'">';
 			}
 
 
@@ -1406,10 +1457,8 @@
 			{
 				return $this->format_amount($this->var['cart_subNet']);
 			}
-			else
-			{
-				return $this->format_amount($this->var['cart_subTotal']);
-			}
+
+			return $this->format_amount($this->var['cart_subTotal']);
 		}
 
 		function sc_cart_shippingtotal($parm=null)
@@ -1418,10 +1467,8 @@
 			{
 				return $this->format_amount($this->var['cart_shippingNet']);
 			}
-			else
-			{
-				return $this->format_amount($this->var['cart_shippingTotal']);
-			}
+
+			return $this->format_amount($this->var['cart_shippingTotal']);
 		}
 
 		function sc_cart_checkout_button()
@@ -1472,10 +1519,8 @@
 			{
 				return $this->format_amount($this->var['cart_coupon']['amount_net']);
 			}
-			else
-			{
-				return $this->format_amount($this->var['cart_coupon']['amount']);
-			}
+
+			return $this->format_amount($this->var['cart_coupon']['amount']);
 		}
 
 
@@ -1520,10 +1565,8 @@
 			{
 				return $this->format_amount( $this->var['cart_grandNet']);
 			}
-			else
-			{
-				return $this->format_amount( $this->var['cart_grandTotal']);
-			}
+
+			return $this->format_amount( $this->var['cart_grandTotal']);
 		}
 
 		public function sc_cart_currency_symbol($parm=null)
@@ -1549,7 +1592,7 @@
 				case 'footer1':
 				case 'footer2':
 				case 'footer3':
-					$i = intval(substr($key, -1));
+					$i = (int) substr($key, -1);
 					if (!is_array($this->vpref['invoice_footer']))
 					{
 						$this->vpref['invoice_footer'] = e107::unserialize($this->vpref['invoice_footer']);
@@ -1683,7 +1726,7 @@
 		{
 			// Paths to image file, link are relative to site base
 
-			$logopref = e107::getConfig('core')->get('sitelogo');
+			$logopref = e107::getConfig()->get('sitelogo');
 			$logop = $this->tp->replaceConstants($logopref);
 
 			if(vartrue($logopref) && is_readable($logop))
@@ -1804,15 +1847,15 @@
 					break;
 
 				case 'name':
-					$text = vartrue($this->var['link_name'], '');
+					$text = vartrue($this->var['link_name']);
 					break;
 
 				case 'description':
-					$text = vartrue($this->var['link_description'], '');
+					$text = vartrue($this->var['link_description']);
 					break;
 
 				case 'badge':
-					$text = vartrue($this->var['link_badge'], '');
+					$text = vartrue($this->var['link_badge']);
 					break;
 			}
 			return $text;

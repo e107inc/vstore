@@ -1,4 +1,7 @@
 <?php
+
+use Omnipay\Omnipay;
+
 /**
  * e107 website system
  *
@@ -162,13 +165,18 @@ class vstore_order extends vstore
      */
     public function isLoaded($id = null)
     {
-        if (!$this->loaded) {
-            return false;
-        };
-        if (!empty($id) && $this->order_id != $id) {
-            return false;
-        }
-        return true;
+
+	    if(!$this->loaded)
+	    {
+		    return false;
+	    }
+
+	    if(!empty($id) && $this->order_id != $id)
+	    {
+		    return false;
+	    }
+
+	    return true;
     }
 
     /**
@@ -181,16 +189,23 @@ class vstore_order extends vstore
     public function load($id)
     {
         $this->clear();
-        $id = intval($id);
+        $id = (int) $id;
         $this->data = $this->sql->retrieve('vstore_orders', '*', 'order_id=' . $id);
-        if (empty($this->data)) {
-            if ($this->sql->getLastErrorNumber() > 0) {
-                $this->last_error = 'Unable to load order! ' . $this->sql->getLastErrorText();
-            } else {
-                $this->last_error = 'Order not found!';
-            }
-            return false;
-        }
+
+	    if(empty($this->data))
+	    {
+		    if($this->sql->getLastErrorNumber() > 0)
+		    {
+			    $this->last_error = 'Unable to load order! ' . $this->sql->getLastErrorText();
+		    }
+		    else
+		    {
+			    $this->last_error = 'Order not found!';
+		    }
+
+		    return false;
+	    }
+
         $this->old_data = $this->data;
         $this->initData();
         $this->loaded = true;
@@ -209,14 +224,21 @@ class vstore_order extends vstore
         $this->clear();
         $id = intval($id);
         $this->data = $this->sql->retrieve('vstore_orders', '*', 'order_invoice_nr=' . $id);
-        if (empty($this->data)) {
-            if ($this->sql->getLastErrorNumber() > 0) {
-                $this->last_error = 'Unable to load order! ' . $this->sql->getLastErrorText();
-            } else {
-                $this->last_error = 'Order not found!';
-            }
-            return false;
-        }
+
+	    if(empty($this->data))
+	    {
+		    if($this->sql->getLastErrorNumber() > 0)
+		    {
+			    $this->last_error = 'Unable to load order! ' . $this->sql->getLastErrorText();
+		    }
+		    else
+		    {
+			    $this->last_error = 'Order not found!';
+		    }
+
+		    return false;
+	    }
+
         $this->old_data = $this->data;
         $this->initData();
         $this->loaded = true;
@@ -468,8 +490,8 @@ class vstore_order extends vstore
         }
 
         $this->unserialize('order_billing');
-        $firstname = vartrue($this->data['order_billing']['firstname'], '');
-        $lastname = vartrue($this->data['order_billing']['lastname'], '');
+        $firstname = vartrue($this->data['order_billing']['firstname']);
+        $lastname = vartrue($this->data['order_billing']['lastname']);
 
         // if ($firstname == '' && $lastname == '') {
         //     $this->last_error = 'No billing firstname and lastname entered!';
@@ -568,7 +590,7 @@ class vstore_order extends vstore
         // Init payment gateway
         switch ($gateway) {
             case "mollie":
-                /** @var \Omnipay\Mollie\Gateway $gateway */
+                /** @var Gateway $gateway */
                 $gateway = Omnipay::create('Mollie');
 
                 if (!empty($this->pref['mollie']['testmode'])) {
@@ -586,7 +608,7 @@ class vstore_order extends vstore
                 break;
 
             case "paypal":
-                /** @var \Omnipay\PayPal\ExpressGateway $gateway */
+                /** @var ExpressGateway $gateway */
                 $gateway = Omnipay::create('PayPal_Express');
 
                 if (!empty($this->pref['paypal']['testmode'])) {
@@ -605,7 +627,7 @@ class vstore_order extends vstore
                 break;
 
             case "paypal_rest":
-                /** @var \Omnipay\PayPal\RestGateway $gateway */
+                /** @var RestGateway $gateway */
                 $gateway = Omnipay::create('PayPal_Rest');
 
                 if (!empty($this->pref['paypal_rest']['testmode'])) {
@@ -740,74 +762,19 @@ class vstore_order extends vstore
      */
     public function emailCustomer($templateKey = 'default', $pdf_file = '')
     {
-        if (!$this->loaded) {
-            // No order loaded... Load order first...
+        if (!$this->loaded)   // No order loaded... Load order first...
+        {
             e107::getMessage()->addDebug('No order loaded!', 'vstore');
-            return;
+            return null;
         }
 
-        $tp = e107::getParser();
-        $template = $this->getEmailTemplate($templateKey);
+		if(!$tmp = $this->compileEmail($templateKey, $pdf_file))
+		{
+			return null;
+		}
 
-        if (empty($template)) {
-            // No template available... No mail to send ...
-            e107::getMessage()->addDebug('No template found or template is empty!', 'vstore');
-            return;
-        }
-
-        $sender_name = $this->pref['sender_name'];
-        $sender_email = $this->pref['sender_email'];
-        if (empty($sender_email)) {
-            e107::getMessage()->addDebug('No explicit shop email defined!<br/>Will use siteadmin email!', 'vstore');
-            $sender_email = e107::pref('core', 'siteadminemail');
-        }
-
-        if (empty($sender_name)) {
-            e107::getMessage()->addDebug('No explicit shop email name defined!<br/>Will use siteadmin name!', 'vstore');
-            $sender_name = e107::pref('core', 'siteadmin');
-        }
-
-
-        $templates = $this->pref['email_templates'];
-        $cc = '';
-        if (vartrue($templates[$templateKey]['cc'])) {
-            $cc = $sender_email;
-        }
-        
-        $receiver = $this->unserialize('order_billing');
-
-        $this->data['is_business'] = !empty($receiver['vat_id']);
-        $this->data['is_local'] = (varset($receiver['country'],  $this->pref['tax_business_country']) == $this->pref['tax_business_country']);
-
-        $this->sc->setVars($this->data);
-
-        //todo add to template
-        $subject    = "Your Order #[x] at " . SITENAME;
-
-        $email      = $receiver['email'];
-        $name       = $receiver['firstname'] . " " . $receiver['lastname'];
-
-        $eml = array(
-            'subject'       => $tp->lanVars($subject, array('x' => $this->data['order_ref'])),
-            'sender_email'  => $sender_email,
-            'sender_name'   => $sender_name,
-            'html'          => true,
-            'template'      => 'default',
-            'body'          => $tp->parseTemplate($template, true, $this->sc)
-        );
-
-        if (!empty($cc)) {
-            $eml['cc'] = $cc;
-        }
-
-        if (!empty($pdf_file)) {
-            $eml['attach'] = $pdf_file;
-        }
-
-        // die(e107::getEmail()->preview($eml));
-
-        // $debug = e107::getEmail()->preview($eml);
-        // e107::getDebug()->log($debug);
+	    list($email, $name, $eml) = $tmp;
+	    // die(e107::getEmail()->preview($eml));
 
         e107::getEmail()->sendEmail($email, $name, $eml);
     }
@@ -822,23 +789,111 @@ class vstore_order extends vstore
      * @param string $type email type
      * @return string the template
      */
-    private function getEmailTemplate($type = 'default')
+    public function getEmailTemplate($type = 'default')
     {
-        if (empty($type)) {
-            $type = 'default';
-        }
-        $template = $this->pref['email_templates'];
-        if (isset($template[$type]['active']) && ($template[$type]['active'] ? false : true)) {
-            return '';
-        }
-        if (empty($template[$type]['template'])) {
-            $template = e107::getTemplate('vstore', 'vstore_email', $type);
-            if (empty($template)) {
-                return '';
-            }
-        } else {
-            $template = str_ireplace(array('[html]', '[/html]'), '', $template[$type]['template']);
-        }
-        return $template;
+
+	    if(empty($type))
+	    {
+		    $type = 'default';
+	    }
+
+	    $template = $this->pref['email_templates'];
+
+	    if(isset($template[$type]['active']) && ($template[$type]['active'] ? false : true))
+	    {
+		    return null;
+	    }
+
+	    if(empty($template[$type]['template']))
+	    {
+		    $template = e107::getTemplate('vstore', 'vstore_email', $type);
+		    if(empty($template))
+		    {
+			    return '';
+		    }
+	    }
+	    else
+	    {
+		    $template = str_ireplace(array('[html]', '[/html]'), '', $template[$type]['template']);
+	    }
+
+	    return $template;
     }
+
+	/**
+	 * @param string $templateKey
+	 * @param string $pdf_file
+	 * @return array
+	 */
+	public function compileEmail($templateKey, $pdf_file=null)
+	{
+
+		$tp = e107::getParser();
+		$template = $this->getEmailTemplate($templateKey);
+
+		if(empty($template))
+		{
+			// No template available... No mail to send ...
+			e107::getMessage()->addDebug('No template found or template is empty!', 'vstore');
+			return false;
+		}
+
+		$sender_name = varset($this->pref['sender_name']);
+		$sender_email = varset($this->pref['sender_email']);
+
+		if(empty($sender_email))
+		{
+			e107::getMessage()->addDebug('No explicit shop email defined!<br/>Will use siteadmin email!', 'vstore');
+			$sender_email = e107::pref('core', 'siteadminemail');
+		}
+
+		if(empty($sender_name))
+		{
+			e107::getMessage()->addDebug('No explicit shop email name defined!<br/>Will use siteadmin name!', 'vstore');
+			$sender_name = e107::pref('core', 'siteadmin');
+		}
+
+
+		$templates = varset($this->pref['email_templates'], array());
+		$cc = '';
+
+		if(!empty($templates[$templateKey]['cc']))
+		{
+			$cc = $sender_email;
+		}
+
+		$receiver = (array) $this->unserialize('order_billing');
+
+		$this->data['is_business'] = !empty($receiver['vat_id']);
+		$this->data['is_local'] = (varset($receiver['country'], varset($this->pref['tax_business_country'])) === varset( $this->pref['tax_business_country']));
+
+		$this->sc->setVars($this->data);
+
+		//todo add to template
+		$subject = "Your Order #[x] at " . SITENAME;
+
+		$email = varset($receiver['email']);
+		$name = varset($receiver['firstname']) . " " . varset($receiver['lastname']);
+
+		$eml = array(
+			'subject'      => $tp->lanVars($subject, varset($this->data['order_ref'])),
+			'sender_email' => $sender_email,
+			'sender_name'  => $sender_name,
+			'html'         => true,
+			'template'     => 'default',
+			'body'         => $tp->parseTemplate($template, true, $this->sc)
+		);
+
+		if(!empty($cc))
+		{
+			$eml['cc'] = $cc;
+		}
+
+		if(!empty($pdf_file))
+		{
+			$eml['attach'] = $pdf_file;
+		}
+
+		return array($email, $name, $eml);
+	}
 }

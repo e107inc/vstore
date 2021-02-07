@@ -117,13 +117,11 @@ class vstore_admin extends e_admin_dispatcher
 	
 	
 	protected $adminMenu = array(
-		'statistics/custom'	=> array('caption'=> "Statistics", 'perm' => 'P',  'icon'=>'fas-chart-line'),
+		'statistics/custom'	=> array('caption'=> LAN_VSTORE_ADMIN_000, 'perm' => 'P',  'icon'=>'fas-tachometer-alt'),
 
 		'orders/list'		=> array('caption'=> LAN_VSTORE_ADMIN_001, 'perm' => 'P',  'icon'=>'fas-shopping-cart'), // "Sales"
-		// 'cart/list' 		=> array('caption'=> 'Cart', 'perm' => 'P'),
+
 		'orders/div'        => array('divider'=>true),
-
-
 		'products/list'		=> array('caption'=> LAN_VSTORE_ADMIN_002, 'perm' => 'P'),
 		'products/create'	=> array('caption'=> LAN_VSTORE_ADMIN_003, 'perm' => 'P'),
 		'products/div'      => array('divider'=>true),
@@ -131,34 +129,28 @@ class vstore_admin extends e_admin_dispatcher
 		'vars/list'			=> array('caption'=> LAN_VSTORE_ADMIN_004, 'perm' => 'P',  'icon'=>'fas-gifts'), // Product Variations
 		'vars/create'		=> array('caption'=> LAN_VSTORE_ADMIN_005, 'perm' => 'P',  'icon'=>'fas-gift'),
 		'vars/div'          => array('divider'=>true),
-
-		'cat/list'			=> array('caption'=> LAN_CATEGORIES, 'perm' => 'P'),
+		'cat/list'			=> array('caption'=> LAN_CATEGORIES,        'perm' => 'P'),
 		'cat/create'		=> array('caption'=> LAN_CREATE_CATEGORY, 'perm' => 'P'),
-		'cat/div'           => array('divider'=>true),
 
+		'cat/div'           => array('divider'=>true),
 		'coupons/list'		=> array('caption'=> LAN_VSTORE_ADMIN_006, 'perm' => 'P',  'icon'=>'fas-tags'),
 		'coupons/create'	=> array('caption'=> LAN_VSTORE_ADMIN_007, 'perm' => 'P',  'icon'=>'fas-tag'),
+
 		'coupons/div'      	=> array('divider'=>true),
-
 		'customer/list'		=> array('caption'=> LAN_VSTORE_ADMIN_008, 'perm' => 'P',  'icon'=>'fas-user-tag'),
-	
-		'main/prefs' 		=> array('caption'=> LAN_PREFS, 'perm' => 'P'),
+		'main/prefs' 		=> array('caption'=> LAN_PREFS,             'perm' => '0'),
+		'email/prefs' 	    => array('caption'=> LAN_VSTORE_ADMIN_009, 'perm' => '0', 'icon'=>'fas-envelope'),
+		'invoice/prefs' 	=> array('caption'=> LAN_VSTORE_ADMIN_010, 'perm' => '0',  'icon'=>'fas-file-invoice'),
+		'gateways/prefs'	=> array('caption'=> LAN_VSTORE_ADMIN_011, 'perm' => '0', 'icon'=>'fas-dollar-sign'),
 
-		'email/templates' 	=> array('caption'=> 'Email Templates', 'perm' => 'P', 'icon'=>'fas-envelope'),
-
-		'invoice/prefs' 	=> array('caption'=> 'Invoice settings', 'perm' => 'P',  'icon'=>'fas-file-invoice'),
-
-		'gateways/prefs'	=> array('caption'=> "Payment Gateways", 'perm' => 'P', 'icon'=>'fas-dollar-sign'),
-
-		// 'main/custom'	=> array('caption'=> 'Custom Page', 'perm' => 'P')
 	);
 
 	protected $adminMenuAliases = array(
-		'products/edit'	=> 'products/list',
-		'vars/edit'     => 'vars/list',
-		'products/grid' => 'products/list',
-		'orders/edit'	=> 'orders/list',
-		'coupons/edit'	=> 'coupons/list',
+		'products/edit'	    => 'products/list',
+		'vars/edit'         => 'vars/list',
+		'products/grid'     => 'products/list',
+		'orders/edit'	    => 'orders/list',
+		'coupons/edit'	    => 'coupons/list',
 		'statistics/view'	=> 'statistics/custom'
 	);	
 	

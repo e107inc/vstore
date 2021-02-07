@@ -25,17 +25,18 @@ class vstore_items_vars_ui extends e_admin_ui
 
 		protected $listOrder		= 'item_var_id DESC';
 
-		protected $fields 		= array (  'checkboxes' =>   array ( 'title' => '', 'type' => null, 'data' => null, 'width' => '5%', 'thclass' => 'center', 'forced' => '1', 'class' => 'center', 'toggle' => 'e-multiselect',  ),
+		protected $fields 		= array (
+		  'checkboxes'          =>   array ( 'title' => '', 'type' => null, 'data' => null, 'width' => '5%', 'thclass' => 'center', 'forced' => '1', 'class' => 'center', 'toggle' => 'e-multiselect',  ),
 		  'item_var_id'         =>   array ( 'title' => LAN_ID, 'data' => 'int', 'width' => '5%', 'help' => '', 'readParms' => array(), 'writeParms' => array(), 'class' => 'left', 'thclass' => 'left',  ),
-		  'item_var_name'       =>   array ( 'title' => LAN_NAME, 'type' => 'text', 'data' => 'str', 'width' => 'auto', 'inline' => true, 'help' => 'Enter a name for the group, for eg. "Size" ', 'readParms' => array(), 'writeParms'  => array('size'=>'xxlarge', 'placeholder'=>'Variation name'), 'class' => 'left', 'thclass' => 'left',  ),
-		  'item_var_attributes' =>   array ( 'title' => 'Attributes', 'type' => 'method', 'data' => 'json', 'width' => 'auto', 'help' => '', 'readParms' => array(), 'writeParms' => array(), 'class' => 'left', 'thclass' => 'left',  ),
-		  'item_var_compulsory' =>   array ( 'title' => 'Track inventory', 'type' => 'boolean', 'data' => 'int', 'width' => 'auto', 'batch' => true, 'inline' => true, 'help' => 'When enabled, the product variation is relevant for inventory tracking', 'readParms' => array(), 'writeParms' => array('default' => 1), 'class' => 'left', 'thclass' => 'left',  ),
-		  'item_var_userclass'  =>   array ( 'title' => 'Userclass', 'type' => 'userclass', 'data' => 'int', 'width' => 'auto', 'batch' => true, 'inline' => true, 'help' => '', 'readParms' => array(), 'writeParms' => array(), 'class' => 'left', 'thclass' => 'left',  ),
+		  'item_var_name'       =>   array ( 'title' => LAN_NAME, 'type' => 'text', 'data' => 'str', 'width' => 'auto', 'inline' => true, 'help' => 'Enter a name for this category of variations.', 'readParms' => array(), 'writeParms'  => array('size'=>'xxlarge', 'placeholder'=>'Variation name. eg. Colors'), 'class' => 'left', 'thclass' => 'left',  ),
+		  'item_var_attributes' =>   array ( 'title' => 'Price Modification', 'type' => 'method', 'data' => 'json', 'width' => 'auto', 'help' => 'Enter a name for each variation. Optionally increase or decrease the price of this product variation by a fixed amount (+/-). Or, adjust the price as a percentage (%) of the original price.', 'readParms' => array(), 'writeParms' => array(), 'class' => 'left', 'thclass' => 'left',  ),
+		  'item_var_compulsory' =>   array ( 'title' => 'Track inventory', 'type' => 'boolean', 'data' => 'int', 'width' => 'auto', 'batch' => true, 'inline' => true, 'help' => 'When enabled, the inventory of this product variation will be tracked separately.', 'readParms' => array(), 'writeParms' => array('default' => 1), 'class' => 'left', 'thclass' => 'left',  ),
+		  'item_var_userclass'  =>   array ( 'title' => LAN_VISIBILITY, 'type' => 'userclass', 'data' => 'int', 'width' => 'auto', 'batch' => true, 'inline' => true, 'help' => '', 'readParms' => array(), 'writeParms' => array(), 'class' => 'left', 'thclass' => 'left',  ),
 		  'options'             =>   array ( 'title' => LAN_OPTIONS, 'type' => null, 'data' => null, 'width' => '10%', 'thclass' => 'center last', 'class' => 'center last', 'forced' => '1',  ),
 		);
 
 		// protected $fieldpref = array('item_var_name', 'item_var_info', 'item_var_compulsory', 'item_var_userclass');
-		protected $fieldpref = array('item_var_name', 'item_var_compulsory', 'item_var_userclass');
+		protected $fieldpref = array('item_var_name', 'item_var_attributes', 'item_var_compulsory', 'item_var_userclass');
 
 
 	//	protected $preftabs        = array('General', 'Other' );
@@ -152,17 +153,32 @@ class vstore_items_vars_form_ui extends e_admin_form_ui
 		switch($mode)
 		{
 			case 'read': // List Page
+				$text = '';
 				if (!empty($curVal))
 				{
 					$attributes = e107::unserialize($curVal);
-					$curVal = array();
+
+					$text = "<table class='table table-condensed table-bordered' style='margin:0'>
+					<colgroup>
+						<col style='width:70%'>
+						<col />
+
+					</colgroup>";
 					foreach($attributes as $att)
 					{
-						$curVal[] = sprintf('%s %s %s', $att['name'], $att['operator'], $att['value']);
+						$att['value'] = (float) $att['value'];
+
+						$number = ($att['operator'] === '%') ? $att['value'].'%' :  $att['operator'] ." ". number_format($att['value'],2);
+
+						$text .= "<tr>
+						<td>".$att['name']."</td>
+						<td>".$number."</td>
+						</tr>";
 					}
-					$curVal = implode('<br>', $curVal);
+					$text .= "</table>";
 				}
-				return $curVal;
+
+				return $text;
 			break;
 
 			case 'write': // Edit Page
@@ -175,7 +191,10 @@ class vstore_items_vars_form_ui extends e_admin_form_ui
 				}
 				else
 				{
-					$cur = array(0 => array('name'=>null, 'operator'=>null, 'value'=>null));
+					$cur = array(
+						0 => array('name'=>null, 'operator'=>null, 'value'=>null, 'placeholder'=>'eg. Red'),
+						1 => array('name'=>null, 'operator'=>null, 'value'=>null, 'placeholder'=>'eg. Blue')
+					);
 				}
 
 				$text = '
@@ -186,7 +205,7 @@ class vstore_items_vars_form_ui extends e_admin_form_ui
 
 						$text .= '	
 							<div class="form-inline item-var-attributes-row" style="margin-bottom:5px">'.
-							$this->text('item_var_attributes['.$i.'][name]', $v['name'], 255, array('id'=>null, 'size'=>'xlarge', 'placeholder'=>'Option name')).
+							$this->text('item_var_attributes['.$i.'][name]', $v['name'], 255, array('id'=>null, 'size'=>'xlarge', 'placeholder'=>varset($v['placeholder']))).
 							" ".$this->select('item_var_attributes['.$i.'][operator]', $opts, $v['operator'], array('id'=>null)).
 							" ".$this->text('item_var_attributes['.$i.'][value]', $v['value'], 8, array('id'=>null, 'placeholder'=> '0.0', 'size' => 'small'))
 							.'</div>';

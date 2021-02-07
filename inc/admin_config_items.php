@@ -31,39 +31,38 @@
 			'item_preview'   => array('title' => LAN_PREVIEW, 'type' => 'method', 'data' => false, 'width' => '5%', 'forced' => 1),
 			'item_id'        => array('title' => LAN_ID, 'type' => 'text', 'data' => 'int', 'width' => '5%', 'help' => '', 'readParms' => 'link=sef&target=blank', 'writeParms' => array(), 'class' => 'left', 'thclass' => 'left',),
 			'item_active'    => array('title' => LAN_ACTIVE, 'type' => 'boolean', 'data' => 'int', 'inline' => true, 'width' => '5%', 'help' => '', 'readParms' => array(), 'writeParms' => array('default' => '1'), 'class' => 'center', 'thclass' => 'center'),
-			'item_code'      => array('title' => 'Code', 'type' => 'text', 'inline' => true, 'data' => 'str', 'width' => '2%', 'help' => '', 'readParms' => array(), 'writeParms' => array(), 'class' => 'center', 'thclass' => 'center',),
+			'item_code'      => array('title' => 'Code', 'type' => 'text', 'inline' => true, 'data' => 'str', 'width' => '2%', 'help' => "The product code.", 'readParms' => array(), 'writeParms' => array('placeholder'=>'PROD001', 'size'=>'large'), 'class' => 'center', 'thclass' => 'center',),
 			'item_name'      => array('title' => LAN_TITLE, 'type' => 'text', 'data' => 'str', 'width' => 'auto', 'inline' => true, 'help' => '', 'readParms' => array(), 'writeParms' => array('size' => 'xxlarge'), 'class' => 'left', 'thclass' => 'left',),
 			'item_desc'      => array('title' => LAN_DESCRIPTION, 'type' => 'textarea', 'data' => 'str', 'width' => 'auto', 'help' => '', 'readParms' => array(), 'writeParms' => array('size' => 'xxlarge', 'maxlength' => 250), 'class' => 'center', 'thclass' => 'center',),
 			'item_cat'       => array('title' => LAN_CATEGORY, 'type' => 'dropdown', 'data' => 'int', 'width' => 'auto', 'filter' => true, 'batch' => true, 'inline' => true, 'help' => '', 'readParms' => array(), 'writeParms' => array(), 'class' => 'left', 'thclass' => 'left',),
-			'item_price'     => array('title' => 'Price', 'type' => 'number', 'data' => 'float', 'width' => 'auto', 'inline' => true, 'help' => 'Price is always the gross price incl. tax!', 'readParms' => array('decimals' => 2), 'writeParms' => array('decimals' => 2), 'class' => 'right', 'thclass' => 'right',),
-			'item_inventory' => array('title' => 'Inventory', 'type' => 'method', 'data' => 'int', 'width' => 'auto', 'inline' => false, 'help' => 'Enter -1 if this item is always available', 'readParms' => array(), 'writeParms' => array('default' => -1), 'class' => 'right item-inventory', 'thclass' => 'right',),
+			'item_price'     => array('title' => 'Price', 'type' => 'number', 'data' => 'float', 'width' => 'auto', 'inline' => true, 'help' => 'Price is always the gross price incl. tax', 'readParms' => array('decimals' => 2), 'writeParms' => array('decimals' => 2), 'class' => 'right', 'thclass' => 'right',),
+			'item_inventory' => array('title' => 'Inventory', 'type' => 'method', 'data' => 'int', 'width' => 'auto', 'inline' => false, 'help' => 'Enter -1 if this item is always available or the number of units you have in stock', 'readParms' => array(), 'writeParms' => array('default' => -1), 'class' => 'right item-inventory', 'thclass' => 'right',),
 
 			// Tab 1
-			'item_pic'       => array('title' => 'Images/Videos', 'type' => 'images', 'tab' => 1, 'data' => 'array', 'width' => 'auto', 'help' => '', 'readParms' => array(), 'writeParms' => 'media=vstore&video=1&max=8', 'class' => 'center', 'thclass' => 'center',),
+			'item_pic'       => array('title' => 'Images/Videos', 'type' => 'images', 'tab' => 1, 'data' => 'array', 'width' => 'auto', 'help' => "Drag and Drop images and videos here to display them on the product's page.", 'readParms' => array(), 'writeParms' => 'media=vstore&video=1&max=8', 'class' => 'center', 'thclass' => 'center',),
 
 			// Tab 2
 			'item_tax_class' => array('title' => 'Tax class', 'type' => 'method',  'tab' => 2,'data' => 'str', 'width' => 'auto', 'filter' => true, 'batch' => true, 'inline' => true, 'help' => '', 'readParms' => array(), 'writeParms' => array(), 'class' => 'left', 'thclass' => 'left'),
-			'item_shipping'  => array('title' => 'Shipping', 'type' => 'number', 'tab' => 2, 'data' => 'float', 'width' => 'auto', 'help' => '', 'readParms' => array(), 'writeParms' => array('decimals' => 2), 'class' => 'center', 'thclass' => 'center',),
-			'item_weight'    => array('title' => 'Weight', 'type' => 'number', 'tab' => 2, 'data' => 'float', 'width' => 'auto', 'help' => '', 'readParms' => array(), 'writeParms' => array('decimals' => 2), 'class' => 'center', 'thclass' => 'center',),
+			'item_shipping'  => array('title' => 'Shipping', 'type' => 'number', 'tab' => 2, 'data' => 'float', 'width' => 'auto', 'help' => '', 'readParms' => array(), 'writeParms' => array('decimals' => 2, 'placeholder'=>'0.00'), 'class' => 'center', 'thclass' => 'center',),
+			'item_weight'    => array('title' => 'Weight', 'type' => 'number', 'tab' => 2, 'data' => 'float', 'width' => 'auto', 'help' => '', 'readParms' => array(), 'writeParms' => array('decimals' => 2, 'placeholder'=>'0.00'), 'class' => 'center', 'thclass' => 'center',),
 
 			'item_details' => array('title' => 'Detailed Description', 'type' => 'bbarea', 'tab' => 2, 'data' => 'str', 'width' => 'auto', 'help' => '', 'readParms' => array(), 'writeParms' => array(), 'class' => 'center', 'thclass' => 'center',),
 
-			'item_userclass' => array('title' => 'Assign userclass', 'type' => 'method', 'tab'=>2, 'help' => 'Assign userclass to customer on purchase'),
+			'item_userclass' => array('title' => 'Assign userclass', 'type' => 'method', 'tab'=>2, 'help' => 'Assign an e107 userclass to the customer after completing their purchase.'),
 
 			// Tab 3
-			'item_vars'           => array('title' => 'Product Variations', 'tab'=>3, 'type' => 'method', 'data' => 'str', 'help' => 'You can select up to 2 variations', 'note' => 'Product variations DO track the inventory!'),
+			'item_vars'           => array('title' => 'Product Variations', 'tab'=>3, 'type' => 'method', 'data' => 'str', 'help' => 'You can select up to 2 variations. Product variations inventory is tracked.', ),
 			'item_vars_inventory' => array('title' => 'Variations Inventory', 'tab'=>3, 'type' => 'method', 'data' => 'json'),
-			//'item_vars_nt'        => array('title' => 'Product Options', 'tab'=>3, 'type' => 'method', 'data' => false, 'help' => 'Select up to 6 product options.', 'note' => 'Product options are NOT relevant for inventory tracking'),
-			'item_vars_nt'        => array('title' => 'Product Options', 'tab'=>3, 'type' => 'method', 'data' => false, 'help' => 'Select up to 6 product options.', 'note' => 'Product options are NOT relevant for inventory tracking'),
+			'item_vars_nt'        => array('title' => 'Product Options', 'tab'=>3, 'type' => 'method', 'data' => false, 'help' => 'Select up to 6 product options. Product options are NOT relevant to inventory tracking.'),
 
 			// Tab 4
 			'item_reviews' => array('title' => 'Reviews', 'type' => 'textarea', 'tab' => 4, 'data' => 'str', 'width' => 'auto', 'help' => '', 'readParms' => array(), 'writeParms' => 'size=xxlarge', 'class' => 'center', 'thclass' => 'center',),
 			'item_related' => array('title' => 'Related', 'type' => 'method', 'tab' => 4, 'data' => 'array', 'width' => 'auto', 'help' => '', 'readParms' => array(), 'writeParms' => 'video=1', 'class' => 'center', 'thclass' => 'center',),
 
 			// Tab 5
-			'item_files'     => array('title' => 'Files', 'type' => 'files', 'tab' => 5, 'data' => 'array', 'width' => 'auto', 'help' => '', 'readParms' => array(), 'writeParms' => 'media=vstore_file_2', 'class' => 'center', 'thclass' => 'center',),
+			'item_files'     => array('title' => 'Files', 'type' => 'files', 'tab' => 5, 'data' => 'array', 'width' => 'auto', 'help' => 'Add up to 5 downloadable files to the product page.<br />eg. a product specifications PDF file or related brochure', 'readParms' => array(), 'writeParms' => 'media=vstore_file_2', 'class' => 'center', 'thclass' => 'center',),
 			'item_link'     => array('title' => 'External Link', 'type' => 'text', 'inline'=>true, 'tab' => 5, 'data' => 'str', 'width' => 'auto', 'help' => 'Optional: Enter URL of item on external site. Used only when no inventory is available.', 'readParms' => array(), 'writeParms' => array('size'=>'xxlarge'), 'class' => 'left', 'thclass' => 'left',),
-			'item_download' => array('title' => 'Download File', 'type' => 'file', 'tab' => 5, 'data' => 'str', 'width' => 'auto', 'help' => '', 'readParms' => array(), 'writeParms' => 'media=vstore_file', 'class' => 'center', 'thclass' => 'center',),
+			'item_download' => array('title' => 'Download File', 'type' => 'file', 'tab' => 5, 'data' => 'str', 'width' => 'auto', 'help' => "If your product is a digital item, please choose a file here to send to the customer after payment.", 'readParms' => array(), 'writeParms' => 'media=vstore_file', 'class' => 'center', 'thclass' => 'center',),
 
 			'item_order'          => array('title' => LAN_ORDER, 'type' => 'hidden', 'data' => 'int', 'width' => 'auto', 'help' => '', 'readParms' => array(), 'writeParms' => array(), 'class' => 'left', 'thclass' => 'left',),
 
@@ -77,6 +76,22 @@
 
 		protected $itemVarsType = array();
 		// optional
+
+		public function EditObserver()
+		{
+			parent::EditObserver();
+
+			$currency = e107::pref('vstore', 'currency');
+			$weight = e107::pref('vstore', 'weight_unit');
+
+			$this->fields['item_shipping']['help'] = "The cost of shipping this item in ".$currency.". eg. 2.00";
+			$this->fields['item_weight']['help'] = "The weight of the item (".vstore::weightUnits($weight)."). Enter decimal value only.";
+
+
+
+		}
+
+
 		public function init()
 		{
 
@@ -556,9 +571,10 @@
 				}
 				else
 				{
+					$helpText = 'Enter -1 if this item is always available or the number of units you have in stock of each variation.';
 					foreach($col['x']['names'] as $nameX)
 					{
-						$text .= sprintf('<tr><th style="width: 20%%;">%s</th>', $nameX);
+						$text .= sprintf('<tr><th style="width: 20%%;">%s'.$this->help($helpText, 'before').'</th>', $nameX);
 						$nameX = $this->name2id($nameX);
 						foreach($col['y']['names'] as $nameY)
 						{
