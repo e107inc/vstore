@@ -158,7 +158,7 @@ class vstore_items_vars_form_ui extends e_admin_form_ui
 				{
 					$attributes = e107::unserialize($curVal);
 
-					$text = "<table class='table table-condensed table-bordered' style='margin:0'>
+					$text = "<table class='table table-condensed table-bordered table-striped' style='margin:0'>
 					<colgroup>
 						<col style='width:70%'>
 						<col />

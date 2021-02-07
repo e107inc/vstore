@@ -53,7 +53,7 @@
 			// Tab 3
 			'item_vars'           => array('title' => 'Product Variations', 'tab'=>3, 'type' => 'method', 'data' => 'str', 'help' => 'You can select up to 2 variations. Product variations inventory is tracked.', ),
 			'item_vars_inventory' => array('title' => 'Variations Inventory', 'tab'=>3, 'type' => 'method', 'data' => 'json'),
-			'item_vars_nt'        => array('title' => 'Product Options', 'tab'=>3, 'type' => 'method', 'data' => false, 'help' => 'Select up to 6 product options. Product options are NOT relevant to inventory tracking.'),
+		//	'item_vars_nt'        => array('title' => 'Product Options', 'tab'=>3, 'type' => 'method', 'data' => false, 'help' => 'Select up to 6 product options. Product options are NOT relevant to inventory tracking.'),
 
 			// Tab 4
 			'item_reviews' => array('title' => 'Reviews', 'type' => 'textarea', 'tab' => 4, 'data' => 'str', 'width' => 'auto', 'help' => '', 'readParms' => array(), 'writeParms' => 'size=xxlarge', 'class' => 'center', 'thclass' => 'center',),
@@ -97,7 +97,7 @@
 
 			if($this->getAction() != 'list' && $this->getAction() != 'grid')
 			{
-				$this->fields['item_preview']['type'] = null;
+				$this->fields['item_preview']['type'] = false;
 			}
 
 			$this->perPage = e107::pref('vstore', 'admin_items_perpage', 10);
