@@ -538,6 +538,7 @@ $VSTORE_TEMPLATE['shipping']['header'] = '
 
 /**
  * Customer details form
+ * @todo make VAT and Tax code optional by using wrappers and prefs. 
  */
 $VSTORE_TEMPLATE['customer']['header'] = '
 	<h3>Billing address</h3>

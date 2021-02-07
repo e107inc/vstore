@@ -16,7 +16,7 @@
 .vstore-product-view .thumbnails a:focus    { outline:1px solid silver }
 
 #vstore-cart-icon                           { }
-#vstore-cart-icon.active                    { color: white }
+#vstore-cart-icon.active                    {  }
 #vstore-cart-dropdown                       { width:100%; min-width:280px; padding:10px;}
 #vstore-cart-dropdown-empty                 { margin:0 }
 
@@ -25,7 +25,7 @@
 
 .vstore-zoom::after                         { content: ''; display: block; width: 33px; height: 33px; position: absolute; top: 0; right: 0; background: url(https://raw.github.com/jackmoore/zoom/master/icon.png); }
 
-.cart h3, .cart h5                          { color: black; }
+.cart h3, .cart h5                          { }
 
 .required:after                             { content:"*";color:red; }
 
