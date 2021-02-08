@@ -1003,7 +1003,6 @@ class vstore
 	 */
 	private function renderConfirmOrder()
 	{
-
 		$cust = $this->getCustomerData(true);
 		$ship = $this->getShippingData(true);
 		$data = $this->prepareCheckoutData($this->getCheckoutData(), true);
@@ -1014,12 +1013,21 @@ class vstore
 		$data['ship'] = $ship;
 		$data['order_pay_gateway'] = $this->getGatewayType(true);
 
+		if(!empty($ship['address']))
+		{
+			$data['order_use_shipping']  = 1;
+
+		}
+
 		$this->sc->setVars($data);
+
 		$data['billing_address'] = e107::getParser()->parseTemplate($template['billing'], true, $this->sc);
+
 		if($data['order_use_shipping'] == 1)
 		{
 			$data['shipping_address'] = e107::getParser()->parseTemplate($template['shipping'], true, $this->sc);
 		}
+
 		$this->sc->setVars($data);
 
 		$text = e107::getParser()->parseTemplate($template['main'], true, $this->sc);
@@ -1502,7 +1510,7 @@ class vstore
 
 		if(!USER && !isset($_POST['as_guest']))
 		{
-			// TODO: Fill with life ...
+
 			$text = e107::getForm()->open(
 				'gateway-select',
 				'post',
@@ -1517,26 +1525,34 @@ class vstore
 		}
 
 
-		if(!empty($active))
+		if(empty($active))
 		{
-			$text = e107::getForm()->open(
-				'gateway-select',
-				'post',
-				e107::url('vstore', 'checkout', 'sef'),
-				array('class' => 'form')
-			);
+			return "No Payment Options Set";
+		}
 
-			$text .= $this->renderCustomerForm();
+		$text = e107::getForm()->open(
+			'gateway-select',
+			'post',
+			e107::url('vstore', 'checkout', 'sef'),
+			array('class' => 'form')
+		);
 
-			$text .= "<hr /><h3>Select payment method to continue</h3><div class='vstore-gateway-list row'>";
+		$text .= $this->renderCustomerForm();
+		$text .= "<hr />";
+		$text .= "<i class='fa fa-truck' aria-hidden='true'></i> <a id='shipping-view-toggle' class='e-expandit' href='#shipping-view'>Enter a separate shipping address here</a>";
+		$text .= "<div id='shipping-view' style='display:none'>";
+		$text .= $this->renderShippingForm();
+		$text .= "</div>";
 
-			if(count($active) == 1 && empty($curGateway))
-			{
-				$curGateway = array_keys($active)[0];
-			}
-			foreach($active as $gateway => $icon)
-			{
-				$text .= "
+		$text .= "<hr /><h3>Select payment method to continue</h3><div class='vstore-gateway-list row'>";
+
+		if(count($active) == 1 && empty($curGateway))
+		{
+			$curGateway = array_keys($active)[0];
+		}
+		foreach($active as $gateway => $icon)
+		{
+			$text .= "
                         <div class='col-6 col-xs-6 col-sm-4' style='margin-bottom:15px'>
                             <label class='btn btn-default btn-light btn-block btn-" . $gateway . " " . ($curGateway == $gateway ? 'active' : '') . " vstore-gateway text-center'>
                                 <input type='radio' name='gateway' value='" . $gateway . "' style='display:none;' class='vstore-gateway-radio' required " . ($curGateway == $gateway ? 'checked' : '') . ">
@@ -1544,20 +1560,24 @@ class vstore
                                 <h4>" . (self::isMollie($gateway) ? $this->getMolliePaymentMethodTitle($gateway) : $this->getGatewayTitle($gateway)) . "</h4>
                             </label>
                         </div>";
-			}
+		}
 
-			$text .= "</div>";
+		$text .= "</div>";
 
-			$text .= '<br/>
-            <div class="row">
-            	<div class="col-md-12">
-	                <div class="alert alert-info">
-	                <button class="btn btn-default btn-secondary vstore-btn-add-shipping" type="submit" name="mode" value="shipping"><i class="fa fa-truck" aria-hidden="true"></i> Enter shipping address</button>
-	                <span class="help-text">Use this button to use or enter a separate shipping address.</span>
-	                </div>
-                </div>
-            </div>
-            <br />
+		/*
+
+					$text .= '<br/>
+					<div class="row">
+						<div class="col-md-12">
+							<div class="alert alert-info">
+							<button class="btn btn-default btn-secondary vstore-btn-add-shipping" type="submit" name="mode" value="shipping"><i class="fa fa-truck" aria-hidden="true"></i> Enter shipping address</button>
+							<span class="help-text">Use this button to use or enter a separate shipping address.</span>
+							</div>
+						</div>
+					</div>';
+					*/
+		$text .= '
+       
             <div class="row">
                 <div class="col-12 col-xs-12">
                     <a class="btn btn-default btn-secondary vstore-btn-back-confirm" href="' . e107::url('vstore', 'cart', 'sef') . '">&laquo; Back</a>
@@ -1565,13 +1585,52 @@ class vstore
                 </div>
             </div>';
 
-			$text .= e107::getForm()->close();
+		$text .= e107::getForm()->close();
+
+		/**
+		 * Only make shipping fields 'required' when they are visible.
+		 */
+		e107::js('footer-inline', "
+		
+		$(document).ready(function()
+		{
+		     $('#shipping-view-toggle.e-expandit').on('click', function() {
+		         var opened = $(this).hasClass('open'); // ie. we're closing it. 
+		        
+		            var fields = ['firstname', 'lastname', 'address', 'state', 'city', 'zip', 'country'];
+					fields.forEach(function(item)
+					{
+						$('#ship-' + item).attr('required', true); 					
+					});
+		        
+		         if(opened === false)
+		         {
+		            fields.forEach(function(item)
+					{
+						$('#ship-' + item).attr('required', true); 
+					});
+		        
+		         }
+		         else
+		         {
+		             fields.forEach(function(item)
+					{
+						$('#ship-' + item).attr('required', false); 
+					});
+		         }
+		            
+		     });
+		
+});	
+");
 
 
-			return $text;
-		}
 
-		return "No Payment Options Set";
+
+
+		return $text;
+
+
 	}
 
 

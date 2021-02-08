@@ -1043,28 +1043,28 @@
 			switch($key)
 			{
 				case 'ship_firstname':
-					$text = $frm->text('ship[firstname]', $this->var['ship']['firstname'], 100, array('placeholder'=>'First Name', 'required'=>1));
+					$text = $frm->text('ship[firstname]', $this->var['ship']['firstname'], 100, array('placeholder'=>'First Name'));
 					break;
 				case 'ship_lastname':
-					$text = $frm->text('ship[lastname]', $this->var['ship']['lastname'], 100, array('placeholder'=>'Last Name', 'required'=>1));
+					$text = $frm->text('ship[lastname]', $this->var['ship']['lastname'], 100, array('placeholder'=>'Last Name'));
 					break;
 				case 'ship_company':
 					$text = $frm->text('ship[company]', $this->var['ship']['company'], 200, array('placeholder'=>'Company'));
 					break;
 				case 'ship_address':
-					$text = $frm->text('ship[address]', $this->var['ship']['address'], 200, array('placeholder'=>'Address', 'required'=>1));
+					$text = $frm->text('ship[address]', $this->var['ship']['address'], 200, array('placeholder'=>'Address'));
 					break;
 				case 'ship_city':
-					$text = $frm->text('ship[city]', $this->var['ship']['city'], 100, array('placeholder'=>'Town/City', 'required'=>1));
+					$text = $frm->text('ship[city]', $this->var['ship']['city'], 100, array('placeholder'=>'Town/City'));
 					break;
 				case 'ship_state':
-					$text = $frm->text('ship[state]', $this->var['ship']['state'], 100, array('placeholder'=>'State/Region', 'required'=>0));
+					$text = $frm->text('ship[state]', $this->var['ship']['state'], 100, array('placeholder'=>'State/Region'));
 					break;
 				case 'ship_zip':
-					$text = $frm->text('ship[zip]', $this->var['ship']['zip'], 15, array('placeholder'=>'Zip/Postcode', 'required'=>1));
+					$text = $frm->text('ship[zip]', $this->var['ship']['zip'], 15, array('placeholder'=>'Zip/Postcode'));
 					break;
 				case 'ship_country':
-					$text = $frm->country('ship[country]', $this->var['ship']['country'], array('placeholder'=>'Select Country...', 'required'=>1));
+					$text = $frm->country('ship[country]', $this->var['ship']['country'], array('placeholder'=>'Select Country...'));
 					break;
 				case 'ship_phone':
 					$text = $frm->text('ship[phone]', $this->var['ship']['phone'], 15, array('placeholder'=>'Phone number', 'required'=>0));
@@ -1300,8 +1300,11 @@
 			{
 				return '';
 			}
+
 			$template = e107::getTemplate('vstore', 'vstore', 'confirm_items');
+
 			$text = $x = $y = '';
+
 			foreach($this->var['totals']['cart_taxTotal'] as $tax_rate => $value)
 			{
 				if ($this->tp->toNumber($tax_rate) <= 0) continue;

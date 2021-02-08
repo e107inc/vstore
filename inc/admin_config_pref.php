@@ -31,46 +31,56 @@ class vstore_pref_ui extends e_admin_ui
 		);
 	
 		// optional
-		protected $preftabs = array(LAN_GENERAL, "Shipping", "Emails", "How to Order", "Admin Area", "Check-Out", "Custom CSS", "Tax", "Menu");
+		protected $preftabs = array(
+			'general'  => LAN_GENERAL,
+			'ship'     => "Shipping",
+			'tax'      => "Tax",
+			'email'    => "Emails",
+			'howto'    => "How to Order",
+			'admin'    => "Admin Area",
+			'checkout' => "Check-Out",
+			'menu'     => "Menu",
+			'css'      => "Custom CSS",
+		);
 
 
 		protected $prefs = array(
-			'caption'                   => array('title'=> 'Store Caption', 'tab'=>0, 'type'=>'text', 'help'=>'','writeParms'=>array('placeholder'=>'Vstore'),'multilan'=>true),
-			'caption_categories'        => array('title'=> 'Category Caption', 'tab'=>0, 'type'=>'text', 'writeParms'=>array('placeholder'=>'Product Brands'),'multilan'=>true),
-			'caption_outofstock'        => array('title'=> 'Out-of-Stock Caption', 'tab'=>0, 'type'=>'text', 'writeParms'=>array('placeholder'=>'Out of Stock'),'multilan'=>true),
+			'caption'                   => array('title'=> 'Store Caption', 'tab'=>'general', 'type'=>'text', 'help'=>'','writeParms'=>array('placeholder'=>'Vstore'),'multilan'=>true),
+			'caption_categories'        => array('title'=> 'Category Caption', 'tab'=>'general', 'type'=>'text', 'writeParms'=>array('placeholder'=>'Product Brands'),'multilan'=>true),
+			'caption_outofstock'        => array('title'=> 'Out-of-Stock Caption', 'tab'=>'general', 'type'=>'text', 'writeParms'=>array('placeholder'=>'Out of Stock'),'multilan'=>true),
 
-			'currency'		            => array('title'=> 'Currency', 'tab'=>0, 'type'=>'dropdown', 'data' => 'string','help'=>'Select a currency'),
-			'amount_format'	            => array('title'=> 'Amount format', 'tab'=>0, 'type'=>'dropdown', 'data' => 'string','help'=>'Select a format to be used to format the amount'),
-			'weight_unit'		        => array('title'=> 'Weight unit', 'tab'=>0, 'type'=>'dropdown', 'data' => 'string','help'=>'Select a unit of weight'),
-			'customer_userclass'        => array('title'=> 'Assign userclass', 'tab'=>0, 'type' => 'method', 'help' => 'Assign userclass to customer after completing an purchase.'),
-			'show_outofstock'     		=> array('title'=> 'Show/hide out-of-stock products', 'tab'=>0, 'type' => 'bool', 'help' => 'Show or hide "Out-of-stock" products in product listings', 'writeParms' => array('enabled' => LAN_SHOW, 'disabled' => 'Hide')), 
+			'currency'		            => array('title'=> 'Currency', 'tab'=>'general', 'type'=>'dropdown', 'data' => 'string','help'=>'Select a currency'),
+			'amount_format'	            => array('title'=> 'Amount format', 'tab'=>'general', 'type'=>'dropdown', 'data' => 'string','help'=>'Select a format to be used to format the amount'),
+			'weight_unit'		        => array('title'=> 'Weight unit', 'tab'=>'general', 'type'=>'dropdown', 'data' => 'string','help'=>'Select a unit of weight'),
+			'customer_userclass'        => array('title'=> 'Assign userclass', 'tab'=>'general', 'type' => 'method', 'help' => 'Assign userclass to customer after completing an purchase.'),
+			'show_outofstock'     		=> array('title'=> 'Show/hide out-of-stock products', 'tab'=>'general', 'type' => 'bool', 'help' => 'Show or hide "Out-of-stock" products in product listings', 'writeParms' => array('enabled' => LAN_SHOW, 'disabled' => 'Hide')),
 			
-			'shipping'		            => array('title'=> 'Calculate Shipping', 'tab'=>1, 'type'=>'bool', 'data' => 'int','help'=>'Including shipping calculation at checkout.', 'writeParms' => array('label' => 'yesno')),
-			'shipping_method'	        => array('title'=> 'Calculation method', 'tab'=>1, 'type'=>'dropdown', 'data' => 'string', 'help'=>'Define a method to calculate the shipping cost.', 'writeParms' => array('size' => 'xxlarge')),
-			'shipping_unit'	        	=> array('title'=> 'Value based on', 'tab'=>1, 'type'=>'dropdown', 'data' => 'string', 'help'=>'Define which value (subtotal or weight) will be used to calculate shipping costs.', 'writeParms' => array('money'=>'Cart subtotal', 'weight'=>'Cart total weight')),
-			'shipping_limit'        	=> array('title'=> 'Cost are', 'tab'=>1, 'type'=>'dropdown', 'data' => 'string', 'help'=>'Define if the shipping cost are fixed to the spcified cost or limited to that value', 'writeParms' => array('fixed'=>'Fixed shipping costs', 'max'=>'Up to (max.) shipping costs')),
-			'shipping_data'				=> array('title'=> 'Staggered shipping costs', 'tab'=>1, 'type'=>'method', 'data' => 'json'),
+			'shipping'		            => array('title'=> 'Calculate Shipping', 'tab'=>'ship', 'type'=>'bool', 'data' => 'int','help'=>'Including shipping calculation at checkout.', 'writeParms' => array('label' => 'yesno')),
+			'shipping_method'	        => array('title'=> 'Calculation method', 'tab'=>'ship', 'type'=>'dropdown', 'data' => 'string', 'help'=>'Define a method to calculate the shipping cost.', 'writeParms' => array()),
+			'shipping_unit'	        	=> array('title'=> 'Value based on', 'tab'=>'ship', 'type'=>'dropdown', 'data' => 'string', 'help'=>'Define which value (subtotal or weight) will be used to calculate shipping costs.', 'writeParms' => array('money'=>'Cart subtotal', 'weight'=>'Cart total weight')),
+			'shipping_limit'        	=> array('title'=> 'Cost are', 'tab'=>'ship', 'type'=>'dropdown', 'data' => 'string', 'help'=>'Define if the shipping cost are fixed to the spcified cost or limited to that value', 'writeParms' => array('fixed'=>'Fixed shipping costs', 'max'=>'Up to (max.) shipping costs')),
+			'shipping_data'				=> array('title'=> 'Staggered shipping costs', 'tab'=>'ship', 'type'=>'method', 'data' => 'json'),
 
-			'sender_name'               => array('title'=> 'Sender Name', 'tab'=>2, 'type'=>'text', 'writeParms'=>array('placeholder'=>'Sales Department'), 'help'=>'Leave blank to use system default','multilan'=>false),
-			'sender_email'              => array('title'=> LAN_EMAIL, 'tab'=>2, 'type'=>'text', 'writeParms'=>array('placeholder'=>'orders@mysite.com'), 'help'=>'Leave blank to use system default', 'multilan'=>false),
-			'merchant_info'             => array('title'=> "Merchant Name/Address", 'tab'=>2, 'type'=>'textarea', 'writeParms'=>array('placeholder'=>'My Store Inc. etc.'), 'help'=>'Will be displayed on customer email.', 'multilan'=>false),
+			'sender_name'               => array('title'=> 'Sender Name', 'tab'=>'email', 'type'=>'text', 'writeParms'=>array('placeholder'=>'Sales Department'), 'help'=>'Leave blank to use system default','multilan'=>false),
+			'sender_email'              => array('title'=> LAN_EMAIL, 'tab'=>'email', 'type'=>'text', 'writeParms'=>array('placeholder'=>'orders@mysite.com'), 'help'=>'Leave blank to use system default', 'multilan'=>false),
+			'merchant_info'             => array('title'=> "Merchant Name/Address", 'tab'=>'email', 'type'=>'textarea', 'writeParms'=>array('placeholder'=>'My Store Inc. etc.'), 'help'=>'Will be displayed on customer email.', 'multilan'=>false),
 			
-			'howtoorder'	            => array('title'=> 'How to order', 'tab'=>3, 'type'=>'bbarea', 'help'=>'Enter how-to-order info.'),
+			'howtoorder'	            => array('title'=> 'How to order', 'tab'=>'howto', 'type'=>'bbarea', 'help'=>'Enter how-to-order info.'),
 
-			'admin_items_perpage'	    => array('title'=> 'Products per page', 'tab'=>4, 'type'=>'number', 'help'=>''),
-			'admin_categories_perpage'	=> array('title'=> 'Categories per page', 'tab'=>4, 'type'=>'number', 'help'=>''),
+			'admin_items_perpage'	    => array('title'=> 'Products per page', 'tab'=>'admin', 'type'=>'number', 'help'=>''),
+			'admin_categories_perpage'	=> array('title'=> 'Categories per page', 'tab'=>'admin', 'type'=>'number', 'help'=>''),
 
-			'additional_fields'         => array('title'=>'Additional Fields', 'tab'=>5, 'type'=>'method'),
+			'additional_fields'         => array('title'=>'Additional Fields', 'tab'=>'checkout', 'type'=>'method'),
 			
-			'custom_css'	            => array('title'=> 'Custom CSS', 'tab'=>6, 'type' => 'textarea', 'data' => 'str', 'width' => '100%', 'readParms' => array(), 'writeParms' => array('cols'=> 80, 'rows' => 10, 'size'=>'block-level'), 'help'=>'Use this field to enter any vstore related custom css, without the need to edit any source files.'),
+			'custom_css'	            => array('title'=> 'Custom CSS', 'tab'=>'css', 'type' => 'textarea', 'data' => 'str', 'width' => '100%', 'readParms' => array(), 'writeParms' => array('cols'=> 80, 'rows' => 10, 'size'=>'block-level'), 'help'=>'Use this field to enter any vstore related custom css, without the need to edit any source files.'),
 
-			'tax_calculate'	            => array('title'=> 'Calculate tax', 'tab'=>7, 'type'=>'bool', 'data' => 'int','help'=>'Enable to activate tax calculation.', 'writeParms' => array('label' => 'yesno')),
-			'tax_business_country'		=> array('title'=> 'Business country', 'tab'=>7, 'type'=>'country', 'data' => 'string', 'help'=>'The country where the business is located.', 'writeParms' => array()),
-			'tax_check_vat'	            => array('title'=> 'Check VAT id online (EU only!)', 'tab'=>7, 'type'=>'bool', 'data' => 'int','help'=>'Enable to activate online VAT id checking. (EU only!)', 'writeParms' => array('label' => 'yesno')),
-			'tax_classes'				=> array('title'=> 'Tax classes', 'tab'=>7, 'type'=>'method', 'data' => 'json', 'help'=>'', 'writeParms' => array()),
+			'tax_calculate'	            => array('title'=> 'Calculate tax', 'tab'=>'tax', 'type'=>'bool', 'data' => 'int','help'=>'Enable to activate tax calculation.', 'writeParms' => array('label' => 'yesno')),
+			'tax_business_country'		=> array('title'=> 'Business country', 'tab'=>'tax', 'type'=>'country', 'data' => 'string', 'help'=>'The country where the business is located.', 'writeParms' => array()),
+			'tax_check_vat'	            => array('title'=> 'Check VAT id online (EU only!)', 'tab'=>'tax', 'type'=>'bool', 'data' => 'int','help'=>'Enable to activate online VAT id checking. (EU only!)', 'writeParms' => array('label' => 'yesno')),
+			'tax_classes'				=> array('title'=> 'Tax classes', 'tab'=>'tax', 'type'=>'method', 'data' => 'json', 'help'=>'The tax classes and default tax value to use with the products.<br />Enter tax value as decimal number. eg. 0.19 for 19%', 'writeParms' => array()),
 			
-			'menu_cat'				    => array('title'=> 'Product category', 'tab'=>8, 'type'=>'dropdown', 'data' => 'int', 'help'=>'', 'writeParms' => array()),
-			'menu_item_count'		    => array('title'=> 'Nr. of products', 'tab'=>8, 'type'=>'number', 'data' => 'int', 'help'=>'', 'writeParms' => array('decimals' => 0,'default' => 2)),
+			'menu_cat'				    => array('title'=> 'Product category', 'tab'=>'menu', 'type'=>'dropdown', 'data' => 'int', 'help'=>'', 'writeParms' => array()),
+			'menu_item_count'		    => array('title'=> 'Product limit', 'tab'=>'menu', 'type'=>'number', 'data' => 'int', 'help'=>'Enter the number of products to display in the menu.', 'writeParms' => array('decimals' => 0,'default' => 2)),
 		);
 
 
@@ -90,7 +100,9 @@ class vstore_pref_ui extends e_admin_ui
 
 			$this->prefs['weight_unit']['writeParms'] = vstore::weightUnits();
 
-			$this->prefs['shipping_method']['writeParms'] = array(
+			$this->prefs['shipping_method']['writeParms']['size'] = 'xxlarge';
+
+			$this->prefs['shipping_method']['writeParms']['optArray'] = array(
 				'sum_simple'	=> 'Sum up shipping cost for all items', 
 				'sum_unique'	=> 'Sum up shipping cost only for unique items', 
 				'staggered'		=> 'Use settings from staggered shipping costs table',
@@ -401,9 +413,7 @@ class vstore_pref_form_ui extends e_admin_form_ui
 
 
 				$text = '
-					The tax classes and default tax value to use with the products.<br />
-					Enter tax value as decimal number (e.g. 19% => 0.19)!<br/>
-					The classes "none", "reduced" and "standard" can not be removed!
+					
 					<div class="tax-classes-container">';
 
 					foreach($cur as $i=>$v)
@@ -415,7 +425,7 @@ class vstore_pref_form_ui extends e_admin_form_ui
 							$this->select('tax_classes['.$i.'][name]', $tax_classes, $v['name'], array('id'=>null, 'size'=>'medium', 'placeholder'=>'Name', 'readonly' => $readonly)).
 							" ".$this->text('tax_classes['.$i.'][description]', $v['description'], 150, array('id'=>null, 'size'=>'large', 'placeholder'=>'Description')).
 							" ".$this->text('tax_classes['.$i.'][value]', $v['value'], 6, array('id'=>null, 'size'=>'small', 'placeholder'=> 'Tax', 'pattern' => '^0\.?[0-9]{0,4}$')).
-							" ".$this->button('tax-remove', '1', 'action', "<i class='fa fa-times'></i> Del", array('class'=>'btn btn-danger btn-sm vstore-tax-remove'.($readonly ? ' hidden invisible' : '')))
+							" ".$this->button('tax-remove', '1', 'action', "<i class='fa fa-times'></i> ", array('class'=>'btn btn-danger vstore-tax-remove'.($readonly ? ' hidden invisible' : '')))
 							.'</div>';
 
 					}

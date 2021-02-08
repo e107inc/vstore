@@ -42,8 +42,8 @@
 
 		<td style="width: 35%;">
 			<b>{INVOICE_DATA: info_title}</b><br />
-			Invoice-Nr.: {ORDER_DATA: order_invoice_nr}<br />
-			Order-Nr.: {ORDER_DATA: order_ref}<br />
+			Invoice#: {ORDER_DATA: order_invoice_nr}<br />
+			Order#: {ORDER_DATA: order_ref}<br />
 			Order date: {ORDER_DATA: order_date}<br />
 			Payment method: {ORDER_DATA: order_gateway}<br />
 			Payment deadline: {INVOICE_DATA: payment_deadline}		
