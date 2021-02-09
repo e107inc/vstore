@@ -49,17 +49,17 @@ class vstore_pref_ui extends e_admin_ui
 			'caption_categories'        => array('title'=> 'Category Caption', 'tab'=>'general', 'type'=>'text', 'writeParms'=>array('placeholder'=>'Product Brands'),'multilan'=>true),
 			'caption_outofstock'        => array('title'=> 'Out-of-Stock Caption', 'tab'=>'general', 'type'=>'text', 'writeParms'=>array('placeholder'=>'Out of Stock'),'multilan'=>true),
 
-			'currency'		            => array('title'=> 'Currency', 'tab'=>'general', 'type'=>'dropdown', 'data' => 'string','help'=>'Select a currency'),
-			'amount_format'	            => array('title'=> 'Amount format', 'tab'=>'general', 'type'=>'dropdown', 'data' => 'string','help'=>'Select a format to be used to format the amount'),
-			'weight_unit'		        => array('title'=> 'Weight unit', 'tab'=>'general', 'type'=>'dropdown', 'data' => 'string','help'=>'Select a unit of weight'),
-			'customer_userclass'        => array('title'=> 'Assign userclass', 'tab'=>'general', 'type' => 'method', 'help' => 'Assign userclass to customer after completing an purchase.'),
+			'currency'		            => array('title'=> 'Currency', 'tab'=>'general', 'type'=>'dropdown', 'data' => 'string','help'=>'Select a currency.'),
+			'amount_format'	            => array('title'=> 'Price display', 'tab'=>'general', 'type'=>'dropdown', 'data' => 'string','help'=>'Select a format to be used for displaying item prices.'),
+			'weight_unit'		        => array('title'=> 'Weight unit', 'tab'=>'general', 'type'=>'dropdown', 'data' => 'string','help'=>'Select a unit of weight.'),
+			'customer_userclass'        => array('title'=> 'Assign userclass', 'tab'=>'general', 'type' => 'method', 'help' => 'Assign userclass to the customer after completing their purchase.'),
 			'show_outofstock'     		=> array('title'=> 'Show/hide out-of-stock products', 'tab'=>'general', 'type' => 'bool', 'help' => 'Show or hide "Out-of-stock" products in product listings', 'writeParms' => array('enabled' => LAN_SHOW, 'disabled' => 'Hide')),
 			
 			'shipping'		            => array('title'=> 'Calculate Shipping', 'tab'=>'ship', 'type'=>'bool', 'data' => 'int','help'=>'Including shipping calculation at checkout.', 'writeParms' => array('label' => 'yesno')),
-			'shipping_method'	        => array('title'=> 'Calculation method', 'tab'=>'ship', 'type'=>'dropdown', 'data' => 'string', 'help'=>'Define a method to calculate the shipping cost.', 'writeParms' => array()),
-			'shipping_unit'	        	=> array('title'=> 'Value based on', 'tab'=>'ship', 'type'=>'dropdown', 'data' => 'string', 'help'=>'Define which value (subtotal or weight) will be used to calculate shipping costs.', 'writeParms' => array('money'=>'Cart subtotal', 'weight'=>'Cart total weight')),
-			'shipping_limit'        	=> array('title'=> 'Cost are', 'tab'=>'ship', 'type'=>'dropdown', 'data' => 'string', 'help'=>'Define if the shipping cost are fixed to the spcified cost or limited to that value', 'writeParms' => array('fixed'=>'Fixed shipping costs', 'max'=>'Up to (max.) shipping costs')),
-			'shipping_data'				=> array('title'=> 'Staggered shipping costs', 'tab'=>'ship', 'type'=>'method', 'data' => 'json'),
+			'shipping_method'	        => array('title'=> 'Calculation method', 'tab'=>'ship', 'type'=>'dropdown', 'data' => 'string', 'help'=>'Define a method to calculate the shipping cost.', 'writeParms' => array('size'=>'large')),
+			'shipping_unit'	        	=> array('title'=> 'Value based on', 'tab'=>'ship', 'type'=>false, 'data' => 'string'),
+			'shipping_limit'        	=> array('title'=> 'Cost are', 'tab'=>'ship', 'type'=>false, 'data' => 'string'),
+			'shipping_data'				=> array('title'=> 'Tiered shipping costs', 'tab'=>'ship', 'type'=>'method', 'data' => 'array', 'help'=>'Enter thresholds in the first column to set or limit shipping cost based on total order price or weight. Start with the lowest threshold and add more until your last threshold is higher than the maximum price/weight of a typical order. Setting the last threshold too low could result in no shipping cost at all.' ),
 
 			'sender_name'               => array('title'=> 'Sender Name', 'tab'=>'email', 'type'=>'text', 'writeParms'=>array('placeholder'=>'Sales Department'), 'help'=>'Leave blank to use system default','multilan'=>false),
 			'sender_email'              => array('title'=> LAN_EMAIL, 'tab'=>'email', 'type'=>'text', 'writeParms'=>array('placeholder'=>'orders@mysite.com'), 'help'=>'Leave blank to use system default', 'multilan'=>false),
@@ -77,7 +77,7 @@ class vstore_pref_ui extends e_admin_ui
 			'tax_calculate'	            => array('title'=> 'Calculate tax', 'tab'=>'tax', 'type'=>'bool', 'data' => 'int','help'=>'Enable to activate tax calculation.', 'writeParms' => array('label' => 'yesno')),
 			'tax_business_country'		=> array('title'=> 'Business country', 'tab'=>'tax', 'type'=>'country', 'data' => 'string', 'help'=>'The country where the business is located.', 'writeParms' => array()),
 			'tax_check_vat'	            => array('title'=> 'Check VAT id online (EU only!)', 'tab'=>'tax', 'type'=>'bool', 'data' => 'int','help'=>'Enable to activate online VAT id checking. (EU only!)', 'writeParms' => array('label' => 'yesno')),
-			'tax_classes'				=> array('title'=> 'Tax classes', 'tab'=>'tax', 'type'=>'method', 'data' => 'json', 'help'=>'The tax classes and default tax value to use with the products.<br />Enter tax value as decimal number. eg. 0.19 for 19%', 'writeParms' => array()),
+			'tax_classes'				=> array('title'=> 'Tax classes', 'tab'=>'tax', 'type'=>'method', 'data' => 'array', 'help'=>'The tax classes and default tax value to use with the products.<br />Enter tax value as decimal number. eg. 0.19 for 19%', 'writeParms' => array()),
 			
 			'menu_cat'				    => array('title'=> 'Product category', 'tab'=>'menu', 'type'=>'dropdown', 'data' => 'int', 'help'=>'', 'writeParms' => array()),
 			'menu_item_count'		    => array('title'=> 'Product limit', 'tab'=>'menu', 'type'=>'number', 'data' => 'int', 'help'=>'Enter the number of products to display in the menu.', 'writeParms' => array('decimals' => 0,'default' => 2)),
@@ -103,9 +103,9 @@ class vstore_pref_ui extends e_admin_ui
 			$this->prefs['shipping_method']['writeParms']['size'] = 'xxlarge';
 
 			$this->prefs['shipping_method']['writeParms']['optArray'] = array(
-				'sum_simple'	=> 'Sum up shipping cost for all items', 
-				'sum_unique'	=> 'Sum up shipping cost only for unique items', 
-				'staggered'		=> 'Use settings from staggered shipping costs table',
+				'sum_simple'	=> 'Sum of the shipping cost of all items',
+				'sum_unique'	=> 'Sum of the shipping cost of only unique items',
+				'tiered'		=> 'Use a tiered system based on price or weight',
 			);
 
 			// Get all active product categories 
@@ -235,7 +235,9 @@ class vstore_pref_form_ui extends e_admin_form_ui
 				row = row.replace(new RegExp('%ROW%', 'g'), rowcount);
 				row = row.replace(new RegExp('xxx>', 'g'), 'td>');
 				row = '<tr>' + row + '</tr>';
-				$('#vstore-shipping-data').append(row);
+
+				$('#vstore-shipping-data').append(row).show('slow');
+
 			});
 
 			$('body').on('click', '.vstore-shipping-remove', function(){
@@ -255,19 +257,31 @@ class vstore_pref_form_ui extends e_admin_form_ui
 
 	function shipping_data($curVal, $mode)
 	{
-		if (!empty($curVal) && !is_array($curVal))
+
+		if(!empty($curVal) )
 		{
-			$curVal = e107::unserialize($curVal);
-		}elseif(!is_array($curVal)){
+			$curVal = e107::unserialize($curVal); // a BC precaution for anyone who still has a json pref.
+		}
+		elseif(!is_array($curVal))
+		{
 			$curVal = array();
 		}
 
+		//	'shipping_unit'	        	=> array('title'=> 'Value based on', 'tab'=>'ship', 'type'=>'dropdown', 'data' => 'string', 'help'=>'Define which value (subtotal or weight) will be used to calculate shipping costs.', 'writeParms' => array('money'=>'Cart subtotal', 'weight'=>'Cart total weight')),
+// 			'shipping_limit'        	=> array('title'=> 'Cost are', 'tab'=>'ship', 'type'=>'dropdown', 'data' => 'string', 'help'=>'Define if the shipping cost are fixed to the spcified cost or limited to that value', 'writeParms' => array('fixed'=>'Fixed shipping costs', 'max'=>'Up to (max.) shipping costs')),
+		$pref = e107::pref('vstore');
+
+		$unitDropdown = $this->select('shipping_unit', ['price'=>'When total cart price is below &mdash;', 'weight'=>'When total cart weight is below &mdash;'], varset($pref['shipping_unit']), ['size'=>'block-level']);
+
+		$limitDropdown = $this->select('shipping_limit', ['fixed'=>'Set shipping cost to &mdash;', 'max'=>'Limit shipping cost to no more than &mdash;'], varset($pref['shipping_limit']), ['size'=>'block-level']);
+
+
 		$text = '
 		<div>
-		<table class="table table-striped table-bordered" id="vstore-shipping-data">
+		<table class="table table-striped table-bordered table-condensed" id="vstore-shipping-data" style="margin-bottom:5px; width: 800px">
 		<tr>
-			<td>Value</td>
-			<td>Cost</td>
+			<td style="width:45%">'.$unitDropdown.'</td>
+			<td style="width:45%">'.$limitDropdown.'</td>
 			<td> </td>
 		</tr>
 		';
@@ -279,21 +293,25 @@ class vstore_pref_form_ui extends e_admin_form_ui
 		{
 			$text .= '
 			<tr>
-				<td>'.$this->text('shipping_data['.$i.'][unit]', '0.00', 8, array('pattern' => '^(\d+(\.\d{1,2}){0,1})$', 'min' => '0')).'</td>
-				<td>'.$this->text('shipping_data['.$i.'][cost]', '0.00', 8, array('pattern' => '^(\d+(\.\d{1,2}){0,1})$', 'min' => '0')).'</td>
-				<td><button class="vstore-shipping-remove btn btn-danger" type="button"><i class="fa fa-times"></i> Remove</button></td>
+				<td>'.$this->text('shipping_data['.$i.'][unit]', '0.00', 8, array('pattern' => '^(\d+(\.\d{1,2}){0,1})$', 'min' => '0', 'size'=>'block-level')).'</td>
+				<td>'.$this->text('shipping_data['.$i.'][cost]', '0.00', 8, array('pattern' => '^(\d+(\.\d{1,2}){0,1})$', 'min' => '0', 'size'=>'block-level')).'</td>
+				<td>&nbsp;</td>
 			</tr>
 			';
 			
 		}
 		else
 		{
-			foreach ($curVal as $x => $val) {
+			foreach ($curVal as $x => $val)
+			{
 				$text .= '
 				<tr>
-					<td>'.$this->text('shipping_data['.$i.'][unit]', number_format($val['unit'], 2), 8, array('pattern' => '^(\d+(\.\d{1,2}){0,1})$', 'min' => '0')).'</td>
-					<td>'.$this->text('shipping_data['.$i.'][cost]', number_format($val['cost'], 2), 8, array('pattern' => '^(\d+(\.\d{1,2}){0,1})$', 'min' => '0')).'</td>
-					<td><button class="vstore-shipping-remove btn btn-danger" type="button"><i class="fa fa-times"></i> Remove</button></td>
+					<td>'.$this->text('shipping_data['.$i.'][unit]', number_format($val['unit'], 2), 8, array('pattern' => '^(\d+(\.\d{1,2}){0,1})$', 'min' => '0', 'size'=>'block-level')).'</td>
+					<td>'.$this->text('shipping_data['.$i.'][cost]', number_format($val['cost'], 2), 8, array('pattern' => '^(\d+(\.\d{1,2}){0,1})$', 'min' => '0', 'size'=>'block-level')).'</td>
+					<td>';
+
+				$text .= ($i !== 0) ? '<button class="vstore-shipping-remove btn  btn-danger" type="button"><i class="fa fa-times"></i> </button>' : '&nbsp;';
+				$text .= '</td>
 				</tr>
 				';
 				$i++;
@@ -304,14 +322,14 @@ class vstore_pref_form_ui extends e_admin_form_ui
 		</table>
 		</div>
 
-		<button class="vstore-shipping-add btn btn-success" type="button"><i class="fa fa-plus"></i> Add</button>
+		<button class="vstore-shipping-add btn btn-sm btn-primary" type="button"><i class="fa fa-plus"></i> '.LAN_ADD.'</button>
 		';
 
 		$text .= '
 		<div id="vstore-shipping-data-template" style="display:none;">
-			<xxx>'.$this->text('shipping_data[%ROW%][unit]', '0.00', 8, array('pattern' => '^(\d+(\.\d{1,2}){0,1})$', 'min' => '0')).'</xxx>
-			<xxx>'.$this->text('shipping_data[%ROW%][cost]', '0.00', 8, array('pattern' => '^(\d+(\.\d{1,2}){0,1})$', 'min' => '0')).'</xxx>
-			<xxx><button class="vstore-shipping-remove btn btn-danger" type="button"><i class="fa fa-times"></i> Remove</button></xxx>
+			<xxx>'.$this->text('shipping_data[%ROW%][unit]', '0.00', 8, array('pattern' => '^(\d+(\.\d{1,2}){0,1})$', 'min' => '0', 'size'=>'block-level')).'</xxx>
+			<xxx>'.$this->text('shipping_data[%ROW%][cost]', '0.00', 8, array('pattern' => '^(\d+(\.\d{1,2}){0,1})$', 'min' => '0', 'size'=>'block-level')).'</xxx>
+			<xxx><button class="vstore-shipping-remove btn btn-danger" type="button"><i class="fa fa-times"></i> </button></xxx>
 		</div>
 		';
 
@@ -398,7 +416,7 @@ class vstore_pref_form_ui extends e_admin_form_ui
 
 				if(!empty($curVal))
 				{
-					$cur = e107::unserialize($curVal);
+					$cur = e107::unserialize($curVal); // a BC precaution for anyone who still has a json pref.
 				}
 				else
 				{

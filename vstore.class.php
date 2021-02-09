@@ -3259,7 +3259,7 @@ class vstore
 		}
 
 
-		$shippingTotal = vstore::calcShippingCost($checkoutData['items']);
+		$shippingTotal = vstore::calcShippingCost($checkoutData['items'], $this->pref);
 		$shippingNet = 0.0;
 
 		// calc shipping tax
@@ -3698,12 +3698,15 @@ class vstore
 	 * @param array $items
 	 * @return double
 	 */
-	public static function calcShippingCost($items)
+	public static function calcShippingCost($items, $pref = null)
 	{
+		if(empty($pref))
+		{
+			$pref = e107::pref('vstore');
+		}
 
-		$pref = e107::pref('vstore');
 		// No shipping
-		if(!vartrue($pref['shipping']))
+		if(empty($pref['shipping']))
 		{
 			return 0.0;
 		}
@@ -3711,40 +3714,44 @@ class vstore
 		$shipping = 0.0;
 		$subtotal = 0.0;
 		$weight = 0.0;
+
 		foreach($items as $item)
 		{
 			if(varset($pref['shipping_method']) == 'sum_unique')
 			{
-				// sum_unique, sum_simple or staggered
+				// sum_unique, sum_simple or tiered
 				$shipping += (double) $item['item_shipping'];
 			}
 			else
 			{
 				$shipping += (double) ($item['item_shipping'] * $item['cart_qty']);
 			}
+
 			$subtotal += (double) ($item['item_price'] * $item['cart_qty']);
 			$weight += (double) ($item['item_weight'] * $item['cart_qty']);
 		}
 
-		if(varset($pref['shipping_method']) == 'staggered'
-			&& varset($pref['shipping_limit'])
-			&& varset($pref['shipping_data'])
+		if(varset($pref['shipping_method']) === 'tiered'
+			&& !empty($pref['shipping_limit'])
+			&& !empty($pref['shipping_data'])
 		)
 		{
-			$data = e107::unserialize($pref['shipping_data']);
+			$data = $pref['shipping_data'];
 			unset($data['%ROW%']);
 			$val = $subtotal;
-			if(varset($pref['shipping_unit']) == 'weight')
+			if(varset($pref['shipping_unit']) === 'weight')
 			{
 				// weight or subtotal
 				$val = $weight;
 			}
+
 			$found = false;
 			foreach($data as $v)
 			{
+
 				if($val <= floatval($v['unit']))
 				{
-					if($pref['shipping_limit'] == 'limit')
+					if($pref['shipping_limit'] === 'limit')
 					{
 						// limit or money
 						$shipping = (double) (floatval($v['cost']) > $shipping ? $shipping : $v['cost']);
@@ -3988,7 +3995,7 @@ class vstore
 			return $result;
 		}
 
-		if(varset($tax_class, 'standard') == 'none')
+		if(varset($tax_class, 'standard') === 'none')
 		{
 			// Tax class is set to 'none' = no tax
 			return $result;
@@ -4010,10 +4017,10 @@ class vstore
 		$businessCountry = $this->pref['tax_business_country'];
 
 
-		if($customerCountry == $businessCountry)
+		if($customerCountry === $businessCountry)
 		{
 			// customer is from the same country as the business
-			$tax_classes = e107::unserialize($this->pref['tax_classes']);
+			$tax_classes = e107::unserialize($this->pref['tax_classes']); // just a precaution - now an array.
 			foreach($tax_classes as $tclass)
 			{
 				// lookup tax value
@@ -4054,6 +4061,7 @@ class vstore
 				if($ex->getMessage() == 'Invalid rate.')
 				{
 					e107::getMessage()->addError('Invalid tax class! Please inform the shop administrator!', 'vstore');
+					trigger_error('Invalid tax class!');
 				}
 			}
 
@@ -4176,7 +4184,6 @@ class vstore
 	 */
 	private function calcTaxAmount($grossprice, $tax_rate)
 	{
-
 		return round(($grossprice * $tax_rate) / (1 + $tax_rate), 2);
 	}
 
