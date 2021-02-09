@@ -278,33 +278,42 @@ class vstore_order extends vstore
 
         // Strip out any fields that have not changed
         $this->data = array_diff_assoc($this->data, $this->old_data);
-        if (empty($this->data)) {
-            // reset data
-            $this->loaded = false;
-            if (!empty($this->old_data)) {
-                $this->data = $this->old_data;
-                $this->loaded = true;
-            }
-            // nothing changed: Save not required
-            return true;
-        }
 
-        $insert = array(
-            'data' => $this->data
-        );
+	    if(empty($this->data))
+	    {
+		    // reset data
+		    $this->loaded = false;
+		    if(!empty($this->old_data))
+		    {
+			    $this->data = $this->old_data;
+			    $this->loaded = true;
+		    }
 
-        if (empty($id)) {
-            // New order
-            $result = $id = $this->sql->insert('vstore_orders', $insert, false, 'debug', 'vstore/order/insert');
-        } else {
-            $insert['WHERE'] = 'order_id = ' . $id;
-            $result = $this->sql->update('vstore_orders', $insert, false, 'debug', 'vstore/order/update');
-        }
+		    // nothing changed: Save not required
+		    return true;
+	    }
 
-        if ($result === false) {
-            $this->last_error = 'Unable to inset/update the order! ' . $this->sql->getLastErrorText();
-            return false;
-        }
+	    $insert = array(
+		    'data' => $this->data
+	    );
+
+	    if(empty($id))
+	    {
+		    // New order
+		    $result = $id = $this->sql->insert('vstore_orders', $insert, false, 'debug', 'vstore/order/insert');
+	    }
+	    else
+	    {
+		    $insert['WHERE'] = 'order_id = ' . $id;
+		    $result = $this->sql->update('vstore_orders', $insert, false, 'debug', 'vstore/order/update');
+	    }
+
+	    if($result === false)
+	    {
+		    $this->last_error = 'Unable to inset/update the order! ' . $this->sql->getLastErrorText();
+
+		    return false;
+	    }
         // Clean load of the previously saved order
         return $this->load($id);
     }
@@ -797,7 +806,7 @@ class vstore_order extends vstore
 		    $type = 'default';
 	    }
 
-	    $template = $this->pref['email_templates'];
+	    $template = varset($this->pref['email_templates']);
 
 	    if(isset($template[$type]['active']) && ($template[$type]['active'] ? false : true))
 	    {

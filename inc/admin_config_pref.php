@@ -263,7 +263,7 @@ class vstore_pref_form_ui extends e_admin_form_ui
 		}
 
 		$text = '
-		<div class="row">
+		<div>
 		<table class="table table-striped table-bordered" id="vstore-shipping-data">
 		<tr>
 			<td>Value</td>

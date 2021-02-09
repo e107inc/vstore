@@ -41,45 +41,48 @@
         }
     }
 
-    class vstore_cart_icon
-    {
-        function __construct()
-        {
-          //  require_once(e_PLUGIN.'vstore/vstore.class.php');
 
-            if(e_ADMIN_AREA !== true)
-            {
+	 if(!class_exists('vstore_cart_icon'))
+	 {
+	    class vstore_cart_icon
+	    {
+	        function __construct()
+	        {
+	          //  require_once(e_PLUGIN.'vstore/vstore.class.php');
 
-                $vst = e107::getSingleton('vstore',e_PLUGIN.'vstore/vstore.class.php');
+	            if(e_ADMIN_AREA !== true)
+	            {
 
-                $data = $vst->getCartData();
+	                $vst = e107::getSingleton('vstore',e_PLUGIN.'vstore/vstore.class.php');
 
-                //$count = count($data);
-                // Sum up cart quantity for badge instead of only number of different products (items)
-                $count = 0;
-                if($data && count($data)){
-                    foreach ($data as $row) {
-                        $count += $row['cart_qty'];
-                    }
-                }
+	                $data = $vst->getCartData();
+
+	                //$count = count($data);
+	                // Sum up cart quantity for badge instead of only number of different products (items)
+	                $count = 0;
+	                if($data && count($data)){
+	                    foreach ($data as $row) {
+	                        $count += $row['cart_qty'];
+	                    }
+	                }
 
 
-            }
-            else
-            {
-                $count = 5;
-            }
+	            }
+	            else
+	            {
+	                $count = 5;
+	            }
 
-             $style = empty($count) ? '' : "class='active'";
+	             $style = empty($count) ? '' : "class='active'";
 
-			$text = '<span id="vstore-cart-icon" '.$style.'>'.e107::getParser()->toGlyph("fa-shopping-cart").'<span class="badge">'.$count.'</span></span>';
+				$text = '<span id="vstore-cart-icon" '.$style.'>'.e107::getParser()->toGlyph("fa-shopping-cart").'<span class="badge">'.$count.'</span></span>';
 
-		    define('LAN_PLUGIN_VSTORE_CARTICON', $text);
+			    define('LAN_PLUGIN_VSTORE_CARTICON', $text);
 
-        }
+	        }
 
-    }
-
+	    }
+	 }
 
 	new vstore_cart_icon;
 

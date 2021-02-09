@@ -43,5 +43,10 @@ require_once(HEADERF);
 
 $vstore->render();
 
+if(deftrue('e_DEBUG_VSTORE'))
+{
+	e107::getDebug()->log(e107::getSession('vstore')->getData());
+}
+
 require_once(FOOTERF);
 exit;

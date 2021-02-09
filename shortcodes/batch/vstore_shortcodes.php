@@ -1596,7 +1596,7 @@
 				case 'footer2':
 				case 'footer3':
 					$i = (int) substr($key, -1);
-					if (!is_array($this->vpref['invoice_footer']))
+					if (isset($this->vpref['invoice_footer']) && !is_array($this->vpref['invoice_footer']))
 					{
 						$this->vpref['invoice_footer'] = e107::unserialize($this->vpref['invoice_footer']);
 					}
@@ -1605,38 +1605,63 @@
 					// 	$text = "<b>" . $this->tp->toHTML($this->vpref['invoice_footer'][$i]['title'][e_LANGUAGE], true) . "</b>";
 					// }
 					// $text .= $this->tp->toHTML($this->vpref['invoice_footer'][$i]['text'][e_LANGUAGE], true);
-					$text = $this->tp->toHTML($this->vpref['invoice_footer'][$i], true);
+					if(!empty($this->vpref['invoice_footer'][$i]))
+					{
+						$text = $this->tp->toHTML($this->vpref['invoice_footer'][$i], true);
+					}
 					break;
 
 				case 'title':
-					$text = $this->tp->toHTML($this->vpref['invoice_title'][e_LANGUAGE], true);
+					if(!empty($this->vpref['invoice_title'][e_LANGUAGE]))
+					{
+						$text = $this->tp->toHTML($this->vpref['invoice_title'][e_LANGUAGE], true);
+					}
 					break;
 
 				case 'info_title':
-					$text = $this->tp->toHTML($this->vpref['invoice_info_title'][e_LANGUAGE], true);
+					if(!empty($this->vpref['invoice_info_title'][e_LANGUAGE]))
+					{
+						$text = $this->tp->toHTML($this->vpref['invoice_info_title'][e_LANGUAGE], true);
+					}
 					break;
 
 				case 'subject':
-					$text = $this->tp->parseTemplate($this->vpref['invoice_subject'][e_LANGUAGE], true, $this);
+					if(!empty($this->vpref['invoice_subject'][e_LANGUAGE]))
+					{
+						$text = $this->tp->parseTemplate($this->vpref['invoice_subject'][e_LANGUAGE], true, $this);
+					}
 					break;
 
 				case 'hint':
-					$text = $this->tp->toHTML($this->vpref['invoice_hint'][e_LANGUAGE], true);
-					$text = ($text ? '<p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p>' : '') . $text;
+					if(!empty($this->vpref['invoice_hint'][e_LANGUAGE]))
+					{
+						$text = $this->tp->toHTML($this->vpref['invoice_hint'][e_LANGUAGE], true);
+						$text = ($text ? '<p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p>' : '') . $text;
+					}
 					break;
 
 				case 'finish_phrase':
-					$text = $this->tp->toHTML($this->vpref['invoice_finish_phrase'], true);
-					$text = ($text ? '<p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p>' : '') . $text;
+					if(!empty($this->vpref['invoice_finish_phrase']))
+					{
+						$text = $this->tp->toHTML($this->vpref['invoice_finish_phrase'], true);
+						$text = ($text ? '<p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p>' : '') . $text;
+					}
 					break;
 
 				case 'payment_deadline':
+
 					$datestamp = $this->var['order_date'];
-					$datestamp += ($this->vpref['invoice_payment_deadline'] * 24 * 60 * 60);
+
+					if(!empty($this->vpref['invoice_payment_deadline']))
+					{
+						$datestamp += ((int) $this->vpref['invoice_payment_deadline'] * 24 * 60 * 60);
+					}
+
 					$format = varset($this->vpref['invoice_date_format'], '%m/%d/%Y');
 					$text = e107::getDateConvert()->convert_date($datestamp, $format);
 					break;
 			}
+
 			return $text;
 		}
 

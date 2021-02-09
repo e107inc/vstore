@@ -299,8 +299,8 @@ $VSTORE_TEMPLATE['confirm_items']['coupon'] = '
 
 $VSTORE_TEMPLATE['confirm_items']['tax'] = '
 <tr>
-	<td colspan="2"><b>Included VAT</b></td>
-	<td colspan="1" class="text-right">[x]</td>
+	<td colspan="2"><b>Tax</b></td>
+	<td class="text-right">[x]</td>
 	<td class="text-right">[y]</td>
 </tr>
 ';
@@ -362,8 +362,8 @@ $VSTORE_TEMPLATE['order_items']['coupon'] = '
 
 $VSTORE_TEMPLATE['order_items']['tax'] = '
 <tr>
-	<td colspan="2"><b>Included VAT</b></td>
-	<td colspan="1" class="text-right">[x]</td>
+	<td colspan="2"><b>Tax</b></td>
+	<td class="text-right">[x]</td>
 	<td class="text-right">[y]</td>
 </tr>
 ';
@@ -434,8 +434,8 @@ $VSTORE_TEMPLATE['cart']['footer'] = '
 
 $VSTORE_TEMPLATE['cart']['tax'] = '
 <tr>
-	<td colspan="3" class="text-right"><h5>Included VAT</h5></td>
-	<td colspan="1" class="text-right"><h5>[x]</h5></td>
+	<td colspan="3" class="text-right"><h5>Tax</h5></td>
+	<td class="text-right"><h5>[x]</h5></td>
 	<td class="text-right"><h5><strong>[y]</strong></h5></td>
 </tr>
 ';

@@ -39,10 +39,10 @@ class vstore
 	protected $categoriesTotal = 0;
 	protected $action = array();
 	protected $pref = array();
-	protected $parentData = array();
+//	protected $parentData = array();
 	protected $currency = 'USD';
-	protected $order = null;
-	private $html_invoice = null;
+	protected $order;
+	private $html_invoice;
 
 	/**
 	 * Array with the available currencies
@@ -254,7 +254,6 @@ class vstore
 
 	public function __construct()
 	{
-
 		$sql = e107::getDb();
 
 		$this->cartId = $this->getCartId();
@@ -268,7 +267,6 @@ class vstore
 		$this->pref = e107::pref('vstore');
 
 		$this->initPrefs();
-
 
 	}
 
@@ -365,8 +363,7 @@ class vstore
 
 	public static function getCurrencyTitle($currency)
 	{
-
-		return vartrue(self::$currencies[$currency]['title'], '');
+		return vartrue(self::$currencies[$currency]['title']);
 	}
 
 	public static function getCurrencySymbol($currency, $size = '1x')
@@ -476,15 +473,15 @@ class vstore
 
 		if($json = e107::unserialize($str))
 		{
-			if(vartrue($json['status'], '') == 'canceled')
+			if(vartrue($json['status']) == 'canceled')
 			{
 				return 'You have canceled your payment, but your cart is still available for further reference.';
 			}
-			elseif(vartrue($json['status'], '') == 'failed')
+			elseif(vartrue($json['status']) == 'failed')
 			{
 				return 'Your payment failed for some reason, but your cart is still available for further reference.';
 			}
-			elseif(vartrue($json['detail'], ''))
+			elseif(vartrue($json['detail']))
 			{
 				return $json['detail'];
 			}
@@ -829,9 +826,8 @@ class vstore
 
 		$template = e107::getTemplate('vstore', 'vstore', 'customer');
 
-		$text = $tp->parseTemplate($template['guest'], true, $this->sc);
+		return $tp->parseTemplate($template['guest'], true, $this->sc);
 
-		return $text;
 	}
 
 
@@ -902,7 +898,7 @@ class vstore
 							$fieldvalue,
 							100,
 							array(
-								'placeholder' => varset($v['placeholder'][e_LANGUAGE], ''),
+								'placeholder' => varset($v['placeholder'][e_LANGUAGE]),
 								'required'    => ($v['required'] ? 1 : 0)
 							)
 						);
@@ -1699,7 +1695,7 @@ class vstore
 	 * @param string $mode
 	 * @return boolean
 	 */
-	private function processGateway($mode = 'init')
+	public function processGateway($mode = 'init')
 	{
 
 		$type = $this->getGatewayType(true);
@@ -1709,7 +1705,7 @@ class vstore
 		if(empty($type))
 		{
 			e107::getMessage()->addError("Invalid Payment Type", 'vstore');
-
+			trigger_error("Invalid payment type");  // debug only
 			return false;
 		}
 
@@ -1728,7 +1724,7 @@ class vstore
 		if(empty($data['items']))
 		{
 			e107::getMessage()->addError("Shopping Cart Empty", 'vstore');
-
+			trigger_error("Shopping Cart Empty"); // debug only
 			return false;
 		}
 		else
@@ -1777,7 +1773,8 @@ class vstore
 				e107::getMessage()->addSuccess($message, 'vstore');
 			}
 
-			unset($_SESSION['vstore']['_data']);
+			e107::getSession('vstore')->clear('_data');
+		//	unset($_SESSION['vstore']['_data']);
 
 			// Forcethe browser window to refresh the cart menu
 			e107::js('footer-inline', '$(function(){ vstoreCartRefresh(); });');
@@ -1805,8 +1802,8 @@ class vstore
 				$_data['paymentMethod'] = $paymentMethod;
 			}
 
-
-			$_SESSION['vstore']['_data'] = $_data;
+			e107::getSession('vstore')->set('_data', $_data);
+		//	$_SESSION['vstore']['_data'] = $_data;
 		}
 		else
 		{
@@ -1823,7 +1820,7 @@ class vstore
 			}
 
 			// Get stored data.
-			$_data = $_SESSION['vstore']['_data'];
+			$_data = e107::getSession('vstore')->get('_data'); // $_SESSION['vstore']['_data'];
 			// Add PayerID, paymentId, token, etc...
 			$_data = array_merge($_data, $this->get);
 		}
@@ -1851,7 +1848,8 @@ class vstore
 			if($transID = $response->getTransactionReference())
 			{
 				// Store transaction ID for later use.
-				$_SESSION['vstore']['_data']['transactionReference'] = $transID;
+				e107::getSession('vstore')->set('_data/transactionReference', $transID);
+			//	$_SESSION['vstore']['_data']['transactionReference'] = $transID;
 			}
 
 			// Redirect to offsite payment gateway.
@@ -1878,7 +1876,8 @@ class vstore
 			$this->saveTransaction($transID, $transData, $items, $order_status); // Order payed > save as Processing
 			$this->resetCart();
 
-			unset($_SESSION['vstore']['_data']);
+			e107::getSession('vstore')->clear('_data');
+		//	unset($_SESSION['vstore']['_data']);
 		}
 		else
 		{
@@ -1919,19 +1918,19 @@ class vstore
 	 * @param array $items purchased item
 	 * @return void
 	 */
-	private function saveTransaction($id, $transData, $items, $order_status = 'N')
+	public function saveTransaction($id, $transData, $items, $order_status = 'N')
 	{
 
 		$this->html_invoice = null;
 
-		if(intval($transData['L_ERRORCODE0']) == 11607)
+		if(isset($transData['L_ERRORCODE0']) && intval($transData['L_ERRORCODE0']) == 11607)
 		{
 			// Duplicate REquest.
 			return false;
 		}
 
-
 		$customerData = $this->getCustomerData();
+
 
 		$fields = $this->pref['additional_fields'];
 		$add = array();
@@ -2091,7 +2090,7 @@ class vstore
 		$uc_global = e107::pref('vstore', 'customer_userclass');
 		if($uc_global == -1)
 		{
-			$usr = e107::getSystemUser($userid, true);
+			$usr = e107::getSystemUser($userid);
 			// set userclass as defined in product
 			if(!empty($items) && is_array($items))
 			{
@@ -2328,7 +2327,6 @@ class vstore
 
 	public static function getGateways()
 	{
-
 		return self::$gateways;
 	}
 
@@ -2378,9 +2376,14 @@ class vstore
 	private function getGatewayType($forceSession = false)
 	{
 
-		if(isset($_SESSION['vstore']['gateway']['type']) || $forceSession)
+		if(!$gateways = e107::getSession('vstore')->get('gateway'))
 		{
-			return $_SESSION['vstore']['gateway']['type'];
+			trigger_error("No gateway selected!");
+		}
+
+		if(isset($gateways['type']) || $forceSession)
+		{
+			return $gateways['type'];
 		}
 
 		return e107::getDb()->retrieve('vstore_customer', 'cust_gateway', 'cust_e107_user=' . USERID);
@@ -2393,10 +2396,10 @@ class vstore
 	 * @param string $type
 	 * @return void
 	 */
-	private function setGatewayType($type = '')
+	public function setGatewayType($type = '')
 	{
-
-		$_SESSION['vstore']['gateway']['type'] = $type;
+		e107::getSession('vstore')->set('gateway/type', $type);
+		//$_SESSION['vstore']['gateway']['type'] = $type;
 	}
 
 
@@ -2517,7 +2520,7 @@ class vstore
 	{
 
 		// Delete cart from database
-		e107::getDb()->delete('vstore_cart', 'cart_id=' . $_COOKIE["cartId"]);
+		e107::getDb()->delete('vstore_cart', 'cart_id=' . varset($_COOKIE["cartId"]));
 		$_COOKIE["cartId"] = false;
 		cookie("cartId", null, time() - 3600);
 		$this->cartId = null;
@@ -2548,6 +2551,15 @@ class vstore
 
 			return $value;
 		}
+	}
+
+	/**
+	 * Manually set the card id. - Mostly for unit testing.
+	 * @param $id
+	 */
+	public function setCartId($id)
+	{
+		$this->cartId = $id;
 	}
 
 	/**
@@ -2813,7 +2825,7 @@ class vstore
 	 * @param array $itemvars array of item variations
 	 * @return bool true on success
 	 */
-	protected function addToCart($id, $itemvars = false)
+	public function addToCart($id, $itemvars = false)
 	{
 
 		// if (USERID === 0) {
@@ -3091,14 +3103,22 @@ class vstore
 		$sql = e107::getDb();
 		$cust = $this->getCustomerData();
 		$isBusiness = !empty($cust['vat_id']);
-		$isLocal = (varset($cust['country'], $this->pref['tax_business_country']) ==
-			$this->pref['tax_business_country']);
+
+		$taxCountry = varset($this->pref['tax_business_country']);
+
+		$isLocal = (varset($cust['country'], $taxCountry) == $taxCountry);
 
 		$coupon = '';
 		$checkoutData['coupon'] = array('code' => '', 'amount' => 0.0, 'amount_net' => 0.0);
 
 		$hasCoupon = false;
-		if(!$isCheckoutData && !empty(trim($this->post['cart_coupon_code'])))
+
+		if(!empty($this->post['cart_coupon_code']))
+		{
+			$this->post['cart_coupon_code'] = trim($this->post['cart_coupon_code']);
+		}
+
+		if(!$isCheckoutData && !empty($this->post['cart_coupon_code']))
 		{
 			// coupon code was posted
 			$coupon = e107::getDb()->retrieve(
@@ -3120,7 +3140,7 @@ class vstore
 			else
 			{
 				$chk = $this->getCheckoutData();
-				$coupon = trim($chk['coupon']['code']);
+				$coupon = !empty($chk['coupon']['code']) ? trim($chk['coupon']['code']) : '';
 				unset($chk);
 			}
 			if($coupon)
@@ -3200,11 +3220,29 @@ class vstore
 			$row['item_total'] = $item_total;
 			$row['item_total_net'] = $this->calcNetPrice($item_total, $row['tax_rate']);
 
-			$taxTotal['' . $row['tax_rate']] += $this->calcTaxAmount($coupon_amount, $row['tax_rate']);
+			$rateKey = ''.$row['tax_rate'];
+
+			if(!isset($taxTotal[$rateKey]))
+			{
+				$taxTotal[$rateKey] = 0;
+			}
+
+			if(!isset($netTotal[$rateKey]))
+			{
+				$netTotal[$rateKey] = 0;
+			}
+
+			if(!isset($taxTotal[$rateKey]))
+			{
+				$taxTotal[$rateKey] = 0;
+			}
+
+
+			$taxTotal[$rateKey] += $this->calcTaxAmount($coupon_amount, $row['tax_rate']);
 			$checkoutData['coupon']['amount_net'] += $this->calcNetPrice($coupon_amount, $row['tax_rate']);
 
-			$netTotal['' . $row['tax_rate']] += $row['item_total_net'];
-			$taxTotal['' . $row['tax_rate']] += $row['tax_amount'];
+			$netTotal[$rateKey] += $row['item_total_net'];
+			$taxTotal[$rateKey] += $row['tax_amount'];
 
 			$subTotal += $item_total;
 			$subTotalNet += $row['item_total_net'];
@@ -3247,9 +3285,9 @@ class vstore
 			'cart_shippingTotal' => $shippingTotal,
 			'cart_grandTotal'    => $grandTotal,
 
-			'cart_subNet'      => $subTotalNet,
+			'cart_subNet'      => round($subTotalNet,2),
 			'cart_shippingNet' => $shippingNet,
-			'cart_grandNet'    => $grandNet,
+			'cart_grandNet'    => round($grandNet,2),
 
 			'cart_coupon' => $checkoutData['coupon']
 		);
@@ -3266,11 +3304,13 @@ class vstore
 	 * @param array $data data to store in session
 	 * @return void
 	 */
-	private function setCheckoutData($data = array())
+	public function setCheckoutData($data = array())
 	{
 
-		$_SESSION['vstore']['checkout'] = $data;
-		$_SESSION['vstore']['checkout']['currency'] = $this->currency;
+		$ret = $data;
+		$ret['currency'] = $this->currency;
+
+		e107::getSession('vstore')->set('checkout', $ret);
 	}
 
 
@@ -3284,10 +3324,18 @@ class vstore
 	{
 
 		$fields = self::getShippingFields();
+		$ret = array();
 		foreach($fields as $fld)
 		{
-			$_SESSION['vstore']['shipping'][$fld] = trim(strip_tags($data[$fld]));
+			if(!isset($data[$fld]))
+			{
+				continue;
+			}
+
+			$ret[$fld] = trim(strip_tags($data[$fld]));
 		}
+
+		e107::getSession('vstore')->set('shipping', $ret);
 	}
 
 	/**
@@ -3297,10 +3345,10 @@ class vstore
 	 */
 	private function getShippingData($forceSession = false)
 	{
-
-		if(!empty($_SESSION['vstore']['shipping']) || $forceSession)
+		$shipping = e107::getSession('vstore')->get('shipping');
+		if(!empty($shipping) || $forceSession)
 		{
-			return $_SESSION['vstore']['shipping'];
+			return $shipping;
 		}
 
 		return e107::unserialize(e107::getDb()->retrieve(
@@ -3319,8 +3367,8 @@ class vstore
 	 */
 	private function setShippingType($type)
 	{
-
-		$_SESSION['vstore']['shipping_type'] = (vartrue($type) ? 1 : 0);
+		e107::getSession('vstore')->set('shipping_type', (vartrue($type) ? 1 : 0));
+	//	$_SESSION['vstore']['shipping_type'] = (vartrue($type) ? 1 : 0);
 	}
 
 
@@ -3331,25 +3379,33 @@ class vstore
 	 */
 	private function getShippingType()
 	{
-
-		return ($_SESSION['vstore']['shipping_type'] ? 1 : 0);
+		$type = e107::getSession('vstore')->get('shipping_type');
+		return ($type ? 1 : 0);
 	}
 
 
 	/**
-	 * Store shipping data in session variable
+	 * Store customer data in session variable
 	 *
 	 * @param array $data data to store
 	 * @return void
 	 */
-	private function setCustomerData($data = array())
+	public function setCustomerData($data = array())
 	{
 
 		$fields = self::getCustomerFields();
+		$ret = array();
 		foreach($fields as $fld)
 		{
-			$_SESSION['vstore']['customer'][$fld] = trim(strip_tags($data[$fld]));
+			if(!isset($data[$fld]))
+			{
+				continue;
+			}
+
+			$ret[$fld] = trim(strip_tags($data[$fld]));
 		}
+
+		e107::getSession('vstore')->set('customer', $ret);
 	}
 
 
@@ -3361,9 +3417,11 @@ class vstore
 	public function getCustomerData($forceSession = false)
 	{
 
-		if(!empty($_SESSION['vstore']['customer']) || $forceSession)
+		$customer = e107::getSession('vstore')->get('customer');
+
+		if(!empty($customer) || $forceSession)
 		{
-			return $_SESSION['vstore']['customer'];
+			return $customer;
 		}
 		$row = e107::getDb()->retrieve('vstore_customer', '*', 'cust_e107_user=' . USERID);
 		$result = false;
@@ -3388,13 +3446,14 @@ class vstore
 	 */
 	public function getCheckoutData($id = null)
 	{
+		$tmp = e107::getSession('vstore')->get('checkout');
 
 		if(!empty($id))
 		{
-			return $_SESSION['vstore']['checkout'][$id];
+			return $tmp[$id];
 		}
 
-		return $_SESSION['vstore']['checkout'];
+		return $tmp;
 	}
 
 	/**
@@ -4413,32 +4472,44 @@ class vstore
 
 		// Load template
 		$template = e107::getTemplate('vstore', 'vstore_invoice');
-		$invoice = $this->pref['invoice_template'];
+		$invoice = varset($this->pref['invoice_template']);
+
 		if(empty($invoice))
 		{
 			if(!vartrue($template['default']))
 			{
 				// Template not found!
 				e107::getMessage()->addDebug('Invoice template "default" not found!', 'vstore');
-
+				trigger_error('Invoice template "default" not found!');
 				return false;
 			}
 			$invoice = $template['default'];
 		}
 
+		$taxBusinessCountry = '';
+		$billingCountry = '';
+
+		if(isset($this->order->order_billing['country']))
+		{
+			$billingCountry = $this->order->order_billing['country'];
+		}
+
+		if(isset($this->pref['tax_business_country']))
+		{
+			$taxBusinessCountry = $this->pref['tax_business_country'];
+		}
+
+
 		$this->order->is_business = !empty($this->order->order_billing['vat_id']);
-		$this->order->is_local = (varset(
-				$this->order->order_billing['country'],
-				$this->pref['tax_business_country']
-			) == $this->pref['tax_business_country']);
+		$this->order->is_local = (vartrue($billingCountry, $taxBusinessCountry) === $taxBusinessCountry);
 
 
-		$ns = e107::getParser();
+		$tp = e107::getParser();
 
 		$this->sc->addVars($this->order->getData());
 
-		$text = $ns->parseTemplate($invoice, true, $this->sc);
-		$footer = $ns->parseTemplate($template['footer'], true, $this->sc);
+		$text = $tp->parseTemplate($invoice, true, $this->sc);
+		$footer = $tp->parseTemplate($template['footer'], true, $this->sc);
 
 		$logo = $this->sc->sc_invoice_logo('path');
 		if(!empty($logo))
@@ -4870,8 +4941,8 @@ class vstore
 
 		if(deftrue('e_DEBUG_VSTORE'))
 		{
-			e107::getDebug()->log($this->pref);
-			e107::getDebug()->log("CartID:" . $this->cartId);
+		//	e107::getDebug()->log($this->pref);
+		//	e107::getDebug()->log("CartID:" . $this->cartId);
 		}
 		// get all category data.
 		$count = 0;
@@ -4931,7 +5002,7 @@ class vstore
 
 		if(deftrue('e_DEBUG_VSTORE') && getperms('0'))
 		{
-			e107::getDebug()->log($this->pref);
+		//	e107::getDebug()->log($this->pref);
 		}
 
 
