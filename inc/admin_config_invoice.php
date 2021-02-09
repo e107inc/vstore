@@ -10,21 +10,21 @@ class vstore_invoice_pref_ui extends e_admin_ui
 
 
 		// optional
-		protected $preftabs = array(LAN_PREFS, LAN_TEMPLATE);
+		protected $preftabs = array('pref'=>LAN_PREFS, 'temp'=>LAN_TEMPLATE);
 
 
 		protected $prefs = array(
-			'invoice_create_pdf'   		=> array('title'=> 'Create Pdf invoice', 'tab'=>0, 'type'=>'boolean', 'data' => 'int', 'writeParms'=>array('default'=>'0'),'help' => 'Enable to create the invoiceas pdf (pdf plugin required!)'),
-			'invoice_title'        		=> array('title'=> 'Title', 'tab'=>0, 'type'=>'text', 'data' => 'str', 'writeParms'=>array('placeholder'=>'Title', 'default'=>'INVOICE'),'multilan'=>true, 'help' => 'Title of the invoice'),
-			'invoice_info_title'        => array('title'=> 'Information section caption', 'tab'=>0, 'type'=>'text', 'data' => 'str', 'writeParms'=>array('placeholder'=>'Information block title', 'default'=>'Information'),'multilan'=>true, 'help' => 'Title of the information block on the top right side of the invoice.'),
-			'invoice_subject'        	=> array('title'=> 'Subject', 'tab'=>0, 'type'=>'text', 'data' => 'str', 'writeParms'=>array('size'=>'block-level', 'placeholder'=>'Subject', 'default'=>'This is the invoice for your order #{ORDER_DATA: order_ref} from {ORDER_DATA: order_date}'),'multilan'=>true, 'help'=>'This is rendered right above the items.'),
-			'invoice_nr_prefix'  		=> array('title'=> 'Invoice number prefix', 'tab'=>0, 'type'=>'text', 'data' => 'str', 'writeParms'=>array('placeholder'=>'IN', 'default'=>'IN', 'maxlength' => '5'), 'help' => 'Define the prefix for your invoice number. This will be rendered e.g. IN000012'),
-			'invoice_next_nr'  			=> array('title'=> 'Next invoice number', 'tab'=>0, 'type'=>'method', 'data' => 'int', 'writeParms'=>array('default'=>'1'), 'help' => 'This enables you to start at a given invoice number, or to step over a number. But it will ALWAYS be bigger than the last invoice number used!'),
-			'invoice_date_format'		=> array('title'=> 'Invoice date format', 'tab'=>0, 'type'=>'text', 'data' => 'str', 'writeParms'=>array('placeholder'=>'Dateformat used on invoices (date only)', 'default'=>'%m/%d/%Y'), 'help' => 'Date format (date only) used on onvoices. e.g. 05/02/2018'),
-			'invoice_payment_deadline'  => array('title'=> 'Default payment deadline (days)', 'tab'=>0, 'type'=>'number', 'data' => 'int', 'writeParms'=>array('default'=>'7'), 'help' => 'A notice will be added to the invoice, when the invoice should be paid latest.'),
-			'invoice_hint'        		=> array('title'=> 'Hint', 'tab'=>1, 'type' =>'method', 'data' => 'str', 'help' => 'This will be rendered on the invoice below the items and can be used to add some information on each invoice.'),
-			'invoice_finish_phrase'		=> array('title'=> 'Finishing phrase', 'tab'=>1, 'type' =>'method', 'data' => 'str', 'help' => 'This will be rendered on the invoice below the items and the hint.', 'writeParms' => array('placeholder' => 'Finishing phase', 'default' => "Thanks for your business!\n\n\nYours faithfully\n\n_______________________________________")),
-			'invoice_footer'        	=> array('title'=> 'Footer content', 'tab'=>1, 'type'=>'method', 'data' => 'json', 'writeParms'=>'', 'help' => 'These fields will be rendered on the bottom of each page.'),
+			'invoice_create_pdf'   		=> array('title'=> 'Create Pdf invoice', 'tab'=>'pref', 'type'=>'boolean', 'data' => 'int', 'writeParms'=>array('default'=>'0'),'help' => 'Enable to create the invoiceas pdf (pdf plugin required!)'),
+			'invoice_title'        		=> array('title'=> 'Title', 'tab'=>'pref', 'type'=>'text', 'data' => 'str', 'writeParms'=>array('placeholder'=>'Title', 'default'=>'INVOICE'),'multilan'=>true, 'help' => 'Title of the invoice'),
+			'invoice_info_title'        => array('title'=> 'Information section caption', 'tab'=>'pref', 'type'=>'text', 'data' => 'str', 'writeParms'=>array('placeholder'=>'Information block title', 'default'=>'Information'),'multilan'=>true, 'help' => 'Title of the information block on the top right side of the invoice.'),
+			'invoice_subject'        	=> array('title'=> 'Subject', 'tab'=>'pref', 'type'=>'text', 'data' => 'str', 'writeParms'=>array('size'=>'block-level', 'placeholder'=>'Subject', 'default'=>'This is the invoice for your order #{ORDER_DATA: order_ref} from {ORDER_DATA: order_date}'),'multilan'=>true, 'help'=>'This is rendered right above the items.'),
+			'invoice_nr_prefix'  		=> array('title'=> 'Invoice number prefix', 'tab'=>'pref', 'type'=>'text', 'data' => 'str', 'writeParms'=>array('placeholder'=>'IN', 'default'=>'IN', 'maxlength' => '5'), 'help' => 'Define the prefix for your invoice number. This will be rendered e.g. IN000012'),
+			'invoice_next_nr'  			=> array('title'=> 'Next invoice number', 'tab'=>'pref', 'type'=>'method', 'data' => 'int', 'writeParms'=>array('default'=>'1'), 'help' => 'This enables you to start at a given invoice number, or to step over a number. But it will ALWAYS be bigger than the last invoice number used!'),
+			'invoice_date_format'		=> array('title'=> 'Invoice date format', 'tab'=>'pref', 'type'=>'text', 'data' => 'str', 'writeParms'=>array('placeholder'=>'Dateformat used on invoices (date only)', 'default'=>'%m/%d/%Y'), 'help' => 'Date format (date only) used on onvoices. e.g. 05/02/2018'),
+			'invoice_payment_deadline'  => array('title'=> 'Default payment deadline (days)', 'tab'=>'pref', 'type'=>'number', 'data' => 'int', 'writeParms'=>array('default'=>'7'), 'help' => 'A notice will be added to the invoice, when the invoice should be paid latest.'),
+			'invoice_hint'        		=> array('title'=> 'Hint', 'tab'=>'temp', 'type' =>'method', 'data' => 'str', 'help' => 'This will be rendered on the invoice below the items and can be used to add some information on each invoice.'),
+			'invoice_finish_phrase'		=> array('title'=> 'Finishing phrase', 'tab'=>'temp', 'type' =>'method', 'data' => 'str', 'help' => 'This will be rendered on the invoice below the items and the hint.', 'writeParms' => array('placeholder' => 'Finishing phase', 'default' => "Thanks for your business!\n\n\nYours faithfully\n\n_______________________________________")),
+			'invoice_footer'        	=> array('title'=> 'Footer content', 'tab'=>'temp', 'type'=>'method', 'data' => 'json', 'writeParms'=>'', 'help' => 'These fields will be rendered on the bottom of each page.'),
 			
 			// 'invoice_template'         => array('title'=> "Invoice template", 'type'=>'method', 'tab' => 1, 'data' => 'str'),
 		);

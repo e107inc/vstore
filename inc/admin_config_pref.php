@@ -308,7 +308,7 @@ class vstore_pref_form_ui extends e_admin_form_ui
 // 			'shipping_limit'        	=> array('title'=> 'Cost are', 'tab'=>'ship', 'type'=>'dropdown', 'data' => 'string', 'help'=>'Define if the shipping cost are fixed to the spcified cost or limited to that value', 'writeParms' => array('fixed'=>'Fixed shipping costs', 'max'=>'Up to (max.) shipping costs')),
 		$pref = e107::pref('vstore');
 
-		$unitDropdown = $this->select('shipping_unit', ['price'=>'When total cart price is below &mdash;', 'weight'=>'When total cart weight is below &mdash;'], varset($pref['shipping_unit']), ['size'=>'block-level']);
+		$unitDropdown = $this->select('shipping_unit', ['price'=>'When total price of order is below &mdash;', 'weight'=>'When total weight of order is below &mdash;'], varset($pref['shipping_unit']), ['size'=>'block-level']);
 
 		$limitDropdown = $this->select('shipping_limit', ['fixed'=>'Set shipping cost to &mdash;', 'max'=>'Limit shipping cost to no more than &mdash;'], varset($pref['shipping_limit']), ['size'=>'block-level']);
 
