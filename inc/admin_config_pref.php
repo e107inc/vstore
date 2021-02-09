@@ -59,7 +59,7 @@ class vstore_pref_ui extends e_admin_ui
 			'shipping_method'	        => array('title'=> 'Calculation method', 'tab'=>'ship', 'type'=>'dropdown', 'data' => 'string', 'help'=>'Define a method to calculate the shipping cost.', 'writeParms' => array('size'=>'large')),
 			'shipping_unit'	        	=> array('title'=> 'Value based on', 'tab'=>'ship', 'type'=>false, 'data' => 'string'),
 			'shipping_limit'        	=> array('title'=> 'Cost are', 'tab'=>'ship', 'type'=>false, 'data' => 'string'),
-			'shipping_data'				=> array('title'=> 'Tiered shipping costs', 'tab'=>'ship', 'type'=>'method', 'data' => 'array', 'help'=>'Enter thresholds in the first column to set or limit shipping cost based on total order price or weight. Start with the lowest threshold and add more until your last threshold is higher than the maximum price/weight of a typical order. Setting the last threshold too low could result in no shipping cost at all.' ),
+			'shipping_data'				=> array('title'=> 'Tiered shipping costs', 'tab'=>'ship', 'type'=>'method', 'data' => 'array', 'writeParms'=>array('trClass'=>'shipping-tiered-row'), 'help'=>'Enter thresholds in the first column to set or limit shipping cost based on total order price or weight. Start with the lowest threshold and add more until your last threshold is higher than the maximum price/weight of a typical order. Setting the last threshold too low could result in no shipping cost at all.' ),
 
 			'sender_name'               => array('title'=> 'Sender Name', 'tab'=>'email', 'type'=>'text', 'writeParms'=>array('placeholder'=>'Sales Department'), 'help'=>'Leave blank to use system default','multilan'=>false),
 			'sender_email'              => array('title'=> LAN_EMAIL, 'tab'=>'email', 'type'=>'text', 'writeParms'=>array('placeholder'=>'orders@mysite.com'), 'help'=>'Leave blank to use system default', 'multilan'=>false),
@@ -88,6 +88,9 @@ class vstore_pref_ui extends e_admin_ui
 		// optional
 		public function init()
 		{
+
+
+
 			//$this->prefs['currency']['writeParms'] = array('USD'=>'US Dollars', 'EUR'=>'Euros', 'CAN'=>'Canadian Dollars', 'GBP'=>'GB Pounds');
 
 			$currencies = vstore::getCurrencies();
@@ -105,7 +108,7 @@ class vstore_pref_ui extends e_admin_ui
 			$this->prefs['shipping_method']['writeParms']['optArray'] = array(
 				'sum_simple'	=> 'Sum of the shipping cost of all items',
 				'sum_unique'	=> 'Sum of the shipping cost of only unique items',
-				'tiered'		=> 'Use a tiered system based on price or weight',
+				'tiered'		=> 'A tiered system based on price or weight',
 			);
 
 			// Get all active product categories 
@@ -216,6 +219,18 @@ class vstore_pref_form_ui extends e_admin_form_ui
 
 	public function init()
 	{
+			$shipMethod = !empty($_POST['shipping_method']) ? filter_var($_POST['shipping_method']) : e107::pref('vstore', 'shipping_method');
+
+			if($shipMethod !== 'tiered')
+			{
+				e107::css('inline', "
+				
+					tr.shipping-tiered-row { display: none } 
+				
+				");
+			}
+
+
 		$d = e107::unserialize(e107::pref('vstore','shipping_data'));
 		$max = 0;
 
@@ -248,6 +263,23 @@ class vstore_pref_form_ui extends e_admin_form_ui
 					row.remove();
 				}
 			});
+			
+			$('#shipping-method').on('change', function(){
+			
+				var opt = $('#shipping-method option:selected' ).val(); 
+				if(opt === 'tiered')
+				{
+					$('.shipping-tiered-row' ).show('slow'); 
+					
+				}
+				else
+				{
+					$('.shipping-tiered-row' ).hide('slow'); 
+				}
+
+			});
+			
+			
 		});
 		";
 		e107::js('footer-inline', $js);
