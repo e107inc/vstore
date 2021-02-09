@@ -247,11 +247,13 @@ class vstore_pref_form_ui extends e_admin_form_ui
 			$('.vstore-shipping-add').click(function(){
 				rowcount++;
 				var row = $('#vstore-shipping-data-template').html();
+				
 				row = row.replace(new RegExp('%ROW%', 'g'), rowcount);
 				row = row.replace(new RegExp('xxx>', 'g'), 'td>');
 				row = '<tr>' + row + '</tr>';
-
-				$('#vstore-shipping-data').append(row).show('slow');
+				var new_item = $(row).hide();
+				$('#vstore-shipping-data').append(new_item);
+				new_item.show('slow');
 
 			});
 
@@ -260,7 +262,10 @@ class vstore_pref_form_ui extends e_admin_form_ui
 				if (rows > 2)
 				{
 					var row = $(this).parent().parent();
-					row.remove();
+					row.hide('slow', function () {
+						$(this).remove();
+					});
+
 				}
 			});
 			
@@ -310,10 +315,15 @@ class vstore_pref_form_ui extends e_admin_form_ui
 
 		$text = '
 		<div>
-		<table class="table table-striped table-bordered table-condensed" id="vstore-shipping-data" style="margin-bottom:5px; width: 800px">
+		<table class="table table-bordered table-condensed" id="vstore-shipping-data" style="margin-bottom:5px; width: 800px">
+		<colgroup>
+			<col style="width: calc(50% - 25px)" />
+			<col style="width: calc(50% - 25px)" />
+			<col style="width: 50px" />
+		</colgroup>
 		<tr>
-			<td style="width:45%">'.$unitDropdown.'</td>
-			<td style="width:45%">'.$limitDropdown.'</td>
+			<td>'.$unitDropdown.'</td>
+			<td>'.$limitDropdown.'</td>
 			<td> </td>
 		</tr>
 		';
@@ -517,7 +527,11 @@ class vstore_pref_form_ui extends e_admin_form_ui
 
 					$('body').on('click', '.vstore-tax-remove', function(){
 						var row = $(this).parent();
-						row.remove();
+						
+						row.hide('slow', function () {
+							$(this).remove();
+						});
+
 					});
 							
 				");
