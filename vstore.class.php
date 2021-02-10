@@ -642,7 +642,7 @@ class vstore
 			$this->resetCart();
 		}
 
-		if($this->post['mode'] == 'confirmed')
+		if(varset($this->post['mode']) == 'confirmed')
 		{
 			$this->setMode($this->post['mode']);
 			if(empty($this->getGatewayType(true)))
@@ -657,7 +657,7 @@ class vstore
 
 				return;
 			}
-			elseif(empty($this->getCustomerData(true)))
+			elseif(empty(vstore::getCustomerData(true)))
 			{
 				e107::getMessage()->addError('No customer data set!', 'vstore');
 
@@ -685,7 +685,7 @@ class vstore
 			}
 		}
 
-		if($this->get['mode'] == 'return')
+		if(varset($this->get['mode']) == 'return')
 		{
 			$this->processGateway('return');
 
@@ -844,7 +844,7 @@ class vstore
 		if(!isset($this->post['cust']['firstname']))
 		{
 			// load saved shipping data and assign to variables
-			$data = $this->getCustomerData();
+			$data = vstore::getCustomerData();
 			$fields = $this->getCustomerFields();
 			$prefix = (isset($data['cust_firstname']) ? 'cust_' : '');
 			foreach($fields as $field)
@@ -972,7 +972,7 @@ class vstore
 			$data = $this->getShippingData();
 			if(empty($data) || empty($data['firstname']))
 			{
-				$data = $this->getCustomerData(true);
+				$data = vstore::getCustomerData(true);
 				$prefix = isset($data['cust_firstname']) ? 'cust_' : '';
 			}
 			$fields = $this->getShippingFields();
@@ -999,7 +999,7 @@ class vstore
 	 */
 	private function renderConfirmOrder()
 	{
-		$cust = $this->getCustomerData(true);
+		$cust = vstore::getCustomerData(true);
 		$ship = $this->getShippingData(true);
 		$data = $this->prepareCheckoutData($this->getCheckoutData(), true);
 
@@ -1175,7 +1175,7 @@ class vstore
 					$this->setGatewayType($this->post['gateway']);
 				}
 
-				if(empty($this->getCustomerData(true)))
+				if(empty(vstore::getCustomerData(true)))
 				{
 					$text .= e107::getMessage()->addError('Billing address is missing!', 'vstore')->render('vstore');
 				}
@@ -1238,7 +1238,7 @@ class vstore
 		}
 
 
-		if(intval($this->get['invoice']) > 0)
+		if((int)varset($this->get['invoice']) > 0)
 		{
 			// Display invoice
 			$this->order->loadByInvoiceNr($this->get['invoice']);
@@ -1303,7 +1303,7 @@ class vstore
 		}
 
 
-		if($this->get['item'])
+		if(!empty($this->get['item']))
 		{
 			$text = $this->productView($this->get['item']);
 			// $bread = $this->setBreadcrumb();
@@ -1376,10 +1376,10 @@ class vstore
 			}
 		}
 
-		if($this->get['cat'] || $this->get['item'])
+		if(!empty($this->get['cat']) || !empty($this->get['item']))
 		{
-			$c = $this->get['cat'];
-			$cp = $this->categories[$c]['cat_parent'];
+			$c = varset($this->get['cat'],0);
+			$cp = varset($this->categories[$c]['cat_parent']);
 
 			if(!empty($cp))
 			{
@@ -1388,28 +1388,28 @@ class vstore
 				$array[] = array('url' => $url, 'text' => $this->categories[$pid]['cat_name']);
 			}
 
-			$id = ($this->get['item']) ? $this->item['item_cat'] : intval($this->get['cat']);
-			$url = ($this->get['item']) ? e107::url('vstore', 'category', $this->categories[$id]) : null;
+			$id = !empty($this->get['item']) ? (int) $this->item['item_cat'] : (int) $this->get['cat'];
+			$url = !empty($this->get['item']) ? e107::url('vstore', 'category', $this->categories[$id]) : null;
 			$array[] = array('url' => $url, 'text' => $this->categories[$id]['cat_name']);
 		}
 
-		if($this->get['item'])
+		if(!empty($this->get['item']))
 		{
 			$array[] = array('url' => null, 'text' => $this->item['item_name']);
 		}
 
-		if($this->get['add'] || $this->get['mode'] == 'cart')
+		if(!empty($this->get['add']) || varset($this->get['mode']) === 'cart')
 		{
 			$array[] = array('url' => null, 'text' => "Shopping Cart");
 		}
 
-		if($this->get['mode'] == 'checkout')
+		if(varset($this->get['mode']) === 'checkout')
 		{
 			$array[] = array('url' => e107::url('vstore', 'cart'), 'text' => "Shopping Cart");
 			$array[] = array('url' => null, 'text' => "Checkout");
 		}
 
-		if($this->get['mode'] == 'dashboard')
+		if(varset($this->get['mode']) === 'dashboard')
 		{
 			if(!empty(trim($this->get['area'])))
 			{
@@ -1534,9 +1534,9 @@ class vstore
 		);
 
 		$text .= $this->renderCustomerForm();
-		$text .= "<hr />";
-		$text .= "<i class='fa fa-truck' aria-hidden='true'></i> <a id='shipping-view-toggle' class='e-expandit' href='#shipping-view'>Enter a separate shipping address here</a>";
-		$text .= "<div id='shipping-view' style='display:none'>";
+		$text .= "<hr /><p>";
+		$text .= "<i class='fa fa-truck' aria-hidden='true'></i> <a id='shipping-view-toggle' class='e-expandit' href='#shipping-view'>Add a different shipping address</a>";
+		$text .= "</p><div id='shipping-view' style='display:none'>";
 		$text .= $this->renderShippingForm();
 		$text .= "</div>";
 
@@ -1549,8 +1549,8 @@ class vstore
 		foreach($active as $gateway => $icon)
 		{
 			$text .= "
-                        <div class='col-6 col-xs-6 col-sm-4' style='margin-bottom:15px'>
-                            <label class='btn btn-default btn-light btn-block btn-" . $gateway . " " . ($curGateway == $gateway ? 'active' : '') . " vstore-gateway text-center'>
+                        <div class='col-6 col-xs-6 col-sm-4 col-4 d-grid' style='margin-bottom:15px'>
+                            <label class='btn btn-default btn-light btn-secondary btn-block btn-" . $gateway . " " . ($curGateway == $gateway ? 'active' : '') . " vstore-gateway text-center'>
                                 <input type='radio' name='gateway' value='" . $gateway . "' style='display:none;' class='vstore-gateway-radio' required " . ($curGateway == $gateway ? 'checked' : '') . ">
                                 " . $icon . "
                                 <h4>" . (self::isMollie($gateway) ? $this->getMolliePaymentMethodTitle($gateway) : $this->getGatewayTitle($gateway)) . "</h4>
@@ -1574,10 +1574,10 @@ class vstore
 					*/
 		$text .= '
        
-            <div class="row">
+            <div class="row mt-5 mb-5">
                 <div class="col-12 col-xs-12">
                     <a class="btn btn-default btn-secondary vstore-btn-back-confirm" href="' . e107::url('vstore', 'cart', 'sef') . '">&laquo; Back</a>
-                    <button class="btn btn-primary vstore-btn-buy-now pull-right float-right" type="submit" name="mode" value="confirm">Continue &raquo;</button>
+                    <button class="btn btn-primary vstore-btn-buy-now pull-right float-right float-end" type="submit" name="mode" value="confirm">Continue &raquo;</button>
                 </div>
             </div>';
 
@@ -1656,7 +1656,7 @@ class vstore
                 <div class="col-12 col-xs-12">
                     <input type="hidden" name="order_use_shipping" value="1">
                     <a class="btn btn-default btn-secondary vstore-btn-back-confirm" href="' . e107::url('vstore', 'checkout', 'sef') . '">&laquo; Back</a>
-                    <button class="btn btn-primary vstore-btn-buy-now pull-right float-right" type="submit" name="mode" value="confirm">Continue &raquo;</button>
+                    <button class="btn btn-primary vstore-btn-buy-now pull-right float-right float-end" type="submit" name="mode" value="confirm">Continue &raquo;</button>
                 </div>
             </div>';
 
@@ -1929,7 +1929,7 @@ class vstore
 			return false;
 		}
 
-		$customerData = $this->getCustomerData();
+		$customerData = vstore::getCustomerData();
 
 
 		$fields = $this->pref['additional_fields'];
@@ -3059,7 +3059,7 @@ class vstore
 
 		$tp = e107::getParser();
 		$frm = e107::getForm();
-		$template = e107::getTemplate('vstore', 'vstore', 'cart');
+		$template = e107::getTemplate('vstore', 'vstore_cart');
 
 		$text = $frm->open('cart', 'post', e107::url('vstore', 'cart'));
 
@@ -3068,17 +3068,17 @@ class vstore
 		$text .= '<div class="row">
                 <div class="col-sm-12 col-md-12">';
 
-		$text .= $tp->parseTemplate($template['header'], true, $this->sc);
+		$text .= $tp->parseTemplate($template['start'], true, $this->sc);
 
 		foreach($checkoutData['items'] as $row)
 		{
 			$this->sc->setVars($row);
-			$text .= $tp->parseTemplate($template['row'], true, $this->sc);
+			$text .= $tp->parseTemplate($template['item'], true, $this->sc);
 		}
 
 		$this->sc->setVars($checkoutData['totals']);
 
-		$text .= $tp->parseTemplate($template['footer'], true, $this->sc);
+		$text .= $tp->parseTemplate($template['end'], true, $this->sc);
 		$text .= '</div></div>';
 
 		$text .= $frm->close();
@@ -3101,7 +3101,7 @@ class vstore
 	{
 
 		$sql = e107::getDb();
-		$cust = $this->getCustomerData();
+		$cust = vstore::getCustomerData();
 		$isBusiness = !empty($cust['vat_id']);
 
 		$taxCountry = varset($this->pref['tax_business_country']);
@@ -3213,7 +3213,7 @@ class vstore
 
 			$row['is_business']    = $isBusiness;
 			$row['is_local']       = $isLocal;
-			$row['tax_rate']       = $this->getTaxRate($row['cart_item_tax_class'], varset($cust['country']));
+			$row['tax_rate']       = vstore::getTaxRate($row['cart_item_tax_class'], varset($cust['country']));
 			$row['tax_amount']     = vstore::calcTaxAmount($item_total, $row['tax_rate']);
 			$row['item_price_net'] = $this->calcNetPrice($price, $row['tax_rate']);
 
@@ -3418,9 +3418,10 @@ class vstore
 	/**
 	 * Return the customer data from the database if session is empty
 	 *
+	 * @param bool $forceSession
 	 * @return array
 	 */
-	public function getCustomerData($forceSession = false)
+	public static function getCustomerData($forceSession = false)
 	{
 
 		$customer = e107::getSession('vstore')->get('customer');
@@ -3990,18 +3991,23 @@ class vstore
 	}
 
 	/**
-	 * return the tax rate depending on the items tax class and the customer country
+	 * return the tax rate depending on the item's tax class and the customer country
 	 *
 	 * @param string $tax_class should be 'none', 'reduced', 'standard'
 	 * @param string $customer_country should be the ISO 3166-1 alpha-2 country code of the customers (billing) country
 	 * @return number
 	 */
-	public function getTaxRate($tax_class, $customer_country = null)
+	public static function getTaxRate($tax_class, $customer_country = null, $pref = null)
 	{
+
+		if(empty($pref))
+		{
+			$pref = e107::pref('vstore');
+		}
 
 		$result = 0.0;
 
-		if(!vartrue($this->pref['tax_calculate']))
+		if(empty($pref['tax_calculate']))
 		{
 			// Tax calculation is deactivated
 			return $result;
@@ -4014,9 +4020,11 @@ class vstore
 		}
 		$tax_class = strtolower($tax_class);
 
+		static $customerCountry;
+
 		$countries = new DvK\Vat\Countries();
 
-		if(empty($customer_country))
+		if(empty($customer_country) && empty($customerCountry))
 		{
 			$customer_ip = e107::getIPHandler()->getIP();
 			$customerCountry = $countries->ip($customer_ip);
@@ -4026,17 +4034,17 @@ class vstore
 			$customerCountry = $customer_country;
 		}
 
-		$businessCountry = $this->pref['tax_business_country'];
+		$businessCountry = $pref['tax_business_country'];
 
 
-		if($customerCountry === $businessCountry)
+		if($customerCountry === $businessCountry) // customer is from the same country as the business
 		{
-			// customer is from the same country as the business
-			$tax_classes = e107::unserialize($this->pref['tax_classes']); // just a precaution - now an array.
+
+			$tax_classes = e107::unserialize($pref['tax_classes']); // just a precaution - now an array.
 			foreach($tax_classes as $tclass)
 			{
 				// lookup tax value
-				if($tclass['name'] == $tax_class)
+				if($tclass['name'] === $tax_class)
 				{
 					$result = floatval($tclass['value']);
 					break;

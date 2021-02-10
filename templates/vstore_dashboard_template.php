@@ -160,25 +160,35 @@ $VSTORE_DASHBOARD_TEMPLATE['download']['list']['item'] = '
  * List downloads
  */
 $VSTORE_DASHBOARD_TEMPLATE['address']['view'] = '
-
-    <div class="col-12 col-xs-12 col-sm-6">
-        <h4>Billing</h4>
-
-        {DASHBOARD: billing_address}
-
-        <br />
-        {DASHBOARD: edit_billing}
+	<div class="row">
+	    <div class="col-12 col-xs-12 col-sm-6">
+	    	<div class="card h-100">
+		        <div class="card-body">
+			        <h4 class="card_title">Billing</h4>
+			
+			        {DASHBOARD: billing_address}
+			        
+			    </div>
+			     <div class="card-footer text-right text-end">
+			        {DASHBOARD: edit_billing}
+			     </div>
+		     </div>
+	    </div>
+	
+	    <div class="col-12 col-xs-12 col-sm-6">
+	    <div class="card h-100">
+	    		<div class="card-body">
+		        <h4 class="card_title">Shipping</h4>
+		
+		        {DASHBOARD: shipping_address}
+			      
+		        </div>
+		          <div class="card-footer text-right text-end">
+			        {DASHBOARD: edit_shipping}
+			      </div>
+	        </div>
+	    </div>
     </div>
-
-    <div class="col-12 col-xs-12 col-sm-6">
-        <h4>Shipping</h4>
-
-        {DASHBOARD: shipping_address}
-
-        <br />
-        {DASHBOARD: edit_shipping}
-    </div>
-    
 
 ';
 
@@ -189,79 +199,67 @@ $VSTORE_DASHBOARD_TEMPLATE['address']['view'] = '
 $VSTORE_DASHBOARD_TEMPLATE['address']['edit']['shipping']['body'] = '
 	<h4>Shipping Details</h4>
 
-	<div class="row">
+	<div class="row g-3">
 		<div class="col-12 col-xs-12 col-sm-6">
 			<div class="form-group">
-				<label for="ship_firstname" class="required">First Name</label>
+				<label for="ship_firstname" class="form-label required">First Name</label>
 				{SHIPPING_FIELD: ship_firstname}
 			</div>
 		</div>
 		<div class="col-12 col-xs-12 col-sm-6">
 			<div class="form-group">
-				<label for="ship_lastname" class="required">Last Name</label>
+				<label for="ship_lastname" class="form-label required">Last Name</label>
 				{SHIPPING_FIELD: ship_lastname}
 			</div>
 		</div>
-	</div>
 
-	<div class="row">
 		<div class="col col-xs-12">
 			<div class="form-group">
-				<label for="ship_company">Company</label>
+				<label for="ship_company" class="form-label">Company</label>
 				{SHIPPING_FIELD: ship_company}
 			</div>
 		</div>
-	</div>
 
-	<div class="row">
 		<div class="col col-xs-12">
 			<div class="form-group">
-				<label for="ship_address" class="required">Address</label>
+				<label for="ship_address" class="form-label required">Address</label>
 				{SHIPPING_FIELD: ship_address}
 			</div>
 		</div>
-	</div>
 
-	<div class="row">
 		<div class="col-12 col-xs-12 col-sm-6">
 			<div class="form-group">
-				<label for="ship_city" class="required">Town/City</label>
+				<label for="ship_city" class="form-label required">Town/City</label>
 				{SHIPPING_FIELD: ship_city}
 			</div>
 		</div>
 		<div class="col-12 col-xs-12 col-sm-6">
 			<div class="form-group">
-				<label for="ship_state" class="required">State/Region</label>
+				<label for="ship_state" class="form-label required">State/Region</label>
 				{SHIPPING_FIELD: ship_state}
 			</div>
 		</div>
-	</div>
 
-	<div class="row">
 		<div class="col-12 col-xs-12 col-sm-6">
 			<div class="form-group">
-				<label for="ship_zip" class="required">Zip/Postcode</label>
+				<label for="ship_zip" class="form-label required">Zip/Postcode</label>
 				{SHIPPING_FIELD: ship_zip}
 			</div>
 		</div>
 		<div class="col-12 col-xs-12 col-sm-6">
 			<div class="form-group">
-				<label for="ship_country" class="required">Country</label>
+				<label for="ship_country" class="form-label required">Country</label>
 				{SHIPPING_FIELD: ship_country}
 			</div>
 		</div>
-	</div>
 
-	<div class="row">
 		<div class="col col-xs-12">
 			<div class="form-group">
-				<label for="ship_phone">Phone number</label>
+				<label for="ship_phone" class="form-label">Phone number</label>
 				{SHIPPING_FIELD: ship_phone}
 			</div>
 		</div>
-	</div>
 
-	<div class="row">
 		<div class="col-12 col-xs-12">
 			<div class="form-group">
 				<label class="required"></label> Required field
@@ -277,107 +275,93 @@ $VSTORE_DASHBOARD_TEMPLATE['address']['edit']['shipping']['body'] = '
 $VSTORE_DASHBOARD_TEMPLATE['address']['edit']['billing']['body'] = '
 	<h4>Billing address</h4>
 
-	<div class="row">
+	<div class="row g-3">
 		<div class="col-12 col-xs-12 col-sm-6">
 			<div class="form-group">
-				<label for="cust_firstname" class="required">First Name</label>
+				<label for="cust_firstname" class="form-label required">First Name</label>
 				{CUSTOMER_FIELD: cust_firstname}
 			</div>
 		</div>
 		<div class="col-12 col-xs-12 col-sm-6">
 			<div class="form-group">
-				<label for="cust_lastname" class="required">Last Name</label>
+				<label for="cust_lastname" class="form-label required">Last Name</label>
 				{CUSTOMER_FIELD: cust_lastname}
 			</div>
 		</div>
-	</div>
 
-	<div class="row">
 		<div class="col col-xs-12">
 			<div class="form-group">
-				<label for="cust_company">Company</label>
+				<label for="cust_company" class="form-label">Company</label>
 				{CUSTOMER_FIELD: cust_company}
 			</div>
 		</div>
-	</div>
 
-	<div class="row">
 		<div class="col-12 col-xs-12 col-sm-6">
 			<div class="form-group">
-				<label for="cust_vat_id">VAT ID</label>
+				<label for="cust_vat_id" class="form-label">VAT ID</label>
 				{CUSTOMER_FIELD: cust_vat_id}
 			</div>
 		</div>
 		<div class="col-12 col-xs-12 col-sm-6">
 			<div class="form-group">
-				<label for="cust_taxcode">Tax code</label>
+				<label for="cust_taxcode" class="form-label">Tax code</label>
 				{CUSTOMER_FIELD: cust_taxcode}
 			</div>
 		</div>
-	</div>
 
-	<div class="row">
 		<div class="col col-xs-12">
 			<div class="form-group">
-				<label for="cust_address" class="required">Address</label>
+				<label for="cust_address" class="form-label required">Address</label>
 				{CUSTOMER_FIELD: cust_address}
 			</div>
 		</div>
-	</div>
 
-	<div class="row">
 		<div class="col-12 col-xs-12 col-sm-6">
 			<div class="form-group">
-				<label for="cust_city" class="required">Town/City</label>
+				<label for="cust_city" class="form-label required">Town/City</label>
 				{CUSTOMER_FIELD: cust_city}
 			</div>
 		</div>
 		<div class="col-12 col-xs-12 col-sm-6">
 			<div class="form-group">
-				<label for="cust_state">State/Region</label>
+				<label for="cust_state" class="form-label">State/Region</label>
 				{CUSTOMER_FIELD: cust_state}
 			</div>
 		</div>
-	</div>
 
-	<div class="row">
 		<div class="col-12 col-xs-12 col-sm-6">
 			<div class="form-group">
-				<label for="cust_zip" class="required">Zip/Postcode</label>
+				<label for="cust_zip" class="form-label required">Zip/Postcode</label>
 				{CUSTOMER_FIELD: cust_zip}
 			</div>
 		</div>
 		<div class="col-12 col-xs-12 col-sm-6">
 			<div class="form-group">
-				<label for="cust_country" class="required">Country</label>
+				<label for="cust_country" class="form-label required">Country</label>
 				{CUSTOMER_FIELD: cust_country}
 			</div>
 		</div>
-	</div>
 
-	<div class="row">
 		<div class="col-12 col-xs-12">
 			<div class="form-group">
-				<label for="cust_email" class="required">Email address</label>
+				<label for="cust_email" class="form-label required">Email address</label>
 				{CUSTOMER_FIELD: cust_email}
 			</div>
 		</div>
-	</div>
 
-	<div class="row">
 		<div class="col-12 col-xs-12 col-sm-6">
 			<div class="form-group">
-				<label for="cust_phone">Phone number</label>
+				<label for="cust_phone" class="form-label">Phone number</label>
 				{CUSTOMER_FIELD: cust_phone}
 			</div>
 		</div>
 		<div class="col-12 col-xs-12 col-sm-6">
 			<div class="form-group">
-				<label for="cust_email">Fax number</label>
+				<label for="cust_email" class="form-label">Fax number</label>
 				{CUSTOMER_FIELD: cust_fax}
 			</div>
 		</div>
-	</div>
+
 
 	{CUSTOMER_FIELD: add_field0}
 
@@ -387,7 +371,7 @@ $VSTORE_DASHBOARD_TEMPLATE['address']['edit']['billing']['body'] = '
 	
 	{CUSTOMER_FIELD: add_field3}
 
-	<div class="row">
+
 		<div class="col-12 col-xs-12">
 			<div class="form-group">
 				<label class="required"></label> Required field
@@ -397,13 +381,13 @@ $VSTORE_DASHBOARD_TEMPLATE['address']['edit']['billing']['body'] = '
 ';
 
 $VSTORE_DASHBOARD_TEMPLATE['address']['edit']['billing']['additional']['item'] = '
-	<div class="row">
+
 		<div class="col-12 col-md-12">
 			<div class="form-group">
 				{CUSTOMER_ADD_LABEL}
 				{CUSTOMER_ADD_FIELD}
 			</div>
 		</div>
-	</div>
+
 ';
     

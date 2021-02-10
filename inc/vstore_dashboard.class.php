@@ -26,7 +26,7 @@ class vstore_dashboard extends vstore
 			'dashboard' => 'Dashboard', 
 			'orders' => 'My orders', 
 			'files' => 'My downloads', 
-			'addresses' => 'My adresses', 
+			'addresses' => 'My addresses',
 			'account' => 'My account'
         );
         
@@ -41,7 +41,7 @@ class vstore_dashboard extends vstore
         );
 
         $this->area = strtolower(trim(vartrue($this->get['area'], 'dashboard')));
-        $this->action = strtolower(trim(vartrue($this->get['action'], '')));
+        $this->action = strtolower(trim(vartrue($this->get['action'])));
         $this->id = intval(vartrue($this->get['id'], 0));
 
 		$this->tp = e107::getParser();
@@ -171,9 +171,9 @@ class vstore_dashboard extends vstore
         
                 global $nextprev_parms;
             
-                $nextprev_parms  = http_build_query($nextprev,false,'&');
+                $nextprev_parms  = http_build_query($nextprev,false);
         
-                $text .= $this->tp->parseTemplate("{NEXTPREV: ".$nextprev_parms."}",true);
+                $text .= $this->tp->parseTemplate("{NEXTPREV: ".$nextprev_parms."}");
             }
         }
         else
@@ -276,9 +276,9 @@ class vstore_dashboard extends vstore
         
                 global $nextprev_parms;
             
-                $nextprev_parms  = http_build_query($nextprev,false,'&');
+                $nextprev_parms  = http_build_query($nextprev,false);
         
-                $text .= $this->tp->parseTemplate("{NEXTPREV: ".$nextprev_parms."}",true);
+                $text .= $this->tp->parseTemplate("{NEXTPREV: ".$nextprev_parms."}");
             }
         }
         else
@@ -326,7 +326,7 @@ class vstore_dashboard extends vstore
         $data = $this->sql->retrieve('vstore_customer', '*', 'cust_e107_user = '.USERID);
         if ($data)
         {
-			$text .= $this->frm->open('address_edit', 'post');
+			$text .= $this->frm->open('address_edit', 'post', null, array('class'=>'form'));
 
 			if ($this->id === 1) // Billing address
 			{
@@ -381,15 +381,15 @@ class vstore_dashboard extends vstore
 							if ($v['type'] == 'text')
 							{
 								// Textboxes
-								$field = $this->text($fieldname, $fieldvalue, 100, array('placeholder'=>varset($v['placeholder'][e_LANGUAGE], ''), 'required'=>($v['required'] ? 1 : 0)));
+								$field = $this->frm->text($fieldname, $fieldvalue, 100, array('placeholder' =>varset($v['placeholder'][e_LANGUAGE]), 'required' =>($v['required'] ? 1 : 0)));
 							}
 							elseif ($v['type'] == 'checkbox')
 							{
 								// Checkboxes
-								$field = '<div class="form-control">'.$this->checkbox($fieldname, 1, 0, array('required'=>($v['required'] ? 1 : 0)));
+								$field = '<div class="form-control">'.$this->frm->checkbox($fieldname, 1, 0, array('required'=>($v['required'] ? 1 : 0)));
 								if (vartrue($v['placeholder']))
 								{
-									$field .= ' <label for="'.$this->name2id($fieldname).'-1" class="text-muted">&nbsp;'.$this->tp->toHTML($v['placeholder'][e_LANGUAGE]).'</label>';
+									$field .= ' <label for="'.$this->frm->name2id($fieldname).'-1" class="text-muted">&nbsp;'.$this->tp->toHTML($v['placeholder'][e_LANGUAGE]).'</label>';
 								}
 								$field .= '</div>';
 							}
@@ -427,7 +427,7 @@ class vstore_dashboard extends vstore
 			$text .= '
 				<hr/>
 				<div class="text-center">
-				<a href="'.e107::url('vstore', 'dashboard', array('dash' => 'addresses')).'"  class="btn btn-default">Back</a>&nbsp;';
+				<a href="'.e107::url('vstore', 'dashboard', array('dash' => 'addresses')).'"  class="btn btn-default btn-secondary">Back</a>&nbsp;';
 			$text .= $this->frm->button('edit_address', $this->id, 'submit', 'Save', array('class' => 'btn btn-primary'));
 			$text .= '</div>';
 

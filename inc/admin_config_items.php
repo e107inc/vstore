@@ -35,11 +35,11 @@
 			'item_name'      => array('title' => LAN_TITLE, 'type' => 'text', 'data' => 'str', 'width' => 'auto', 'inline' => true, 'help' => '', 'readParms' => array(), 'writeParms' => array('size' => 'xxlarge'), 'class' => 'left', 'thclass' => 'left',),
 			'item_desc'      => array('title' => LAN_DESCRIPTION, 'type' => 'textarea', 'data' => 'str', 'width' => 'auto', 'help' => '', 'readParms' => array(), 'writeParms' => array('size' => 'xxlarge', 'maxlength' => 250), 'class' => 'center', 'thclass' => 'center',),
 			'item_cat'       => array('title' => LAN_CATEGORY, 'type' => 'dropdown', 'data' => 'int', 'width' => 'auto', 'filter' => true, 'batch' => true, 'inline' => true, 'help' => '', 'readParms' => array(), 'writeParms' => array(), 'class' => 'left', 'thclass' => 'left',),
-			'item_price'     => array('title' => 'Price', 'type' => 'number', 'data' => 'float', 'width' => 'auto', 'inline' => true, 'help' => 'Price is always the gross price incl. tax', 'readParms' => array('decimals' => 2), 'writeParms' => array('decimals' => 2), 'class' => 'right', 'thclass' => 'right',),
-			'item_inventory' => array('title' => 'Inventory', 'type' => 'method', 'data' => 'int', 'width' => 'auto', 'inline' => false, 'help' => 'Enter -1 if this item is always available or the number of units you have in stock', 'readParms' => array(), 'writeParms' => array('default' => -1), 'class' => 'right item-inventory', 'thclass' => 'right',),
+			'item_price'     => array('title' => 'Price', 'type' => 'number', 'data' => 'float', 'width' => 'auto', 'inline' => true, 'help' => '', 'readParms' => array('decimals' => 2), 'writeParms' => array('decimals' => 2), 'class' => 'right', 'thclass' => 'right',),
+			'item_inventory' => array('title' => 'Inventory', 'type' => 'method', 'data' => 'int', 'width' => 'auto', 'inline' => false, 'help' => '', 'readParms' => array(), 'writeParms' => array('default' => -1), 'class' => 'right item-inventory', 'thclass' => 'right',),
 
 			// Tab 1
-			'item_pic'       => array('title' => 'Images/Videos', 'type' => 'images', 'tab' => 1, 'data' => 'json', 'width' => 'auto', 'help' => "Drag and Drop images and videos here to display them on the product's page.", 'readParms' => array(), 'writeParms' => 'media=vstore&video=1&max=8', 'class' => 'center', 'thclass' => 'center',),
+			'item_pic'       => array('title' => 'Images/Videos', 'type' => 'images', 'tab' => 1, 'data' => 'json', 'width' => 'auto', 'help' => "Drag and drop images and videos here to display them on the product's page.", 'readParms' => array(), 'writeParms' => 'media=vstore&video=1&max=8', 'class' => 'center', 'thclass' => 'center',),
 
 			// Tab 2
 			'item_tax_class' => array('title' => 'Tax class', 'type' => 'method',  'tab' => 2,'data' => 'str', 'width' => 'auto', 'filter' => true, 'batch' => true, 'inline' => true, 'help' => '', 'readParms' => array(), 'writeParms' => array(), 'class' => 'left', 'thclass' => 'left'),
@@ -77,18 +77,30 @@
 		protected $itemVarsType = array();
 		// optional
 
-		public function EditObserver()
+		private function setDynamicHelpMessages()
 		{
-			parent::EditObserver();
-
 			$currency = e107::pref('vstore', 'currency');
 			$weight = e107::pref('vstore', 'weight_unit');
 
-			$this->fields['item_shipping']['help'] = "The cost of shipping this item in ".$currency.". eg. 2.00";
-			$this->fields['item_weight']['help'] = "The weight of the item (".vstore::weightUnits($weight)."). Enter decimal value only.";
+			$this->fields['item_price']['help']         = "Enter the price of the item in ".$currency." (without tax).";
+			$this->fields['item_shipping']['help']      = "The cost of shipping this item in ".$currency.". eg. 2.00";
+			$this->fields['item_weight']['help']        = "The weight of the item (".vstore::weightUnits($weight)."). Enter decimal value only.";
+			$this->fields['item_inventory']['help']    = "Enter -1 if this item is always available or the number of units you have in stock.";
+
+		}
 
 
+		public function EditObserver()
+		{
+			parent::EditObserver();
+			$this->setDynamicHelpMessages();
 
+		}
+
+		public function CreateObserver()
+		{
+			parent::CreateObserver();
+			$this->setDynamicHelpMessages();
 		}
 
 

@@ -76,6 +76,8 @@ class vstore_pref_ui extends e_admin_ui
 
 			'tax_calculate'	            => array('title'=> 'Calculate tax', 'tab'=>'tax', 'type'=>'bool', 'data' => 'int','help'=>'Enable to activate tax calculation.', 'writeParms' => array('label' => 'yesno')),
 			'tax_business_country'		=> array('title'=> 'Business country', 'tab'=>'tax', 'type'=>'country', 'data' => 'string', 'help'=>'The country where the business is located.', 'writeParms' => array()),
+		//	'tax_include_in_price'		=> array('title'=> 'Include tax in display price', 'tab'=>'tax', 'type'=>'bool', 'data' => 'string', 'help'=>'When enabled, the price displayed will include tax.', 'writeParms' => array()),
+
 			'tax_check_vat'	            => array('title'=> 'Check VAT id online (EU only!)', 'tab'=>'tax', 'type'=>'bool', 'data' => 'int','help'=>'Enable to activate online VAT id checking. (EU only!)', 'writeParms' => array('label' => 'yesno')),
 			'tax_classes'				=> array('title'=> 'Tax classes', 'tab'=>'tax', 'type'=>'method', 'data' => 'array', 'help'=>'The tax classes and default tax value to use with the products.<br />Enter tax value as decimal number. eg. 0.19 for 19%', 'writeParms' => array()),
 			
@@ -348,8 +350,8 @@ class vstore_pref_form_ui extends e_admin_form_ui
 			{
 				$text .= '
 				<tr>
-					<td>'.$this->text('shipping_data['.$i.'][unit]', number_format($val['unit'], 2), 8, array('pattern' => '^(\d+(\.\d{1,2}){0,1})$', 'min' => '0', 'size'=>'block-level')).'</td>
-					<td>'.$this->text('shipping_data['.$i.'][cost]', number_format($val['cost'], 2), 8, array('pattern' => '^(\d+(\.\d{1,2}){0,1})$', 'min' => '0', 'size'=>'block-level')).'</td>
+					<td>'.$this->text('shipping_data['.$i.'][unit]', number_format($val['unit'], 2, '.',''), 8, array('pattern' => '^(\d+(\.\d{1,2}){0,1})$', 'min' => '0', 'size'=>'block-level')).'</td>
+					<td>'.$this->text('shipping_data['.$i.'][cost]', number_format($val['cost'], 2, '.',''), 8, array('pattern' => '^(\d+(\.\d{1,2}){0,1})$', 'min' => '0', 'size'=>'block-level')).'</td>
 					<td>';
 
 				$text .= ($i !== 0) ? '<button class="vstore-shipping-remove btn  btn-danger" type="button"><i class="fa fa-times"></i> </button>' : '&nbsp;';

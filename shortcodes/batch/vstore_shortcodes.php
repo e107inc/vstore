@@ -19,14 +19,11 @@
 		{
 
 			$this->captionOutOfStock = defset("LAN_VSTORE_003", "Out of Stock");
-
-			$this->vpref = e107::pref('vstore');
-
-			$currency = !empty($this->vpref['currency']) ? $this->vpref['currency'] : 'USD';
-
-			$this->curSymbol = vstore::getCurrencySymbol($currency);
-			$this->currency = ($this->displayCurrency === true) ? $currency : '';
-			$this->tp = e107::getParser();
+			$this->vpref             = e107::pref('vstore');
+			$currency                = !empty($this->vpref['currency']) ? $this->vpref['currency'] : 'USD';
+			$this->curSymbol         = vstore::getCurrencySymbol($currency);
+			$this->currency          = ($this->displayCurrency === true) ? $currency : '';
+			$this->tp                = e107::getParser();
 
 			// get the locale settings for decimal point and thousands separator
 			// will be used a lot by format_amount()
@@ -116,7 +113,7 @@
 					'Cancel order');
 			}
 
-			return e107::getForm()->button('order_actions', $actions, 'dropdown', 'Actions', array('class' => 'btn-default'));
+			return e107::getForm()->button('order_actions', $actions, 'dropdown', 'Actions', array('class' => 'btn-default btn-secondary'));
 		}
 
 		/**
@@ -854,7 +851,7 @@
 
 		function sc_cat_pic($parm=null)
 		{
-			return $this->tp->toImage($this->var['cat_image']);
+			return $this->tp->toImage($this->var['cat_image'],$parm);
 		}
 
 		function sc_cat_url($parm=null)
@@ -960,7 +957,19 @@
 				$price = $varprice;
 			}
 
-			return ' <span class="vstore-item-price-'.$itemid.'">'.$this->format_amount($price).'</span><input type="hidden" class="vstore-item-baseprice-'.$itemid.'" value="'.$baseprice.'"/>';
+			$tip = 'Excluding tax';
+			if(!empty($this->vpref['tax_include_in_price']))
+			{
+				$custData = vstore::getCustomerData();
+				if($rate = vstore::getTaxRate($this->var['item_tax_class'], varset($custData['country'],null), $this->vpref))
+				{
+					$tax = vstore::calcTaxAmount($price, $rate);
+					$price += $tax;
+					$tip = " title='Includes ".number_format($tax,2)." tax'";
+				}
+			}
+
+			return ' <span class="vstore-item-price-'.$itemid.'"'.$tip.'>'.$this->format_amount($price).'</span><input type="hidden" class="vstore-item-baseprice-'.$itemid.'" value="'.$baseprice.'"/>';
 		}
 
 		function sc_item_weight($parm=null)
@@ -1360,7 +1369,7 @@
 					$text = ($this->var['is_business'] && !$this->var['is_local']) ? '' : ($this->var['item']['tax_rate'] * 100) . '%';
 					break;
 				case 'item_total':
-					$field = ($this->var['is_business'] && !$this->var['is_local'] ? 'item_total_net' : 'item_total');
+					$field = (!empty($this->var['is_business']) && !$this->var['is_local'] ? 'item_total_net' : 'item_total');
 					$value = $this->var['item'][$field];
 					$text = $this->format_amount($value);
 					//$text = $this->format_amount($this->var['item']['item_total']);
@@ -1378,7 +1387,8 @@
 					$text = $this->var['item_count'];
 					break;
 				case 'pic':
-					$text = $this->var['pic'];
+				//	e107::getDebug()->log($this->var);
+					$text = varset($this->var['item']['pic']);
 					break;
 				case 'index_url':
 					$text = e107::url('vstore','index');
@@ -1500,7 +1510,7 @@
 
 		function sc_cart_coupon()
 		{
-			$template = e107::getTemplate('vstore', 'vstore', 'cart');
+			$template = e107::getTemplate('vstore', 'vstore_cart', 'cart');
 
 			$text = $this->tp->parseTemplate($template['coupon'], true, $this);
 			return $text;
@@ -1509,7 +1519,7 @@
 		function sc_cart_coupon_field()
 		{
 			$frm = e107::getForm();
-			$text = '<div class="form-inline">';
+			$text = '<div class="form-inline d-flex">';
 			$text .= $frm->label('Coupon code:', 'cart_coupon_code');
 			$text .= '&nbsp;' . $frm->text('cart_coupon_code', $this->var['cart_coupon']['code'], 50, array('placeholder' => 'Enter the coupon code if available', 'size' => 'large'));
 			$text .= '</div>';
@@ -1544,7 +1554,7 @@
 			{
 				return '';
 			}
-			$template = e107::getTemplate('vstore', 'vstore', 'cart');
+			$template = e107::getTemplate('vstore', 'vstore_cart');
 			$text = $x = $y = '';
 			foreach($this->var['cart_taxTotal'] as $tax_rate => $value)
 			{
@@ -1844,7 +1854,7 @@
 
 				case 'edit_billing':
 				case 'edit_shipping':
-					$text = '<a href="'.e107::url('vstore', 'dashboard_action', array('dash' => 'addresses', 'action' => 'edit', 'id' => ($key == 'edit_billing' ? 1 : 2))).'" class="btn btn-default">'.LAN_EDIT.'</a>';
+					$text = '<a href="'.e107::url('vstore', 'dashboard_action', array('dash' => 'addresses', 'action' => 'edit', 'id' => ($key == 'edit_billing' ? 1 : 2))).'" class="btn btn-default btn-secondary">'.LAN_EDIT.'</a>';
 					break;
 
 			}
