@@ -2324,11 +2324,11 @@ class vstore
 			}
 		}
 	}
-
+/*
 	public static function getGateways()
 	{
 		return self::$gateways;
-	}
+	}*/
 
 	/**
 	 * Return the icon for the given gateway
@@ -3208,17 +3208,18 @@ class vstore
 			$item_total = $price * $row['cart_qty'];
 
 			// Calc coupon amount for this item
-			$coupon_amount = $this->calcCouponAmount($coupon, $row);
+			$coupon_amount = vstore::calcCouponAmount($coupon, $row);
 			$checkoutData['coupon']['amount'] += $coupon_amount;
 
-			$row['is_business'] = $isBusiness;
-			$row['is_local'] = $isLocal;
-			$row['tax_rate'] = $this->getTaxRate($row['cart_item_tax_class'], varset($cust['country']));
-			$row['tax_amount'] = $this->calcTaxAmount($item_total, $row['tax_rate']);
+			$row['is_business']    = $isBusiness;
+			$row['is_local']       = $isLocal;
+			$row['tax_rate']       = $this->getTaxRate($row['cart_item_tax_class'], varset($cust['country']));
+			$row['tax_amount']     = vstore::calcTaxAmount($item_total, $row['tax_rate']);
 			$row['item_price_net'] = $this->calcNetPrice($price, $row['tax_rate']);
 
-			$row['item_total'] = $item_total;
-			$row['item_total_net'] = $this->calcNetPrice($item_total, $row['tax_rate']);
+			$row['item_total']     = $item_total;
+			$row['item_total_net'] = $item_total; // $this->calcNetPrice($item_total, $row['tax_rate']);
+
 
 			$rateKey = ''.$row['tax_rate'];
 
@@ -3238,7 +3239,7 @@ class vstore
 			}
 
 
-			$taxTotal[$rateKey] += $this->calcTaxAmount($coupon_amount, $row['tax_rate']);
+			$taxTotal[$rateKey] += vstore::calcTaxAmount($coupon_amount, $row['tax_rate']);
 			$checkoutData['coupon']['amount_net'] += $this->calcNetPrice($coupon_amount, $row['tax_rate']);
 
 			$netTotal[$rateKey] += $row['item_total_net'];
@@ -3269,12 +3270,17 @@ class vstore
 			foreach($netTotal as $tax_rate => $value)
 			{
 				$gross = ($value / $sum) * $shippingTotal;
-				$taxTotal['' . $tax_rate] += $this->calcTaxAmount($gross, $tax_rate);
+				$taxTotal['' . $tax_rate] += vstore::calcTaxAmount($gross, $tax_rate);
 				$shippingNet += $this->calcNetPrice($gross, $tax_rate);
 			}
 		}
 
 		$grandTotal = $subTotal + $shippingTotal + $checkoutData['coupon']['amount'];
+		foreach($taxTotal as $amount)
+		{
+			$grandTotal += $amount;
+		}
+
 		$grandNet = $subTotalNet + $shippingNet + $checkoutData['coupon']['amount_net'];
 
 		$totals = array(
@@ -3778,11 +3784,11 @@ class vstore
 	 * will be 0.0 in case of missing data or if the coupon code isn't valid for some reason
 	 * If the coupon is valid, the result is always <= 0.0
 	 *
-	 * @param array $coupon
+	 * @param array $coupon a row from the vstore_coupons table.
 	 * @param array $item (should have the columns item_id, item_cat, item_price, cart_qty, item_name)
 	 * @return double
 	 */
-	public function calcCouponAmount($coupon, $item)
+	public static function calcCouponAmount($coupon, $item)
 	{
 
 		if(empty($coupon) || empty($item))
@@ -3791,7 +3797,7 @@ class vstore
 		}
 
 		// Coupon active?
-		if(!vartrue($coupon['coupon_active']))
+		if(empty($coupon['coupon_active']))
 		{
 			e107::getMessage()->addError('Coupon is not available!', 'vstore');
 
@@ -3799,7 +3805,7 @@ class vstore
 		}
 
 		// Coupon started
-		if(vartrue($coupon['coupon_start']) && time() < $coupon['coupon_start'])
+		if(!empty($coupon['coupon_start']) && time() < $coupon['coupon_start'])
 		{
 			e107::getMessage()->addError('Coupon is not yet available!', 'vstore');
 
@@ -3807,7 +3813,7 @@ class vstore
 		}
 
 		// Coupon expired
-		if(vartrue($coupon['coupon_end']) && time() > $coupon['coupon_end'])
+		if(!empty($coupon['coupon_end']) && time() > $coupon['coupon_end'])
 		{
 			e107::getMessage()->addError('Coupon is no longer available!', 'vstore');
 
@@ -3863,17 +3869,18 @@ class vstore
 
 		// Holds the usage data for the current items
 		$usage = array();
+		$itemID = $item['item_id'];
 
 		// Check if items are defined
 		if(count($coupon['coupon_items']) > 0)
 		{
-			if(!in_array($item['item_id'], $coupon['coupon_items']))
+			if(!in_array($itemID, $coupon['coupon_items']))
 			{
 				// Item not included!
 				return $amount;
 			}
 		}
-		elseif(count($coupon['coupon_items_ex']) > 0 && in_array($item['item_id'], $coupon['coupon_items_ex']))
+		elseif(count($coupon['coupon_items_ex']) > 0 && in_array($itemID, $coupon['coupon_items_ex']))
 		{
 			// item excluded
 			return $amount;
@@ -3898,14 +3905,14 @@ class vstore
 		if($coupon['coupon_limit_item'] > -1)
 		{
 			// Query database only the first time for this item (item_id can be duplicate due to item_variations)
-			if(!isset($usage[$item['item_id']]))
+			if(!isset($usage[$itemID]))
 			{
 				$data = $sql->retrieve(
 					'vstore_orders',
 					'order_items',
 					sprintf(
 						'order_items LIKE \'%%"id": "%d"%%\' AND order_pay_coupon_code="%s"',
-						$item['item_id'],
+						$itemID,
 						$coupon['coupon_code']
 					),
 					true
@@ -3917,9 +3924,9 @@ class vstore
 						$item_info = e107::unserialize($row['order_items']);
 						foreach($item_info as $info)
 						{
-							if($info['id'] == $item['item_id'])
+							if($info['id'] == $itemID)
 							{
-								$usage[$item['item_id']] += vartrue($info['quantity'], 0);
+								$usage[$itemID] += vartrue($info['quantity'], 0);
 							}
 						}
 					}
@@ -3927,14 +3934,19 @@ class vstore
 			}
 
 			// Add items from this cart
-			$usage[$item['item_id']] += $item['cart_qty'];
+			if(!isset($usage[$itemID]))
+			{
+				$usage[$itemID] = 0;
+			}
+
+			$usage[$itemID] += $item['cart_qty'];
 
 			// Check if quantity exceeds limit
-			if($usage[$item['item_id']] > $coupon['coupon_limit_item'])
+			if($usage[$itemID] > $coupon['coupon_limit_item'])
 			{
-				if(($usage[$item['item_id']] - $item['cart_qty']) < $coupon['coupon_limit_item'])
+				if(($usage[$itemID] - $item['cart_qty']) < $coupon['coupon_limit_item'])
 				{
-					$max_usage = $coupon['coupon_limit_item'] - ($usage[$item['item_id']] - $item['cart_qty']);
+					$max_usage = $coupon['coupon_limit_item'] - ($usage[$itemID] - $item['cart_qty']);
 					e107::getMessage()->addWarning(
 						'Item quantity exceeds the allowed number of coupon code usage for this item "' .
 						$item['item_name'] . '"!<br />The coupon will only used for remaining number of usages (' .
@@ -3964,13 +3976,13 @@ class vstore
 		// Item included or not explicitly excluded = Apply coupon
 		if($qty > 0)
 		{
-			if($coupon['coupon_type'] == '%')
+			if($coupon['coupon_type'] === '%')
 			{
 				$amount += (double) ($item['item_price'] * $qty) * $coupon['coupon_amount'] / 100;
 			}
-			elseif($coupon['coupon_type'] == 'F')
+			elseif($coupon['coupon_type'] === 'F')
 			{
-				$amount += (double) ($item['item_price'] * $qty) - $coupon['coupon_amount'];
+				$amount += (double) ($qty * (float) $coupon['coupon_amount']);
 			}
 		}
 
@@ -4182,9 +4194,9 @@ class vstore
 	 * @param number $tax_rate
 	 * @return number
 	 */
-	private function calcTaxAmount($grossprice, $tax_rate)
+	public static function calcTaxAmount($netPrice, $tax_rate)
 	{
-		return round(($grossprice * $tax_rate) / (1 + $tax_rate), 2);
+		return round(($netPrice * $tax_rate) , 2);
 	}
 
 	/**
