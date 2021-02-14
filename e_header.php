@@ -77,7 +77,10 @@
 
 				$text = '<span id="vstore-cart-icon" '.$style.'>'.e107::getParser()->toGlyph("fa-shopping-cart").'<span class="badge">'.$count.'</span></span>';
 
-			    define('LAN_PLUGIN_VSTORE_CARTICON', $text);
+				if(!defined('LAN_PLUGIN_VSTORE_CARTICON'))
+				{
+			        define('LAN_PLUGIN_VSTORE_CARTICON', $text);
+				}
 
 	        }
 

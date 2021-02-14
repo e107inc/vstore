@@ -586,7 +586,7 @@
 					$helpText = 'Enter -1 if this item is always available or the number of units you have in stock of each variation.';
 					foreach($col['x']['names'] as $nameX)
 					{
-						$text .= sprintf('<tr><th style="width: 20%%;">%s'.$this->help($helpText, 'before').'</th>', $nameX);
+						$text .= sprintf('<tr><th style="width: 20%%;">%s'.$this->help($helpText).'</th>', $nameX);
 						$nameX = $this->name2id($nameX);
 						foreach($col['y']['names'] as $nameY)
 						{

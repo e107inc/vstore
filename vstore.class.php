@@ -2964,7 +2964,7 @@ class vstore
 	 * @param array/boolean $itemvars
 	 * @return int
 	 */
-	private function getItemInventory($itemid, $itemvars = false)
+	public function getItemInventory($itemid, $itemvars = false)
 	{
 
 		$itemvars = $this->fixItemVarArray($itemvars);
