@@ -21,7 +21,7 @@ return array(
     'Omnipay\\Braintree\\' => array($vendorDir . '/omnipay/braintree/src'),
     'Money\\' => array($vendorDir . '/moneyphp/money/src'),
     'Http\\Promise\\' => array($vendorDir . '/php-http/promise/src'),
-    'Http\\Message\\' => array($vendorDir . '/php-http/message/src', $vendorDir . '/php-http/message-factory/src'),
+    'Http\\Message\\' => array($vendorDir . '/php-http/message-factory/src', $vendorDir . '/php-http/message/src'),
     'Http\\Discovery\\' => array($vendorDir . '/php-http/discovery/src'),
     'Http\\Client\\' => array($vendorDir . '/php-http/httplug/src'),
     'Http\\Adapter\\Guzzle7\\' => array($vendorDir . '/php-http/guzzle7-adapter/src'),
