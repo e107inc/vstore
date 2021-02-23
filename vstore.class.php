@@ -4645,7 +4645,7 @@ class vstore
 
 			if($pdf->pdf_path == false || trim($pdf->pdf_path) == '')
 			{
-				e107::getAdminLog()->add(
+				e107::getLog()->add(
 					'Vstore',
 					'Unable to create invoice user folder: "' .
 					e107::getFile()->getUserDir($data['userid'], false) . '"',
