@@ -71,7 +71,7 @@ $VSTORE_CART_TEMPLATE['end'] = '
 
 $VSTORE_CART_TEMPLATE['tax'] = '
 <tr>
-	<td colspan="3" class="text-right text-end">Tax</td>
+	<td colspan="3" class="text-right text-end">'.LAN_VSTORE_GEN_024.'</td>
 	<td class="text-right text-end">[x]</td>
 	<td class="text-right text-end"><strong>[y]</strong></td>
 </tr>
