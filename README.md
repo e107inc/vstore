@@ -1,6 +1,9 @@
 Vstore changed files to be multi langual.
+
 Tested (as best as possible) on php 7 (3.22 + 4.10) and 8.0.1 
+
 Please use up to date language packs for the system (based on git version 2.3.1).
+
 Provided language files are in English, Dutch, French, German.
 
 
