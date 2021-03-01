@@ -196,11 +196,11 @@ class vstore_order extends vstore
 	    {
 		    if($this->sql->getLastErrorNumber() > 0)
 		    {
-			    $this->last_error = 'Unable to load order! ' . $this->sql->getLastErrorText();
+			    $this->last_error = LAN_VSTORE_CUSM_046 . $this->sql->getLastErrorText();
 		    }
 		    else
 		    {
-			    $this->last_error = 'Order not found!';
+			    $this->last_error = LAN_VSTORE_CUSM_047;
 		    }
 
 		    return false;
@@ -229,11 +229,11 @@ class vstore_order extends vstore
 	    {
 		    if($this->sql->getLastErrorNumber() > 0)
 		    {
-			    $this->last_error = 'Unable to load order! ' . $this->sql->getLastErrorText();
+			    $this->last_error = LAN_VSTORE_CUSM_045 . $this->sql->getLastErrorText();
 		    }
 		    else
 		    {
-			    $this->last_error = 'Order not found!';
+			    $this->last_error = LAN_VSTORE_CUSM_046;
 		    }
 
 		    return false;
@@ -310,7 +310,7 @@ class vstore_order extends vstore
 
 	    if($result === false)
 	    {
-		    $this->last_error = 'Unable to inset/update the order! ' . $this->sql->getLastErrorText();
+		    $this->last_error = LAN_VSTORE_CUSM_048 . $this->sql->getLastErrorText();
 
 		    return false;
 	    }
@@ -388,7 +388,7 @@ class vstore_order extends vstore
         $errorPrefix = EMESSLAN_TITLE_ERROR . "\n";
 
         if (!$this->loaded) {
-            $this->last_error = $errorPrefix . 'Unable to change order status. No Order loaded!';
+            $this->last_error = $errorPrefix . LAN_VSTORE_CUSM_049;
             return false;
         }
         // record found and new status is different to new one
@@ -430,7 +430,7 @@ class vstore_order extends vstore
                 self::setCustomerUserclass($this->data['order_e107_user'], $items);
             } elseif ($result == false && intval(e107::getDb()->getLastErrorNumber()) != 0) {
                 // There was an error, return the last database error
-                $this->last_error = $errorPrefix . 'Unable to update order status. ' . e107::getDb()->getLastErrorText();
+                $this->last_error = $errorPrefix . LAN_VSTORE_CUSM_050 . e107::getDb()->getLastErrorText();
                 return false;
             }
 
@@ -469,7 +469,7 @@ class vstore_order extends vstore
 
         if (!empty($oldVal) || !empty($newVal)) {
             // Value changed message
-            $item['text'] = e107::getParser()->lanVars('Changed [x] from [y] to [z].', array(
+            $item['text'] = e107::getParser()->lanVars(LAN_VSTORE_CUSM_051, array(
                 'x' => $title,
                 'y' => varset($oldVal, '--'),
                 'z' => varset($newVal, '--')
@@ -494,7 +494,7 @@ class vstore_order extends vstore
     public function setOrderRef()
     {
         if (!$this->isLoaded()) {
-            $this->last_error = 'No order loaded. Unable to update order ref!';
+            $this->last_error = LAN_VSTORE_CUSM_052;
             return false;
         }
 
@@ -520,7 +520,7 @@ class vstore_order extends vstore
 
         $this->data['order_refcode'] = strtoupper($text);
 
-        $this->setOrderLog('Order Ref-Nr. assigned: ' . $this->data['order_refcode']);
+        $this->setOrderLog(''.LAN_VSTORE_CUSM_045.' ' . $this->data['order_refcode']);
 
         return true;
     }
@@ -546,7 +546,7 @@ class vstore_order extends vstore
             $this->data['order_invoice_nr'] = ($last_nr['last'] + 1);
         }
 
-        $this->setOrderLog('Invoice-Nr. assigned: ' . $this->data['order_invoice_nr']);
+        $this->setOrderLog(LAN_VSTORE_CUSM_044 . $this->data['order_invoice_nr']);
 
     }
 
@@ -568,15 +568,15 @@ class vstore_order extends vstore
 
         // Check inputs
         if (!$this->loaded) {
-            $this->last_error = $errorPrefix . "Order not loaded!";
+            $this->last_error = $errorPrefix . LAN_VSTORE_CUSM_052;
             return false;
         }
 
         if ($this->order_status == 'R') {
-            $this->last_error = $errorPrefix . 'Order is already refunded!';
+            $this->last_error = $errorPrefix . LAN_VSTORE_CUSM_053;
             return false;
         } elseif (!in_array($this->order_status, array('P', 'H', 'C'))) {
-            $this->last_error = $errorPrefix . 'Only orders with status "Processing", "On Hold" and "Complete" can be refunded!';
+            $this->last_error = $errorPrefix . LAN_VSTORE_CUSM_054;
             return false;
         }
 
@@ -659,7 +659,7 @@ class vstore_order extends vstore
                 break;
 
             default:
-                $this->last_error = $errorPrefix . "Missing pament gateway!";
+                $this->last_error = $errorPrefix . LAN_VSTORE_CUSM_055;
                 return false;
         }
 
@@ -674,7 +674,7 @@ class vstore_order extends vstore
             if ($supportsRefund) {
                 // Check if selected gateway has it's refunding details set
                 if (empty($refundDetails)) {
-                    $this->last_error = $errorPrefix . "Refunding details not set!";
+                    $this->last_error = $errorPrefix . LAN_VSTORE_CUSM_056;
                     return false;
                 }
 
@@ -735,7 +735,7 @@ class vstore_order extends vstore
     {
         if (!$this->loaded) {
             e107::getMessage()->addDebug(
-                'No order loaded!',
+                ''.LAN_VSTORE_HELP_022.'',
                 'vstore'
             );
             return;
@@ -773,7 +773,7 @@ class vstore_order extends vstore
     {
         if (!$this->loaded)   // No order loaded... Load order first...
         {
-            e107::getMessage()->addDebug('No order loaded!', 'vstore');
+            e107::getMessage()->addDebug(''.LAN_VSTORE_HELP_022.'', 'vstore');
             return null;
         }
 

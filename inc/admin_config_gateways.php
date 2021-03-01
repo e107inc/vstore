@@ -37,7 +37,7 @@ class vstore_gateways_ui extends e_admin_ui
 		'paypal_rest'   => 'Paypal REST',
 		'paypal_pro'    => 'Paypal Pro',
 		'mollie'        => 'Mollie',
-		'bank_transfer' => ''.LAN_VSTORE_GATE_003.''
+		'bank_transfer' => 'Bank Transfer'
 	);
 
 
@@ -65,7 +65,7 @@ class vstore_gateways_ui extends e_admin_ui
 		'gateways/bank_transfer/active' => array('title' => LAN_ACTIVE, 'type' => 'boolean', 'tab' => 'bank_transfer', 'data' => 'int', 'help' => ''),
 		'gateways/bank_transfer/title'  => array('title' => LAN_TITLE, 'type' => 'text', 'tab' => 'bank_transfer',  'data' => 'str', 'writeParms' => array('size'=>'xxlarge', 'default'=>''.LAN_VSTORE_GATE_003.'')),
 		'gateways/bank_transfer/icon'   => array('title' => LAN_ICON, 'type' => 'icon', 'tab' => 'bank_transfer', 'data' => 'str', 'help' => '', 'writeParms'=>array('default'=>'fa-bank.glyph')),
-		'gateways/bank_transfer/details' => array('title' => LAN_VSTORE_GATE_003, 'type' => 'textarea', 'tab' => 'bank_transfer', 'data' => 'str', 'writeParms' => array('placeholder' => "".LAN_VSTORE_GATE_004.""), 'help' => ''),
+		'gateways/bank_transfer/details' => array('title' => LAN_VSTORE_GATE_004, 'type' => 'textarea', 'tab' => 'bank_transfer', 'data' => 'str', 'writeParms' => array('placeholder' => LAN_VSTORE_GATE_004), 'help' => ''),
 
 	);
 

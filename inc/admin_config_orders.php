@@ -682,7 +682,7 @@ class vstore_order_form_ui extends e_admin_form_ui
 		$text = '<table class="table table-bordered table-striped">
 			<tr>
 				<th>'.LAN_VSTORE_CUSM_043.'</th>
-				<th>'.LAN_USER.'</td>
+				<th>'.LAN_USER.'</th>
 				<td>'.LAN_VSTORE_CUSM_022.'</td>
 			</tr>
 			';
