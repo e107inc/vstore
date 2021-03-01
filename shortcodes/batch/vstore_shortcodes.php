@@ -18,7 +18,7 @@
 		public function __construct()
 		{
 
-			$this->captionOutOfStock = defset("LAN_VSTORE_003", LAN_VSTORE_CUSM_032);
+			$this->captionOutOfStock = defset("LAN_VSTORE_003", "LAN_VSTORE_CUSM_032");
 
             $this->vpref             = e107::pref('vstore');
 			$currency                = !empty($this->vpref['currency']) ? $this->vpref['currency'] : 'USD';
@@ -1074,7 +1074,7 @@
 					$text = $frm->text('ship[zip]', $this->var['ship']['zip'], 15, array('placeholder'=>LAN_VSTORE_CUSM_009));
 					break;
 				case 'ship_country':
-					$text = $frm->country('ship[country]', $this->var['ship']['country'], array('placeholder'=>LAN_VSTORE_CUSM_001.'...'));
+					$text = $frm->country('ship[country]', $this->var['ship']['country'], array('placeholder'=>LAN_VSTORE_CUSM_011.'...'));
 					break;
 				case 'ship_phone':
 					$text = $frm->text('ship[phone]', $this->var['ship']['phone'], 15, array('placeholder'=>LAN_VSTORE_CUSM_014, 'required'=>0));
