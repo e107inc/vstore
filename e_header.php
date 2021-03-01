@@ -25,7 +25,7 @@
                     'outofstock' => empty($vstore_prefs['caption_outofstock'][e_LANGUAGE])
                         ? 'Out of stock'
                         : $vstore_prefs['caption_outofstock'][e_LANGUAGE],
-                    'available' => 'In stock',
+                    'available' => LAN_VSTORE_002,
                 ),
                 'ImageZoom' => array('url'=>'')
             )
@@ -81,7 +81,6 @@
 				{
 			        define('LAN_PLUGIN_VSTORE_CARTICON', $text);
 				}
-
 	        }
 
 	    }
