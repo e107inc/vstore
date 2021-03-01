@@ -20,7 +20,7 @@ define("LAN_VSTORE_ADMIN_008", "Kunden");
 define("LAN_VSTORE_ADMIN_009", "E-Mail-Vorlagen");
 define("LAN_VSTORE_ADMIN_010", "Rechnungseinstellung");
 define("LAN_VSTORE_ADMIN_011", "Zahlungsportale");
-define("LAN_VSTORE_ADMIN_012", "Statistik");
+define("LAN_VSTORE_ADMIN_012", "CC zu sich selbst");
 define("LAN_VSTORE_ADMIN_013", "Customer Panel Area");
 define("LAN_VSTORE_ADMIN_014", "noch nicht implementiert!");
 

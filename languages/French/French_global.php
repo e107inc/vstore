@@ -202,7 +202,7 @@ define("LAN_VSTORE_CUST_013", "Commande mise à jour vers");
 define("LAN_VSTORE_CUST_014", "Ordre ne peut pas être mis à jour en ");
 define("LAN_VSTORE_020", "Votre commande");
 define("LAN_VSTORE_021", "est complet et vous recevrez dans quelques minutes");
-define("LAN_VSTORE_022", "recevra une confirmation de commande par e-mail avec tous les détails !);
+define("LAN_VSTORE_022", "recevra une confirmation de commande par e-mail avec tous les détails !");
 //email admin
 define("LAN_VSTORE_MAIL_001", "Réinitialiser le modèle");
 define("LAN_VSTORE_MAIL_002", "Cliquer et enregistrer pour réinitialiser ce modèle au modèle par défaut");

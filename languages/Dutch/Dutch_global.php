@@ -64,7 +64,7 @@ define("LAN_VSTORE_CART_003", "Prijs kan veranderen als gevolg van wisselkoers."
 define("LAN_VSTORE_CART_004", "Het veld");
 
 define("LAN_VSTORE_CART_005", "Product");
-//define("LAN_VSTORE_CART_006", "Belastingen");
+define("LAN_VSTORE_CART_006", "Geen categoriën beschikbaar!");
 define("LAN_VSTORE_CART_007", "is verplicht!");
 define("LAN_VSTORE_CART_008", "Facturatie");
 define("LAN_VSTORE_CART_009", "Subtotaal");
@@ -139,7 +139,7 @@ define("LAN_VSTORE_CUSM_018", "Verzend Adres");
 
 //checkout
 define("LAN_VSTORE_CUSM_019", "Samenvatting");
-define("LAN_VSTORE_CUSM_020", "Factuur & Verzendadres");
+define("LAN_VSTORE_CUSM_020", "Factuur adres");
 define("LAN_VSTORE_CUSM_021", "Gewenste betalingsmethode");
 define("LAN_VSTORE_CUSM_022", "Omschrijving");
 define("LAN_VSTORE_CUSM_023", "Eenheidsprijs");
@@ -184,7 +184,7 @@ define("LAN_VSTORE_CUSM_062", "Prijs");
 define("LAN_VSTORE_CUSM_063", "Geen betalings methode geselecteerd!");
 define("LAN_VSTORE_CUSM_064", "Geen items voor afrekenen!");
 define("LAN_VSTORE_CUSM_065", "Geen klant data ingesteld!");
-define("LAN_VSTORE_CUSM_066", "Geen verzend data ingesteld!");
+define("LAN_VSTORE_CUSM_066", "Geen verzend data ingesteld!<br />Gelieve Verzend adres in te vullen aub.");
 define("LAN_VSTORE_CUSM_067", "Bestelling geanulleerd door gebruiker");
 define("LAN_VSTORE_CUSM_068", "Wijzigingen succesvol opgeslagen!");
 define("LAN_VSTORE_CUSM_069", "Bestand succesvol gedownload!");

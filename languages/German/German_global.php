@@ -257,7 +257,7 @@ define("LAN_VSTORE_ERR_004", "Sie müssen sich anmelden, um die Datei herunterzu
 define("LAN_VSTORE_ERR_005", "Download id");
 define("LAN_VSTORE_ERR_006", "fehlt oder ist falsch!");
 define("LAN_VSTORE_ERR_007", "enthält keine Datei zum Herunterladen!");
-define("LAN_VSTORE_ERR_008", "fehlende oder falsche Datei zum Download!")
+define("LAN_VSTORE_ERR_008", "fehlende oder falsche Datei zum Download!");
 define("LAN_VSTORE_ERR_009", "Sie haben Ihre Zahlung abgebrochen, aber Ihr Warenkorb bleibt für die weitere Verwendung verfügbar.");
 define("LAN_VSTORE_ERR_010", "Ihre Zahlung ist fehlgeschlagen (Ursache unbekannt), aber Ihr Warenkorb bleibt für weitere Zwecke verfügbar.");
 define("LAN_VSTORE_ERR_011", "Gutschein überschreitet die Anzahl der erlaubten Verwendungen für diesen Artikel");

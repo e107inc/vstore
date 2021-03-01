@@ -66,7 +66,7 @@ define("LAN_VSTORE_CART_002", "Availability");
 define("LAN_VSTORE_CART_003", "Price may change due to exchange rate.");
 define("LAN_VSTORE_CART_004", "The field");
 define("LAN_VSTORE_CART_005", "Product");
-//define("LAN_VSTORE_CART_006", "Tax");
+define("LAN_VSTORE_CART_006", "No categories available!");
 define("LAN_VSTORE_CART_007", "is required!");
 define("LAN_VSTORE_CART_008", "Billing");
 define("LAN_VSTORE_CART_009", "Subtotal");
@@ -143,7 +143,7 @@ define("LAN_VSTORE_CUSM_018", "Shipping address");
 
 //checkout sales
 define("LAN_VSTORE_CUSM_019", "Summary");
-define("LAN_VSTORE_CUSM_020", "Billing & Shipping address");
+define("LAN_VSTORE_CUSM_020", "Billing address");
 define("LAN_VSTORE_CUSM_021", "Selected payment method");
 define("LAN_VSTORE_CUSM_022", "Description");
 define("LAN_VSTORE_CUSM_023", "Unit Price");
@@ -188,7 +188,7 @@ define("LAN_VSTORE_CUSM_062", "Price");
 define("LAN_VSTORE_CUSM_063", "No payment method selected!");
 define("LAN_VSTORE_CUSM_064", "No items to checkout!");
 define("LAN_VSTORE_CUSM_065", "No customer data set!");
-define("LAN_VSTORE_CUSM_066", "No shipping data set!");
+define("LAN_VSTORE_CUSM_066", "No shipping data set! <br /> Please fill in the Shipping address");
 define("LAN_VSTORE_CUSM_067", "Order cancelled by user");
 define("LAN_VSTORE_CUSM_068", "Changes successfully saved!");
 define("LAN_VSTORE_CUSM_069", "File successfully downloaded!");

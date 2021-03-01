@@ -21,7 +21,7 @@ define("LAN_VSTORE_ADMIN_008", "Clients");
 define("LAN_VSTORE_ADMIN_009", "Modèles de courrier électronique");
 define("LAN_VSTORE_ADMIN_010", "Paramètres de facturation");
 define("LAN_VSTORE_ADMIN_011", "Passerelles de paiement");
-define("LAN_VSTORE_ADMIN_012", "Statistiques");
+define("LAN_VSTORE_ADMIN_012", "CC à vous-même");
 define("LAN_VSTORE_ADMIN_013", "Zone du tableau de bord"); //err. mess
 define("LAN_VSTORE_ADMIN_014", "pas encore implémenté !"); //err mess
 
