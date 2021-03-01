@@ -177,12 +177,12 @@ class vstore
 	);
 
 	protected static $status = array(
-        'N' => ''.LAN_VSTORE_GEN_018.'',
-        'P' => ''.LAN_VSTORE_GEN_025.'',
-        'H' => ''.LAN_VSTORE_GEN_027.'',
-        'C' => ''.LAN_VSTORE_GEN_028.'',
-        'X' => ''.LAN_VSTORE_GEN_026.'',
-        'R' => ''.LAN_VSTORE_GEN_029.''
+		'N' => 'New',
+		'P' => 'Processing',
+		'H' => 'On Hold',
+		'C' => 'Completed',
+		'X' => 'Cancelled',
+		'R' => 'Refunded'
 	);
 
 	/**
@@ -2582,7 +2582,7 @@ class vstore
         LIMIT ' . $this->from . "," . $this->perPage;
 		if((!$data = e107::getDb()->retrieve($query, true)) && intval($parent) == 0)
 		{
-			return e107::getMessage()->addInfo(''.LAN_VSTORE_PROD_023.'', 'vstore')->render('vstore');
+			return e107::getMessage()->addInfo(''.LAN_VSTORE_CART_006.'', 'vstore')->render('vstore');
 		}
 		elseif(!$data)
 		{

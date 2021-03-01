@@ -167,7 +167,7 @@
 			$sum = $total;
 
 			$data = array();
-			$data[0] = array('Day', "".LAN_VSTORE_STAT_001."", /*'Tentative', 'To Reschedule', 'Discounts Given'*/);
+			$data[0] = array('Day', "Complete", /*'Tentative', 'To Reschedule', 'Discounts Given'*/);
 			$data[0][] = array('type'=>'string', 'label'=>'Total', 'role'=>'annotation', 'p'=> array('html'=>true));
 
 
