@@ -2,6 +2,22 @@
 /**
  * Adminarea module orders
  */
+
+
+e107::css('inline', "
+			.td-gateway span { line-height: 2em; vertical-align: top; margin-left: 5px;} 
+			.td-total { font-weight: bold }
+			.td-status .label, 
+			.td-pay-status .label {
+					display:block;
+					margin: 0 10px;
+					padding:7px;
+				}
+				.label-wide {
+					padding: 8px 20px;
+				}
+			");
+
 class vstore_order_ui extends e_admin_ui
 {
 
@@ -27,18 +43,19 @@ class vstore_order_ui extends e_admin_ui
 			'checkboxes'           	=> array ( 'title' => '', 'type' => null, 'data' => null, 'width' => '5%', 'thclass' => 'center', 'forced' => '1', 'class' => 'center', 'toggle' => 'e-multiselect',  ),
 			'order_id'            	=> array ( 'title' => LAN_ID, 'data' => 'int', 'type'=>'number',  'width' => '5%', 'help' => '', 'readonly'=>true, 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 			'order_date'          	=> array ( 'title' => LAN_DATESTAMP, 'type' => 'datestamp', 'data' => 'str',  'readonly'=>true, 'width' => 'auto', 'filter' => true, 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
-			'order_status'          => array ( 'title' => 'Status', 'type'=>'method', 'data'=>'str', 'inline'=>false, 'filter'=>true, 'batch'=>true,'width'=>'5%'),
-			'order_pay_status'      => array ( 'title' => 'Pay Status', 'type' => 'method',  'data' => 'str',  'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+			'order_status'          => array ( 'title' => 'Status', 'type'=>'method', 'data'=>'str', 'inline'=>false, 'filter'=>true, 'batch'=>true,'width'=>'5%', 'class'=>'td-status'),
+			'order_pay_status'      => array ( 'title' => 'Pay Status', 'type' => 'method',  'data' => 'str',  'readonly'=>true, 'width' => '5%', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'td-pay-status left', 'thclass' => 'left',  ),
 			'order_refund_date' 	=> array ( 'title' => 'Refund date', 'type' => 'method', 'tab'=>0, 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 
-			'order_invoice_nr'     	=> array ( 'title' => 'Invoice Nr', 'type'=>'method', 'data'=>false, 'width'=>'20%'),
+			'order_invoice_nr'     	=> array ( 'title' => 'Invoice #', 'type'=>'method', 'data'=>false, 'width'=>'10%'),
 			'order_billing'      	=> array ( 'title' => 'Billing to', 'type'=>'method', 'data'=>false, 'width'=>'20%'),
 			'order_shipping'      	=> array ( 'title' => 'Ship to', 'type'=>'method', 'data'=>false, 'width'=>'20%'),
-			'order_items'     		=> array ( 'title' => 'Items', 'type' => 'method', 'data' => false, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'right', 'thclass' => 'right',  ),
+			'order_items'     		=> array ( 'title' => 'Items', 'type' => 'method', 'data' => false, 'width' => '5%', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'right', 'thclass' => 'right',  ),
 			'order_e107_user'     	=> array ( 'title' => LAN_AUTHOR, 'type' => 'method', 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
-			'order_pay_gateway'     => array ( 'title' => 'Gateway', 'type' => 'method', 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 			'order_pay_transid'     => array ( 'title' => 'TransID', 'type' => 'text', 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
-			'order_pay_amount' 		=> array ( 'title' => 'Total', 'type' => 'method', 'data' => 'float', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+
+			'order_pay_gateway'     => array ( 'title' => 'Gateway', 'type' => 'method', 'data' => false,  'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'td-gateway left', 'thclass' => 'left',  ),
+			'order_pay_amount' 		=> array ( 'title' => 'Total', 'type' => 'method', 'data' => false, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'td-total left', 'thclass' => 'left',  ),
 			'order_pay_shipping' 	=> array ( 'title' => 'Shipping', 'type' => 'number', 'data' => 'float', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 			'order_pay_currency' 	=> array ( 'title' => 'Currency', 'type' => 'text', 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 
@@ -50,7 +67,7 @@ class vstore_order_ui extends e_admin_ui
 			'options' 				=> array ( 'title' => LAN_OPTIONS, 'type' => null, 'data' => null, 'width' => '10%', 'thclass' => 'center last', 'class' => 'center last', 'forced' => '1',  ),
 		);
 
-		protected $fieldpref = array('order_id','order_ship_to', 'order_status', 'order_invoice_nr', 'order_date', 'order_items', 'order_pay_transid','order_pay_amount','order_pay_status');
+		protected $fieldpref = array('order_id','order_ship_to', 'order_status', 'order_invoice_nr', 'order_date', 'order_items', 'order_pay_transid','order_pay_amount', 'order_pay_gateway', 'order_pay_status');
 
 
 		// protected $preftabs = array();
@@ -239,7 +256,8 @@ class vstore_order_ui extends e_admin_ui
 			}
 
 			// Send our email to customer
-			$vs->emailCustomerOnStatusChange($new_data['order_id']);
+			$vc = e107::getSingleton('vstore_order', e_PLUGIN.'vstore/inc/vstore_order.class.php');
+			$vc->emailCustomerOnStatusChange($new_data['order_id']);
 		}
 
 		public function onUpdateError($new_data, $old_data, $id)
@@ -335,7 +353,7 @@ class vstore_order_form_ui extends e_admin_form_ui
 				// $order_pay_status = $this->getController()->getFieldVar('order_pay_status');
 				// $order_pay_transid = $this->getController()->getFieldVar('order_pay_transid');
 
-				$text = '<div class="label-wide label label-'.self::$status_classes[$curVal].'">'.vstore::getStatus($curVal).'</div><br/><br/>';
+				$text = '<div class="label-wide label label-'.self::$status_classes[$curVal].'">'.vstore::getStatus($curVal).'</div>';
 
 				switch($curVal) {
 					case 'N': // new
@@ -363,14 +381,7 @@ class vstore_order_form_ui extends e_admin_form_ui
 						break;
 				}
 
-				e107::css('inline', "
-					.label {
-						font-size: 0.85em;
-					}
-					.label-wide {
-						padding: 8px 20px;
-					}
-				");
+
 
 				e107::js('footer-inline', "					
 					$(function(){
@@ -591,6 +602,8 @@ class vstore_order_form_ui extends e_admin_form_ui
 				$via = $this->getController()->getFieldVar('order_pay_gateway');
 				$currency = $this->getController()->getFieldVar('order_pay_currency');
 
+				return vstore::getCurrencySymbol($currency).$curVal;
+
 			break;
 
 
@@ -600,7 +613,6 @@ class vstore_order_form_ui extends e_admin_form_ui
 			break;
 		}
 
-		return $curVal.' '.vstore::getCurrencySymbol($currency)."<br /><span class='label label-primary'>".vstore::getGatewayTitle($via)."</span>";
 	}
 
 
@@ -690,14 +702,18 @@ class vstore_order_form_ui extends e_admin_form_ui
 		return $text;
 	}
 
-	function order_pay_gateway($curVal)
+	function order_pay_gateway($curVal, $mode)
 	{
-		return vstore::getGatewayIcon($curVal) . '&nbsp;&nbsp;' . vstore::getGatewayTitle($curVal);
+		$title = vstore::getGatewayTitle($curVal);
+		$text = '<span class="e-tip" title="'.$title.'" >'.vstore::getGatewayIcon($curVal, '2x') . '</span>';
+		$text .= ($mode === 'write') ? ' <span class="gateway-label">' . $title.'</span>' : '';
+
+		return $text;
 	}
 
 	function order_pay_status($curVal)
 	{
-		return '<span class="label label-'.self::$pay_status_classes[$curVal].'">'.ucfirst($curVal).'</span>';
+		return '<span class="label label-wide label-'.self::$pay_status_classes[$curVal].'">'.ucfirst($curVal).'</span>';
 	}
 
 	function order_refund_date($curVal)

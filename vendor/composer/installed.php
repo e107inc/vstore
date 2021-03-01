@@ -6,7 +6,7 @@
     'aliases' => 
     array (
     ),
-    'reference' => '267aad9c6f9bae4458d55d4d01d9ea574eb02cf9',
+    'reference' => '7f774c92eb873a9a5a55e7c7aa0c29ac714d5be0',
     'name' => '__root__',
   ),
   'versions' => 
@@ -18,7 +18,7 @@
       'aliases' => 
       array (
       ),
-      'reference' => '267aad9c6f9bae4458d55d4d01d9ea574eb02cf9',
+      'reference' => '7f774c92eb873a9a5a55e7c7aa0c29ac714d5be0',
     ),
     'braintree/braintree_php' => 
     array (
@@ -190,12 +190,12 @@
     ),
     'php-http/message' => 
     array (
-      'pretty_version' => '1.10.0',
-      'version' => '1.10.0.0',
+      'pretty_version' => '1.11.0',
+      'version' => '1.11.0.0',
       'aliases' => 
       array (
       ),
-      'reference' => '39db36d5972e9e6d00ea852b650953f928d8f10d',
+      'reference' => 'fb0dbce7355cad4f4f6a225f537c34d013571f29',
     ),
     'php-http/message-factory' => 
     array (
@@ -299,26 +299,26 @@
     ),
     'symfony/http-foundation' => 
     array (
-      'pretty_version' => 'v5.2.2',
-      'version' => '5.2.2.0',
+      'pretty_version' => 'v5.2.3',
+      'version' => '5.2.3.0',
       'aliases' => 
       array (
       ),
-      'reference' => '16dfa5acf8103f0394d447f8eea3ea49f9e50855',
+      'reference' => '20c554c0f03f7cde5ce230ed248470cccbc34c36',
     ),
     'symfony/polyfill-mbstring' => 
     array (
-      'pretty_version' => 'v1.22.0',
-      'version' => '1.22.0.0',
+      'pretty_version' => 'v1.22.1',
+      'version' => '1.22.1.0',
       'aliases' => 
       array (
       ),
-      'reference' => 'f377a3dd1fde44d37b9831d68dc8dea3ffd28e13',
+      'reference' => '5232de97ee3b75b0360528dae24e73db49566ab1',
     ),
     'symfony/polyfill-php80' => 
     array (
-      'pretty_version' => 'v1.22.0',
-      'version' => '1.22.0.0',
+      'pretty_version' => 'v1.22.1',
+      'version' => '1.22.1.0',
       'aliases' => 
       array (
       ),

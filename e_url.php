@@ -81,13 +81,15 @@ class vstore_url // plugin-folder + '_url'
 		$config['index'] = array(
 			'regex'			=> '^{alias}\/?([\?].*)?\/?$',
 			'redirect'		=> '{e_PLUGIN}vstore/vstore.php$1',
-			'sef'			=> '{alias}/'
+			'sef'			=> '{alias}/',
+			'legacy'		=> '{e_PLUGIN}vstore/vstore.php',
 		);
 
 		$config['product'] = array(
 			'regex'			=> '^{alias}/([^\/]*)/([\d]*)/(.*)',
 			'redirect'		=> '{e_PLUGIN}vstore/vstore.php?item=$2',
-			'sef'			=> '{alias}/{cat_sef}/{item_id}/{item_sef}'
+			'sef'			=> '{alias}/{cat_sef}/{item_id}/{item_sef}',
+			'legacy'		=> '{e_PLUGIN}vstore/vstore.php?item={item_id}',
 		);
 
 		$config['subcategory'] = array(
