@@ -711,14 +711,14 @@ class vstore_order extends vstore
             } elseif(!$supportsRefund) {
                 // In case of bank_transfers or other payment methods that do not support refunding,
                 // return a warning, that the refunding of the money has to be done manually!
-                $this->last_error = $warnPrefix . "The order has been marked as refunded, but the payment method '" .
+                $this->last_error = $warnPrefix . "".LAN_VSTORE_CUSM_059." '" .
                     self::getGatewayTitle($type) .
-                    "' doesn't support automatic refunding!\nYou have to do it manually!";
+                    "' ".LAN_VSTORE_CUSM_060."";
                 return false;
             }
 
         } catch (Exception $ex) {
-            $this->last_error = $errorPrefix . "Refunding failed! " . $ex->getMessage();
+            $this->last_error = $errorPrefix . "".LAN_VSTORE_CUSM_080."" . $ex->getMessage();
             return false;
         }
 

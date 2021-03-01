@@ -21,7 +21,7 @@ class vstore_email_templates_ui extends e_admin_ui
 				$this->preftabs[$type] = $label;
 
 				$this->prefs['email_templates/'.$type.'/active']    = array('title' => LAN_ACTIVE, 'tab' => $type, 'type'=>'bool');
-				$this->prefs['email_templates/'.$type.'/cc']        = array('title' => "CC to yourself", 'tab' => $type, 'type'=>'bool');
+				$this->prefs['email_templates/'.$type.'/cc']        = array('title' => LAN_VSTORE_ADMIN_012, 'tab' => $type, 'type'=>'bool');
 				$this->prefs['email_templates/'.$type.'/template']  = array('title'=>'Email Template', 'tab' => $type, 'type'=>'bbarea', 'writeParms'=>array('default'=>$defaultTemplate[$type], 'size'=>'large'));
 				$this->prefs['template_options'.$type]              = array('title' => LAN_OPTIONS, 'method'=>'templateOptions', 'tab' => $type, 'data'=>false,'type'=>'method', 'writeParms'=>array('nolabel'=>true, 'templateType'=>$type, 'template'=>$defaultTemplate[$type]));
 
@@ -66,15 +66,15 @@ class vstore_email_templates_ui extends e_admin_ui
 						'.$frm->flipswitch('email_templates['.$type.'][active]', $isActive, null, array('switch'=>'small', 'title' => LAN_ACTIVE)).'
 						</div>
 						<div class="text-right col-6 col-xs-6">
-							'.$frm->button('', '<span class="fa fa-undo"></span> '. 'Reset template', 'action', '', array('data-template' => rawurlencode($orig_template), 'data-type' => $type, 'class' => 'vstore-email-reset pull-right btn-sm', 'title' => 'Click & save to reset this template to the default template.')).'
+							'.$frm->button('', '<span class="fa fa-undo"></span>'. LAN_VSTORE_MAIL_001, 'action', '', array('data-template' => rawurlencode($orig_template), 'data-type' => $type, 'class' => 'vstore-email-reset pull-right btn-sm', 'title' => LAN_VSTORE_MAIL_002)).'
 						</div>
 					</div>
 				</div>
 				<div class="row">
 					<div class="col-md-12 form-group">
-						<label class="control-label col-3 col-xs-3">Receive email in CC?</label>
+						<label class="control-label col-3 col-xs-3">'.LAN_VSTORE_MAIL_003.'</label>
 						<div class="text-right col-3 col-xs-3">
-						'.$frm->flipswitch('email_templates['.$type.'][cc]', $isCC, null, array('switch'=>'small', 'title' => 'Receive this email in CC?')).'
+						'.$frm->flipswitch('email_templates['.$type.'][cc]', $isCC, null, array('switch'=>'small', 'title' => LAN_VSTORE_MAIL_003)).'
 						</div>
 					</div>
 				</div>
@@ -99,7 +99,7 @@ class vstore_email_templates_ui extends e_admin_ui
 			$text .= "<div class='buttons-bar row'>
 				<div class='col-md-4'></div>
 				<div class='col-md-4 center'>".$frm->admin_button('save', 1, 'update', LAN_UPDATE)."</div>
-				<div class='col-md-4 right'><a class='btn btn-sm btn-default e-expandit' href='#leg'>".$tp->toGlyph('fa-info-circle')." Field Options</a></div>
+				<div class='col-md-4 right'><a class='btn btn-sm btn-default e-expandit' href='#leg'>".$tp->toGlyph('fa-info-circle')." ".LAN_VSTORE_MAIL_004."</a></div>
 				</div>";
 
 			$text .= $frm->close();
@@ -145,8 +145,8 @@ class vstore_email_templates_form_ui extends e_admin_form_ui
 		}
 		$tp = e107::getParser();
 
-		$text = $this->button('', '<span class="fa fa-undo"></span> '. 'Reset template', 'action', '', array('data-template' => rawurlencode($att['template']), 'data-type' => $att['templateType'], 'class' => 'vstore-email-reset btn-sm', 'title' => 'Click & save to reset this template to the default template.'));
-		$text .= " <a class='btn btn-sm btn-default e-expandit' href='#leg'>".$tp->toGlyph('fa-info-circle')." Field Options</a>";
+		$text = $this->button('', '<span class="fa fa-undo"></span> '. ''.LAN_VSTORE_MAIL_001.'', 'action', '', array('data-template' => rawurlencode($att['template']), 'data-type' => $att['templateType'], 'class' => 'vstore-email-reset btn-sm', 'title' => ''.LAN_VSTORE_MAIL_002.''));
+		$text .= " <a class='btn btn-sm btn-default e-expandit' href='#leg'>".$tp->toGlyph('fa-info-circle')." ".LAN_VSTORE_MAIL_004."</a>";
 		$text .= '<div id="leg" class="small" style="display:none">'.$this->renderTemplateKeys().'</div>';
 
 		return $text;
@@ -160,27 +160,27 @@ class vstore_email_templates_form_ui extends e_admin_form_ui
 	private function renderTemplateKeys()
 	{
 		$email_fields = array(
-			'{REF}'                        => 'The order reference number',
-			'{BILLING: firstname}'         => 'The billing firstname',
-			'{BILLING: lastname}'          => 'The billing lastname',
-			'{BILLING: company}'           => 'The billing company name',
-			'{BILLING: address}'           => 'The billing street',
-			'{BILLING: city}'              => 'The billing city',
-			'{BILLING: state}'             => 'The billing state',
-			'{BILLING: zip}'               => 'The billing zip code',
-			'{BILLING: country}'           => 'The billing country',
-			'{SHIPPING: firstname}'        => 'The shipping firstname',
-			'{SHIPPING: lastname}'         => 'The shipping lastname',
-			'{SHIPPING: company}'          => 'The shipping company name',
-			'{SHIPPING: address}'          => 'The shipping street',
-			'{SHIPPING: city}'             => 'The shipping city',
-			'{SHIPPING: state}'            => 'The shipping state',
-			'{SHIPPING: zip}'              => 'The shipping zip code',
-			'{SHIPPING: country}'          => 'The shipping country',
-			'{ORDER_ITEMS}'                => 'The ordered items',
-			'{ORDER_PAYMENT_INSTRUCTIONS}' => 'In case of payment method "bank transfer", the bank transfer details',
-			'{ORDER_MERCHANT_INFO}'        => 'Merchant name & address',
-			'{SENDER_NAME}'                => 'Sender name es defined in the vstore prefs'
+			'{REF}'                        => LAN_VSTORE_MAIL_005,
+			'{BILLING: firstname}'         => LAN_VSTORE_MAIL_006,
+			'{BILLING: lastname}'          => LAN_VSTORE_MAIL_007,
+			'{BILLING: company}'           => LAN_VSTORE_MAIL_008,
+			'{BILLING: address}'           => LAN_VSTORE_MAIL_009,
+			'{BILLING: city}'              => LAN_VSTORE_MAIL_010,
+			'{BILLING: state}'             => LAN_VSTORE_MAIL_011,
+			'{BILLING: zip}'               => LAN_VSTORE_MAIL_012,
+			'{BILLING: country}'           => LAN_VSTORE_MAIL_013,
+			'{SHIPPING: firstname}'        => LAN_VSTORE_MAIL_014,
+			'{SHIPPING: lastname}'         => LAN_VSTORE_MAIL_015,
+			'{SHIPPING: company}'          => LAN_VSTORE_MAIL_016,
+			'{SHIPPING: address}'          => LAN_VSTORE_MAIL_017,
+			'{SHIPPING: city}'             => LAN_VSTORE_MAIL_018,
+			'{SHIPPING: state}'            => LAN_VSTORE_MAIL_019,
+			'{SHIPPING: zip}'              => LAN_VSTORE_MAIL_020,
+			'{SHIPPING: country}'          => LAN_VSTORE_MAIL_021,
+			'{ORDER_ITEMS}'                => LAN_VSTORE_MAIL_022,
+			'{ORDER_PAYMENT_INSTRUCTIONS}' => LAN_VSTORE_MAIL_023,
+			'{ORDER_MERCHANT_INFO}'        => LAN_VSTORE_MAIL_024,
+			'{SENDER_NAME}'                => LAN_VSTORE_MAIL_025
 
 		);
 
@@ -197,5 +197,4 @@ class vstore_email_templates_form_ui extends e_admin_form_ui
 
 	}
 
-}		
-
+}
