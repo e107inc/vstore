@@ -183,7 +183,7 @@ define("LAN_VSTORE_CUSM_062", "Prix");
 define("LAN_VSTORE_CUSM_063", "Aucun mode de paiement sélectionné !");
 define("LAN_VSTORE_CUSM_064", "Aucun article à commander !");
 define("LAN_VSTORE_CUSM_065", "Pas d'ensemble de données client !");
-define("LAN_VSTORE_CUSM_066", "Pas d'ensemble de données d'expédition !");
+define("LAN_VSTORE_CUSM_066", "Pas d'enregistrement envoyé !<br />Veuillez indiquer l'adresse de livraison");
 define("LAN_VSTORE_CUSM_067", "Commande annulée par l'utilisateur");
 define("LAN_VSTORE_CUSM_068", "Changements enregistrés avec succès !");
 define("LAN_VSTORE_CUSM_069", "Fichier téléchargé avec succès !");
