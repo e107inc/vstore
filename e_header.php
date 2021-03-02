@@ -8,67 +8,71 @@
  *
  */
 
- if(e107::isInstalled('vstore'))
- {
-    if(deftrue('USER_AREA')) {
-        // prevents inclusion of JS/CSS/meta in the admin area.
-        e107::js('vstore', 'js/vstore.js');
-        e107::lan('vstore', false, true); // e107_plugins/vstore/languages/English_front.php
-        
-        $vstore_prefs = e107::pref('vstore');
-        
-        e107::js('settings', array('vstore' => array(
-                'url' => e107::url('vstore', 'index'),
-                'cart' =>  array(
-                    'url' => e107::url('vstore', 'cart'),
-                    'addtocart' => LAN_VSTORE_001, // 'Add to cart',
-                    'outofstock' => empty($vstore_prefs['caption_outofstock'][e_LANGUAGE])
-                        ? 'Out of stock'
-                        : $vstore_prefs['caption_outofstock'][e_LANGUAGE],
-                    'available' => LAN_VSTORE_002,
-                ),
-                'ImageZoom' => array('url'=>'')
-            )
-        ));
-        
-        
-        if (!empty($vstore_prefs['custom_css']))
-        {
-            // Add any custom css to the page
-            e107::css('inline', "
+if(deftrue('USER_AREA'))
+{
+	// prevents inclusion of JS/CSS/meta in the admin area.
+	e107::css('vstore', 'vstore.css');
+	e107::js('vstore', 'js/vstore.js');
+	e107::lan('vstore', false, true); // e107_plugins/vstore/languages/English_front.php
+
+	$vstore_prefs = e107::pref('vstore');
+
+	e107::js('settings', array('vstore' => array(
+		'url'       => e107::url('vstore', 'index'),
+		'cart'      => array(
+			'url'        => e107::url('vstore', 'cart'),
+			'addtocart'  => LAN_VSTORE_001, // 'Add to cart',
+			'outofstock' => empty($vstore_prefs['caption_outofstock'][e_LANGUAGE])
+				? 'Out of stock'
+				: $vstore_prefs['caption_outofstock'][e_LANGUAGE],
+			'available'  => 'In stock',
+		),
+		'ImageZoom' => array('url' => '')
+	)
+	));
+
+
+	if(!empty($vstore_prefs['custom_css']))
+	{
+		// Add any custom css to the page
+		e107::css('inline', "
             /* vstore custom css */
             " . $vstore_prefs['custom_css']);
-        }
-    }
+	}
+}
+
+// TODO move this into vstore.class.php as a static method. 
+if(!class_exists('vstore_cart_icon'))
+{
+	class vstore_cart_icon
+	{
+
+		function __construct()
+		{
+
+			//  require_once(e_PLUGIN.'vstore/vstore.class.php');
+
+			if(e_ADMIN_AREA !== true)
+			{
+
+				$vst = e107::getSingleton('vstore', e_PLUGIN . 'vstore/vstore.class.php');
+
+				$data = $vst->getCartData();
+
+				//$count = count($data);
+				// Sum up cart quantity for badge instead of only number of different products (items)
+				$count = 0;
+				if($data && count($data))
+				{
+					foreach($data as $row)
+					{
+						$count += $row['cart_qty'];
+					}
+				}
 
 
-	 if(!class_exists('vstore_cart_icon'))
-	 {
-	    class vstore_cart_icon
-	    {
-	        function __construct()
-	        {
-	          //  require_once(e_PLUGIN.'vstore/vstore.class.php');
-
-	            if(e_ADMIN_AREA !== true)
-	            {
-
-	                $vst = e107::getSingleton('vstore',e_PLUGIN.'vstore/vstore.class.php');
-
-	                $data = $vst->getCartData();
-
-	                //$count = count($data);
-	                // Sum up cart quantity for badge instead of only number of different products (items)
-	                $count = 0;
-	                if($data && count($data)){
-	                    foreach ($data as $row) {
-	                        $count += $row['cart_qty'];
-	                    }
-	                }
-
-
-	            }
-	            else
+			}
+			else
 	            {
 	                $count = 5;
 	            }
@@ -81,6 +85,7 @@
 				{
 			        define('LAN_PLUGIN_VSTORE_CARTICON', $text);
 				}
+
 	        }
 
 	    }
