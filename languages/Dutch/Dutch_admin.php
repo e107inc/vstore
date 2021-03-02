@@ -142,7 +142,7 @@ define("LAN_VSTORE_HELP_030", "Gebruikersklasse zoals gedefinieerd in Vstore voo
 define("LAN_VSTORE_HELP_031", "Indien ingeschakeld, zal de voorraad van deze productvariant afzonderlijk worden bijgehouden.");
 define("LAN_VSTORE_HELP_032", "Voer een naam in voor elke variatie. Verhoog of verlaag de prijs van deze productvariant naar keuze met een vast bedrag (+/-). Of pas de prijs aan als een percentage (%) van de oorspronkelijke prijs.");
 define("LAN_VSTORE_HELP_033", "Voor wie moet deze categorie zichtbaar zijn?");
-define("LAN_VSTORE_HELP_034", "De product code");
+define("LAN_VSTORE_HELP_034", "De product code.Gebruik alleen HOOFDLETTERS, cijfers en koppeltekens");
 define("LAN_VSTORE_HELP_035", "Vul de prijs in van het item in ");
 define("LAN_VSTORE_HELP_036", "(zonder btw)");
 define("LAN_VSTORE_HELP_037", "De kosten van verzending van dit artikel in");
