@@ -13,7 +13,7 @@
  * @copyright 2019 e107inc
  */
 
-e107::css('vstore', 'vstore.css');
+
 e107::js('vstore', 'js/vstore.js');
 
 require_once('vendor/autoload.php');
