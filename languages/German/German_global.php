@@ -178,7 +178,7 @@ define("LAN_VSTORE_CUSM_062", "Preis");
 define("LAN_VSTORE_CUSM_063", "Keine Zahlungsmethode ausgewählt!");
 define("LAN_VSTORE_CUSM_064", "Keine Artikel zum Auschecken!");
 define("LAN_VSTORE_CUSM_065", "Kein Kundendatensatz!");
-define("LAN_VSTORE_CUSM_066", "Kein Datensatz senden!");
+define("LAN_VSTORE_CUSM_066", "Kein Datensatz gesendet!<br />Bitte Versandadresse eingeben.");
 define("LAN_VSTORE_CUSM_067", "Bestellung vom Benutzer storniert");
 define("LAN_VSTORE_CUSM_068", "Änderungen erfolgreich gespeichert!");
 define("LAN_VSTORE_CUSM_069", "Datei erfolgreich heruntergeladen!");
