@@ -138,7 +138,7 @@ define("LAN_VSTORE_HELP_030", "Classe d'utilisateurs définie dans les préfére
 define("LAN_VSTORE_HELP_031", "Lorsque ce paramètre est activé, la variation du produit est pertinente pour le suivi de l'inventaire");
 define("LAN_VSTORE_HELP_032", "Entrez un nom pour chaque variation. Augmenter ou diminuer le prix de cette variation de produit à volonté d'un montant fixe (+/-). Ou ajuster le prix en pourcentage (%) du prix initial");
 define("LAN_VSTORE_HELP_033", "A qui cette catégorie doit-elle être visible ?");
-define("LAN_VSTORE_HELP_034", "Le code produit");
+define("LAN_VSTORE_HELP_034", "Le code produit,Utilisez uniquement des lettres, des chiffres et des traits d'union en MAJUSCULES");
 define("LAN_VSTORE_HELP_035", "Entrez le prix de l'article");
 define("LAN_VSTORE_HELP_036", '(sans tva)');
 define("LAN_VSTORE_HELP_037", "Entrez le coût d'expédition de cet article");
