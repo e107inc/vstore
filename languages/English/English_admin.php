@@ -135,7 +135,7 @@ define("LAN_VSTORE_HELP_030", "Userclass defined in store preferences");
 define("LAN_VSTORE_HELP_031", "When enabled, the inventory of this product variation will be tracked separately.");
 define("LAN_VSTORE_HELP_032", "Enter a name for each variation. Optionally increase or decrease the price of this product variation by a fixed amount (+/-). Or, adjust the price as a percentage (%) of the original price.");
 define("LAN_VSTORE_HELP_033", "Who should this category be visible to?");
-define("LAN_VSTORE_HELP_034", "The product code");
+define("LAN_VSTORE_HELP_034", "The product code.Use only UPPERCASE letters, digits and hyphens");
 define("LAN_VSTORE_HELP_035", "Enter the price of the item ");
 define("LAN_VSTORE_HELP_036", "(without vat)");
 define("LAN_VSTORE_HELP_037", "Enter the cost of shipping this item");
