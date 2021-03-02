@@ -134,7 +134,7 @@ define("LAN_VSTORE_HELP_030", "Benutzerklasse wie in den Vstore-Einstellungen de
 define("LAN_VSTORE_HELP_031", "Wenn aktiviert, sind Produktvariationen für die Bestandsverfolgung relevant");
 define("LAN_VSTORE_HELP_032", "Geben Sie für jede Variante einen Namen ein. Erhöhen oder senken Sie den Preis dieser Produktvariante nach Wunsch um einen festen Betrag (+/-). Oder passen Sie den Preis als Prozentsatz (%) des ursprünglichen Preises an.");
 define("LAN_VSTORE_HELP_033", "Für wen soll diese Kategorie sichtbar sein?");
-define("LAN_VSTORE_HELP_034", "Der Produktcode");
+define("LAN_VSTORE_HELP_034", "Der Produktcode.Verwenden Sie nur GROSSBUCHSTABEN, Ziffern und Bindestriche");
 define("LAN_VSTORE_HELP_035", "Geben Sie den Preis für den Artikel ein");
 define("LAN_VSTORE_HELP_036", '(ohne MwSt.)');
 define("LAN_VSTORE_HELP_037", "Geben Sie die Kosten für den Versand dieses Artikels ein");
