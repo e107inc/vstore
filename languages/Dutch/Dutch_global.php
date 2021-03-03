@@ -133,7 +133,7 @@ define("LAN_VSTORE_CUSM_012", "Email adres");
 define("LAN_VSTORE_CUSM_013", "Verplicht veld"); //textual
 define("LAN_VSTORE_CUSM_014", "Telefoon nummer");
 define("LAN_VSTORE_CUSM_015", "Fax nummer");
-define("LAN_VSTORE_CUSM_016", "<br />Gebruik de volgende bank gegevens voor uw betaling:<br />");
+//define("LAN_VSTORE_CUSM_016", "<br />Gebruik de volgende bank gegevens voor uw betaling:<br />");
 define("LAN_VSTORE_CUSM_017", "Factuur adres is niet vermeldt!");
 define("LAN_VSTORE_CUSM_018", "Verzend Adres");
 
