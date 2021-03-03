@@ -739,7 +739,8 @@ class vstore
 
 				e107::getDb()->update('vstore_orders', $update);
 
-				$this->emailCustomerOnStatusChange($check['order_id']);
+				$vc = e107::getSingleton('vstore_order', e_PLUGIN.'vstore/inc/vstore_order.class.php');
+				$vc->emailCustomerOnStatusChange($check['order_id']);
 
 				e107::redirect(e107::url('vstore', 'dashboard', array('dash' => 'orders')));
 				exit;
@@ -4716,7 +4717,7 @@ class vstore
 			header('Content-Description: File Transfer');
 			if(headers_sent())
 			{
-				$this->Error('Some data has already been output to browser, can\'t send PDF file');
+			//	$this->Error('Some data has already been output to browser, can\'t send PDF file');
 			}
 			header('Cache-Control: private, must-revalidate, post-check=0, pre-check=0, max-age=1');
 			header('Pragma: public');
