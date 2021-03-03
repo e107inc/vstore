@@ -739,7 +739,9 @@ class vstore
 
 				e107::getDb()->update('vstore_orders', $update);
 
-				$this->emailCustomerOnStatusChange($check['order_id']);
+				$vc = e107::getSingleton('vstore_order', e_PLUGIN.'vstore/inc/vstore_order.class.php');
+				$vc->emailCustomerOnStatusChange($check['order_id']);
+
 
 				e107::redirect(e107::url('vstore', 'dashboard', array('dash' => 'orders')));
 				exit;
@@ -4709,7 +4711,7 @@ class vstore
 			header('Content-Description: File Transfer');
 			if(headers_sent())
 			{
-				$this->Error(''.LAN_VSTORE_ERR_013.'');
+			//	$this->Error(''.LAN_VSTORE_ERR_013.'');
 			}
 			header('Cache-Control: private, must-revalidate, post-check=0, pre-check=0, max-age=1');
 			header('Pragma: public');
@@ -5090,7 +5092,7 @@ class vstore
 
 				if(!empty(self::$gateways['bank_transfer']['details']))
 				{
-					$message = '<br />Use the following bank account information for your payment:<br />';
+					$message = '<br />'.LAN_VSTORE_CART_040.'<br />';
 					$message .= e107::getParser()->toHTML(self::$gateways['bank_transfer']['details'], true);
 				}
 
