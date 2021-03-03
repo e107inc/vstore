@@ -735,7 +735,7 @@ class vstore_order extends vstore
     {
         if (!$this->loaded) {
             e107::getMessage()->addDebug(
-                ''.LAN_VSTORE_HELP_022.'',
+                '".LAN_VSTORE_HELP_022."',
                 'vstore'
             );
             return;
