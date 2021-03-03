@@ -136,7 +136,7 @@ define("LAN_VSTORE_CUSM_012", "Email address");
 define("LAN_VSTORE_CUSM_013", "Required field"); //textual
 define("LAN_VSTORE_CUSM_014", "Phone number");
 define("LAN_VSTORE_CUSM_015", "Fax number");
-define("LAN_VSTORE_CUSM_016", "<br />Use the following bank account information for your payment:<br />");
+//define("LAN_VSTORE_CUSM_016", "<br />Use the following bank account information for your payment:<br />");
 define("LAN_VSTORE_CUSM_017", "Billing address is missing!");
 define("LAN_VSTORE_CUSM_018", "Shipping address");
 
