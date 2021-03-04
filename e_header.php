@@ -94,5 +94,4 @@ if(!class_exists('vstore_cart_icon'))
 	new vstore_cart_icon;
 
 
- }
 
