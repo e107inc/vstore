@@ -46,7 +46,7 @@ class vstore_search extends e_search // include plugin-folder in the name.
 			'table'			=> 'vstore_items AS i LEFT JOIN #vstore_cat AS c ON i.item_cat = c.cat_id',
 
 			'advanced' 		=> array(
-								'cat'	=> array('type'	=> 'dropdown', 		'text' => 'Search in category', 'list'=>$catList),
+								'cat'	=> array('type'	=> 'dropdown', 		'text' => LAN_SEARCH_63, 'list'=>$catList),
 								'match'	=> array('type'	=> 'dropdown',		'text' =>  LAN_SEARCH_52, 'list'=>$matchList)
 							),
 							
