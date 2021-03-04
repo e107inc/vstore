@@ -25,20 +25,20 @@
 		<col style='width:50%' />
 	</colgroup>
 	<tr>
-		<th>Merchant</th>
-		<th>Customer</th>
+		<th>".LAN_VSTORE_CUST_003."</th>
+		<th>".LAN_VSTORE_CUST_004."</th>
 	</tr>
 	<tr>
 		<td>{ORDER_MERCHANT_INFO}</td>
 		<td>
-			<h4>Billing address</h4>
+			<h4>".LAN_VSTORE_GEN_005."</h4>
 			{BILLING: firstname} {BILLING: lastname}<br />
 			{BILLING: company}<br />
 			{BILLING: address}<br />
 			{BILLING: city} &nbsp;{BILLING: state} &nbsp;{BILLING: zip}<br />
 			{BILLING: country}
 			<br />
-			<h4>Shipping address</h4>
+			<h4>".LAN_VSTORE_CUSM_018."</h4>
 			{SHIPPING: firstname} {SHIPPING: lastname}<br />
 			{SHIPPING: company}<br />
 			{SHIPPING: address}<br />
@@ -79,14 +79,14 @@
 	<tr>
 		<td>{ORDER_MERCHANT_INFO}</td>
 		<td>
-			<h4>Billing address</h4>
+			<h4>".LAN_VSTORE_GEN_005."</h4>
 			{BILLING: firstname} {BILLING: lastname}<br />
 			{BILLING: company}<br />
 			{BILLING: address}<br />
 			{BILLING: city} &nbsp;{BILLING: state} &nbsp;{BILLING: zip}<br />
 			{BILLING: country}
 			<br />
-			<h4>Shipping address</h4>
+			<h4>".LAN_VSTORE_CUSM_018."</h4>
 			{SHIPPING: firstname} {SHIPPING: lastname}<br />
 			{SHIPPING: company}<br />
 			{SHIPPING: address}<br />
