@@ -41,7 +41,9 @@ class vstore
 	protected $pref = array();
 //	protected $parentData = array();
 	protected $currency = 'USD';
-	protected $order;
+
+	/** @var vstore_order */
+	public $order;
 	private $html_invoice;
 
 	/**
@@ -1795,7 +1797,7 @@ class vstore
 				'items'          => $items,
 				'transactionId'  => $this->getCheckoutData('id'),
 				'clientIp'       => USERIP,
-				'description'    => 'Order date: ' . e107::getDateConvert()->convert_date(time(), 'inputdate'), // required for Mollie
+				'description'    => 'Order date: ' . e107::getDate()->convert_date(time(), 'inputdate'), // required for Mollie
 			);
 
 			if($type == 'mollie')
@@ -2018,7 +2020,8 @@ class vstore
 
 			$mes->addSuccess("Your order <b>#" . $this->order->order_refcode .
 				"</b> is complete and you will receive a order confirmation " .
-				"with all details within the next few minutes by email!", 'vstore');
+				"with all details within the next few minutes by email.", 'vstore');
+
 			$this->order->emailCustomer('default', $pdf_file);
 
 			if(!empty($transData))

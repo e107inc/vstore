@@ -52,8 +52,6 @@ class vstore_order extends vstore
      * @var object
      */
     private $sql;
-    
-
 
     /**
      * Constructor
@@ -64,8 +62,8 @@ class vstore_order extends vstore
     {
         /** @var vstore_shortcodes sc */
         $this->sc = e107::getScParser()->getScObject('vstore_shortcodes', 'vstore', false);
-
         $this->sql = e107::getDb();
+
         if (!empty($id)) {
             $this->load($id);
         }
@@ -383,64 +381,78 @@ class vstore_order extends vstore
      *
      * @return bool|string true on success, string otherwise
      */
-    public function setOrderStatus($new_status, $raw_data = null)
-    {
-        $errorPrefix = EMESSLAN_TITLE_ERROR . "\n";
+	public function setOrderStatus($new_status, $raw_data = null)
+	{
 
-        if (!$this->loaded) {
-            $this->last_error = $errorPrefix . 'Unable to change order status. No Order loaded!';
-            return false;
-        }
-        // record found and new status is different to new one
-        if ($this->data['order_status'] !== $new_status) {
-            if ($new_status === 'C') {
-                // if new status is complete, assume the payment also to be complete
-                $this->data['order_pay_status'] = 'complete';
-            } elseif ($new_status === 'R') {
-                // if new status is refunded, set payment to refunded
-                $this->data['order_pay_status'] = 'refunded';
-            }
+		$errorPrefix = EMESSLAN_TITLE_ERROR . "\n";
 
-            // Prepare rawdata array
-            $rawdata = array();
-            if (!empty($raw_data)) {
-                if (!empty($this->data['order_pay_rawdata'])) {
-                    $rawdata = $this->data['order_pay_rawdata'];
-                    if (!isset($rawdata['purchase']) && !isset($rawdata['refund'])) {
-                        // just in case order_pay_rawdata has the wrong structure
-                        $tmp = $rawdata;
-                        $rawdata = array('purchase' => $tmp);
-                        unset($tmp);
-                    }
-                }
-                $rawdata = array_merge($rawdata, $raw_data);
-                $this->data['order_pay_rawdata'] = $rawdata;
-                unset($rawdata, $raw_data);
-            }
+		if(!$this->loaded)
+		{
+			$this->last_error = $errorPrefix . 'Unable to change order status. No Order loaded!';
 
-            $this->setOrderLog('Status', $this->data['order_status'], $new_status);
-            $this->data['order_status'] = $new_status;
+			return false;
+		}
+		// record found and new status is different to new one
+		if($this->data['order_status'] !== $new_status)
+		{
+			if($new_status === 'C')
+			{
+				// if new status is complete, assume the payment also to be complete
+				$this->data['order_pay_status'] = 'complete';
+			}
+			elseif($new_status === 'R')
+			{
+				// if new status is refunded, set payment to refunded
+				$this->data['order_pay_status'] = 'refunded';
+			}
 
-            $result = $this->save();
+			// Prepare rawdata array
+			$rawdata = array();
+			if(!empty($raw_data))
+			{
+				if(!empty($this->data['order_pay_rawdata']))
+				{
+					$rawdata = $this->data['order_pay_rawdata'];
+					if(!isset($rawdata['purchase']) && !isset($rawdata['refund']))
+					{
+						// just in case order_pay_rawdata has the wrong structure
+						$tmp = $rawdata;
+						$rawdata = array('purchase' => $tmp);
+						unset($tmp);
+					}
+				}
+				$rawdata = array_merge($rawdata, $raw_data);
+				$this->data['order_pay_rawdata'] = $rawdata;
+				unset($rawdata, $raw_data);
+			}
 
-            if ($result && $new_status === 'C') {
-                // In case of a positive update and the order has been set to 'C' (complete)
-                // set the customer userclass
-                $items = $this->unserialize('order_items');
-                self::setCustomerUserclass($this->data['order_e107_user'], $items);
-            } elseif ($result == false && intval(e107::getDb()->getLastErrorNumber()) != 0) {
-                // There was an error, return the last database error
-                $this->last_error = $errorPrefix . 'Unable to update order status. ' . e107::getDb()->getLastErrorText();
-                return false;
-            }
+			$this->setOrderLog('Status', $this->data['order_status'], $new_status);
+			$this->data['order_status'] = $new_status;
 
-            // send out the "OnChange" emails
-            $this->emailCustomerOnStatusChange();
-        }
+			$result = $this->save();
 
-        // nothing to change (old status == new status)
-        return true;
-    }
+			if($result && $new_status === 'C')
+			{
+				// In case of a positive update and the order has been set to 'C' (complete)
+				// set the customer userclass
+				$items = $this->unserialize('order_items');
+				self::setCustomerUserclass($this->data['order_e107_user'], $items);
+			}
+			elseif($result == false && intval(e107::getDb()->getLastErrorNumber()) != 0)
+			{
+				// There was an error, return the last database error
+				$this->last_error = $errorPrefix . 'Unable to update order status. ' . e107::getDb()->getLastErrorText();
+
+				return false;
+			}
+
+			// send out the "OnChange" emails
+			$this->emailCustomerOnStatusChange();
+		}
+
+		// nothing to change (old status == new status)
+		return true;
+	}
 
     /**
      * Add a order log entry to the log array
@@ -557,173 +569,213 @@ class vstore_order extends vstore
      *
      * @return bool Returns true on success, false otherwise
      */
-    public function refundOrder($do_log = true)
-    {
-        // $successPrefix = EMESSLAN_TITLE_SUCCESS . "\n";
-        $warnPrefix = EMESSLAN_TITLE_WARNING . "\n";
-        $errorPrefix = EMESSLAN_TITLE_ERROR . "\n";
+	public function refundOrder($do_log = true)
+	{
 
-        // By default, all gateways support automatic refunding
-        $supportsRefund = true;
+		// $successPrefix = EMESSLAN_TITLE_SUCCESS . "\n";
+		$warnPrefix = EMESSLAN_TITLE_WARNING . "\n";
+		$errorPrefix = EMESSLAN_TITLE_ERROR . "\n";
 
-        // Check inputs
-        if (!$this->loaded) {
-            $this->last_error = $errorPrefix . "Order not loaded!";
-            return false;
-        }
+		// By default, all gateways support automatic refunding
+		$supportsRefund = true;
 
-        if ($this->order_status == 'R') {
-            $this->last_error = $errorPrefix . 'Order is already refunded!';
-            return false;
-        } elseif (!in_array($this->order_status, array('P', 'H', 'C'))) {
-            $this->last_error = $errorPrefix . 'Only orders with status "Processing", "On Hold" and "Complete" can be refunded!';
-            return false;
-        }
+		// Check inputs
+		if(!$this->loaded)
+		{
+			$this->last_error = $errorPrefix . "Order not loaded!";
+			trigger_error('Order not loaded!');
 
-        $transactionId = $this->order_pay_transid;
-        $amount = $this->order_pay_amount;
-        $currency = $this->order_pay_currency;
-        $type = $gateway = $this->order_pay_gateway;
+			return false;
+		}
 
-        e107::getDebug()->log("Processing Gateway: " . $type);
+		if($this->order_status == 'R')
+		{
+			$this->last_error = $errorPrefix . 'Order is already refunded!';
+			trigger_error('Order is already refunded!');
 
-        // Fix $type in case of Mollie Gateway
-        if (self::isMollie($type)) {
-            $gateway = substr($type, 0, 6);
-        }
+			return false;
+		}
+		elseif(!in_array($this->order_status, array('P', 'H', 'C')))
+		{
+			$message = 'Only orders with status "Processing", "On Hold" and "Complete" can be refunded!';
+			$this->last_error = $errorPrefix . $message;
+			trigger_error($message. print_r($this,true));
 
-        // array keeping the data required for refunding
-        // usually the transactionid
-        $refundDetails = array();
+			return false;
+		}
 
-        // Init payment gateway
-        switch ($gateway) {
-            case "mollie":
-                /** @var Gateway $gateway */
-                $gateway = Omnipay::create('Mollie');
+		$transactionId = $this->order_pay_transid;
+		$amount = $this->order_pay_amount;
+		$currency = $this->order_pay_currency;
+		$type = $gateway = $this->order_pay_gateway;
 
-                if (!empty($this->pref['mollie']['testmode'])) {
-                    $gateway->setApiKey($this->pref['mollie']['api_key_test']);
-                    $gateway->setTestMode(true);
-                } else {
-                    $gateway->setApiKey($this->pref['mollie']['api_key_live']);
-                }
+		e107::getDebug()->log("Processing Gateway: " . $type);
 
-                $refundDetails = array(
-                    'transactionReference' => $transactionId,
-                    'amount' => $amount,
-                    'currency' => $currency
-                );
-                break;
+		// Fix $type in case of Mollie Gateway
+		if(self::isMollie($type))
+		{
+			$gateway = substr($type, 0, 6);
+		}
 
-            case "paypal":
-                /** @var ExpressGateway $gateway */
-                $gateway = Omnipay::create('PayPal_Express');
+		// array keeping the data required for refunding
+		// usually the transactionid
+		$refundDetails = array();
 
-                if (!empty($this->pref['paypal']['testmode'])) {
-                    $gateway->setTestMode(true);
-                }
+		// Init payment gateway
+		switch($gateway)
+		{
+			case "mollie":
+				/** @var Gateway $gateway */
+				$gateway = Omnipay::create('Mollie');
 
-                $gateway->setUsername($this->pref['paypal']['username']);
-                $gateway->setPassword($this->pref['paypal']['password']);
-                $gateway->setSignature($this->pref['paypal']['signature']);
+				if(!empty($this->pref['mollie']['testmode']))
+				{
+					$gateway->setApiKey($this->pref['mollie']['api_key_test']);
+					$gateway->setTestMode(true);
+				}
+				else
+				{
+					$gateway->setApiKey($this->pref['mollie']['api_key_live']);
+				}
 
-                $refundDetails = array(
-                    'transactionReference' => $transactionId,
-                    'amount' => $amount,
-                    'currency' => $currency
-                );
-                break;
+				$refundDetails = array(
+					'transactionReference' => $transactionId,
+					'amount'               => $amount,
+					'currency'             => $currency
+				);
+				break;
 
-            case "paypal_rest":
-                /** @var RestGateway $gateway */
-                $gateway = Omnipay::create('PayPal_Rest');
+			case "paypal":
+				/** @var ExpressGateway $gateway */
+				$gateway = Omnipay::create('PayPal_Express');
 
-                if (!empty($this->pref['paypal_rest']['testmode'])) {
-                    $gateway->setTestMode(true);
-                }
+				if(!empty($this->pref['paypal']['testmode']))
+				{
+					$gateway->setTestMode(true);
+				}
 
-                $gateway->setClientId($this->pref['paypal_rest']['clientId']);
-                $gateway->setSecret($this->pref['paypal_rest']['secret']);
+				$gateway->setUsername($this->pref['paypal']['username']);
+				$gateway->setPassword($this->pref['paypal']['password']);
+				$gateway->setSignature($this->pref['paypal']['signature']);
 
-                $refundDetails = array(
-                    'transactionReference' => $transactionId,
-                    'amount' => $amount,
-                    'currency' => $currency
-                );
-                break;
+				$refundDetails = array(
+					'transactionReference' => $transactionId,
+					'amount'               => $amount,
+					'currency'             => $currency
+				);
+				break;
 
-            case "bank_transfer":
-                // Normal bank transfer doesn't support automatic refunding
-                $supportsRefund = false;
-                break;
+			case "paypal_rest":
+				/** @var RestGateway $gateway */
+				$gateway = Omnipay::create('PayPal_Rest');
 
-            default:
-                $this->last_error = $errorPrefix . "Missing pament gateway!";
-                return false;
-        }
+				if(!empty($this->pref['paypal_rest']['testmode']))
+				{
+					$gateway->setTestMode(true);
+				}
 
-        // Check if selected gateway supports refunding
-        if ($supportsRefund && !$gateway->supportsRefund()) {
-            // gateway doesn't support refunding;
-            $supportsRefund = false;
-        }
+				$gateway->setClientId($this->pref['paypal_rest']['clientId']);
+				$gateway->setSecret($this->pref['paypal_rest']['secret']);
 
-        try {
-            $data = array();
-            if ($supportsRefund) {
-                // Check if selected gateway has it's refunding details set
-                if (empty($refundDetails)) {
-                    $this->last_error = $errorPrefix . "Refunding details not set!";
-                    return false;
-                }
+				$refundDetails = array(
+					'transactionReference' => $transactionId,
+					'amount'               => $amount,
+					'currency'             => $currency
+				);
+				break;
 
-                // try to refund the money
-                $request = $gateway->refund($refundDetails);
-                $response = $request->send();
-                if ($response->isSuccessful()) {
-                    $data = $response->getData();
-                } else {
-                    // Refunding failed
-                    $this->last_error = $errorPrefix . $response->getMessage();
-                    return false;
-                }
-            } else {
-                // Fill the rawdata with a meaningfull message to be added to rawdata array,
-                // refunding can't be done automatically
-                $data = array(
-                    'Refunded' => e107::getParser()->lanVars(
-                        'Order refunded on [x] by [y] ([z])',
-                        array(
-                            gmdate('Y-m-d H:i:s'),
-                            USERNAME,
-                            USERID
-                        )
-                    )
-                );
-            }
+			case "bank_transfer":
+				// Normal bank transfer doesn't support automatic refunding
+				$supportsRefund = false;
+				break;
 
-            // Update order status (incl.sending out the email to the customer (if nescessary))
-            $result = $this->setOrderStatus('R', array('refund' => $data));
-            if ($result !== true) {
-                $this->last_error = $errorPrefix . $result;
-                return false;
-            } elseif(!$supportsRefund) {
-                // In case of bank_transfers or other payment methods that do not support refunding,
-                // return a warning, that the refunding of the money has to be done manually!
-                $this->last_error = $warnPrefix . "The order has been marked as refunded, but the payment method '" .
-                    self::getGatewayTitle($type) .
-                    "' doesn't support automatic refunding!\nYou have to do it manually!";
-                return false;
-            }
+			default:
+				$this->last_error = $errorPrefix . "Missing pament gateway!";
 
-        } catch (Exception $ex) {
-            $this->last_error = $errorPrefix . "Refunding failed! " . $ex->getMessage();
-            return false;
-        }
+				return false;
+		}
 
-        return true;
-    }    
+		// Check if selected gateway supports refunding
+		if($supportsRefund && !$gateway->supportsRefund())
+		{
+			// gateway doesn't support refunding;
+			$supportsRefund = false;
+		}
+
+		try
+		{
+			$data = array();
+			if($supportsRefund)
+			{
+				// Check if selected gateway has it's refunding details set
+				if(empty($refundDetails))
+				{
+					$this->last_error = $errorPrefix . "Refunding details not set!";
+
+					return false;
+				}
+
+				// try to refund the money
+				$request = $gateway->refund($refundDetails);
+				$response = $request->send();
+				if($response->isSuccessful())
+				{
+					$data = $response->getData();
+				}
+				else
+				{
+					// Refunding failed
+					$this->last_error = $errorPrefix . $response->getMessage();
+
+					return false;
+				}
+			}
+			else
+			{
+				// Fill the rawdata with a meaningfull message to be added to rawdata array,
+				// refunding can't be done automatically
+				$data = array(
+					'Refunded' => e107::getParser()->lanVars(
+						'Order refunded on [x] by [y] ([z])',
+						array(
+							gmdate('Y-m-d H:i:s'),
+							USERNAME,
+							USERID
+						)
+					)
+				);
+			}
+
+			// Update order status (incl.sending out the email to the customer (if nescessary))
+			$result = $this->setOrderStatus('R', array('refund' => $data));
+			if($result !== true)
+			{
+				$this->last_error = $errorPrefix . $result;
+
+				return false;
+			}
+			elseif(!$supportsRefund)
+			{
+				// In case of bank_transfers or other payment methods that do not support refunding,
+				// return a warning, that the refunding of the money has to be done manually!
+				$this->last_error = $warnPrefix . "The order has been marked as refunded, but the payment method '" .
+					self::getGatewayTitle($type) .
+					"' doesn't support automatic refunding!\nYou have to do it manually!";
+
+				return false;
+			}
+
+		}
+		catch(Exception $ex)
+		{
+			$this->last_error = $errorPrefix . "Refunding failed! " . $ex->getMessage();
+			trigger_error($this->last_error);
+
+			return false;
+		}
+
+		return true;
+	}
 
     /**
      * Send an email to the customer with a template depending on the order_status
@@ -774,16 +826,19 @@ class vstore_order extends vstore
         if (!$this->loaded)   // No order loaded... Load order first...
         {
             e107::getMessage()->addDebug('No order loaded!', 'vstore');
+            trigger_error('No order loaded!');
             return null;
         }
 
 		if(!$tmp = $this->compileEmail($templateKey, $pdf_file))
 		{
+			trigger_error('compileEmail() returned nothing with key: '.$templateKey);
 			return null;
 		}
 
 	    list($email, $name, $eml) = $tmp;
 	    // die(e107::getEmail()->preview($eml));
+	 //   print_r($eml);
 
         e107::getEmail()->sendEmail($email, $name, $eml);
     }
@@ -885,7 +940,7 @@ class vstore_order extends vstore
 		$name = varset($receiver['firstname']) . " " . varset($receiver['lastname']);
 
 		$eml = array(
-			'subject'      => $tp->lanVars($subject, varset($this->data['order_ref'])),
+			'subject'      => $tp->lanVars($subject, varset($this->data['order_refcode'])),
 			'sender_email' => $sender_email,
 			'sender_name'  => $sender_name,
 			'html'         => true,
