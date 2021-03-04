@@ -9,11 +9,11 @@ $VSTORE_CART_TEMPLATE['start'] = '
 <table class="table table-hover table-striped cart">
 <thead>
 	<tr>
-		<th>Product</th>
+		<th>'.LAN_VSTORE_CART_005.'</th>
 		<th> </th>
-		<th>Quantity</th>
-		<th class="text-right text-end">Price</th>
-		<th class="text-right text-end">Total</th>
+		<th>'.LAN_VSTORE_CART_010.'</th>
+		<th class="text-right text-end">'.LAN_PLUGIN_VSTORE_PRICE.'</th>
+		<th class="text-right text-end">'.LAN_VSTORE_GEN_013.'</th>
 
 	</tr>
 </thead>
@@ -24,13 +24,13 @@ $VSTORE_CART_TEMPLATE['item'] = '
 {SETIMAGE: w=72&h=72&crop=1}
 	<tr>
 		<td>
-			<div class="media d-flex">
-				<div class="media-left me-2">
+			<div class="media">
+				<div class="media-left">
 					<a href="{ITEM_URL}">{ITEM_PIC: class=media-object}</a>
 				</div>
 				<div class="media-body">
-					<h5 class="media-heading"><a href="{ITEM_URL}">{ITEM_NAME}</a></h5>
-					<h6 class="media-heading"> by <a href="{ITEM_BRAND_URL}">{ITEM_BRAND}</a></h6>
+					<h4 class="media-heading"><a href="{ITEM_URL}">{ITEM_NAME}</a></h4>
+					<h5 class="media-heading">'.LAN_VSTORE_CART_015.'  <a href="{ITEM_BRAND_URL}">{ITEM_BRAND}</a></h5>
 					{ITEM_VAR_STRING}
 				</div>
 			</div>
@@ -43,14 +43,13 @@ $VSTORE_CART_TEMPLATE['item'] = '
 	</tr>
 	';
 
-
 $VSTORE_CART_TEMPLATE['end'] = '     
 	<tr>
-		<td colspan="4" class="text-right text-end">Subtotal</td>
+		<td colspan="4" class="text-right text-end">'.LAN_VSTORE_CART_009.'</td>
 		<td class="text-right text-end"><strong>{CART_SUBTOTAL}</strong></td>
 	</tr>
 	<tr>
-		<td colspan="4" class="text-right text-end">Estimated shipping</td>
+		<td colspan="4" class="text-right text-end">'.LAN_VSTORE_CART_011.'</td>
 		<td class="text-right text-end"><strong>{CART_SHIPPINGTOTAL}</strong></td>
 	</tr>
 	{CART_COUPON}
@@ -58,8 +57,8 @@ $VSTORE_CART_TEMPLATE['end'] = '
 	</tbody>
 	<tfoot>
 	<tr>
-		<td colspan="4" class="text-right text-end"><h4>Total</h4></td>
-		<td class="text-right text-end"><h4>{CART_GRANDTOTAL}</h4></td>
+		<td colspan="4" class="text-right text-end"><h4>'.LAN_VSTORE_GEN_013.'</h4></td>
+		<td class="text-right text-end"><h4><strong>{CART_GRANDTOTAL}</strong></h4></td>
 	</tr>
 	</tfoot>
 	
@@ -68,13 +67,11 @@ $VSTORE_CART_TEMPLATE['end'] = '
 		<div class="col-md-6">{CART_CONTINUESHOP}</div>
 		<div class="col-md-6 text-right text-end">{CART_CHECKOUT_BUTTON}</div>
 	</div>
-	
 ';
-
 
 $VSTORE_CART_TEMPLATE['tax'] = '
 <tr>
-	<td colspan="3" class="text-right text-end">Tax</td>
+	<td colspan="3" class="text-right text-end">'.LAN_VSTORE_GEN_024.'</td>
 	<td class="text-right text-end">[x]</td>
 	<td class="text-right text-end"><strong>[y]</strong></td>
 </tr>
@@ -86,4 +83,3 @@ $VSTORE_CART_TEMPLATE['coupon'] = '
 		<td class="text-right text-end"><strong>{CART_COUPON_VALUE}</strong></td>
 	</tr>
 ';
-

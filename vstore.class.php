@@ -13,7 +13,7 @@
  * @copyright 2019 e107inc
  */
 
-
+e107::css('vstore', 'vstore.css');
 e107::js('vstore', 'js/vstore.js');
 
 require_once('vendor/autoload.php');
@@ -87,7 +87,7 @@ class vstore
 		'paypal_rest'   => array('title' => 'Paypal', 'icon' => 'fa-paypal'),
 		'mollie'        => array('title' => 'Mollie', 'icon' => 'fa-laptop'),
 
-		'bank_transfer' => array('title' => 'Bank Transfer', 'icon' => 'fa-bank'),
+		'bank_transfer' => array('title' => ''.LAN_VSTORE_GATE_003.'', 'icon' => 'fa-bank'),
 	);
 
 	/**
@@ -189,10 +189,10 @@ class vstore
 	 * @var array Array with email types
 	 */
 	protected static $emailTypes = array(
-		'default'   => 'Order confirmation',
-		'completed' => 'Order completed',
-		'cancelled' => 'Order cancelled',
-		'refunded'  => 'Order refunded'
+        'default' => ''.LAN_VSTORE_MAIL_026.'',
+        'completed' => ''.LAN_VSTORE_MAIL_027.'',
+        'cancelled' => ''.LAN_VSTORE_MAIL_028.'',
+        'refunded' => ''.LAN_VSTORE_MAIL_029.''
 	);
 
 	/**
@@ -475,11 +475,11 @@ class vstore
 		{
 			if(vartrue($json['status']) == 'canceled')
 			{
-				return 'You have canceled your payment, but your cart is still available for further reference.';
+				return ''.LAN_VSTORE_ERR_009.'';
 			}
 			elseif(vartrue($json['status']) == 'failed')
 			{
-				return 'Your payment failed for some reason, but your cart is still available for further reference.';
+				return ''.LAN_VSTORE_ERR_010.'';
 			}
 			elseif(vartrue($json['detail']))
 			{
@@ -602,7 +602,7 @@ class vstore
 					$js->sendTextResponse(
 						EMESSLAN_TITLE_SUCCESS . "\n" .
 						e107::getParser()->lanVars(
-							'Order updated to "[x]"',
+                           ''.LAN_VSTORE_CUST_013.' "[x]"',
 							self::getStatus($status)
 						)
 					);
@@ -614,7 +614,7 @@ class vstore
 						($this->order->getLastError()
 							? $this->order->getLastError()
 							: EMESSLAN_TITLE_ERROR . "\n" . e107::getParser()->lanVars(
-								'Order couldn\'t be updated to "[x]"',
+                            ''.LAN_VSTORE_CUST_014.' "[x]"', 
 								self::getStatus($status)
 							)
 						)
@@ -647,25 +647,25 @@ class vstore
 			$this->setMode($this->post['mode']);
 			if(empty($this->getGatewayType(true)))
 			{
-				e107::getMessage()->addError('No payment method selected!', 'vstore');
+				e107::getMessage()->addError(''.LAN_VSTORE_CUSM_063.'', 'vstore');
 
 				return;
 			}
 			elseif(empty($this->getCheckoutData()))
 			{
-				e107::getMessage()->addError('No items to checkout!', 'vstore');
+				e107::getMessage()->addError(''.LAN_VSTORE_CUSM_064.'', 'vstore');
 
 				return;
 			}
 			elseif(empty(vstore::getCustomerData(true)))
 			{
-				e107::getMessage()->addError('No customer data set!', 'vstore');
+				e107::getMessage()->addError(''.LAN_VSTORE_CUSM_065.'', 'vstore');
 
 				return;
 			}
 			elseif(empty($this->getShippingData(true)))
 			{
-				e107::getMessage()->addError('No shipping data set!', 'vstore');
+				e107::getMessage()->addError(''.LAN_VSTORE_CUSM_066.'', 'vstore');
 
 				return;
 			}
@@ -726,7 +726,7 @@ class vstore
 					'datestamp' => time(),
 					'user_id'   => USERID,
 					'user_name' => USERNAME,
-					'text'      => 'Order cancelled by user'
+                    'text' => ''.LAN_VSTORE_CUSM_067.''
 				);
 
 				$update = array(
@@ -741,6 +741,7 @@ class vstore
 
 				$vc = e107::getSingleton('vstore_order', e_PLUGIN.'vstore/inc/vstore_order.class.php');
 				$vc->emailCustomerOnStatusChange($check['order_id']);
+
 
 				e107::redirect(e107::url('vstore', 'dashboard', array('dash' => 'orders')));
 				exit;
@@ -798,14 +799,14 @@ class vstore
 				else
 				{
 					$save = false;
-					e107::getMessage()->addError('Something went wrong! Unable to save changes!', 'vstore', true);
+                    e107::getMessage()->addError(''.LAN_VSTORE_CUSM_072.'', 'vstore', true);
 				}
 
 				if($save)
 				{
 					$update['WHERE'] = 'cust_e107_user = ' . USERID;
 					$result = e107::getDb()->update('vstore_customer', $update);
-					e107::getMessage()->addSuccess('Changes successfully saved!', 'vstore', true);
+                    e107::getMessage()->addSuccess(''.LAN_VSTORE_CUSM_068.'', 'vstore', true);
 					e107::redirect(e107::url('vstore', 'dashboard', array('dash' => 'addresses')));
 					exit;
 				}
@@ -1073,7 +1074,7 @@ class vstore
 				// Not needed but ...
 				// $bread = $this->setBreadcrumb();
 				$this->setBreadcrumb();
-				$msg = e107::getMessage()->addSuccess('File successfully downloaded!')->render('vstore');
+                $msg = e107::getMessage()->addSuccess(''.LAN_VSTORE_CUSM_069.'')->render('vstore');
 
 				// $ns->tablerender($this->captionBase, $bread . $msg, 'vstore-download-done');
 				$ns->tablerender($this->captionBase, $msg, 'vstore-download-done');
@@ -1151,7 +1152,7 @@ class vstore
 				}
 				else
 				{
-					$text .= e107::getMessage()->addError('Billing address is missing!', 'vstore')->render('vstore');
+					$text .= e107::getMessage()->addError(''.LAN_VSTORE_CUSM_070.'', 'vstore')->render('vstore');
 				}
 
 				// $ns->tablerender($this->captionBase, $bread . $text, 'vstore-cart-list');
@@ -1178,15 +1179,15 @@ class vstore
 
 				if(empty(vstore::getCustomerData(true)))
 				{
-					$text .= e107::getMessage()->addError('Billing address is missing!', 'vstore')->render('vstore');
+					$text .= e107::getMessage()->addError(''.LAN_VSTORE_CUSM_070.'', 'vstore')->render('vstore');
 				}
 				elseif(vartrue($this->post['order_use_shipping']) && empty($this->getShippingData(true)))
 				{
-					$text .= e107::getMessage()->addError('No shipping address set!', 'vstore')->render('vstore');
+					$text .= e107::getMessage()->addError(''.LAN_VSTORE_CART_039.'', 'vstore')->render('vstore');
 				}
 				elseif(empty($this->getCheckoutData()))
 				{
-					$text .= e107::getMessage()->addError('No items to checkout!', 'vstore')->render('vstore');
+					$text .= e107::getMessage()->addError(''.LAN_VSTORE_CUSM_071.'', 'vstore')->render('vstore');
 				}
 				else
 				{
@@ -1209,7 +1210,7 @@ class vstore
 
 				if(empty($this->getCheckoutData()))
 				{
-					$text .= e107::getMessage()->addError('No items to checkout!', 'vstore')->render('vstore');
+					$text .= e107::getMessage()->addError(''.LAN_VSTORE_CUSM_071.'', 'vstore')->render('vstore');
 				}
 				else
 				{
@@ -1436,7 +1437,7 @@ class vstore
 			{
 				$array[] = array(
 					'url'  => e107::url('vstore', 'dashboard', array('dash' => 'dashboard')),
-					'text' => "My Dashboard"
+                    'text' => "".LAN_VSTORE_CART_017.""
 				);
 			}
 		}
@@ -1524,7 +1525,7 @@ class vstore
 
 		if(empty($active))
 		{
-			return "No Payment Options Set";
+	    	return "".LAN_VSTORE_CUSM_074."";
 		}
 
 		$text = e107::getForm()->open(
@@ -1535,13 +1536,13 @@ class vstore
 		);
 
 		$text .= $this->renderCustomerForm();
-		$text .= "<hr /><p>";
-		$text .= "<i class='fa fa-truck' aria-hidden='true'></i> <a id='shipping-view-toggle' class='e-expandit' href='#shipping-view'>Add a different shipping address</a>";
+        		$text .= "<hr /><p>";
+		$text .= "<i class='fa fa-truck' aria-hidden='true'></i> <a id='shipping-view-toggle' class='e-expandit' href='#shipping-view'>".LAN_VSTORE_CART_032."</a>";
 		$text .= "</p><div id='shipping-view' style='display:none'>";
 		$text .= $this->renderShippingForm();
 		$text .= "</div>";
 
-		$text .= "<hr /><h3>Select payment method to continue</h3><div class='vstore-gateway-list row'>";
+		$text .= "<hr /><h3>".LAN_VSTORE_CART_033."</h3><div class='vstore-gateway-list row'>";
 
 		if(count($active) == 1 && empty($curGateway))
 		{
@@ -1567,8 +1568,8 @@ class vstore
 					<div class="row">
 						<div class="col-md-12">
 							<div class="alert alert-info">
-							<button class="btn btn-default btn-secondary vstore-btn-add-shipping" type="submit" name="mode" value="shipping"><i class="fa fa-truck" aria-hidden="true"></i> Enter shipping address</button>
-							<span class="help-text">Use this button to use or enter a separate shipping address.</span>
+							<button class="btn btn-default btn-secondary vstore-btn-add-shipping" type="submit" name="mode" value="shipping"><i class="fa fa-truck" aria-hidden="true"></i> '.LAN_VSTORE_CART_031.'</button>
+							<span class="help-text">'.LAN_VSTORE_CART_032.'</span>
 							</div>
 						</div>
 					</div>';
@@ -1577,8 +1578,8 @@ class vstore
        
             <div class="row mt-5 mb-5">
                 <div class="col-12 col-xs-12">
-                    <a class="btn btn-default btn-secondary vstore-btn-back-confirm" href="' . e107::url('vstore', 'cart', 'sef') . '">&laquo; Back</a>
-                    <button class="btn btn-primary vstore-btn-buy-now pull-right float-right float-end" type="submit" name="mode" value="confirm">Continue &raquo;</button>
+                    <a class="btn btn-default btn-secondary vstore-btn-back-confirm" href="' . e107::url('vstore', 'cart', 'sef') . '">&laquo;'.LAN_BACK.'</a>
+                    <button class="btn btn-primary vstore-btn-buy-now pull-right float-right float-end" type="submit" name="mode" value="confirm">'.LAN_CONTINUE.' &raquo;</button>
                 </div>
             </div>';
 
@@ -1656,8 +1657,8 @@ class vstore
             <div class="row">
                 <div class="col-12 col-xs-12">
                     <input type="hidden" name="order_use_shipping" value="1">
-                    <a class="btn btn-default btn-secondary vstore-btn-back-confirm" href="' . e107::url('vstore', 'checkout', 'sef') . '">&laquo; Back</a>
-                    <button class="btn btn-primary vstore-btn-buy-now pull-right float-right float-end" type="submit" name="mode" value="confirm">Continue &raquo;</button>
+                    <a class="btn btn-default btn-secondary vstore-btn-back-confirm" href="' . e107::url('vstore', 'checkout', 'sef') . '">&laquo; '.LAN_BACK.'</a>
+                    <button class="btn btn-primary vstore-btn-buy-now pull-right float-right float-end" type="submit" name="mode" value="confirm">'.LAN_CONTINUE.' &raquo;</button>
                 </div>
             </div>';
 
@@ -1667,7 +1668,7 @@ class vstore
 			return $text;
 		}
 
-		return "No Payment Options Set";
+        return "".LAN_VSTORE_CUSM_074." ";
 	}
 
 
@@ -1705,7 +1706,7 @@ class vstore
 
 		if(empty($type))
 		{
-			e107::getMessage()->addError("Invalid Payment Type", 'vstore');
+			e107::getMessage()->addError("".LAN_VSTORE_CUSM_075."", 'vstore');
 			trigger_error("Invalid payment type");  // debug only
 			return false;
 		}
@@ -1724,7 +1725,7 @@ class vstore
 
 		if(empty($data['items']))
 		{
-			e107::getMessage()->addError("Shopping Cart Empty", 'vstore');
+			e107::getMessage()->addError("".LAN_VSTORE_CART_037."", 'vstore');
 			trigger_error("Shopping Cart Empty"); // debug only
 			return false;
 		}
@@ -1795,7 +1796,7 @@ class vstore
 				'items'          => $items,
 				'transactionId'  => $this->getCheckoutData('id'),
 				'clientIp'       => USERIP,
-				'description'    => 'Order date: ' . e107::getDateConvert()->convert_date(time(), 'inputdate'), // required for Mollie
+				'description'    => ''.LAN_VSTORE_CART_047.' ' . e107::getDateConvert()->convert_date(time(), 'inputdate'), // required for Mollie
 			);
 
 			if($type == 'mollie')
@@ -1983,7 +1984,8 @@ class vstore
 		$this->order->order_pay_coupon_amount = $cartData['totals']['cart_coupon']['amount'];
 		$this->order->order_pay_rawdata = array('purchase' => $transData);
 		$this->order->setInvoiceNr();
-		$this->order->setOrderLog('Order created' . (empty($transData) ? '' : ' and paid') . '.');
+		//$this->order->setOrderLog(');
+        $this->order->setOrderLog(''.LAN_VSTORE_CUSM_038.'' . (empty($transData) ? '' : ' '.LAN_VSTORE_CUSM_028.'') . '.');
 
 		$mes = e107::getMessage();
 		if($this->order->save())
@@ -1998,13 +2000,13 @@ class vstore
 					$this->getGatewayType(true)
 				))
 			{
-				$mes->addError('Unable to save/Update customer data!', 'vstore');
+				$mes->addError(''.LAN_VSTORE_SALES_026.'', 'vstore');
 			}
 
 			// Set order ref code
 			if(!$this->order->setOrderRef() || !$this->order->save())
 			{
-				$mes->addDebug('Unable to update order ref code!' . $this->order->getLastError(), 'vstore');
+				$mes->addDebug(''.LAN_VSTORE_SALES_021.'' . $this->order->getLastError(), 'vstore');
 			}
 
 			// Render the in
@@ -2016,9 +2018,9 @@ class vstore
 				$pdf_file = $this->pathToInvoicePdf($this->order->order_invoice_nr, $pdf_data['userid']);
 			}
 
-			$mes->addSuccess("Your order <b>#" . $this->order->order_refcode .
-				"</b> is complete and you will receive a order confirmation " .
-				"with all details within the next few minutes by email!", 'vstore');
+			$mes->addSuccess("". LAN_VSTORE_020."<b>#" . $this->order->order_refcode .
+				"</b> ".LAN_VSTORE_021." " .
+				"".LAN_VSTORE_022."", 'vstore');
 			$this->order->emailCustomer('default', $pdf_file);
 
 			if(!empty($transData))
@@ -2028,7 +2030,7 @@ class vstore
 		}
 		else
 		{
-			$mes->addError("Unable to save transaction");
+			$mes->addError("".LAN_VSTORE_CUSM_076."");
 			$this->order->emailCustomer('error');
 		}
 		if(!$this->pref['invoice_create_pdf'] && !empty($pdf_data) && !is_array($pdf_data))
@@ -2325,12 +2327,12 @@ class vstore
 			}
 		}
 	}
-/*
+ /*
 	public static function getGateways()
 	{
 		return self::$gateways;
-	}*/
-
+	} */
+    
 	/**
 	 * Return the icon for the given gateway
 	 *
@@ -2456,8 +2458,8 @@ class vstore
 				{
 					// Item not found or not longer active => Remove from cart
 					e107::getMessage()->addWarning(
-						'We\'re sorry, but we could\'t find the selected item "' . $iteminfo['item_name'] .
-						'" or it is no longer active!',
+						''.LAN_VSTORE_011.' "' . $iteminfo['item_name'] .
+						'" '.LAN_VSTORE_012.'',
 						'vstore'
 					);
 					$sql->delete(
@@ -2486,8 +2488,8 @@ class vstore
 					}
 					$itemname .= $itemvarstring;
 					e107::getMessage()->addWarning(
-						'The entered quantity for "' . $itemname .
-						'" exceeds the number of items in stock!<br/>The quantity has been adjusted!',
+						''.LAN_VSTORE_025.' "' . $itemname .
+						'" '.LAN_VSTORE_026.'',
 						'vstore'
 					);
 				}
@@ -2582,7 +2584,7 @@ class vstore
         LIMIT ' . $this->from . "," . $this->perPage;
 		if((!$data = e107::getDb()->retrieve($query, true)) && intval($parent) == 0)
 		{
-			return e107::getMessage()->addInfo('No categories available!', 'vstore')->render('vstore');
+			return e107::getMessage()->addInfo(''.LAN_VSTORE_CART_006.'', 'vstore')->render('vstore');
 		}
 		elseif(!$data)
 		{
@@ -2663,7 +2665,7 @@ class vstore
 			true
 		))
 		{
-			return e107::getMessage()->addInfo("No products available in this category", 'vstore')->render('vstore');
+			return e107::getMessage()->addInfo("".LAN_VSTORE_027."", 'vstore')->render('vstore');
 		}
 
 		$count = e107::getDb()->foundRows();
@@ -2733,7 +2735,7 @@ class vstore
 			true
 		))
 		{
-			e107::getMessage()->addInfo("No products available in this category", 'vstore');
+			e107::getMessage()->addInfo("".LAN_VSTORE_027."", 'vstore');
 
 			return null;
 		}
@@ -2760,7 +2762,7 @@ class vstore
 
 		if(!empty($data['item_details']))
 		{
-			$tabData['details'] = array('caption' => 'Details', 'text' => $tmpl['item']['details']);
+			$tabData['details'] = array('caption' => ''.LAN_DETAILS.'', 'text' => $tmpl['item']['details']);
 		}
 
 		if($media = e107::unserialize($data['item_pic']))
@@ -2777,7 +2779,7 @@ class vstore
 
 		if(!empty($data['item_reviews']))
 		{
-			$tabData['reviews'] = array('caption' => 'Reviews', 'text' => $tmpl['item']['reviews']);
+			$tabData['reviews'] = array('caption' => ''.LAN_VSTORE_PROD_006.'', 'text' => $tmpl['item']['reviews']);
 		}
 
 
@@ -2787,7 +2789,7 @@ class vstore
 			if(!empty($tmp['src']))
 			{
 				$tabData['related'] = array(
-					'caption' => varset($tmp['caption'], 'Related'),
+					'caption' => varset($tmp['caption'], ''.LAN_VSTORE_PROD_012.''),
 					'text'    => $tmpl['item']['related']
 				);
 			}
@@ -2798,13 +2800,13 @@ class vstore
 			$tmp = e107::unserialize($data['item_files']);
 			if(!empty($tmp[0]['path']))
 			{
-				$tabData['files'] = array('caption' => 'Files', 'text' => $tmpl['item']['files']);
+				$tabData['files'] = array('caption' => ''.LAN_VSTORE_GEN_033.'', 'text' => $tmpl['item']['files']);
 			}
 		}
 
 		if(!empty($this->pref['howtoorder']))
 		{
-			$tabData['howto'] = array('caption' => 'How to Order', 'text' => $tmpl['item']['howto']);
+			$tabData['howto'] = array('caption' => ''.LAN_VSTORE_GEN_030.'', 'text' => $tmpl['item']['howto']);
 		}
 
 		if(!empty($tabData))
@@ -2841,7 +2843,7 @@ class vstore
 		$iteminfo = $sql->retrieve('vstore_items', 'item_active, item_tax_class', 'item_id=' . intval($id));
 		if(!$iteminfo['item_active'])
 		{
-			e107::getMessage()->addWarning('We\'re sorry, but this item is not longer available!', 'vstore');
+			e107::getMessage()->addWarning(''.LAN_VSTORE_028.'', 'vstore');
 			$sql->delete('vstore_cart', 'cart_session="' . $this->cartId . '" AND cart_item=' . intval($id));
 
 			return false;
@@ -2866,10 +2868,10 @@ class vstore
 				if($sql->update('vstore_cart', 'cart_qty = cart_qty +1 WHERE ' . $where))
 				{
 					return true;
-				}
-			}
-			e107::getMessage()->addWarning('Quantity of selected product exceeds the number of items in stock!<br/>' .
-				'The quantity has been adjusted!', 'vstore');
+			
+			}	}
+			e107::getMessage()->addWarning(''.LAN_VSTORE_CART_051.'<br/>' .
+				''.LAN_VSTORE_CART_052.'', 'vstore');
 
 			return false;
 		}
@@ -3006,7 +3008,7 @@ class vstore
 				return $qty;
 			}
 
-			e107::getMessage()->addDebug('Item not found!', 'vstore');
+			e107::getMessage()->addDebug(''.LAN_VSTORE_CUSM_077.'', 'vstore');
 
 			return 0;
 		}
@@ -3048,7 +3050,7 @@ class vstore
 
 		if(!$data = $this->getCartData())
 		{
-			return e107::getMessage()->addInfo("Your cart is empty.", 'vstore')->render('vstore');
+			return e107::getMessage()->addInfo("".LAN_VSTORE_CART_029."", 'vstore')->render('vstore');
 		}
 
 		$checkoutData = $this->prepareCheckoutData($data, false);
@@ -3158,7 +3160,7 @@ class vstore
 		}
 		elseif($hasCoupon)
 		{
-			e107::getMessage()->addError('Invalid coupon-code!', 'vstore');
+			e107::getMessage()->addError(''.LAN_VSTORE_009.'', 'vstore');
 		}
 
 		$subTotal = 0;
@@ -3181,8 +3183,8 @@ class vstore
 		{
 			if(!$this->isItemActive($row['cart_item']))
 			{
-				e107::getMessage()->addWarning('We\'re sorry, but the item "' . $row['item_name'] .
-					'" is missing or not longer active and has been removed from the cart!', 'vstore');
+				e107::getMessage()->addWarning(''.LAN_VSTORE_WARN_011.' "' . $row['item_name'] .
+					'" '.LAN_VSTORE_WARN_012.'', 'vstore');
 				$sql->delete('vstore_cart', 'cart_id=' . $row['cart_id'] . ' AND cart_item=' . $row['cart_item']);
 				continue;
 			}
@@ -3221,7 +3223,6 @@ class vstore
 			$row['item_total']     = $item_total;
 			$row['item_total_net'] = $item_total; // $this->calcNetPrice($item_total, $row['tax_rate']);
 
-
 			$rateKey = ''.$row['tax_rate'];
 
 			if(!isset($taxTotal[$rateKey]))
@@ -3257,11 +3258,11 @@ class vstore
 		{
 			return ($fromSitelink
 				? null
-				: e107::getMessage()->addInfo("Your cart is empty.", 'vstore')->render('vstore'));
+				: e107::getMessage()->addInfo("". LAN_VSTORE_CART_029."", 'vstore')->render('vstore'));
 		}
 
 
-		$shippingTotal = vstore::calcShippingCost($checkoutData['items'], $this->pref);
+		$shippingTotal = vstore::calcShippingCost($checkoutData['items']);
 		$shippingNet = 0.0;
 
 		// calc shipping tax
@@ -3277,7 +3278,7 @@ class vstore
 		}
 
 		$grandTotal = $subTotal + $shippingTotal + $checkoutData['coupon']['amount'];
-		foreach($taxTotal as $amount)
+        		foreach($taxTotal as $amount)
 		{
 			$grandTotal += $amount;
 		}
@@ -3419,7 +3420,6 @@ class vstore
 	/**
 	 * Return the customer data from the database if session is empty
 	 *
-	 * @param bool $forceSession
 	 * @return array
 	 */
 	public static function getCustomerData($forceSession = false)
@@ -3475,8 +3475,8 @@ class vstore
 
 		if($item_id == null || intval($item_id) <= 0)
 		{
-			e107::getMessage()->addDebug('Download id "' . intval($item_id) .
-				'" to download missing or invalid!', 'vstore');
+			e107::getMessage()->addDebug(''.LAN_VSTORE_ERR_005.'"' . intval($item_id) .
+				'" '.LAN_VSTORE_ERR_008.'', 'vstore');
 
 			return false;
 		}
@@ -3502,7 +3502,7 @@ class vstore
 		else
 		{
 			e107::getMessage()->addError(
-				'Download id  "' . intval($item_id) . '" doesn\'t contain a file to download!',
+				''.LAN_VSTORE_ERR_005.' "' . intval($item_id) . '" '.LAN_VSTORE_ERR_007.'',
 				'vstore'
 			);
 
@@ -3521,14 +3521,14 @@ class vstore
 
 		if($item_id == null || intval($item_id) <= 0)
 		{
-			e107::getMessage()->addDebug('Download id "' . intval($item_id) . '" missing or invalid!', 'vstore');
+			e107::getMessage()->addDebug(''.LAN_VSTORE_ERR_005.' "' . intval($item_id) . '" '.LAN_VSTORE_ERR_006.'', 'vstore');
 
 			return false;
 		}
 
 		if(USERID === 0)
 		{
-			e107::getMessage()->addError('You need to login to download the file!', 'vstore');
+			e107::getMessage()->addError(''.LAN_VSTORE_ERR_004.'', 'vstore');
 
 			return false;
 		}
@@ -3544,7 +3544,7 @@ class vstore
 		if(!$orders)
 		{
 			e107::getMessage()->addError(
-				'We were unable to find your order and therefore the download has been denied!',
+				''.LAN_VSTORE_ERR_003.'',
 				'vstore'
 			);
 
@@ -3568,8 +3568,8 @@ class vstore
 		}
 		// Order not completed or payment not complete + order_status = New
 		e107::getMessage()->addError(
-			'Your order is still in a state (' . vstore::getStatus($order_status) .
-			') which doesn\'t allow to download the file!',
+			''.LAN_VSTORE_ERR_001.' (' . vstore::getStatus($order_status) .
+			') '.LAN_VSTORE_ERR_005.'',
 			'vstore'
 		);
 
@@ -3688,11 +3688,11 @@ class vstore
 	public static function weightUnits($val = null)
 	{
 		$opts = array(
-			'g'     => 'Grams',
-			'kg'    => 'Kilograms',
-			'lb'    => 'Pounds',
-			'oz'    => 'Ounces',
-			'carat' => 'Carats'
+			'g'     => ''.LAN_VSTORE_PREF_015.'',
+			'kg'    => ''.LAN_VSTORE_PREF_016.'',
+			'lb'    => ''.LAN_VSTORE_PREF_017.'',
+			'oz'    => ''.LAN_VSTORE_PREF_018.'',
+			'carat' => ''.LAN_VSTORE_PREF_019.''
 		);
 
 		return !empty($val) ? varset($opts[$val]) : $opts;
@@ -3706,15 +3706,12 @@ class vstore
 	 * @param array $items
 	 * @return double
 	 */
-	public static function calcShippingCost($items, $pref = null)
+	public static function calcShippingCost($items)
 	{
-		if(empty($pref))
-		{
-			$pref = e107::pref('vstore');
-		}
 
+		$pref = e107::pref('vstore');
 		// No shipping
-		if(empty($pref['shipping']))
+		if(!vartrue($pref['shipping']))
 		{
 			return 0.0;
 		}
@@ -3722,44 +3719,40 @@ class vstore
 		$shipping = 0.0;
 		$subtotal = 0.0;
 		$weight = 0.0;
-
 		foreach($items as $item)
 		{
 			if(varset($pref['shipping_method']) == 'sum_unique')
 			{
-				// sum_unique, sum_simple or tiered
+				// sum_unique, sum_simple or staggered
 				$shipping += (double) $item['item_shipping'];
 			}
 			else
 			{
 				$shipping += (double) ($item['item_shipping'] * $item['cart_qty']);
 			}
-
 			$subtotal += (double) ($item['item_price'] * $item['cart_qty']);
 			$weight += (double) ($item['item_weight'] * $item['cart_qty']);
 		}
 
-		if(varset($pref['shipping_method']) === 'tiered'
-			&& !empty($pref['shipping_limit'])
-			&& !empty($pref['shipping_data'])
+		if(varset($pref['shipping_method']) == 'staggered'
+			&& varset($pref['shipping_limit'])
+			&& varset($pref['shipping_data'])
 		)
 		{
-			$data = $pref['shipping_data'];
+			$data = e107::unserialize($pref['shipping_data']);
 			unset($data['%ROW%']);
 			$val = $subtotal;
-			if(varset($pref['shipping_unit']) === 'weight')
+			if(varset($pref['shipping_unit']) == 'weight')
 			{
 				// weight or subtotal
 				$val = $weight;
 			}
-
 			$found = false;
 			foreach($data as $v)
 			{
-
 				if($val <= floatval($v['unit']))
 				{
-					if($pref['shipping_limit'] === 'limit')
+					if($pref['shipping_limit'] == 'limit')
 					{
 						// limit or money
 						$shipping = (double) (floatval($v['cost']) > $shipping ? $shipping : $v['cost']);
@@ -3786,6 +3779,7 @@ class vstore
 	 * will be 0.0 in case of missing data or if the coupon code isn't valid for some reason
 	 * If the coupon is valid, the result is always <= 0.0
 	 *
+	 * @param array $coupon
 	 * @param array $coupon a row from the vstore_coupons table.
 	 * @param array $item (should have the columns item_id, item_cat, item_price, cart_qty, item_name)
 	 * @return double
@@ -3801,7 +3795,7 @@ class vstore
 		// Coupon active?
 		if(empty($coupon['coupon_active']))
 		{
-			e107::getMessage()->addError('Coupon is not available!', 'vstore');
+			e107::getMessage()->addError(''.LAN_VSTORE_CART_044.'', 'vstore');
 
 			return 0.0;
 		}
@@ -3809,7 +3803,7 @@ class vstore
 		// Coupon started
 		if(!empty($coupon['coupon_start']) && time() < $coupon['coupon_start'])
 		{
-			e107::getMessage()->addError('Coupon is not yet available!', 'vstore');
+			e107::getMessage()->addError(''.LAN_VSTORE_CART_043.'', 'vstore');
 
 			return 0.0;
 		}
@@ -3817,7 +3811,7 @@ class vstore
 		// Coupon expired
 		if(!empty($coupon['coupon_end']) && time() > $coupon['coupon_end'])
 		{
-			e107::getMessage()->addError('Coupon is no longer available!', 'vstore');
+			e107::getMessage()->addError(''.LAN_VSTORE_CART_042.'', 'vstore');
 
 			return 0.0;
 		}
@@ -3835,7 +3829,7 @@ class vstore
 			if($usage >= $coupon['coupon_limit_coupon'])
 			{
 				e107::getMessage()->addError(
-					'Coupon is no longer available!<br />It has exceeded it\'s allowed number of usage!',
+					''.LAN_VSTORE_CART_041.'',
 					'vstore'
 				);
 
@@ -3854,7 +3848,7 @@ class vstore
 			if($usage >= $coupon['coupon_limit_user'])
 			{
 				e107::getMessage()->addError(
-					'Coupon is no longer available!<br />It has exceeded it\'s allowed number of usage!',
+					''.LAN_VSTORE_CART_041.'',
 					'vstore'
 				);
 
@@ -3871,7 +3865,7 @@ class vstore
 
 		// Holds the usage data for the current items
 		$usage = array();
-		$itemID = $item['item_id'];
+        $itemID = $item['item_id'];
 
 		// Check if items are defined
 		if(count($coupon['coupon_items']) > 0)
@@ -3950,8 +3944,8 @@ class vstore
 				{
 					$max_usage = $coupon['coupon_limit_item'] - ($usage[$itemID] - $item['cart_qty']);
 					e107::getMessage()->addWarning(
-						'Item quantity exceeds the allowed number of coupon code usage for this item "' .
-						$item['item_name'] . '"!<br />The coupon will only used for remaining number of usages (' .
+						''.LAN_VSTORE_WARN_013.' "' .
+						$item['item_name'] . '"!<br />'.LAN_VSTORE_WARN_014.' (' .
 						$max_usage . 'x).',
 						'vstore'
 					);
@@ -3959,7 +3953,7 @@ class vstore
 				else
 				{
 					e107::getMessage()->addError(
-						'Coupon exceeds the allowed number of usage for this item "' . $item['item_name'] . '"!',
+						''.LAN_VSTORE_ERR_011.' "' . $item['item_name'] . '"!',
 						'vstore'
 					);
 
@@ -3982,7 +3976,7 @@ class vstore
 			{
 				$amount += (double) ($item['item_price'] * $qty) * $coupon['coupon_amount'] / 100;
 			}
-			elseif($coupon['coupon_type'] === 'F')
+			elseif($coupon['coupon_type'] == 'F')
 			{
 				$amount += (double) ($qty * (float) $coupon['coupon_amount']);
 			}
@@ -3998,14 +3992,14 @@ class vstore
 	 * @param string $customer_country should be the ISO 3166-1 alpha-2 country code of the customers (billing) country
 	 * @return number
 	 */
-	public static function getTaxRate($tax_class, $customer_country = null, $pref = null)
+	public function getTaxRate($tax_class, $customer_country = null)
 	{
 
-		if(empty($pref))
+    		if(empty($pref))
 		{
 			$pref = e107::pref('vstore');
 		}
-
+        
 		$result = 0.0;
 
 		if(empty($pref['tax_calculate']))
@@ -4014,14 +4008,14 @@ class vstore
 			return $result;
 		}
 
-		if(varset($tax_class, 'standard') === 'none')
+		if(varset($tax_class, 'standard') == 'none')
 		{
 			// Tax class is set to 'none' = no tax
 			return $result;
 		}
 		$tax_class = strtolower($tax_class);
-
-		static $customerCountry;
+        
+        static $customerCountry;
 
 		$countries = new DvK\Vat\Countries();
 
@@ -4041,7 +4035,7 @@ class vstore
 		if($customerCountry === $businessCountry) // customer is from the same country as the business
 		{
 
-			$tax_classes = e107::unserialize($pref['tax_classes']); // just a precaution - now an array.
+			$tax_classes = e107::unserialize($pref['tax_classes']);  // just a precaution - now an array.
 			foreach($tax_classes as $tclass)
 			{
 				// lookup tax value
@@ -4079,10 +4073,9 @@ class vstore
 			}
 			catch(Exception $ex)
 			{
-				if($ex->getMessage() == 'Invalid rate.')
+				if($ex->getMessage() == ''.LAN_VSTORE_PROD_022.'')
 				{
-					e107::getMessage()->addError('Invalid tax class! Please inform the shop administrator!', 'vstore');
-					trigger_error('Invalid tax class!');
+					e107::getMessage()->addError(''.LAN_VSTORE_PROD_021.'', 'vstore');
 				}
 			}
 
@@ -4205,6 +4198,7 @@ class vstore
 	 */
 	public static function calcTaxAmount($netPrice, $tax_rate)
 	{
+
 		return round(($netPrice * $tax_rate) , 2);
 	}
 
@@ -4275,13 +4269,13 @@ class vstore
 		$mes = e107::getMessage();
 		if(empty($data) || !is_array($data))
 		{
-			$mes->addError('Customer data is missing or invalid!', 'vstore');
+			$mes->addError(''.LAN_VSTORE_PROD_020.'', 'vstore');
 
 			return false;
 		}
 		if(empty($type) || !in_array($type, array('billing', 'shipping')))
 		{
-			$mes->addError('Invalid type!', 'vstore');
+			$mes->addError(''.LAN_VSTORE_PROD_019.'', 'vstore');
 
 			return false;
 		}
@@ -4323,7 +4317,7 @@ class vstore
 					}
 					if($field == 'email' && !filter_var($result[$field], FILTER_VALIDATE_EMAIL))
 					{
-						$mes->addError('The given email address is invalid!', 'vstore');
+						$mes->addError(''.LAN_VSTORE_ERR_012.'', 'vstore');
 
 						return false;
 					}
@@ -4346,7 +4340,7 @@ class vstore
 					{
 						if(!$this->checkVAT_ID($result[$field], $data['country']))
 						{
-							$mes->addError('The VAT-ID is invalid or doesn\'t match the selected country!', 'vstore');
+							$mes->addError(''.LAN_VSTORE_HELP_023.'', 'vstore');
 
 							return false;
 						}
@@ -4371,7 +4365,7 @@ class vstore
 							}
 							if($addField['required'] && empty($result[$fieldName]))
 							{
-								$mes->addError('The field ' . $addField['caption'] . ' is required!', 'vstore');
+								$mes->addError(''.LAN_VSTORE_CART_004.'' . $addField['caption'] . ' '.LAN_VSTORE_CART_007.'', 'vstore');
 
 								return false;
 							}
@@ -4448,7 +4442,7 @@ class vstore
 		if(!$this->order->isLoaded())
 		{
 			// Order ID missing or invalid
-			e107::getMessage()->addDebug('No order loaded!', 'vstore');
+			e107::getMessage()->addDebug(''.LAN_VSTORE_HELP_022.'', 'vstore');
 
 			return false;
 		}
@@ -4459,7 +4453,7 @@ class vstore
 			// is user an admin
 			if(!ADMIN)
 			{
-				e107::getMessage()->addError('Access denied!', 'vstore');
+				e107::getMessage()->addError(''.ADLAN_87.'', 'vstore');
 
 				return false;
 			}
@@ -4470,7 +4464,7 @@ class vstore
 		{
 			e107::getMessage()->addError(
 				e107::getParser()->lanVars(
-					'Order in status "[x]". Invoice not available!',
+					''.LAN_VSTORE_HELP_021.' "[x]". '.LAN_VSTORE_HELP_024.'',
 					self::getStatus($this->order->order_status)
 				),
 				'vstore'
@@ -4507,7 +4501,7 @@ class vstore
 			if(!vartrue($template['default']))
 			{
 				// Template not found!
-				e107::getMessage()->addDebug('Invoice template "default" not found!', 'vstore');
+				e107::getMessage()->addDebug(''.LAN_VSTORE_MAIL_032.'', 'vstore');
 				trigger_error('Invoice template "default" not found!');
 				return false;
 			}
@@ -4549,7 +4543,7 @@ class vstore
 		{
 			$result = array(
 				'userid'  => $this->order->order_e107_user,
-				'subject' => varset($this->pref['invoice_title'][e_LANGUAGE], 'Invoice') . ' ' .
+				'subject' => varset($this->pref['invoice_title'][e_LANGUAGE], ''.LAN_VSTORE_GEN_008.'') . ' ' .
 					self::formatInvoiceNr($this->order->order_invoice_nr),
 				'text'    => $text,
 				'footer'  => $footer,
@@ -4607,9 +4601,9 @@ class vstore
 			//)->save('Vstore Pdf');
 			e107::getMessage()->addWarning(
 				e107::getParser()->lanVars(
-					'PDF plugin not installed!\n' .
-					'This plugin is required to create invoice pdf\'s!\n' .
-					'You can download it from here: [x]',
+					''.LAN_VSTORE_HELP_017.'' .
+					''.LAN_VSTORE_HELP_018.'' .
+					''.LAN_VSTORE_HELP_0197.'[x]',
 					'<a href="https://github.com/e107inc/pdf">e107inc/pdf</a>'
 				)
 			);
@@ -4648,11 +4642,11 @@ class vstore
 			{
 				e107::getLog()->add(
 					'Vstore',
-					'Unable to create invoice user folder: "' .
+					''.LAN_VSTORE_HELP_016.' "' .
 					e107::getFile()->getUserDir($data['userid'], false) . '"',
 					E_LOG_WARNING
 				);
-				e107::getMessage()->addError('Unable to create invoice user folder!', 'vstore');
+				e107::getMessage()->addError(''.LAN_VSTORE_HELP_015.'', 'vstore');
 
 				return;
 			}
@@ -4717,7 +4711,7 @@ class vstore
 			header('Content-Description: File Transfer');
 			if(headers_sent())
 			{
-			//	$this->Error('Some data has already been output to browser, can\'t send PDF file');
+			//	$this->Error(''.LAN_VSTORE_ERR_013.'');
 			}
 			header('Cache-Control: private, must-revalidate, post-check=0, pre-check=0, max-age=1');
 			header('Pragma: public');
@@ -5098,7 +5092,7 @@ class vstore
 
 				if(!empty(self::$gateways['bank_transfer']['details']))
 				{
-					$message = '<br />Use the following bank account information for your payment:<br />';
+					$message = '<br />'.LAN_VSTORE_CART_040.'<br />';
 					$message .= e107::getParser()->toHTML(self::$gateways['bank_transfer']['details'], true);
 				}
 
