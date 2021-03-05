@@ -12,7 +12,7 @@
 			$config = array(
 				0 => array(
 					'text'		=> $this->renderChart(),
-					'caption'	=> e107::getParser()->toGlyph('fa-shopping-cart').' Vstore Open/Payed orders',
+					'caption'	=> e107::getParser()->toGlyph('fa-shopping-cart').' '.LAN_VSTORE_CUSM_041.'',
 				),
 			);
 
@@ -37,7 +37,7 @@
 			$groupby = 'GROUP BY DATE(FROM_UNIXTIME(order_date))';
 			if(!$sql->select('vstore_orders', $fields, $where.' '.$groupby))
 			{
-				return 'No orders available for the last week.';
+				return LAN_VSTORE_GEN_034;
 			}
 
 			$dbdata = array();
@@ -50,7 +50,7 @@
 
 			}
 
-			$this->title = 'Payed & Open orders';
+			$this->title = LAN_VSTORE_GEN_032;
 			$data = array();
 
 			$data['labels'] = $dbdata['COL'];
@@ -61,7 +61,7 @@
 				'pointColor '		=> "rgba(220,220,220,1)",
 				'pointStrokeColor'	=> "#fff",
 				'data'				=> $dbdata['A'],
-				'title'				=> 'Open'
+				'title'				=> ''.LAN_VSTORE_CUSM_034.''
 			);
 
 			$data['datasets'][]	= array(
@@ -70,7 +70,7 @@
 				'pointColor '		=> "rgba(151,187,205,1)",
 				'pointStrokeColor'	=> "#fff",
 				'data'				=> $dbdata['B'],
-				'title'				=> 'Payed'
+				'title'				=> ''.LAN_VSTORE_CUSM_033.''
 			);
 
 
@@ -87,8 +87,8 @@
 			$text = $cht->render('vstore_canvas', '100%', '200px');
 
 			$text .= "<div class='center'><small>
-			<span style='color:rgba(220,220,220,1);' class='fa fa-shopping-cart'></span> Open&nbsp;&nbsp;
-			<span style='color:rgba(151,187,205,1);' class='fa fa-shopping-cart'></span> Payed
+			<span style='color:rgba(220,220,220,1);' class='fa fa-shopping-cart'></span> ".LAN_VSTORE_CUSM_034."&nbsp;&nbsp;
+			<span style='color:rgba(151,187,205,1);' class='fa fa-shopping-cart'></span> ".LAN_VSTORE_CUSM_033."
 			</small></div>";
 
 
@@ -112,8 +112,7 @@
 		function latest() // Latest panel in the admin area.
 		{
 			$count = e107::getDb()->count('vstore_orders', '(*)', 'FIND_IN_SET(order_status, "N,P,H")');
-			$var[0]['icon'] 	= "<img src='".e_PLUGIN."vstore/images/vstore_16.png' alt='' />";
-			$var[0]['title'] 	= "Open orders";
+			$var[0]['icon'] 	= LAN_VSTORE_DSTAT_001;
 			$var[0]['url']		= e_PLUGIN_ABS."vstore/admin_config.php?searchquery=&filter_options=order_status__open&mode=orders&action=list";
 			$var[0]['total'] 	= $count;
 
@@ -136,7 +135,7 @@
 
 			if(!$sql->gen("SELECT * FROM #vstore_orders WHERE order_pay_status = 'complete' AND  order_date BETWEEN ".$month_start." AND ".$month_end."  "))
 			{
-				return "<div class='alert alert-block alert-info'>No Transactions Found</div>";
+				return "<div class='alert alert-block alert-info'>".LAN_VSTORE_DSTAT_002."</div>";
 			}
 
 			$total = 0;
@@ -201,7 +200,7 @@
 			}
 
 		//	e107::getDebug()->log($data);
-			$label = "Monthly Revenue ";
+			$label = " ".LAN_VSTORE_DSTAT_003."";
 			$label .= date('M Y', $month_start)." - ".date('M Y', $month_end)." (".number_format($sum).")";
 
 			$options = array(
@@ -245,7 +244,7 @@
 
 			if(!$sql->gen("SELECT * FROM #vstore_orders WHERE order_date BETWEEN ".$month_start." AND ".$month_end."  "))
 			{
-				return "<div class='alert alert-block alert-info'>No Transactions Found</div>";
+				return "<div class='alert alert-block alert-info'>".LAN_VSTORE_DSTAT_002."</div>";
 			}
 
 			$total = 0;
@@ -279,7 +278,7 @@
 			$sum = $total;
 
 			$data = array();
-			$data[0] = array('Day', "New", "Processing", "Completed", "On Hold", "Cancelled", "Refunded");
+			$data[0] = array('Day', "".LAN_VSTORE_GEN_018."", "".LAN_VSTORE_GEN_025."", "".LAN_VSTORE_GEN_028."", "".LAN_VSTORE_GEN_027."", "".LAN_VSTORE_GEN_026."", "".LAN_VSTORE_GEN_029."");
 	//		$data[0][] = array('type'=>'string', 'label'=>'Total', 'role'=>'annotation', 'p'=> array('html'=>true));
 
 			// Create items for each day of the month.
@@ -313,7 +312,7 @@
 			}
 
 		//	e107::getDebug()->log($data);
-			$label = "Number of Sales ";
+			$label = "".LAN_VSTORE_STAT_010." ";
 		//	$label .= date('M Y', $month_start)." - ".date('M Y', $month_end)." (".number_format($sum).")";
 
 			$options = array(

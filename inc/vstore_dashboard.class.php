@@ -23,20 +23,20 @@ class vstore_dashboard extends vstore
 		Parent::__construct();
 
 		$this->dashboards = array(
-			'dashboard' => 'Dashboard', 
-			'orders' => 'My orders', 
-			'files' => 'My downloads', 
-			'addresses' => 'My addresses',
-			'account' => 'My account'
+			'dashboard' => ''.LAN_VSTORE_CART_018.'' , 
+			'orders' => ''.LAN_VSTORE_CART_019.'', 
+			'files' => ''.LAN_VSTORE_CART_020.'', 
+			'addresses' => ''.LAN_VSTORE_CART_021.'', 
+			'account' => ''.LAN_VSTORE_CART_022.''
         );
         
         $this->actions = array(
             'orders' => array(
-                'view' => 'View details',
-                'cancel' => 'Cancel order'
+                'view' => ''.LAN_VSTORE_CART_023.'',
+                'cancel' => ''.LAN_VSTORE_CART_024.''
             ),
             'addresses' => array(
-                'edit' => 'Edit address'
+                'edit' => ''.LAN_VSTORE_CART_025.''
             )
         );
 
@@ -94,7 +94,7 @@ class vstore_dashboard extends vstore
 	{
 		// Access only for logged in users
 		if (!USER) {
-			e107::getMessage()->addError('You need to <a href="'.SITEURL.'login.php">login</a> to access this page!', 'vstore');
+			e107::getMessage()->addError(' '.LAN_VSTORE_023.' <a href="'.SITEURL.'login.php">'.LAN_LOGIN.'</a> '.LAN_VSTORE_024.'', 'vstore');
 			return '';
 		}
 
@@ -115,7 +115,7 @@ class vstore_dashboard extends vstore
         }
         else
         {
-            e107::getMessage()->addError('Dashboard area "'.$this->dashboards[$this->area].'" not implemented yet!', 'vstore');
+            e107::getMessage()->addError(' '.LAN_VSTORE_ADMIN_014.' "'.$this->dashboards[$this->area].'" '.LAN_VSTORE_ADMIN_015.' ', 'vstore');
         }
 
 		$text .= $this->tp->parseTemplate($this->template['footer'], true, $this->sc);
@@ -178,7 +178,7 @@ class vstore_dashboard extends vstore
         }
         else
         {
-            $text .= '<p>No order has been made yet.</p>';
+            $text .= '<p>'.LAN_VSTORE_CART_034.'</p>';
         }
         return $text;
     }
@@ -197,7 +197,7 @@ class vstore_dashboard extends vstore
         if (!$data)
         {
             // Order not found or not assigned to user
-            $text .= '<p>No data found!</p>';
+            $text .= '<p>'.LAN_VSTORE_SALES_028.'</p>';
         }
         else
         {
@@ -222,16 +222,16 @@ class vstore_dashboard extends vstore
         if (!$data)
         {
             // Order not found or not assigned to user
-            $text .= '<p>No data found!</p>';
+            $text .= '<p>'.LAN_VSTORE_SALES_028.'</p>';
         }
         else
         {
             // render cancel order confirmation
             $text .= $this->frm->open('confirm-cancel', 'post', null, array('class'=>'form'));
             $text .= '
-                <div class="alert alert-warning" role="alert">Do you really want to cancel your order '.$data['order_refcode'].'?</div>
-                <a href="'.e107::url('vstore', 'dashboard', array('dash' => 'orders')).'" class="btn btn-primary" name="cancel_cancel" id="cancel_cancel">No, take me back</a>
-                <button type="submit" class="btn btn-warning" name="cancel_order" id="cancel_order" value="'.$data['order_id'].'">Yes, cancel this order!</button>
+                <div class="alert alert-warning" role="alert">'.LAN_VSTORE_005.' '.$data['order_refcode'].'?</div>
+                <a href="'.e107::url('vstore', 'dashboard', array('dash' => 'orders')).'" class="btn btn-primary" name="cancel_cancel" id="cancel_cancel">'.LAN_VSTORE_006.'</a>
+                <button type="submit" class="btn btn-warning" name="cancel_order" id="cancel_order" value="'.$data['order_id'].'">'.LAN_VSTORE_007.'</button>
             ';
             $text .= $this->frm->close();
 
@@ -276,14 +276,14 @@ class vstore_dashboard extends vstore
         
                 global $nextprev_parms;
             
-                $nextprev_parms  = http_build_query($nextprev,false);
+                $nextprev_parms  = http_build_query($nextprev,false,'&');
         
-                $text .= $this->tp->parseTemplate("{NEXTPREV: ".$nextprev_parms."}");
+                $text .= $this->tp->parseTemplate("{NEXTPREV: ".$nextprev_parms."}",true);
             }
         }
         else
         {
-            $text .= '<p>No downloadable files yet.</p>';
+            $text .= '<p>'.LAN_VSTORE_CART_035.'</p>';
         }        
 
         return $text;
@@ -307,7 +307,7 @@ class vstore_dashboard extends vstore
         }
         else
         {
-            $text .= '<p>No addresses available yet.</p>';
+            $text .= '<p>'.LAN_VSTORE_CART_036.'</p>';
         }
         unset($data);        
         return $text;
@@ -381,7 +381,7 @@ class vstore_dashboard extends vstore
 							if ($v['type'] == 'text')
 							{
 								// Textboxes
-								$field = $this->frm->text($fieldname, $fieldvalue, 100, array('placeholder' =>varset($v['placeholder'][e_LANGUAGE]), 'required' =>($v['required'] ? 1 : 0)));
+							$field = $this->frm->text($fieldname, $fieldvalue, 100, array('placeholder' =>varset($v['placeholder'][e_LANGUAGE]), 'required' =>($v['required'] ? 1 : 0)));
 							}
 							elseif ($v['type'] == 'checkbox')
 							{
@@ -389,7 +389,7 @@ class vstore_dashboard extends vstore
 								$field = '<div class="form-control">'.$this->frm->checkbox($fieldname, 1, 0, array('required'=>($v['required'] ? 1 : 0)));
 								if (vartrue($v['placeholder']))
 								{
-									$field .= ' <label for="'.$this->frm->name2id($fieldname).'-1" class="text-muted">&nbsp;'.$this->tp->toHTML($v['placeholder'][e_LANGUAGE]).'</label>';
+									$field .= ' <label for="'.$this->name2id($fieldname).'-1" class="text-muted">&nbsp;'.$this->tp->toHTML($v['placeholder'][e_LANGUAGE]).'</label>';
 								}
 								$field .= '</div>';
 							}
@@ -421,21 +421,21 @@ class vstore_dashboard extends vstore
 			}
 			else
 			{
-				e107::getMessage()->addError('Invalid address!', 'vstore');
+				e107::getMessage()->addError(''.LAN_VSTORE_ERR_014.'', 'vstore');
 			}
 
 			$text .= '
 				<hr/>
 				<div class="text-center">
-				<a href="'.e107::url('vstore', 'dashboard', array('dash' => 'addresses')).'"  class="btn btn-default btn-secondary">Back</a>&nbsp;';
-			$text .= $this->frm->button('edit_address', $this->id, 'submit', 'Save', array('class' => 'btn btn-primary'));
+				<a href="'.e107::url('vstore', 'dashboard', array('dash' => 'addresses')).'"  class="btn btn-default btn-secondary">'. LAN_BACK.'</a>&nbsp;';
+			$text .= $this->frm->button('edit_address', $this->id, 'submit', LAN_SAVE, array('class' => 'btn btn-primary'));
 			$text .= '</div>';
 
 			$text .= $this->frm->close();
         }
         else
         {
-            $text .= '<p>No addresses available yet.</p>';
+            $text .= '<p>'.LAN_VSTORE_CART_036.'</p>';
         }
         unset($data);        
         return $text;
@@ -453,4 +453,3 @@ class vstore_dashboard extends vstore
         exit;
     }
 }
-

@@ -10,21 +10,21 @@ class vstore_invoice_pref_ui extends e_admin_ui
 
 
 		// optional
-		protected $preftabs = array('pref'=>LAN_PREFS, 'temp'=>LAN_TEMPLATE);
+        protected $preftabs = array('pref'=>LAN_PREFS, 'temp'=>LAN_TEMPLATE);
 
 
 		protected $prefs = array(
-			'invoice_create_pdf'   		=> array('title'=> 'Create Pdf invoice', 'tab'=>'pref', 'type'=>'boolean', 'data' => 'int', 'writeParms'=>array('default'=>'0'),'help' => 'Enable to create the invoiceas pdf (pdf plugin required!)'),
-			'invoice_title'        		=> array('title'=> 'Title', 'tab'=>'pref', 'type'=>'text', 'data' => 'str', 'writeParms'=>array('placeholder'=>'Title', 'default'=>'INVOICE'),'multilan'=>true, 'help' => 'Title of the invoice'),
-			'invoice_info_title'        => array('title'=> 'Information section caption', 'tab'=>'pref', 'type'=>'text', 'data' => 'str', 'writeParms'=>array('placeholder'=>'Information block title', 'default'=>'Information'),'multilan'=>true, 'help' => 'Title of the information block on the top right side of the invoice.'),
-			'invoice_subject'        	=> array('title'=> 'Subject', 'tab'=>'pref', 'type'=>'text', 'data' => 'str', 'writeParms'=>array('size'=>'block-level', 'placeholder'=>'Subject', 'default'=>'This is the invoice for your order #{ORDER_DATA: order_ref} from {ORDER_DATA: order_date}'),'multilan'=>true, 'help'=>'This is rendered right above the items.'),
-			'invoice_nr_prefix'  		=> array('title'=> 'Invoice number prefix', 'tab'=>'pref', 'type'=>'text', 'data' => 'str', 'writeParms'=>array('placeholder'=>'IN', 'default'=>'IN', 'maxlength' => '5'), 'help' => 'Define the prefix for your invoice number. This will be rendered e.g. IN000012'),
-			'invoice_next_nr'  			=> array('title'=> 'Next invoice number', 'tab'=>'pref', 'type'=>'method', 'data' => 'int', 'writeParms'=>array('default'=>'1'), 'help' => 'This enables you to start at a given invoice number, or to step over a number. But it will ALWAYS be bigger than the last invoice number used!'),
-			'invoice_date_format'		=> array('title'=> 'Invoice date format', 'tab'=>'pref', 'type'=>'text', 'data' => 'str', 'writeParms'=>array('placeholder'=>'Dateformat used on invoices (date only)', 'default'=>'%m/%d/%Y'), 'help' => 'Date format (date only) used on onvoices. e.g. 05/02/2018'),
-			'invoice_payment_deadline'  => array('title'=> 'Default payment deadline (days)', 'tab'=>'pref', 'type'=>'number', 'data' => 'int', 'writeParms'=>array('default'=>'7'), 'help' => 'A notice will be added to the invoice, when the invoice should be paid latest.'),
-			'invoice_hint'        		=> array('title'=> 'Hint', 'tab'=>'temp', 'type' =>'method', 'data' => 'str', 'help' => 'This will be rendered on the invoice below the items and can be used to add some information on each invoice.'),
-			'invoice_finish_phrase'		=> array('title'=> 'Finishing phrase', 'tab'=>'temp', 'type' =>'method', 'data' => 'str', 'help' => 'This will be rendered on the invoice below the items and the hint.', 'writeParms' => array('placeholder' => 'Finishing phase', 'default' => "Thanks for your business!\n\n\nYours faithfully\n\n_______________________________________")),
-			'invoice_footer'        	=> array('title'=> 'Footer content', 'tab'=>'temp', 'type'=>'method', 'data' => 'json', 'writeParms'=>'', 'help' => 'These fields will be rendered on the bottom of each page.'),
+			'invoice_create_pdf'   		=> array('title'=> LAN_VSTORE_INV_001, 'tab'=>'pref', 'type'=>'boolean', 'data' => 'int', 'writeParms'=>array('default'=>'0'),'help' => LAN_VSTORE_INV_013),
+			'invoice_title'        		=> array('title'=> LAN_TITLE, 'tab'=>'pref', 'type'=>'text', 'data' => 'str', 'writeParms'=>array('placeholder'=>'Title', 'default'=>'INVOICE'),'multilan'=>true, 'help' => LAN_VSTORE_INV_008),
+			'invoice_info_title'        => array('title'=> LAN_VSTORE_INV_002, 'tab'=>'pref', 'type'=>'text', 'data' => 'str', 'writeParms'=>array('placeholder'=>'Information block title', 'default'=>'Information'),'multilan'=>true, 'help' => LAN_VSTORE_INV_009),
+			'invoice_subject'        	=> array('title'=> LAN_SUBJECT, 'tab'=>'pref', 'type'=>'text', 'data' => 'str', 'writeParms'=>array('size'=>'block-level', 'placeholder'=>'Subject', 'default'=>'This is the invoice for your order #{ORDER_DATA: order_ref} from {ORDER_DATA: order_date}'),'multilan'=>true, 'help'=>LAN_VSTORE_INV_003),
+			'invoice_nr_prefix'  		=> array('title'=> LAN_VSTORE_INV_004, 'tab'=>'pref', 'type'=>'text', 'data' => 'str', 'writeParms'=>array('placeholder'=>'IN', 'default'=>'IN', 'maxlength' => '5'), 'help' => LAN_VSTORE_INV_014),
+			'invoice_next_nr'  			=> array('title'=> LAN_VSTORE_INV_005, 'tab'=>'pref', 'type'=>'method', 'data' => 'int', 'writeParms'=>array('default'=>'1'), 'help' => LAN_VSTORE_INV_015),
+			'invoice_date_format'		=> array('title'=> LAN_VSTORE_INV_006, 'tab'=>'pref', 'type'=>'text', 'data' => 'str', 'writeParms'=>array('placeholder'=>''.LAN_VSTORE_INV_021.'', 'default'=>'%m/%d/%Y'), 'help' => LAN_VSTORE_INV_022),
+			'invoice_payment_deadline'  => array('title'=> LAN_VSTORE_INV_007, 'tab'=>'pref', 'type'=>'number', 'data' => 'int', 'writeParms'=>array('default'=>'7'), 'help' => LAN_VSTORE_INV_017),
+			'invoice_hint'        		=> array('title'=> LAN_VSTORE_INV_010, 'tab'=>'temp', 'type' =>'method', 'data' => 'str', 'help' => LAN_VSTORE_INV_018),
+			'invoice_finish_phrase'		=> array('title'=> LAN_VSTORE_INV_011, 'tab'=>'temp', 'type' =>'method', 'data' => 'str', 'help' => LAN_VSTORE_INV_019, 'writeParms' => array('placeholder' => 'Finishing phase', 'default' => "Thanks for your business!\n\n\nYours faithfully\n\n_______________________________________")),
+			'invoice_footer'        	=> array('title'=> LAN_VSTORE_INV_012, 'tab'=>'temp', 'type'=>'method', 'data' => 'json', 'writeParms'=>'', 'help' => LAN_VSTORE_INV_020),
 			
 			// 'invoice_template'         => array('title'=> "Invoice template", 'type'=>'method', 'tab' => 1, 'data' => 'str'),
 		);
@@ -51,7 +51,7 @@ class vstore_invoice_pref_ui extends e_admin_ui
 			) {
 				// pdf plugin not installed: reset setting
 				$new_data['invoice_create_pdf'] = 0;
-				e107::getMessage()->addInfo('Pdf creation has been disabled!');
+				e107::getMessage()->addInfo(''.LAN_VSTORE_INV_016.'');
 			}
 			return $new_data;
 		}
@@ -92,7 +92,7 @@ class vstore_invoice_pref_form_ui extends e_admin_form_ui
 		$(function(){
 			$('.vstore-invoice-reset').click(function(){
 				var template = decodeURIComponent($(this).data('template'));
-
+                
 				var id = 'invoice-template';
 				$('#'+id).val(template);
 			});
@@ -111,7 +111,7 @@ class vstore_invoice_pref_form_ui extends e_admin_form_ui
 		<div class="row">
 			<div class="form-group">
 				<div class="text-right col-6 col-xs-6">
-					'.$this->button('', '<span class="fa fa-undo"></span> '. 'Reset template', 'action', '', array('data-template' => rawurlencode($orig_templates), 'class' => 'vstore-invoice-reset pull-right btn-sm', 'title' => 'Click & save to reset this template to the default template.')).'
+					'.$this->button('', '<span class="fa fa-undo"></span> '. ''.LAN_VSTORE_MAIL_001.'', 'action', '', array('data-template' => rawurlencode($orig_templates), 'class' => 'vstore-invoice-reset pull-right btn-sm', 'title' => ''.LAN_VSTORE_MAIL_002.'')).'
 				</div>
 			</div>
 		</div>
@@ -181,5 +181,4 @@ class vstore_invoice_pref_form_ui extends e_admin_form_ui
 
 	}
 
-}		
-
+}

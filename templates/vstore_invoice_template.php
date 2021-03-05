@@ -42,12 +42,13 @@
 
 		<td style="width: 35%;">
 			<b>{INVOICE_DATA: info_title}</b><br />
-			Invoice#: {ORDER_DATA: order_invoice_nr}<br />
-			Order#: {ORDER_DATA: order_ref}<br />
-			Order date: {ORDER_DATA: order_date}<br />
-			Payment method: {ORDER_DATA: order_gateway}<br />
-			Payment deadline: {INVOICE_DATA: payment_deadline}		
+			'.LAN_VSTORE_CART_045.' {ORDER_DATA: order_invoice_nr}<br />
+			'.LAN_VSTORE_CART_046.' {ORDER_DATA: order_ref}<br />
+			'.LAN_VSTORE_CART_047.' {ORDER_DATA: order_date}<br />
+			'.LAN_VSTORE_GEN_009.' {ORDER_DATA: order_gateway}<br />
+			'.LAN_VSTORE_CART_049.' {INVOICE_DATA: payment_deadline}		
 		</td>
+
 	</tr>
 
 	<tr>
@@ -115,12 +116,12 @@ $VSTORE_INVOICE_TEMPLATE['invoice_items']['header'] = '
 <br/>
 <table style="width: 100%;">
 <tr>
-	<th style="width: 5%; text-align:center; line-height: 2.5em;"><b>No.</b></th>
-	<th style="width: 45%;line-height: 2.5em;"><b>Product</b></th>
-	<th style="width: 10%; text-align:right; line-height: 2.5em;"><b>Tax</b></th>
-	<th style="width: 15%; text-align:right; line-height: 2.5em;"><b>Unit Price</b></th>
-	<th style="width: 10%; text-align:right; line-height: 2.5em;"><b>Qty</b></th>
-	<th style="width: 15%; text-align:right; line-height: 2.5em;"><b>Amount</b></th>
+	<th style="width: 5%; text-align:center; line-height: 2.5em;"><b>'.LAN_VSTORE_CUSM_061.'</b></th>
+	<th style="width: 45%;line-height: 2.5em;"><b>'.LAN_VSTORE_CART_005.'</b></th>
+	<th style="width: 10%; text-align:right; line-height: 2.5em;"><b>'.LAN_VSTORE_GEN_024.'</b></th>
+	<th style="width: 15%; text-align:right; line-height: 2.5em;"><b>'.LAN_VSTORE_CUSM_023.'</b></th>
+	<th style="width: 10%; text-align:right; line-height: 2.5em;"><b>'.LAN_VSTORE_GEN_003.'</b></th>
+	<th style="width: 15%; text-align:right; line-height: 2.5em;"><b>'.LAN_VSTORE_CUSM_025.'</b></th>
 </tr>
 ';
 
