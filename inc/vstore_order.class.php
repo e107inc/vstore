@@ -295,6 +295,7 @@ class vstore_order extends vstore
 		    'data' => $this->data
 	    );
 
+
 	    if(empty($id))
 	    {
 		    // New order
@@ -389,20 +390,18 @@ class vstore_order extends vstore
 		if(!$this->loaded)
 		{
 			$this->last_error = $errorPrefix . 'Unable to change order status. No Order loaded!';
-
+			trigger_error($this->last_error);
 			return false;
 		}
 		// record found and new status is different to new one
 		if($this->data['order_status'] !== $new_status)
 		{
-			if($new_status === 'C')
+			if($new_status === 'C') // if new status is complete, assume the payment also to be complete
 			{
-				// if new status is complete, assume the payment also to be complete
 				$this->data['order_pay_status'] = 'complete';
 			}
-			elseif($new_status === 'R')
+			elseif($new_status === 'R') // if new status is refunded, set payment to refunded
 			{
-				// if new status is refunded, set payment to refunded
 				$this->data['order_pay_status'] = 'refunded';
 			}
 
@@ -442,7 +441,7 @@ class vstore_order extends vstore
 			{
 				// There was an error, return the last database error
 				$this->last_error = $errorPrefix . 'Unable to update order status. ' . e107::getDb()->getLastErrorText();
-
+				trigger_error($this->last_error);
 				return false;
 			}
 
@@ -928,10 +927,12 @@ class vstore_order extends vstore
 
 		$receiver = (array) $this->unserialize('order_billing');
 
-		$this->data['is_business'] = !empty($receiver['vat_id']);
-		$this->data['is_local'] = (varset($receiver['country'], varset($this->pref['tax_business_country'])) === varset( $this->pref['tax_business_country']));
+		$vars = $this->data;
 
-		$this->sc->setVars($this->data);
+		$vars['is_business'] = !empty($receiver['vat_id']);
+		$vars['is_local'] = (varset($receiver['country'], varset($this->pref['tax_business_country'])) === varset( $this->pref['tax_business_country']));
+
+		$this->sc->setVars($vars);
 
 		//todo add to template
 		$subject = "Your Order #[x] at " . SITENAME;
