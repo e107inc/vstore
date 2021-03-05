@@ -31,7 +31,7 @@ class vstore_order_ui extends e_admin_ui
 	//	protected $batchCopy		= true;
 	//	protected $sortField		= 'somefield_order';
 	//	protected $orderStep		= 10;
-		protected $tabs				= array(LAN_GENERAL, 'Details', 'Log'); // Use 'tab'=>0  OR 'tab'=>1 in the $fields below to enable.
+		protected $tabs				= array(LAN_GENERAL,  LAN_DETAILS, LAN_VSTORE_GEN_004); // Use 'tab'=>0  OR 'tab'=>1 in the $fields below to enable.
 
 		// protected $listQry      	= "SELECT o.*, SUM(c.cart_qty) as items FROM `#vstore_orders` AS o LEFT JOIN `#vstore_cart` AS  c ON o.order_session = c.cart_session  "; // Example Custom Query. LEFT JOINS allowed. Should be without any Order or Limit.
 
@@ -43,26 +43,26 @@ class vstore_order_ui extends e_admin_ui
 			'checkboxes'           	=> array ( 'title' => '', 'type' => null, 'data' => null, 'width' => '5%', 'thclass' => 'center', 'forced' => '1', 'class' => 'center', 'toggle' => 'e-multiselect',  ),
 			'order_id'            	=> array ( 'title' => LAN_ID, 'data' => 'int', 'type'=>'number',  'width' => '5%', 'help' => '', 'readonly'=>true, 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 			'order_date'          	=> array ( 'title' => LAN_DATESTAMP, 'type' => 'datestamp', 'data' => 'str',  'readonly'=>true, 'width' => 'auto', 'filter' => true, 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
-			'order_status'          => array ( 'title' => 'Status', 'type'=>'method', 'data'=>'str', 'inline'=>false, 'filter'=>true, 'batch'=>true,'width'=>'5%', 'class'=>'td-status'),
-			'order_pay_status'      => array ( 'title' => 'Pay Status', 'type' => 'method',  'data' => 'str',  'readonly'=>true, 'width' => '5%', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'td-pay-status left', 'thclass' => 'left',  ),
-			'order_refund_date' 	=> array ( 'title' => 'Refund date', 'type' => 'method', 'tab'=>0, 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+			'order_status'          => array ( 'title' => LAN_VSTORE_GEN_001, 'type'=>'method', 'data'=>'str', 'inline'=>false, 'filter'=>true, 'batch'=>true,'width'=>'5%', 'class'=>'td-status'),
+			'order_pay_status'      => array ( 'title' => LAN_VSTORE_SALES_002, 'type' => 'method',  'data' => 'str',  'readonly'=>true, 'width' => '5%', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'td-pay-status left', 'thclass' => 'left',  ),
+			'order_refund_date' 	=> array ( 'title' => LAN_VSTORE_SALES_003, 'type' => 'method', 'tab'=>0, 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 
-			'order_invoice_nr'     	=> array ( 'title' => 'Invoice #', 'type'=>'method', 'data'=>false, 'width'=>'10%'),
-			'order_billing'      	=> array ( 'title' => 'Billing to', 'type'=>'method', 'data'=>false, 'width'=>'20%'),
-			'order_shipping'      	=> array ( 'title' => 'Ship to', 'type'=>'method', 'data'=>false, 'width'=>'20%'),
-			'order_items'     		=> array ( 'title' => 'Items', 'type' => 'method', 'data' => false, 'width' => '5%', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'right', 'thclass' => 'right',  ),
+			'order_invoice_nr'     	=> array ( 'title' => LAN_VSTORE_SALES_004, 'type'=>'method', 'data'=>false, 'width'=>'10%'),
+			'order_billing'      	=> array ( 'title' => LAN_VSTORE_SALES_005, 'type'=>'method', 'data'=>false, 'width'=>'20%'),
+			'order_shipping'      	=> array ( 'title' => LAN_VSTORE_SALES_006, 'type'=>'method', 'data'=>false, 'width'=>'20%'),
+			'order_items'     		=> array ( 'title' => LAN_VSTORE_GEN_002, 'type' => 'method', 'data' => false, 'width' => '5%', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'right', 'thclass' => 'right',  ),
 			'order_e107_user'     	=> array ( 'title' => LAN_AUTHOR, 'type' => 'method', 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
-			'order_pay_transid'     => array ( 'title' => 'TransID', 'type' => 'text', 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+			'order_pay_transid'     => array ( 'title' => LAN_VSTORE_SALES_008, 'type' => 'text', 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 
-			'order_pay_gateway'     => array ( 'title' => 'Gateway', 'type' => 'method', 'data' => false,  'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'td-gateway left', 'thclass' => 'left',  ),
-			'order_pay_amount' 		=> array ( 'title' => 'Total', 'type' => 'method', 'data' => false, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'td-total left', 'thclass' => 'left',  ),
-			'order_pay_shipping' 	=> array ( 'title' => 'Shipping', 'type' => 'number', 'data' => 'float', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
-			'order_pay_currency' 	=> array ( 'title' => 'Currency', 'type' => 'text', 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+			'order_pay_gateway'     => array ( 'title' => LAN_VSTORE_SALES_009, 'type' => 'method', 'data' => false,  'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'td-gateway left', 'thclass' => 'left',  ),
+			'order_pay_amount' 		=> array ( 'title' => LAN_VSTORE_GEN_013, 'type' => 'method', 'data' => false, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'td-total left', 'thclass' => 'left',  ),
+			'order_pay_shipping' 	=> array ( 'title' => LAN_VSTORE_GEN_012, 'type' => 'number', 'data' => 'float', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+			'order_pay_currency' 	=> array ( 'title' => LAN_VSTORE_SALES_012, 'type' => 'text', 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 
-			'order_ship_notes'      => array ( 'title' => 'Notes', 'type'=>'method', 'tab'=>1, 'data'=>false, 'width'=>'20%'),
-			'order_session'       	=> array ( 'title' => 'Session', 'type' => 'text', 'tab'=>1, 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
-			'order_pay_rawdata' 	=> array ( 'title' => 'Rawdata', 'type' => 'method', 'tab'=>1, 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
-			'order_log' 			=> array ( 'title' => 'Log', 'type' => 'method', 'tab'=>2, 'data' => 'json', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+			'order_ship_notes'      => array ( 'title' => LAN_VSTORE_SALES_013, 'type'=>'method', 'tab'=>1, 'data'=>false, 'width'=>'20%'),
+			'order_session'       	=> array ( 'title' => LAN_SESSION, 'type' => 'text', 'tab'=>1, 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+			'order_pay_rawdata' 	=> array ( 'title' => LAN_VSTORE_SALES_014, 'type' => 'method', 'tab'=>1, 'data' => 'str', 'readonly'=>true, 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
+			'order_log' 			=> array ( 'title' => LAN_VSTORE_GEN_004, 'type' => 'method', 'tab'=>2, 'data' => 'json', 'width' => 'auto', 'help' => '', 'readParms' => '', 'writeParms' => '', 'class' => 'left', 'thclass' => 'left',  ),
 
 			'options' 				=> array ( 'title' => LAN_OPTIONS, 'type' => null, 'data' => null, 'width' => '10%', 'thclass' => 'center last', 'class' => 'center last', 'forced' => '1',  ),
 		);
@@ -175,11 +175,11 @@ class vstore_order_ui extends e_admin_ui
 							$result = $vs->refundPurchase($order_id, true);
 							if(is_string($result))
 							{
-								$msg = vartrue($result, 'Order could\'t be refunded!');
+								$msg = vartrue($result, ''.LAN_VSTORE_SALES_015.'');
 								if (e_AJAX_REQUEST)
 								{
 									$response_msg = e107::getMessage()->addWarning($msg)->render();
-									$new_data['etrigger_submit'] = 'Update';
+									$new_data['etrigger_submit'] = ''.LAN_UPDATE.'';
 
 									$response = $this->getResponse();
 									$response->getJsHelper()->addResponse($response_msg);
@@ -191,7 +191,7 @@ class vstore_order_ui extends e_admin_ui
 							}
 							else{
 								// Refund was successfull, set the pay status also to "refunded"
-								$new_data['order_pay_status'] = 'refunded';
+								$new_data['order_pay_status'] = ''.LAN_VSTORE_GEN_029.'';
 								$new_data['order_refund_date'] = time();
 							}
 						}
@@ -247,11 +247,11 @@ class vstore_order_ui extends e_admin_ui
 				// Check if the pdf was created
 				if (empty($vs->pathToInvoicePdf($new_data['order_invoice_nr'], $new_data['order_e107_user'])))
 				{
-					e107::getMessage()->addWarning('Invoice couldn\'t be created!');
+					e107::getMessage()->addWarning(LAN_VSTORE_SALES_011);
 				}
 				else
 				{
-					e107::getMessage()->addSuccess('Invoice successfully created!');
+					e107::getMessage()->addSuccess(LAN_VSTORE_SALES_010);
 				}
 			}
 
@@ -314,13 +314,13 @@ class vstore_order_form_ui extends e_admin_form_ui
 		switch($mode)
 		{
 			case 'read': // List Page
-				return '<span title="Click to open/generate the invoice pdf">' .$text . '</span>';
+				return '<span title="'.LAN_VSTORE_SALES_016.'">' .$text . '</span>';
 				break;
 
 			case 'write': // Edit Page
 				if ($exists)
 				{
-					return $text . ' &nbsp;&nbsp;&nbsp;&nbsp;' . $this->checkbox_label('Check to force the creation of a new invoice pdf during save', 'force_new_invoice', 1);
+					return $text . ' &nbsp;&nbsp;&nbsp;&nbsp;' . $this->checkbox_label(LAN_VSTORE_SALES_027, 'force_new_invoice', 1);
 				}
 				else
 				{
@@ -357,24 +357,24 @@ class vstore_order_form_ui extends e_admin_form_ui
 
 				switch($curVal) {
 					case 'N': // new
-						$text .= $this->button('btnCancel', 1, 'danger', 'Cancel order', array('confirm' => 'Do you really want to cancel this order?'));
-						$text .= $this->button('btnOnHold', 1, 'warning', 'Hold order', array());
-						$text .= $this->button('btnProcessing', 1, 'button', 'Process order', array());
+						$text .= $this->button('btnCancel', 1, 'danger', LAN_VSTORE_CART_024, array('confirm' => LAN_VSTORE_SALES_022));
+						$text .= $this->button('btnOnHold', 1, 'warning', LAN_VSTORE_SALES_017, array());
+						$text .= $this->button('btnProcessing', 1, 'button', LAN_VSTORE_SALES_018, array());
 						break;
 					case 'P': // processing
-						$text .= $this->button('btnCancel', 1, 'danger', 'Cancel order', array('confirm' => 'Do you really want to cancel this order?'));
-						$text .= $this->button('btnRefund', '1', 'danger', 'Refund order', array());
-						$text .= $this->button('btnComplete', 1, 'button', 'Complete order', array());
+						$text .= $this->button('btnCancel', 1, 'danger', LAN_VSTORE_CART_024, array('confirm' => LAN_VSTORE_SALES_022));
+						$text .= $this->button('btnRefund', '1', 'danger', LAN_VSTORE_SALES_023, array());
+						$text .= $this->button('btnComplete', 1, 'button', LAN_VSTORE_SALES_024, array());
 						break;
 					case 'H': // On hold
-						$text .= $this->button('btnCancel', 1, 'danger', 'Cancel order', array('confirm' => 'Do you really want to cancel this order?'));
-						$text .= $this->button('btnProcessing', 1, 'button', 'Process order', array());
+						$text .= $this->button('btnCancel', 1, 'danger', LAN_VSTORE_CART_024, array('confirm' => LAN_VSTORE_SALES_022));
+						$text .= $this->button('btnProcessing', 1, 'button', LAN_VSTORE_SALES_018, array());
 						break;
 					case 'C': // completed
-						$text .= $this->button('btnRefund', '1', 'danger', 'Refund order', array('confirm' => 'Do you really want to refund this order?'));
+						$text .= $this->button('btnRefund', '1', 'danger', LAN_VSTORE_SALES_023, array('confirm' => LAN_VSTORE_SALES_025));
 						break;
 					case 'X': // cancelled
-						$text .= $this->button('btnProcessing', 1, 'button', 'Process order', array());
+						$text .= $this->button('btnProcessing', 1, 'button', LAN_VSTORE_SALES_018, array());
 						break;
 					case 'R': // refunded
 						//$text .= 'Order is already refunded!';
@@ -408,19 +408,19 @@ class vstore_order_form_ui extends e_admin_form_ui
 					
 						$('#btnonhold').click(function(e){
 							e.preventDefault();
-							if (!confirm('Do you really want to set the order on hold?')) return;
+							if (!confirm('".LAN_VSTORE_HELP_025."')) return;
 							updateOrder('hold', {$order_id});
 						});
 					
 						$('#btncancel').click(function(e){
 							e.preventDefault();
-							if (!confirm('Do you really want to cancel this order?')) return;
+							if (!confirm('".LAN_VSTORE_SALES_022."')) return;
 							updateOrder('cancel', {$order_id});
 						});
 					
 						$('#btnrefund').click(function(e){
 							e.preventDefault();
-							if (!confirm('Do you really want to refund this order?')) return;
+							if (!confirm('".LAN_VSTORE_SALES_025."')) return;
 							updateOrder('refund', {$order_id});
 						});
 						
@@ -496,11 +496,11 @@ class vstore_order_form_ui extends e_admin_form_ui
 				$text = "<table class='table table-striped table-bordered' style='margin:0;width:70%'>
 				<thead>
 				<tr>
-					<th>Name</th>
-					<th>Description</th>
-					<th class='text-right'>Qty.</th>
+					<th>".LAN_VSTORE_CART_001."</th>
+					<th>".LAN_VSTORE_CUSM_022."</th>
+					<th class='text-right'>".LAN_VSTORE_GEN_003.".</th>
 
-					<th class='text-right'>Price</th>
+					<th class='text-right'>".LAN_VSTORE_CUSM_062."</th>
 				</tr>
 				</thead>";
 
@@ -539,7 +539,7 @@ class vstore_order_form_ui extends e_admin_form_ui
 			case 'write': // Edit Page
 				$val = e107::unserialize($curVal);
 
-				if (count($val) == 0) return 'No billing address set';
+				if (count($val) == 0) return ''.LAN_VSTORE_CUSM_073.'';
 
 				return varset($val['firstname']) . ' ' . varset($val['lastname']).'<br />'
 					.varset($val['company']).'<br />'
@@ -562,7 +562,7 @@ class vstore_order_form_ui extends e_admin_form_ui
 			case 'write': // Edit Page
 				$val = e107::unserialize($curVal);
 
-				if (count($val) == 0) return 'No shipping address set';
+				if (count($val) == 0) return ''.LAN_VSTORE_CART_039.'';
 		
 				return varset($val['firstname']) . ' ' . varset($val['lastname']).'<br />'
 					.varset($val['company']).'<br />'
@@ -681,9 +681,9 @@ class vstore_order_form_ui extends e_admin_form_ui
 
 		$text = '<table class="table table-bordered table-striped">
 			<tr>
-				<th>Date/Time</th>
-				<th>User</td>
-				<td>Description</td>
+				<th>'.LAN_VSTORE_CUSM_043.'</th>
+				<th>'.LAN_USER.'</th>
+				<td>'.LAN_VSTORE_CUSM_022.'</td>
 			</tr>
 			';
 		foreach ($items as $item) {
