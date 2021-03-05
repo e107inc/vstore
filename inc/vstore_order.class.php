@@ -177,6 +177,30 @@ class vstore_order extends vstore
 	    return true;
     }
 
+	/**
+	 * @param array $data
+	 * @return bool
+	 */
+	private function hasData($data)
+	{
+		if(empty($data))
+	    {
+		    if($this->sql->getLastErrorNumber() > 0)
+		    {
+			    $this->last_error = 'Unable to load order! ' . $this->sql->getLastErrorText();
+		    }
+		    else
+		    {
+			    $this->last_error = 'Order not found!';
+		    }
+
+		    return false;
+	    }
+
+	    return true;
+
+	}
+
     /**
      * Load an order from the database
      *
@@ -190,19 +214,11 @@ class vstore_order extends vstore
         $id = (int) $id;
         $this->data = $this->sql->retrieve('vstore_orders', '*', 'order_id=' . $id);
 
-	    if(empty($this->data))
-	    {
-		    if($this->sql->getLastErrorNumber() > 0)
-		    {
-			    $this->last_error = 'Unable to load order! ' . $this->sql->getLastErrorText();
-		    }
-		    else
-		    {
-			    $this->last_error = 'Order not found!';
-		    }
+		if($this->hasData($this->data) === false)
+		{
+			return false;
+		}
 
-		    return false;
-	    }
 
         $this->old_data = $this->data;
         $this->initData();
@@ -223,19 +239,10 @@ class vstore_order extends vstore
         $id = intval($id);
         $this->data = $this->sql->retrieve('vstore_orders', '*', 'order_invoice_nr=' . $id);
 
-	    if(empty($this->data))
-	    {
-		    if($this->sql->getLastErrorNumber() > 0)
-		    {
-			    $this->last_error = 'Unable to load order! ' . $this->sql->getLastErrorText();
-		    }
-		    else
-		    {
-			    $this->last_error = 'Order not found!';
-		    }
-
-		    return false;
-	    }
+		if($this->hasData($this->data) === false)
+		{
+			return false;
+		}
 
         $this->old_data = $this->data;
         $this->initData();
@@ -291,8 +298,20 @@ class vstore_order extends vstore
 		    return true;
 	    }
 
+
+		$data = $this->data;
+
+		if(isset($data['is_business']))
+		{
+			unset($data['is_business']);
+		}
+		if(isset($data['is_local']))
+		{
+			unset($data['is_local']);
+		}
+
 	    $insert = array(
-		    'data' => $this->data
+		    'data' => $data
 	    );
 
 
@@ -606,92 +625,48 @@ class vstore_order extends vstore
 		$transactionId = $this->order_pay_transid;
 		$amount = $this->order_pay_amount;
 		$currency = $this->order_pay_currency;
-		$type = $gateway = $this->order_pay_gateway;
+		$type = $this->order_pay_gateway;
 
 		e107::getDebug()->log("Processing Gateway: " . $type);
 
 		// Fix $type in case of Mollie Gateway
 		if(self::isMollie($type))
 		{
-			$gateway = substr($type, 0, 6);
+			$type = substr($type, 0, 6);
 		}
 
 		// array keeping the data required for refunding
 		// usually the transactionid
 		$refundDetails = array();
+		$gateway = null;
 
 		// Init payment gateway
-		switch($gateway)
+		switch($type)
 		{
-			case "mollie":
-				/** @var Gateway $gateway */
-				$gateway = Omnipay::create('Mollie');
-
-				if(!empty($this->pref['mollie']['testmode']))
-				{
-					$gateway->setApiKey($this->pref['mollie']['api_key_test']);
-					$gateway->setTestMode(true);
-				}
-				else
-				{
-					$gateway->setApiKey($this->pref['mollie']['api_key_live']);
-				}
-
-				$refundDetails = array(
-					'transactionReference' => $transactionId,
-					'amount'               => $amount,
-					'currency'             => $currency
-				);
-				break;
-
-			case "paypal":
-				/** @var ExpressGateway $gateway */
-				$gateway = Omnipay::create('PayPal_Express');
-
-				if(!empty($this->pref['paypal']['testmode']))
-				{
-					$gateway->setTestMode(true);
-				}
-
-				$gateway->setUsername($this->pref['paypal']['username']);
-				$gateway->setPassword($this->pref['paypal']['password']);
-				$gateway->setSignature($this->pref['paypal']['signature']);
-
-				$refundDetails = array(
-					'transactionReference' => $transactionId,
-					'amount'               => $amount,
-					'currency'             => $currency
-				);
-				break;
-
-			case "paypal_rest":
-				/** @var RestGateway $gateway */
-				$gateway = Omnipay::create('PayPal_Rest');
-
-				if(!empty($this->pref['paypal_rest']['testmode']))
-				{
-					$gateway->setTestMode(true);
-				}
-
-				$gateway->setClientId($this->pref['paypal_rest']['clientId']);
-				$gateway->setSecret($this->pref['paypal_rest']['secret']);
-
-				$refundDetails = array(
-					'transactionReference' => $transactionId,
-					'amount'               => $amount,
-					'currency'             => $currency
-				);
-				break;
-
 			case "bank_transfer":
 				// Normal bank transfer doesn't support automatic refunding
 				$supportsRefund = false;
 				break;
 
+			case "paypal_rest":
+			case "paypal":
+			case "mollie":
 			default:
-				$this->last_error = $errorPrefix . "Missing pament gateway!";
+				list($gateway, $mode, $message) = $this->loadGateway($type);
 
-				return false;
+				$refundDetails = array(
+					'transactionReference' => $transactionId,
+					'amount'               => $amount,
+					'currency'             => $currency
+				);
+
+				if(empty($gateway))
+				{
+					$this->last_error = $errorPrefix . "Missing pament gateway!";
+					trigger_error($this->last_error);
+					return false;
+				}
+
 		}
 
 		// Check if selected gateway supports refunding
@@ -710,7 +685,7 @@ class vstore_order extends vstore
 				if(empty($refundDetails))
 				{
 					$this->last_error = $errorPrefix . "Refunding details not set!";
-
+					trigger_error($this->last_error);
 					return false;
 				}
 
@@ -725,7 +700,7 @@ class vstore_order extends vstore
 				{
 					// Refunding failed
 					$this->last_error = $errorPrefix . $response->getMessage();
-
+					trigger_error($this->last_error);
 					return false;
 				}
 			}
@@ -750,7 +725,6 @@ class vstore_order extends vstore
 			if($result !== true)
 			{
 				$this->last_error = $errorPrefix . $result;
-
 				return false;
 			}
 			elseif(!$supportsRefund)
@@ -760,7 +734,6 @@ class vstore_order extends vstore
 				$this->last_error = $warnPrefix . "The order has been marked as refunded, but the payment method '" .
 					self::getGatewayTitle($type) .
 					"' doesn't support automatic refunding!\nYou have to do it manually!";
-
 				return false;
 			}
 
@@ -768,8 +741,6 @@ class vstore_order extends vstore
 		catch(Exception $ex)
 		{
 			$this->last_error = $errorPrefix . "Refunding failed! " . $ex->getMessage();
-			trigger_error($this->last_error);
-
 			return false;
 		}
 
@@ -789,6 +760,7 @@ class vstore_order extends vstore
                 'No order loaded!',
                 'vstore'
             );
+            trigger_error('No Order loaded!');
             return;
         }
 
@@ -796,13 +768,12 @@ class vstore_order extends vstore
 
         // Attach the invoice in case the order status is New, Complete or Processing
         $pdf_file = '';
-        if (vartrue($this->pref['invoice_create_pdf'], 0)
-            && self::validInvoiceOrderState($this->data['order_status'])
-        ) {
-            $pdf_file = $this->pathToInvoicePdf(
-                $this->data['order_invoice_nr'],
-                $this->data['order_e107_user']
-            );
+
+        $createPDF = e107::pref('vstore', 'invoice_create_pdf', false);
+
+        if ($createPDF && self::validInvoiceOrderState($this->data['order_status']))
+        {
+            $pdf_file = $this->pathToInvoicePdf($this->data['order_invoice_nr'], $this->data['order_e107_user']);
         }
 
         $this->emailCustomer(
@@ -818,7 +789,7 @@ class vstore_order extends vstore
      * @param string $templateKey the email type
      * @param string $pdf_file the path to the pdf invoice file (or empty)
      *
-     * @return void
+     * @return boolean
      */
     public function emailCustomer($templateKey = 'default', $pdf_file = '')
     {
@@ -826,20 +797,27 @@ class vstore_order extends vstore
         {
             e107::getMessage()->addDebug('No order loaded!', 'vstore');
             trigger_error('No order loaded!');
-            return null;
+            return false;
         }
 
 		if(!$tmp = $this->compileEmail($templateKey, $pdf_file))
 		{
 			trigger_error('compileEmail() returned nothing with key: '.$templateKey);
-			return null;
+			return false;
 		}
 
 	    list($email, $name, $eml) = $tmp;
 	    // die(e107::getEmail()->preview($eml));
-	 //   print_r($eml);
 
-        e107::getEmail()->sendEmail($email, $name, $eml);
+        $result = e107::getEmail()->sendEmail($email, $name, $eml);
+
+		if($result !== true)
+		{
+            $this->last_error = $result;
+            return false;
+		}
+
+		return true;
     }
 
 
@@ -860,7 +838,7 @@ class vstore_order extends vstore
 		    $type = 'default';
 	    }
 
-	    $template = varset($this->pref['email_templates']);
+	    $template = e107::pref('vstore','email_templates', array());
 
 	    if(isset($template[$type]['active']) && ($template[$type]['active'] ? false : true))
 	    {
@@ -892,6 +870,7 @@ class vstore_order extends vstore
 	{
 
 		$tp = e107::getParser();
+		$pref = e107::pref('vstore');
 		$template = $this->getEmailTemplate($templateKey);
 
 		if(empty($template))
@@ -901,8 +880,8 @@ class vstore_order extends vstore
 			return false;
 		}
 
-		$sender_name = varset($this->pref['sender_name']);
-		$sender_email = varset($this->pref['sender_email']);
+		$sender_name = varset($pref['sender_name']);
+		$sender_email = varset($pref['sender_email']);
 
 		if(empty($sender_email))
 		{
@@ -916,8 +895,20 @@ class vstore_order extends vstore
 			$sender_name = e107::pref('core', 'siteadmin');
 		}
 
+		if(empty($sender_email))
+		{
+			trigger_error("sender_email was empty");
+			return false;
+		}
 
-		$templates = varset($this->pref['email_templates'], array());
+
+		$templates = varset($pref['email_templates'], array());
+
+		if(empty($templates))
+		{
+			trigger_error('Email templates pref was empty');
+		}
+
 		$cc = '';
 
 		if(!empty($templates[$templateKey]['cc']))
@@ -930,7 +921,7 @@ class vstore_order extends vstore
 		$vars = $this->data;
 
 		$vars['is_business'] = !empty($receiver['vat_id']);
-		$vars['is_local'] = (varset($receiver['country'], varset($this->pref['tax_business_country'])) === varset( $this->pref['tax_business_country']));
+		$vars['is_local'] = (varset($receiver['country'], varset($pref['tax_business_country'])) === varset( $pref['tax_business_country']));
 
 		$this->sc->setVars($vars);
 

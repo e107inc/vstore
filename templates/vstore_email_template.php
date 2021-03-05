@@ -123,7 +123,7 @@
 	
 	Hello {BILLING: firstname} {BILLING: lastname},<br />
 	<br />
-	the payment for your order #{REF} from {ORDER_DATA: order_date} has just been refunded.<br />
+	The payment for your order #{REF} from {ORDER_DATA: order_date} has just been refunded.<br />
 	<br />
 	Kind regards,<br />
 	{SENDER_NAME}

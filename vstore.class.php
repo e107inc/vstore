@@ -681,7 +681,7 @@ class vstore
 					$this->setShippingData($tmp);
 				}
 
-				$this->processGateway('init');
+				$this->processGateway(); // init
 
 				return;
 			}
@@ -844,6 +844,8 @@ class vstore
 
 		$frm = e107::getForm();
 		$tp = e107::getParser();
+		$field = '';
+
 		if(!isset($this->post['cust']['firstname']))
 		{
 			// load saved shipping data and assign to variables
@@ -944,7 +946,7 @@ class vstore
 
 		$this->sc->setVars($this->post);
 
-		$text = $tp->parseTemplate($template['header'], true, $this->sc);
+		return $tp->parseTemplate($template['header'], true, $this->sc);
 
 		/**
 		 * Additional checkout fields
@@ -955,7 +957,7 @@ class vstore
 		//     $text .= e107::getParser()->parseTemplate($template['guest'], true, $this->sc);
 		// }
 
-		return $text;
+
 	}
 
 
@@ -989,10 +991,8 @@ class vstore
 
 		$this->sc->setVars($this->post);
 
-		$text = $tp->parseTemplate($template['header'], true, $this->sc);
+		return $tp->parseTemplate($template['header'], true, $this->sc);
 
-
-		return $text;
 	}
 
 	/**
@@ -1029,9 +1029,7 @@ class vstore
 
 		$this->sc->setVars($data);
 
-		$text = e107::getParser()->parseTemplate($template['main'], true, $this->sc);
-
-		return $text;
+		return e107::getParser()->parseTemplate($template['main'], true, $this->sc);
 	}
 
 
@@ -1109,7 +1107,7 @@ class vstore
 				if(!empty($this->post['cust']['firstname']))
 				{
 					// validate billing data
-					$result = $this->validateCustomerData($this->post['cust'], 'billing');
+					$result = $this->validateCustomerData($this->post['cust']); // billing.
 					if(!$result)
 					{
 						// Something wrong. Stay at the billing address page
@@ -1321,7 +1319,7 @@ class vstore
 
 		if($this->get['cat'])
 		{
-			if($subCategoryText = $this->categoryList($this->get['cat'], false))
+			if($subCategoryText = $this->categoryList($this->get['cat']))
 			{
 				$subCategoryText .= "<hr />";
 			}
@@ -1934,7 +1932,6 @@ class vstore
 
 		$customerData = vstore::getCustomerData();
 
-
 		$fields = $this->pref['additional_fields'];
 		$add = array();
 		foreach($fields as $key => $value)
@@ -2125,7 +2122,7 @@ class vstore
 		}
 		elseif($uc_global != 255)
 		{
-			$usr = e107::getSystemUser($userid, true);
+			$usr = e107::getSystemUser($userid);
 			// all classes except No One (inactive)
 			$usr->addClass($uc_global);
 		}
@@ -2622,9 +2619,9 @@ class vstore
 
 			global $nextprev_parms;
 
-			$nextprev_parms = http_build_query($nextprev, false, '&');
+			$nextprev_parms = http_build_query($nextprev, false);
 
-			$text .= $tp->parseTemplate("{NEXTPREV: " . $nextprev_parms . "}", true);
+			$text .= $tp->parseTemplate("{NEXTPREV: " . $nextprev_parms . "}");
 		}
 
 		return $text;
@@ -2712,9 +2709,9 @@ class vstore
 
 			global $nextprev_parms;
 
-			$nextprev_parms = http_build_query($nextprev, false, '&');
+			$nextprev_parms = http_build_query($nextprev, false);
 
-			$text .= $tp->parseTemplate("{NEXTPREV: " . $nextprev_parms . "}", true);
+			$text .= $tp->parseTemplate("{NEXTPREV: " . $nextprev_parms . "}");
 		}
 
 
@@ -3054,7 +3051,7 @@ class vstore
 			return e107::getMessage()->addInfo("Your cart is empty.", 'vstore')->render('vstore');
 		}
 
-		$checkoutData = $this->prepareCheckoutData($data, false);
+		$checkoutData = $this->prepareCheckoutData($data);
 
 		if(!is_array($checkoutData))
 		{
@@ -4575,7 +4572,7 @@ class vstore
 					'footer'   => $footer
 				)
 			);
-			$result = e107::getParser()->parseTemplate($result, true);
+			$result = e107::getParser()->parseTemplate($result);
 		}
 
 		return $result;
@@ -4633,7 +4630,7 @@ class vstore
 	public function invoiceToPdf($data, $saveToDisk = true)
 	{
 
-		if(!self::checkPdfPlugin(true))
+		if(!self::checkPdfPlugin())
 		{
 			return;
 		}
@@ -4652,7 +4649,7 @@ class vstore
 				e107::getLog()->add(
 					'Vstore',
 					'Unable to create invoice user folder: "' .
-					e107::getFile()->getUserDir($data['userid'], false) . '"',
+					e107::getFile()->getUserDir($data['userid']) . '"',
 					E_LOG_WARNING
 				);
 				e107::getMessage()->addError('Unable to create invoice user folder!', 'vstore');
@@ -4696,7 +4693,7 @@ class vstore
 			$e107_user_id = USERID;
 		}
 		$title = varset($this->pref['invoice_title'][e_LANGUAGE], 'Invoice') . ' ' . self::formatInvoiceNr($invoice_nr);
-		$file = e107::getFile()->getUserDir($e107_user_id, false) . e107::getForm()->name2id($title) . '.pdf';
+		$file = e107::getFile()->getUserDir($e107_user_id) . e107::getForm()->name2id($title) . '.pdf';
 
 		return (is_readable($file) ? $file : '');
 	}
@@ -5049,6 +5046,7 @@ class vstore
 	{
 		$mode = '';
 		$message = '';
+		$gateway = null;
 
 		switch($name)
 		{
@@ -5097,7 +5095,6 @@ class vstore
 			case "bank_transfer":
 				$mode = 'halt';
 				$this->setMode('return');
-				$gateway = null;
 
 				if(!empty(self::$gateways['bank_transfer']['details']))
 				{
