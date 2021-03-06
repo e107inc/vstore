@@ -1717,7 +1717,12 @@ class vstore
 			$type = substr($type, 0, 6);
 		}
 
-		list($gateway, $mode, $message) = $this->loadGateway($type);
+		list($gateway, $message) = $this->loadGateway($type);
+
+		if($type === 'bank_transfer')
+		{
+			$mode = 'halt';
+		}
 
 		$cardInput = null;
 		$data = $this->getCheckoutData();
@@ -1804,25 +1809,25 @@ class vstore
 			}
 
 			e107::getSession('vstore')->set('_data', $_data);
-		//	$_SESSION['vstore']['_data'] = $_data;
 		}
-		else
+		else // Mode 'return'.
 		{
-			// Mode 'return'.
+
 			$method = 'completePurchase';
 
 			if($gateway->supportsAuthorize() && $gateway->supportsCompleteAuthorize())
 			{
 				// Workaround to make sure the payment is complete and not in pending state
-				if($type != 'paypal')
+				if($type !== 'paypal')
 				{
 					$method = 'completeAuthorize';
 				}
 			}
 
 			// Get stored data.
-			$_data = e107::getSession('vstore')->get('_data'); // $_SESSION['vstore']['_data'];
+			$_data = (array) e107::getSession('vstore')->get('_data');
 			// Add PayerID, paymentId, token, etc...
+
 			$_data = array_merge($_data, $this->get);
 		}
 
@@ -5093,7 +5098,6 @@ class vstore
 				break;*/
 
 			case "bank_transfer":
-				$mode = 'halt';
 				$this->setMode('return');
 
 				if(!empty(self::$gateways['bank_transfer']['details']))
@@ -5101,7 +5105,6 @@ class vstore
 					$message = '<br />Use the following bank account information for your payment:<br />';
 					$message .= e107::getParser()->toHTML(self::$gateways['bank_transfer']['details'], true);
 				}
-
 				break;
 
 
@@ -5111,7 +5114,7 @@ class vstore
 				{
 					$message = "There was a configuration problem.";
 					$gateway = null;
-					trigger_error($message. ' with '.$name);
+					trigger_error($message. ' with '.$name.print_r(self::$gateways,true));
 				}
 				else
 				{
@@ -5156,6 +5159,6 @@ class vstore
 				//return false;
 		}
 
-		return array($gateway, $mode, $message);
+		return array($gateway, $message);
 	}
 }

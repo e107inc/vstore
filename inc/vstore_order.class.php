@@ -63,6 +63,7 @@ class vstore_order extends vstore
         /** @var vstore_shortcodes sc */
         $this->sc = e107::getScParser()->getScObject('vstore_shortcodes', 'vstore', false);
         $this->sql = e107::getDb();
+        $this->pref = e107::pref('vstore');
 
         if (!empty($id)) {
             $this->load($id);
@@ -652,7 +653,7 @@ class vstore_order extends vstore
 			case "paypal":
 			case "mollie":
 			default:
-				list($gateway, $mode, $message) = $this->loadGateway($type);
+				list($gateway, $message) = $this->loadGateway($type);
 
 				$refundDetails = array(
 					'transactionReference' => $transactionId,
