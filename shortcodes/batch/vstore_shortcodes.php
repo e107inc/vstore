@@ -198,7 +198,8 @@
 					break;
 
 				case 'order_date':
-					$text = e107::getDateConvert()->convert_date($this->var[$key], 'short');
+					$format = varset($this->vpref['invoice_date_format'], 'dd M, yyyy');
+					$text = e107::getParser()->toDate($this->var[$key], $format);
 					break;
 
 				case 'country':
@@ -322,7 +323,7 @@
 
 		function sc_order_date()
 		{
-			return $this->tp->toDate($this->var['order_date']);
+			return $this->tp->toDate($this->var['order_date'], 'd MM, YYYY');
 		}
 
 		function sc_order_items()
@@ -1667,8 +1668,8 @@
 						$datestamp += ((int) $this->vpref['invoice_payment_deadline'] * 24 * 60 * 60);
 					}
 
-					$format = varset($this->vpref['invoice_date_format'], '%m/%d/%Y');
-					$text = e107::getDateConvert()->convert_date($datestamp, $format);
+					$format = varset($this->vpref['invoice_date_format'], 'dd M, yyyy');
+					$text = e107::getParser()->toDate($datestamp, $format);
 					break;
 			}
 

@@ -4503,22 +4503,6 @@ class vstore
 			}
 		}
 
-		// Load template
-		$template = e107::getTemplate('vstore', 'vstore_invoice');
-		$invoice = varset($this->pref['invoice_template']);
-
-		if(empty($invoice))
-		{
-			if(!vartrue($template['default']))
-			{
-				// Template not found!
-				e107::getMessage()->addDebug('Invoice template "default" not found!', 'vstore');
-				trigger_error('Invoice template "default" not found!');
-				return false;
-			}
-			$invoice = $template['default'];
-		}
-
 		$taxBusinessCountry = '';
 		$billingCountry = '';
 
@@ -4532,53 +4516,10 @@ class vstore
 			$taxBusinessCountry = $this->pref['tax_business_country'];
 		}
 
-
 		$this->order->is_business = !empty($this->order->order_billing['vat_id']);
 		$this->order->is_local = (vartrue($billingCountry, $taxBusinessCountry) === $taxBusinessCountry);
+		$result = $this->renderInvoiceTemplate($pdf_invoice);
 
-
-		$tp = e107::getParser();
-
-		$this->sc->addVars($this->order->getData());
-
-		$text = $tp->parseTemplate($invoice, true, $this->sc);
-		$footer = $tp->parseTemplate($template['footer'], true, $this->sc);
-
-		$logo = $this->sc->sc_invoice_logo('path');
-		if(!empty($logo))
-		{
-			$logo = ($pdf_invoice ? e_ROOT : e_HTTP) . $logo;
-		}
-
-		if($pdf_invoice)
-		{
-			$result = array(
-				'userid'  => $this->order->order_e107_user,
-				'subject' => varset($this->pref['invoice_title'][e_LANGUAGE], 'Invoice') . ' ' .
-					self::formatInvoiceNr($this->order->order_invoice_nr),
-				'text'    => $text,
-				'footer'  => $footer,
-				'logo'    => $logo,
-				'url'     => e107::url(
-					'vstore',
-					'invoice',
-					array('order_invoice_nr' => $this->order->order_invoice_nr),
-					array('mode' => 'full')
-				)
-			);
-		}
-		else
-		{
-			$result = e107::getParser()->lanVars(
-				$template['display'],
-				array(
-					'sitename' => SITENAME,
-					'body'     => $text,
-					'footer'   => $footer
-				)
-			);
-			$result = e107::getParser()->parseTemplate($result);
-		}
 
 		return $result;
 	}
@@ -5160,5 +5101,78 @@ class vstore
 		}
 
 		return array($gateway, $message);
+	}
+
+	/**
+	 * @param bool $pdf_invoice
+	 * @return array|string
+	 */
+	public function renderInvoiceTemplate($pdf_invoice = false)
+	{
+
+		$template = e107::getTemplate('vstore', 'vstore_invoice');
+		$invoice = varset($this->pref['invoice_template']);
+
+		if(empty($invoice))
+		{
+			if(empty($template['default']))
+			{
+				// Template not found!
+				e107::getMessage()->addDebug('Invoice template "default" not found!', 'vstore');
+				trigger_error('Invoice template "default" not found!');
+				return false;
+			}
+
+			$invoice = $template['default'];
+		}
+
+
+		$tp = e107::getParser();
+
+		$this->sc->addVars($this->order->getData());
+		$this->sc->wrapper('vstore_invoice/default');
+
+
+		$text = $tp->parseTemplate($invoice, true, $this->sc);
+		$footer = $tp->parseTemplate($template['footer'], true, $this->sc);
+
+		$logo = $this->sc->sc_invoice_logo('path');
+
+		if(!empty($logo))
+		{
+			$logo = ($pdf_invoice ? e_ROOT : e_HTTP) . $logo;
+		}
+
+		if($pdf_invoice)
+		{
+			$result = array(
+				'userid'  => $this->order->order_e107_user,
+				'subject' => varset($this->pref['invoice_title'][e_LANGUAGE], 'Invoice') . ' ' .
+					self::formatInvoiceNr($this->order->order_invoice_nr),
+				'text'    => $text,
+				'footer'  => $footer,
+				'logo'    => $logo,
+				'url'     => e107::url(
+					'vstore',
+					'invoice',
+					array('order_invoice_nr' => $this->order->order_invoice_nr),
+					array('mode' => 'full')
+				)
+			);
+		}
+		else
+		{
+			$result = e107::getParser()->lanVars(
+				$template['display'],
+				array(
+					'sitename' => SITENAME,
+					'body'     => $text,
+					'footer'   => $footer
+				)
+			);
+			$result = e107::getParser()->parseTemplate($result);
+		}
+
+		return $result;
 	}
 }

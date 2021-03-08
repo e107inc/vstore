@@ -9,8 +9,7 @@
 	 */
 
 	$VSTORE_INVOICE_TEMPLATE = array();
-
-	/** 
+	/**
 	*  vstore Invoice template for use to be converted to pdf.
 
 	ATTENTION!!!
@@ -20,60 +19,84 @@
 	BEFORE using in a production environment!
 	
 	*/
+
+/* WRAPPERS */
+
+	$VSTORE_INVOICE_WRAPPER['default']['ORDER_MERCHANT_INFO: line'] = '<span style="font-size:0.2cm;">{---}</span><br />';
+	$VSTORE_INVOICE_WRAPPER['default']['BILLING: company'] = '{---}<br />';
+	$VSTORE_INVOICE_WRAPPER['default']['SHIPPING: company'] = '{---}<br />';
+	$VSTORE_INVOICE_WRAPPER['default']['INVOICE_DATA: subject'] = '{---}<br />';
+
+/* TEMPLATE */
+
 	$VSTORE_INVOICE_TEMPLATE['default'] = '
 
-<table style="width: 100%;">
-	<thead>
+<table style="width: 100%; margin-bottom:.5cm">
+
 	<tr>
-		<td style="height:2.5cm" colspan="2">
+		<td style="height:0.5cm" colspan="3">
 			<!-- use the height to adjust the height of the addressfield  -->
 		</td>
 	</tr>
 	<tr>
-		<td style="width: 65%;height: 5cm;">
-			<span style="font-size:0.2cm;">{ORDER_MERCHANT_INFO: line}</span><br />
-			<br />
-			{ORDER_DATA: cust_firstname} {ORDER_DATA: cust_lastname}<br />
-			{ORDER_DATA: cust_company}<br />
-			{ORDER_DATA: cust_address}<br />
-			{ORDER_DATA: cust_city} &nbsp;{ORDER_DATA: cust_state} &nbsp;{ORDER_DATA: cust_zip}<br />
-			{ORDER_DATA: cust_country}		
+		<td style="width: 33.3%; vertical-align:top">
+			<h5>Billing</h5>
+			{ORDER_MERCHANT_INFO: line}
+			{BILLING: firstname} {BILLING: lastname}<br />
+			{BILLING: company}
+			{BILLING: address}<br />
+			{BILLING: city} &nbsp;{BILLING: state} &nbsp;{BILLING: zip}<br />
+			{BILLING: country}		
+		</td>
+		
+		<td style="width: 33.3%; vertical-align:top">
+			<h5>Shipping</h5>
+			{SHIPPING: firstname} {SHIPPING: lastname}<br />
+			{SHIPPING: company}
+			{SHIPPING: address}<br />
+			{SHIPPING: city} &nbsp;{SHIPPING: state} &nbsp;{SHIPPING: zip}<br />
+			{SHIPPING: country}		
 		</td>
 
-		<td style="width: 35%;">
-			<b>{INVOICE_DATA: info_title}</b><br />
-			Invoice#: {ORDER_DATA: order_invoice_nr}<br />
-			Order#: {ORDER_DATA: order_ref}<br />
-			Order date: {ORDER_DATA: order_date}<br />
-			Payment method: {ORDER_DATA: order_gateway}<br />
-			Payment deadline: {INVOICE_DATA: payment_deadline}		
+		<td style="width: 33.3%; vertical-align:top">
+			<h5>{INVOICE_DATA: info_title}</h5>
+			<table style="width: 100%;">
+			<tr>
+				<td>Invoice #:</td><td class="text-right">{ORDER_DATA: order_invoice_nr}</td>
+			</tr>
+			<tr>
+				<td>Order #:</td><td class="text-right">{ORDER_DATA: order_ref}</td>
+			</tr>
+			<tr>
+				<td>Order date:</td><td class="text-right">{ORDER_DATA: order_date}</td>
+			</tr>
+			<tr>
+				<td>Payment method:</td><td class="text-right">{ORDER_DATA: order_gateway}</td>
+			</tr>
+			<tr>
+				<td>Due by:</td><td class="text-right">{INVOICE_DATA: payment_deadline}	
+			</tr>
+			</table>	
 		</td>
 	</tr>
 
-	<tr>
-		<td colspan="2" style="height: 2.5cm;">
-			<h2>{INVOICE_DATA: title}</h2>
-			<br />
-			{INVOICE_DATA: subject}<br />
-		</td>
-	</tr>
-	</thead>
-
+</table>
+<table style="width: 100%;">
 	<tbody>
 	<tr>
-		<td colspan="2">
+		<td colspan="3">
 			{INVOICE_ITEMS}
 		</td>
 	</tr>
 
 	<tr>
-		<td colspan="2">
+		<td colspan="3">
 			{INVOICE_DATA: hint}
 		</td>
 	</tr>
 
 	<tr>
-		<td colspan="2">
+		<td colspan="3">
 			{INVOICE_DATA: finish_phrase}
 		</td>
 	</tr>
@@ -111,49 +134,47 @@ $VSTORE_INVOICE_TEMPLATE['footer'] = '
  */		
 
 $VSTORE_INVOICE_TEMPLATE['invoice_items']['header'] = '
-<br/>
-<br/>
-<table style="width: 100%;">
+<h2>{INVOICE_DATA: title}</h2>
+<table class="table table-striped table-bordered">
 <tr>
-	<th style="width: 5%; text-align:center; line-height: 2.5em;"><b>No.</b></th>
-	<th style="width: 45%;line-height: 2.5em;"><b>Product</b></th>
-	<th style="width: 10%; text-align:right; line-height: 2.5em;"><b>Tax</b></th>
-	<th style="width: 15%; text-align:right; line-height: 2.5em;"><b>Unit Price</b></th>
-	<th style="width: 10%; text-align:right; line-height: 2.5em;"><b>Qty</b></th>
-	<th style="width: 15%; text-align:right; line-height: 2.5em;"><b>Amount</b></th>
+	<th style="width: 5%; text-align:center; "><b>No.</b></th>
+	<th style="width: 45%;"><b>Product</b></th>
+
+	<th style="width: 15%; text-align:right; "><b>Unit Price</b></th>
+	<th style="width: 10%; text-align:right; "><b>Qty</b></th>
+	<th style="width: 15%; text-align:right;"><b>Amount</b></th>
 </tr>
 ';
 
 $VSTORE_INVOICE_TEMPLATE['invoice_items']['row'] = '
 <tr>
-	<td style=" text-align:right; line-height: 2.5em;">{CART_DATA: nr}</td>
-	<td style="line-height: 2.5em;">{CART_DATA: name}</td>
-	<td style="text-align:right; line-height: 2.5em;">{CART_DATA: tax}</td>
-	<td style="text-align:right; line-height: 2.5em;">{CART_DATA: price}</td>
-	<td style="text-align:right; line-height: 2.5em;">{CART_DATA: quantity}</td>
-	<td style="text-align:right; line-height: 2.5em;">{CART_DATA: item_total}</td>
+	<td style=" text-align:right;">{CART_DATA: nr}</td>
+	<td style="text-align:left;">{CART_DATA: name}</td>
+	<td style="text-align:right;">{CART_DATA: price}</td>
+	<td style="text-align:right;">{CART_DATA: quantity}</td>
+	<td style="text-align:right;">{CART_DATA: item_total}</td>
 </tr>';
 
 $VSTORE_INVOICE_TEMPLATE['invoice_items']['footer'] = '
 <tr>
 	<td></td>
 	<td></td>
-	<td colspan="3" style="line-height: 2.5em;"><b>Subtotal</b></td>
-	<td style="text-align:right; line-height: 2.5em;">{CART_DATA: sub_total}</td>
+	<td colspan="2" style="text-align:right"><b>Subtotal</b></td>
+	<td style="text-align:right;">{CART_DATA: sub_total}</td>
 </tr>
 <tr>
 	<td></td>
 	<td></td>
-	<td colspan="3" style="line-height: 2.5em;"><b>Shipping</b></td>
-	<td style="text-align:right; line-height: 2.5em;">{CART_DATA: shipping_total}</td>
+	<td colspan="2" style="text-align:right"><b>Shipping</b></td>
+	<td style="text-align:right;">{CART_DATA: shipping_total}</td>
 </tr>
 {INVOICE_COUPON}
 {INVOICE_TAX}
 <tr>
 	<td></td>
 	<td></td>
-	<td colspan="3" style="border-top: 1px solid #cccccc; line-height: 2.5em; font-size: 1.5em;"><b>Total</b></td>
-	<td style="text-align:right; border-top: 1px solid #cccccc; line-height: 2.5em; font-size: 1.5em;"><b>{CART_DATA: grand_total}</b></td>
+	<td colspan="2" style="border-top: 1px solid #cccccc; font-size: 1.5em; text-align:right"><b>Total</b></td>
+	<td style="text-align:right; border-top: 1px solid #cccccc; font-size: 1.5em;"><b>{CART_DATA: grand_total}</b></td>
 </tr>
 </table>
 ';
@@ -162,7 +183,7 @@ $VSTORE_INVOICE_TEMPLATE['invoice_items']['coupon'] = '
 <tr>
 	<td></td>
 	<td></td>
-	<td colspan="3">Coupon: <b>[x]</b></td>
+	<td>Coupon: <b>[x]</b></td>
 	<td style="text-align:right;">[y]</td>
 </tr>
 ';
@@ -170,25 +191,37 @@ $VSTORE_INVOICE_TEMPLATE['invoice_items']['coupon'] = '
 
 $VSTORE_INVOICE_TEMPLATE['invoice_items']['tax'] = '
 <tr>
-	<td></td>
-	<td></td>
-	<td colspan="2"><b>Included VAT</b></td>
-	<td style="text-align:right;">[x]</td>
+	<td ></td>
+	<td ></td>
+	<td colspan="2" style="text-align:right;"><b>Tax ([x])</b></td>
 	<td style="text-align:right;">[y]</td>
 </tr>
 ';
 
 
 $VSTORE_INVOICE_TEMPLATE['display'] = '
-<style>
-.vstore-invoice-wrapper { width: 100%; padding: 20px; box-shadow: 3px 3px 10px silver; }
+<html lang="en">
+  <head>
+    <title>Invoice</title>
+    <meta charset=utf-8>
+    <style type="text/css">
+body { padding:10px; background-color: #E1E1E1 }
+table.table{ border-collapse:collapse; border-spacing:0; width:100%; }
+.table-striped>tbody>tr:nth-child(2n+1)>td,.table-striped>tbody>tr:nth-child(2n+1)>th{ background-color:#F9F9F9; }
+.table-bordered > thead>tr>th,.table-bordered>tbody>tr>th,.table-bordered>tfoot>tr>th,.table-bordered>thead>tr>td,.table-bordered>tbody>tr>td,.table-bordered>tfoot>tr>td{
+border:1px solid #DDD; }
+.table>thead>tr>th,.table>tbody>tr>th,.table>tfoot>tr>th,.table>thead>tr>td,.table>tbody>tr>td,.table>tfoot>tr>td{ padding:8px;
+line-height:1.42857; vertical-align:top; border-top:1px solid #DDD;}											
+.vstore-invoice-wrapper { padding:10px; width: 93%; max-width:1000px; background-color: #FFFFFF; border-radius: 5px; font-family: helvetica,arial }
 .vstore-invoice-table { width: 100%; }
 .vstore-invoice-header { }
 .vstore-invoice-sitelogo { float: left; margin-right: 10px; }
 .vstore-invoice-sitename { vertical-align: middle; line-height: 80px; font-size: 1.8em; }
 .vstore-invoice-body { }
 .vstore-invoice-footer { }
+.text-right { text-align: right } 
 </style>
+<body>
 <div class="vstore-invoice-wrapper">
 <table class="table vstore-invoice-table">
 	<thead>
@@ -217,4 +250,6 @@ $VSTORE_INVOICE_TEMPLATE['display'] = '
 	</tfoot>
 </table>
 </div>
+</body>
+</html>
 ';
