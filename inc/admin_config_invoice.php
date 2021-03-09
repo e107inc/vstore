@@ -21,7 +21,7 @@ class vstore_invoice_pref_ui extends e_admin_ui
 			'invoice_nr_prefix'  		=> array('title'=> 'Invoice number prefix', 'tab'=>'pref', 'type'=>'text', 'data' => 'str', 'writeParms'=>array('placeholder'=>'IN', 'default'=>'IN', 'maxlength' => '5'), 'help' => 'Define the prefix for your invoice number. This will be rendered e.g. IN000012'),
 			'invoice_next_nr'  			=> array('title'=> 'Next invoice number', 'tab'=>'pref', 'type'=>'method', 'data' => 'int', 'writeParms'=>array('default'=>'1'), 'help' => 'This enables you to start at a given invoice number, or to step over a number. But it will ALWAYS be bigger than the last invoice number used!'),
 			'invoice_date_format'		=> array('title'=> 'Invoice date format', 'tab'=>'pref', 'type'=>'dropdown', 'data' => 'str', 'writeParms'=>array('placeholder'=>'Dateformat used on invoices (date only)', /*'default'=>'%m/%d/%Y'*/), 'help' => 'Date format (date only) used on onvoices. e.g. 05/02/2018'),
-			'invoice_payment_deadline'  => array('title'=> 'Default payment deadline (days)', 'tab'=>'pref', 'type'=>'number', 'data' => 'int', 'writeParms'=>array('default'=>'7'), 'help' => 'A notice will be added to the invoice, when the invoice should be paid latest.'),
+			'invoice_payment_deadline'  => array('title'=> 'Payment deadline (days)', 'tab'=>'pref', 'type'=>'number', 'data' => 'int', 'writeParms'=>array('default'=>'7'), 'help' => 'The number of days after the order date that the customer has to pay their outstanding balance.'),
 			'invoice_hint'        		=> array('title'=> 'Hint', 'tab'=>'temp', 'type' =>'method', 'data' => 'str', 'help' => 'This will be rendered on the invoice below the items and can be used to add some information on each invoice.'),
 			'invoice_finish_phrase'		=> array('title'=> 'Finishing phrase', 'tab'=>'temp', 'type' =>'method', 'data' => 'str', 'help' => 'This will be rendered on the invoice below the items and the hint.', 'writeParms' => array('placeholder' => 'Finishing phase', 'default' => "Thanks for your business!\n\n\nYours faithfully\n\n_______________________________________")),
 			'invoice_footer'        	=> array('title'=> 'Footer content', 'tab'=>'temp', 'type'=>'method', 'data' => 'json', 'writeParms'=>'', 'help' => 'These fields will be rendered on the bottom of each page.'),
@@ -74,6 +74,10 @@ class vstore_invoice_pref_ui extends e_admin_ui
 
 			$country = e107::pref('vstore', 'tax_business_country');
 			$rate = vstore::getTaxRate('standard', $country);
+			$tax = ($rate * 125);
+			$shipping = 5.00;
+			$total = 125 + $tax + $shipping;
+
 
 				$data = array(
 					'order_id' => '1',
@@ -133,11 +137,11 @@ class vstore_invoice_pref_ui extends e_admin_ui
 			'order_pay_gateway' => 'bank_transfer',
 			'order_pay_status' => 'refunded',
 			'order_pay_transid' => NULL,
-			'order_pay_amount' => '140.00',
+			'order_pay_amount' => $total,
 			'order_pay_tax' => '{
-			    "0.08": 10
+			    "'.$rate.'": '.$tax.'
 			}',
-			'order_pay_shipping' => '5.00',
+			'order_pay_shipping' => $shipping,
 			'order_pay_currency' => 'USD',
 			'order_pay_coupon_code' => '',
 			'order_pay_coupon_amount' => '0.00',
