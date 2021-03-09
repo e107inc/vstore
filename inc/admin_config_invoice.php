@@ -47,7 +47,7 @@ class vstore_invoice_pref_ui extends e_admin_ui
 				 'dd M, yyyy',
 				 'dd MM, yy',
 				 'dd MM, yyyy',
-				 'MM dd, yyyy', 
+				 'MM dd, yyyy',
 				 'yyyy-mm-dd',
 				 '%m/%d/%Y'
 			);
@@ -72,6 +72,9 @@ class vstore_invoice_pref_ui extends e_admin_ui
 			$vc = e107::getSingleton('vstore_order', e_PLUGIN.'vstore/inc/vstore_order.class.php');
 			$vc->initPrefs();
 
+			$country = e107::pref('vstore', 'tax_business_country');
+			$rate = vstore::getTaxRate('standard', $country);
+
 				$data = array(
 					'order_id' => '1',
 					'order_date' => '1615056941',
@@ -83,10 +86,10 @@ class vstore_invoice_pref_ui extends e_admin_ui
 			    {
 			        "id": "1",
 			        "name": "ITEM1",
-			        "price": "100.00",
+			        "price": "50.00",
 			        "description": "Product One",
-			        "quantity": "1",
-			        "tax_rate": 0.08,
+			        "quantity": "2",
+			        "tax_rate": '.$rate.',
 			        "file": "0",
 			        "vars": "",
 			        "item_vars": ""
@@ -97,7 +100,7 @@ class vstore_invoice_pref_ui extends e_admin_ui
 			        "price": "25.00",
 			        "description": "Product Two",
 			        "quantity": "1",
-			        "tax_rate": 0.08,
+			        "tax_rate": '.$rate.',
 			        "file": "",
 			        "vars": "",
 			        "item_vars": ""
@@ -113,7 +116,7 @@ class vstore_invoice_pref_ui extends e_admin_ui
 			    "city": "My City",
 			    "state": "State",
 			    "zip": "54321",
-			    "country": "mx",
+			    "country": "'.$country.'",
 			    "email": "customer1234@email.com",
 			    "additional_fields": null
 			}',
@@ -130,11 +133,11 @@ class vstore_invoice_pref_ui extends e_admin_ui
 			'order_pay_gateway' => 'bank_transfer',
 			'order_pay_status' => 'refunded',
 			'order_pay_transid' => NULL,
-			'order_pay_amount' => '135.00',
+			'order_pay_amount' => '140.00',
 			'order_pay_tax' => '{
 			    "0.08": 10
 			}',
-			'order_pay_shipping' => '0.00',
+			'order_pay_shipping' => '5.00',
 			'order_pay_currency' => 'USD',
 			'order_pay_coupon_code' => '',
 			'order_pay_coupon_amount' => '0.00',

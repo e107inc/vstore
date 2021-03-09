@@ -347,7 +347,7 @@
 				{
 					$desc .= '<br/>' . $item['vars'];
 				}
-				if ($item['id']>0 && varset($item['file']) && isset($this->var['order_status']))
+				if ($item['id'] > 0 && varset($item['file']) && isset($this->var['order_status']))
 				{
 					if ($this->var['order_status'] === 'C' || ($this->var['order_status'] === 'N' && $this->var['order_pay_status'] == 'complete'))
 					{
@@ -360,8 +360,10 @@
 					$desc .= '<br/><a href="'.e107::url('vstore', 'download', array('item_id' => $item['id']), array('mode'=>'full')).'">'.$linktext.'</a>';
 				}
 
+				$item['code'] = $item['name'];
 				$item['name'] = $desc;
-				$item['item_total'] = $item['price'] * $item['quantity'];
+
+				$item['item_total'] = ($item['price'] * $item['quantity']);
 
 				$this->addVars(array('item' => $item));
 				$text .= $this->tp->parseTemplate($template['row'], true, $this);
@@ -1347,6 +1349,7 @@
 
 		function sc_cart_data($parm = null)
 		{
+
 			if (empty($parm)) return '';
 			$key = array_keys($parm);
 			if ($key) $key = $key[0];
@@ -1355,6 +1358,9 @@
 			{
 				case 'nr':
 					$text = $this->var['item']['nr'];
+					break;
+				case 'code':
+					$text = $this->var['item']['code'];
 					break;
 				case 'name':
 					$text = $this->var['item']['name'];
@@ -1376,7 +1382,16 @@
 					//$text = $this->format_amount($this->var['item']['item_total']);
 					break;
 				case 'sub_total':
-					$text = $this->format_amount($this->var['order_pay_amount'] - $this->var['order_pay_shipping'] - varset($this->var['cart_coupon']['amount'],0));
+					$subTotal = 0;
+					if(!empty($this->var['order_items']))
+					{
+						foreach($this->var['order_items'] as $item)
+						{
+							$subTotal += ((float) $item['price'] * (int) $item['quantity']);
+						}
+					}
+					$text = $this->format_amount($subTotal);
+				//	$text = $this->format_amount($this->var['order_pay_amount'] - $this->var['order_pay_shipping'] - varset($this->var['cart_coupon']['amount'],0));
 					break;
 				case 'shipping_total':
 					$text = $this->format_amount($this->var['order_pay_shipping']);
@@ -1706,6 +1721,7 @@
 				}
 
 				$item['nr'] = ($key + 1);
+				$item['code'] = $item['name'];
 				$item['name'] = $desc;
 				$item['item_total'] = $item['price'] * $item['quantity'];
 

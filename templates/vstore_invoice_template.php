@@ -62,9 +62,6 @@
 			<h5>{INVOICE_DATA: info_title}</h5>
 			<table style="width: 100%;">
 			<tr>
-				<td>Invoice #:</td><td class="text-right">{ORDER_DATA: order_invoice_nr}</td>
-			</tr>
-			<tr>
 				<td>Order #:</td><td class="text-right">{ORDER_DATA: order_ref}</td>
 			</tr>
 			<tr>
@@ -138,7 +135,7 @@ $VSTORE_INVOICE_TEMPLATE['invoice_items']['header'] = '
 <table class="table table-striped table-bordered">
 <tr>
 	<th style="width: 5%; text-align:center; "><b>No.</b></th>
-	<th style="width: 45%;"><b>Product</b></th>
+	<th style="width: 45%; text-align:left;"><b>Product</b></th>
 
 	<th style="width: 15%; text-align:right; "><b>Unit Price</b></th>
 	<th style="width: 10%; text-align:right; "><b>Qty</b></th>
@@ -148,7 +145,7 @@ $VSTORE_INVOICE_TEMPLATE['invoice_items']['header'] = '
 
 $VSTORE_INVOICE_TEMPLATE['invoice_items']['row'] = '
 <tr>
-	<td style=" text-align:right;">{CART_DATA: nr}</td>
+	<td style=" text-align:right;">{CART_DATA: code}</td>
 	<td style="text-align:left;">{CART_DATA: name}</td>
 	<td style="text-align:right;">{CART_DATA: price}</td>
 	<td style="text-align:right;">{CART_DATA: quantity}</td>
