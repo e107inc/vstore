@@ -494,8 +494,8 @@ class vstore_order extends vstore
 
         $item = array(
             'datestamp' => time(),
-            'user_id' => USERID,
-            'user_name' => USERNAME
+            'user_id' => varset('USERID',0),
+            'user_name' => varset('USERNAME', '_guest_')
         );
 
         if (!empty($oldVal) || !empty($newVal)) {
@@ -714,8 +714,8 @@ class vstore_order extends vstore
 						'Order refunded on [x] by [y] ([z])',
 						array(
 							gmdate('Y-m-d H:i:s'),
-							USERNAME,
-							USERID
+							varset('USERNAME', '_guest_'),
+							varset('USERID', 0)
 						)
 					)
 				);
