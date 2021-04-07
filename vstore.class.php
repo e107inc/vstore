@@ -421,7 +421,7 @@ class vstore
 	{
 
 		$size = vartrue($size, '5x');
-		if(preg_match('^[0-9.]+x$', $size))
+		if(preg_match('/^[0-9.]+x$/', $size))
 		{
 			// convert '1x' sizes to '1em'
 			$size = (float) $size . 'em';
@@ -2817,9 +2817,8 @@ class vstore
 			$text .= $frm->tabs($tabData);
 		}
 
-		$parsed = $tp->parseTemplate($text, true, $this->sc);
+		return $tp->parseTemplate($text, true, $this->sc);
 
-		return $parsed;
 	}
 
 
@@ -4518,10 +4517,9 @@ class vstore
 
 		$this->order->is_business = !empty($this->order->order_billing['vat_id']);
 		$this->order->is_local = (vartrue($billingCountry, $taxBusinessCountry) === $taxBusinessCountry);
-		$result = $this->renderInvoiceTemplate($pdf_invoice);
 
+		return $this->renderInvoiceTemplate($pdf_invoice);
 
-		return $result;
 	}
 
 	/**
