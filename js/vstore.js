@@ -42,7 +42,7 @@ var e107 = e107 || {'settings': {}, 'behaviors': {}};
 	e107.behaviors.vstoreImageZoom = {
 		attach: function (context, settings)
 		{
-			$(context).find('.vstore-zoom').once('vstore-image-zoom').each(function ()
+			$(context).find('.vstore-zoom').one('vstore-image-zoom').each(function ()
 			{
 				var $this = $(this);
 
@@ -62,7 +62,7 @@ var e107 = e107 || {'settings': {}, 'behaviors': {}};
 	e107.behaviors.vstoreThumbnail = {
 		attach: function (context, settings)
 		{
-			$(context).find('.thumbnails a').once('vstore-thumbnail').each(function ()
+			$(context).find('.thumbnails a').one('vstore-thumbnail').each(function ()
 			{
 				$(this).click(function ()
 				{
@@ -99,7 +99,7 @@ var e107 = e107 || {'settings': {}, 'behaviors': {}};
 	e107.behaviors.vstoreCartQty = {
 		attach: function (context, settings)
 		{
-			$(context).find('.cart-qty, #cart-coupon-code').once('vstore-cart-qty').each(function ()
+			$(context).find('.cart-qty, #cart-coupon-code').one('vstore-cart-qty').each(function ()
 			{
 				var $this = $(this);
 
@@ -119,7 +119,7 @@ var e107 = e107 || {'settings': {}, 'behaviors': {}};
 	e107.behaviors.vstoreCartAdd = {
 		attach: function (context, settings)
 		{
-			$(context).find('.vstore-add').once('vstore-cart-add').each(function (e)
+			$(context).find('.vstore-add').one('vstore-cart-add').each(function (e)
 			{
 				$(this).click(function(e){
 					e.preventDefault();
@@ -151,7 +151,7 @@ var e107 = e107 || {'settings': {}, 'behaviors': {}};
 
 						});
 					}
-					
+
 
 					$.get(url, function(resp){
 						var msg = (typeof resp != 'undefined') ? resp : '';
@@ -176,7 +176,7 @@ var e107 = e107 || {'settings': {}, 'behaviors': {}};
 						else {
 							$btn.removeClass('btn-success').addClass('disabled btn-default').html(e107.settings.vstore.cart.outofstock);
 						}
-						// Print our any (error) message 
+						// Print our any (error) message
 						// $('#uiAlert').html(msg);
 						vstorePrintMessage(msg);
 
@@ -193,7 +193,7 @@ var e107 = e107 || {'settings': {}, 'behaviors': {}};
 	e107.behaviors.vstorePriceUpdate = {
 		attach: function (context, settings)
 		{
-			$(context).find('select.vstore-item-var').once('vstore-price-update').each(function (e)
+			$(context).find('select.vstore-item-var').one('vstore-price-update').each(function (e)
 			{
 				$(this).change(function(e){
 					var itemid = $(this).data('id');
@@ -231,7 +231,7 @@ var e107 = e107 || {'settings': {}, 'behaviors': {}};
 						}
 
 					});
-					
+
 					var inStock = vstoreCheckInventory(itemid, varid, itemvars);
 					if (inStock)
 					{
@@ -265,7 +265,7 @@ var e107 = e107 || {'settings': {}, 'behaviors': {}};
 	e107.behaviors.vstoreSetGateway = {
 		attach: function (context, settings)
 		{
-			$(context).find('.vstore-gateway-radio').once('vstore-set-gateway').each(function (e)
+			$(context).find('.vstore-gateway-radio').one('vstore-set-gateway').each(function (e)
 			{
 
 				$(this).change(function(){

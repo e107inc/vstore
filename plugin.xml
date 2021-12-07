@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <e107Plugin name="Vstore" lan="" version="1.0" date="2014-05-29" compatibility="2.0" installRequired="true" >
-	<author name="e107 Inc" url="http://e107.org" />
+	<author name="e107 Inc" url="https://e107.org" />
 	<summary lan="">Simple Virtual Store for e107</summary>
 	<description lan="">Shopping cart system for e107 v2.</description>
 	<keywords>

@@ -6,7 +6,7 @@
     'aliases' => 
     array (
     ),
-    'reference' => '7f774c92eb873a9a5a55e7c7aa0c29ac714d5be0',
+    'reference' => '117230975f064a4d2b44197e9548d6e83be9cc71',
     'name' => '__root__',
   ),
   'versions' => 
@@ -18,7 +18,7 @@
       'aliases' => 
       array (
       ),
-      'reference' => '7f774c92eb873a9a5a55e7c7aa0c29ac714d5be0',
+      'reference' => '117230975f064a4d2b44197e9548d6e83be9cc71',
     ),
     'braintree/braintree_php' => 
     array (
@@ -58,39 +58,39 @@
     ),
     'guzzlehttp/guzzle' => 
     array (
-      'pretty_version' => '7.2.0',
-      'version' => '7.2.0.0',
+      'pretty_version' => '7.4.0',
+      'version' => '7.4.0.0',
       'aliases' => 
       array (
       ),
-      'reference' => '0aa74dfb41ae110835923ef10a9d803a22d50e79',
+      'reference' => '868b3571a039f0ebc11ac8f344f4080babe2cb94',
     ),
     'guzzlehttp/promises' => 
     array (
-      'pretty_version' => '1.4.0',
-      'version' => '1.4.0.0',
+      'pretty_version' => '1.5.1',
+      'version' => '1.5.1.0',
       'aliases' => 
       array (
       ),
-      'reference' => '60d379c243457e073cff02bc323a2a86cb355631',
+      'reference' => 'fe752aedc9fd8fcca3fe7ad05d419d32998a06da',
     ),
     'guzzlehttp/psr7' => 
     array (
-      'pretty_version' => '1.7.0',
-      'version' => '1.7.0.0',
+      'pretty_version' => '2.1.0',
+      'version' => '2.1.0.0',
       'aliases' => 
       array (
       ),
-      'reference' => '53330f47520498c0ae1f61f7e2c90f55690c06a3',
+      'reference' => '089edd38f5b8abba6cb01567c2a8aaa47cec4c72',
     ),
     'league/omnipay' => 
     array (
-      'pretty_version' => 'v3.1.0',
-      'version' => '3.1.0.0',
+      'pretty_version' => 'v3.2.1',
+      'version' => '3.2.1.0',
       'aliases' => 
       array (
       ),
-      'reference' => '1ba7c8a3312cf2342458b99c9e5b86eaae44aed2',
+      'reference' => '38f66a0cc043ed51d6edf7956d6439a2f263501f',
     ),
     'moneyphp/money' => 
     array (
@@ -113,12 +113,12 @@
     ),
     'omnipay/common' => 
     array (
-      'pretty_version' => 'v3.0.5',
-      'version' => '3.0.5.0',
+      'pretty_version' => 'v3.1.2',
+      'version' => '3.1.2.0',
       'aliases' => 
       array (
       ),
-      'reference' => '0d1f4486c1c873537ac030d37c7ce2986c4de1d2',
+      'reference' => '5b16387ec5ab1b9ff86bdf0f20415088693b9948',
     ),
     'omnipay/mollie' => 
     array (
@@ -163,21 +163,21 @@
     ),
     'php-http/discovery' => 
     array (
-      'pretty_version' => '1.13.0',
-      'version' => '1.13.0.0',
+      'pretty_version' => '1.14.1',
+      'version' => '1.14.1.0',
       'aliases' => 
       array (
       ),
-      'reference' => '788f72d64c43dc361e7fcc7464c3d947c64984a7',
+      'reference' => 'de90ab2b41d7d61609f504e031339776bc8c7223',
     ),
     'php-http/guzzle7-adapter' => 
     array (
-      'pretty_version' => '0.1.1',
-      'version' => '0.1.1.0',
+      'pretty_version' => '1.0.0',
+      'version' => '1.0.0.0',
       'aliases' => 
       array (
       ),
-      'reference' => '1967de656b9679a2a6a66d0e4e16fa99bbed1ad1',
+      'reference' => 'fb075a71dbfa4847cf0c2938c4e5a9c478ef8b01',
     ),
     'php-http/httplug' => 
     array (
@@ -190,12 +190,12 @@
     ),
     'php-http/message' => 
     array (
-      'pretty_version' => '1.11.0',
-      'version' => '1.11.0.0',
+      'pretty_version' => '1.12.0',
+      'version' => '1.12.0.0',
       'aliases' => 
       array (
       ),
-      'reference' => 'fb0dbce7355cad4f4f6a225f537c34d013571f29',
+      'reference' => '39eb7548be982a81085fe5a6e2a44268cd586291',
     ),
     'php-http/message-factory' => 
     array (
@@ -232,6 +232,22 @@
       'reference' => '2dfb5f6c5eff0e91e20e913f8c5452ed95b86621',
     ),
     'psr/http-client-implementation' => 
+    array (
+      'provided' => 
+      array (
+        0 => '1.0',
+      ),
+    ),
+    'psr/http-factory' => 
+    array (
+      'pretty_version' => '1.0.1',
+      'version' => '1.0.1.0',
+      'aliases' => 
+      array (
+      ),
+      'reference' => '12ac7fcd07e5b077433f5f2bee95b3a771bf61be',
+    ),
+    'psr/http-factory-implementation' => 
     array (
       'provided' => 
       array (
@@ -290,39 +306,39 @@
     ),
     'symfony/deprecation-contracts' => 
     array (
-      'pretty_version' => 'v2.2.0',
-      'version' => '2.2.0.0',
+      'pretty_version' => 'v2.5.0',
+      'version' => '2.5.0.0',
       'aliases' => 
       array (
       ),
-      'reference' => '5fa56b4074d1ae755beb55617ddafe6f5d78f665',
+      'reference' => '6f981ee24cf69ee7ce9736146d1c57c2780598a8',
     ),
     'symfony/http-foundation' => 
     array (
-      'pretty_version' => 'v5.2.3',
-      'version' => '5.2.3.0',
+      'pretty_version' => 'v5.3.11',
+      'version' => '5.3.11.0',
       'aliases' => 
       array (
       ),
-      'reference' => '20c554c0f03f7cde5ce230ed248470cccbc34c36',
+      'reference' => 'd1e7059ebeb0b8f9fe5eb5b26eacd2e3c1f371cc',
     ),
     'symfony/polyfill-mbstring' => 
     array (
-      'pretty_version' => 'v1.22.1',
-      'version' => '1.22.1.0',
+      'pretty_version' => 'v1.23.1',
+      'version' => '1.23.1.0',
       'aliases' => 
       array (
       ),
-      'reference' => '5232de97ee3b75b0360528dae24e73db49566ab1',
+      'reference' => '9174a3d80210dca8daa7f31fec659150bbeabfc6',
     ),
     'symfony/polyfill-php80' => 
     array (
-      'pretty_version' => 'v1.22.1',
-      'version' => '1.22.1.0',
+      'pretty_version' => 'v1.23.1',
+      'version' => '1.23.1.0',
       'aliases' => 
       array (
       ),
-      'reference' => 'dc3063ba22c2a1fd2f45ed856374d79114998f91',
+      'reference' => '1100343ed1a92e3a38f9ae122fc0eb21602547be',
     ),
   ),
 );
