@@ -7,3 +7,4 @@
 
 # Ignore any generated invoice pdf's
 invoices/*.pdf
+vendor
