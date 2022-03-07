@@ -3111,7 +3111,9 @@ class vstore
 
 		$taxCountry = varset($this->pref['tax_business_country']);
 
-		$isLocal = (varset($cust['country'], $taxCountry) == $taxCountry);
+		$country = isset($cust['country']) ? $cust['country'] : $taxCountry;
+
+		$isLocal = ($country == $taxCountry);
 
 		$coupon = '';
 		$checkoutData['coupon'] = array('code' => '', 'amount' => 0.0, 'amount_net' => 0.0);
