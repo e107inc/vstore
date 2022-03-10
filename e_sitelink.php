@@ -89,7 +89,8 @@ class vstore_sitelink // include plugin-folder in the name.
 		$data = $vst->prepareCheckoutData($data, false, true);
 
 		$isBusiness = !empty($cust['vat_id']);
-		$isLocal = (varset($cust['country'], e107::pref('vstore', 'tax_business_country')) == e107::pref('vstore', 'tax_business_country'));
+		$country = isset($cust['country']) ? $cust['country'] : e107::pref('vstore', 'tax_business_country');
+		$isLocal = ($country === e107::pref('vstore', 'tax_business_country'));
 		
 		$frm = e107::getForm();
 		$tp = e107::getParser();
