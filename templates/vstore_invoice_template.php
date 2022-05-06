@@ -209,13 +209,17 @@ table.table{ border-collapse:collapse; border-spacing:0; width:100%; }
 border:1px solid #DDD; }
 .table>thead>tr>th,.table>tbody>tr>th,.table>tfoot>tr>th,.table>thead>tr>td,.table>tbody>tr>td,.table>tfoot>tr>td{ padding:8px;
 line-height:1.42857; vertical-align:top; border-top:1px solid #DDD;}											
-.vstore-invoice-wrapper { padding:10px; width: 93%; max-width:1000px; background-color: #FFFFFF; border-radius: 5px; font-family: helvetica,arial }
-.vstore-invoice-table { width: 100%; }
+.vstore-invoice-wrapper {  padding:10px; width: 93%; max-width:1000px; background-color: #FFFFFF; border-radius: 5px; font-family: helvetica,arial }
+.vstore-invoice-table { color: rgba(0,0,0,0.9) !important; width: 100%; }
 .vstore-invoice-header { }
 .vstore-invoice-sitelogo { float: left; margin-right: 10px; }
 .vstore-invoice-sitename { vertical-align: middle; line-height: 80px; font-size: 1.8em; }
 .vstore-invoice-body { }
 .vstore-invoice-footer { }
+.vstore-invoice-wrapper,
+.vstore-invoice-table,
+.vstore-invoice-body .table th,
+.vstore-invoice-body .table td { color: rgba(0,0,0,0.85) !important; }
 .text-right { text-align: right } 
 </style>
 <body>
