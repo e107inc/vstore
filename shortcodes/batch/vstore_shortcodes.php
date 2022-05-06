@@ -215,7 +215,7 @@
 					break;
 
 				case 'order_pay_status':
-					$text = ($this->var['order_status'] == 'C' || $this->var['order_pay_status'] == 'complete') ? '<span class="label label-success">Payed</span>' : '<span class="label label-warning">Open</span>';
+					$text = ($this->var['order_status'] == 'C' || $this->var['order_pay_status'] == 'complete') ? '<span class="label label-success badge bg-success">Payed</span>' : '<span class="label label-warning">Open</span>';
 					break;
 
 				case 'order_pay_amount':
@@ -673,7 +673,7 @@
 							' . $select . '
 							</label>
 							<!-- fix #92: currency symbol used with product variations --> 
-							<span class="text-hide" id="vstore-currency-symbol">' . varset($this->vpref['amount_format'], 0) . $this->curSymbol . '</span>
+							<span class="text-hide visually-hidden" id="vstore-currency-symbol">' . varset($this->vpref['amount_format'], 0) . $this->curSymbol . '</span>
 						</div>';
 					}
 
@@ -1557,10 +1557,10 @@
 		{
 			if (!$this->inStock())
 			{
-				return "<span class='label label-danger vstore-item-avail-".$this->var['item_id']."'>".$this->captionOutOfStock."</span>";
+				return "<span class='label label-danger badge bg-danger vstore-item-avail-".$this->var['item_id']."'>".$this->captionOutOfStock."</span>";
 			}
 
-			return "<span class='label label-success vstore-item-avail-".$this->var['item_id']."'>In Stock</span>";
+			return "<span class='label label-success badge bg-success vstore-item-avail-".$this->var['item_id']."'>In Stock</span>";
 		}
 
 
