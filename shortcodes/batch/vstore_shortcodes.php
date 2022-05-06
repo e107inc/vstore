@@ -470,10 +470,13 @@
 
 		function sc_order_gateway_icon($parm=null)
 		{
-			if (!isset($parm['size'])) {
+			if (!isset($parm['size']))
+			{
 				$parm['size'] = '2x';
 			}
-			$text = vstore::getGatewayIcon($this->var['order_pay_gateway'], $parm);
+
+			$text = vstore::getGatewayIcon($this->var['order_pay_gateway'], $parm['size']);
+
 			return $text;
 		}
 
