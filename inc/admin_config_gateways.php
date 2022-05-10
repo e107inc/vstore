@@ -136,37 +136,6 @@ class vstore_gateways_ui extends e_admin_ui
 	}
 
 
-	private function getGatewayPackageList()
-	{
-		$composerData = include(e_PLUGIN.'vstore/vendor/composer/autoload_psr4.php');
-
-		unset(
-			$composerData['Omnipay\Common\\'],
-			$composerData['Omnipay\PayPal\\'],
-			$composerData['Omnipay\Mollie\\'],
-			);
-
-		$list = [];
-		foreach($composerData as $package => $path)
-		{
-			if(strpos($package, 'Omnipay\\') === 0)
-			{
-				$tmp = explode('\\', $package);
-				if(isset($tmp[1]))
-				{
-					$key = strtolower($tmp[1]);
-					$list[$key] = ($tmp[1]);
-				}
-			}
-		}
-
-
-		return $list;
-
-	}
-
-
-
 	private function getAvailableGateways()
 	{
 		$path = e_PLUGIN . "vstore/vendor/";
@@ -194,7 +163,7 @@ class vstore_gateways_ui extends e_admin_ui
 			$list[$key] = array('name' => $name, 'title' => $title, 'parms' => $parms, 'icon'=> $icon);
 		}
 
-		$packages = $this->getGatewayPackageList();
+		$packages = vstore::getGatewayPackageList();
 
 		$defaultIcons = array(
 			'coinpayments'  => 'fa-bitcoin.glyph',

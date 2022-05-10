@@ -272,6 +272,36 @@ class vstore
 
 	}
 
+	public static function getGatewayPackageList()
+	{
+
+		$composerData = include(e_PLUGIN . 'vstore/vendor/composer/autoload_psr4.php');
+
+		unset(
+			$composerData['Omnipay\Common\\'],
+			$composerData['Omnipay\PayPal\\'],
+			$composerData['Omnipay\Mollie\\'],
+		);
+
+		$list = [];
+		foreach($composerData as $package => $path)
+		{
+			if(strpos($package, 'Omnipay\\') === 0)
+			{
+				$tmp = explode('\\', $package);
+				if(isset($tmp[1]))
+				{
+					$key = strtolower($tmp[1]);
+					$list[$key] = ($tmp[1]);
+				}
+			}
+		}
+
+
+		return $list;
+
+	}
+
 
 	public function init()
 	{
@@ -1802,6 +1832,12 @@ class vstore
 				'clientIp'       => USERIP,
 				'description'    => 'Order date: ' . e107::getDate()->convert_date(time(), 'inputdate'), // required for Mollie
 			);
+
+			$tokenKey = $type.'Token';
+			if(!empty($_POST[$tokenKey]))
+			{
+				$_data['token'] = $_POST[$tokenKey];
+			}
 
 			if($type == 'mollie')
 			{
@@ -5055,7 +5091,7 @@ class vstore
 				{
 					$message = "There was a configuration problem.";
 					$gateway = null;
-					trigger_error($message. ' with '.$name.print_r(self::$gateways,true));
+					trigger_error($message. ' Missing prefs for '.$name.".\n".print_r(self::$gateways,true));
 				}
 				else
 				{
