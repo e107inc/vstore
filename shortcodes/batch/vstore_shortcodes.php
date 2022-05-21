@@ -1,4 +1,7 @@
 <?php
+
+
+
 	class plugin_vstore_vstore_shortcodes extends e_shortcode
 	{
 
@@ -1028,10 +1031,10 @@
 		{
 			if($this->var['item_inventory'] != 0)
 			{
-				return '<span class="text-success"><strong>'.LAN_VSTORE_002.'</strong></span>';
+				return '<span class="text-success"><strong>'.defset('LAN_VSTORE_002','In Stock').'</strong></span>';
 			}
 
-			return '<span class="text-danger"><strong>'.LAN_VSTORE_003.'</strong></span>'; // Out of stock
+			return '<span class="text-danger"><strong>'.defset('LAN_VSTORE_003', 'Out of stock').'</strong></span>'; // Out of stock
 		}
 
 		function sc_item_url($parm=null)
