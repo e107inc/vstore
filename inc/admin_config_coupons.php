@@ -75,8 +75,8 @@ class vstore_coupons_ui extends e_admin_ui
 				return false;
 			}
 
-			$new_data['coupon_items'] = implode(',', $new_data['coupon_items']);
-			$new_data['coupon_items_ex'] = implode(',', $new_data['coupon_items_ex']);
+		//	$new_data['coupon_items'] = implode(',', $new_data['coupon_items']);
+		//	$new_data['coupon_items_ex'] = implode(',', $new_data['coupon_items_ex']);
 			$new_data['coupon_cats'] = implode(',', $new_data['coupon_cats']);
 			$new_data['coupon_cats_ex'] = implode(',', $new_data['coupon_cats_ex']);
 
