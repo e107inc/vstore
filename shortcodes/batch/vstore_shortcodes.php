@@ -1532,7 +1532,7 @@
 
 		function sc_cart_coupon()
 		{
-			$template = e107::getTemplate('vstore', 'vstore_cart', 'cart');
+			$template = e107::getTemplate('vstore', 'vstore_cart');
 
 			$text = $this->tp->parseTemplate($template['coupon'], true, $this);
 			return $text;
