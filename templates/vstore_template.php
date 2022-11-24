@@ -91,7 +91,7 @@ $VSTORE_TEMPLATE['menu']['item'] =  '
 						<!-- <p class="item-description">{ITEM_DESCRIPTION}</p> -->
 						<div class="row">
 							<div class="col-xs-12 col-sm-6 col-md-6 col-lg-6">
-								<p class="lead">{ITEM_PRICE}</p>
+								<p class="lead">{CART_PRICE}</p>
 							</div>
 							<div class="col-xs-12 col-sm-6 col-md-6 col-lg-6 text-right text-end">
 								{ITEM_ADDTOCART: class=btn btn-sm btn-success vstore-add&class0=btn btn-sm btn-default btn-secondary disabled}
