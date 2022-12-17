@@ -644,7 +644,7 @@ $VSTORE_TEMPLATE['navcart']['item'] = '
 				<li class="media d-flex">
 					<div class="media-left pull-left mr-2 me-2">{CART_DATA: pic}</div>
 					<div class="media-body">{CART_DATA: name}<br />
-						<span class="pull-right float-right float-end">{CART_DATA: quantity} &Cross; {CART_DATA: item_total}</span>
+						<span class="pull-right float-right float-end">{CART_DATA: quantity} &Cross; {CART_DATA: price}</span>
 					</div>
 				</li>
 			';
