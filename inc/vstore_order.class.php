@@ -941,6 +941,8 @@ class vstore_order extends vstore
 			'body'         => $tp->parseTemplate($template, true, $this->sc)
 		);
 
+		$eml['body'] = str_replace('<br />','<br>', $eml['body']);
+
 		if(!empty($cc))
 		{
 			$eml['cc'] = $cc;

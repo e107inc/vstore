@@ -5,7 +5,7 @@
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
-        'reference' => '332dc3fdabcdfb1fc09b63a048c993ef7bc9a2e7',
+        'reference' => 'b02a24c62273da2224128e684bc68c6f4adbd36c',
         'name' => '__root__',
         'dev' => true,
     ),
@@ -16,7 +16,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
-            'reference' => '332dc3fdabcdfb1fc09b63a048c993ef7bc9a2e7',
+            'reference' => 'b02a24c62273da2224128e684bc68c6f4adbd36c',
             'dev_requirement' => false,
         ),
         'braintree/braintree_php' => array(
@@ -307,12 +307,12 @@
             'dev_requirement' => false,
         ),
         'symfony/http-foundation' => array(
-            'pretty_version' => 'v5.4.15',
-            'version' => '5.4.15.0',
+            'pretty_version' => 'v5.4.16',
+            'version' => '5.4.16.0',
             'type' => 'library',
             'install_path' => __DIR__ . '/../symfony/http-foundation',
             'aliases' => array(),
-            'reference' => '75bd663ff2db90141bfb733682459d5bbe9e29c3',
+            'reference' => '5032c5849aef24741e1970cb03511b0dd131d838',
             'dev_requirement' => false,
         ),
         'symfony/polyfill-mbstring' => array(

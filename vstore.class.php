@@ -1785,9 +1785,9 @@ class vstore
 				$items[] = array(
 					'id'          => $var['item_id'],
 					'name'        => $var['item_code'],
-					'price'       => $price,
+					'price'       => (float) $price,
 					'description' => $var['item_name'],
-					'quantity'    => $var['cart_qty'],
+					'quantity'    => (int) $var['cart_qty'],
 					'tax_rate'    => $var['tax_rate'],
 					'file'        => $var['item_download'],
 					'vars'        => $itemvarstring,
@@ -1824,8 +1824,8 @@ class vstore
 			$_data = array(
 				'cancelUrl'      => e107::url('vstore', 'cancel', null, array('mode' => 'full')),
 				'returnUrl'      => e107::url('vstore', 'return', null, array('mode' => 'full')),
-				'amount'         => $data['totals']['cart_grandTotal'],
-				'shippingAmount' => $data['totals']['cart_shippingTotal'],
+				'amount'         => (float) $data['totals']['cart_grandTotal'],
+				'shippingAmount' => (float) $data['totals']['cart_shippingTotal'],
 				'currency'       => $data['currency'],
 				'items'          => $items,
 				'transactionId'  => $this->getCheckoutData('id'),
@@ -1845,6 +1845,7 @@ class vstore
 			}
 
 			e107::getSession('vstore')->set('_data', $_data);
+			// file_put_contents(__DIR__."/checkoutData.log", var_export($_data,true));
 		}
 		else // Mode 'return'.
 		{
@@ -2440,7 +2441,8 @@ class vstore
 	 */
 	public function setGatewayType($type = '')
 	{
-		e107::getSession('vstore')->set('gateway/type', $type);
+
+		e107::getSession('vstore')->set('gateway/type', strtolower($type));
 		//$_SESSION['vstore']['gateway']['type'] = $type;
 	}
 
@@ -3140,7 +3142,6 @@ class vstore
 	 */
 	public function prepareCheckoutData($data, $isCheckoutData = false, $fromSitelink = false)
 	{
-
 		$sql = e107::getDb();
 		$cust = vstore::getCustomerData();
 		$isBusiness = !empty($cust['vat_id']);
