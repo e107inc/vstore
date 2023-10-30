@@ -8,5 +8,10 @@
         "omnipay/braintree": "~4.0@dev",
         "financialplugins/omnipay-coinpayments": "^1.3",
         "starkpay/omnipay": "^0.0.3"
+    },
+    "config": {
+        "allow-plugins": {
+            "php-http/discovery": true
+        }
     }
 }
